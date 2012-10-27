@@ -16,7 +16,7 @@ digraph {
 	"5"  -> "8"  [label="0.5: entry_cp != full & !(left = false)"]
 	"5"  -> "7"  [label="0.5: entry_cp != full & left = false"]
 	"5"  -> "7"  [label="0.5: !(entry_cp != full) & left = false"]
-	"5"  -> "7"  [label="0.5: !(entry_cp != full) & left = false"]
+	"5"  -> "8"  [label="0.5: !(entry_cp != full) & left = false"]
 	"6"  -> "1"  [label="left = false"]
 	"6"  -> "8"  [label="!(left = false)"]
 	"7"  -> "1"  [label="entry_cp != full"]
