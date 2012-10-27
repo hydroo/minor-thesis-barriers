@@ -1,0 +1,289 @@
+1)
+if one threads gets his value overwritten by another and sees that another threads multiplicated value is missing,
+he should multiply this value too, not only his own.
+
+2   3   5
+|   |\  |
+2   | \ |
+| \ 6  \|
+|   |   5
+|   | / |
+|   30  |
+|   |   |
+
+without this mechanism thread 3 would write 15, because the multiplying of 2 has not been registered by 5
+
+-----------------------------------------------------------
+
+2)
+use a bit array instead of an integer and primes.
+
+every odd bit marks the entered state of a thread.
+every even bit marks the left state of a thread.
+
+initial state:           00 00 00 00
+everyone arrived:        10 10 10 10
+everyone reached the end 11 11 11 11
+
+if one state reaches the 11 11 11 11 state it sets it to 00 00 00 00
+
+the above mechanism is already a work around for a race. the same race as with using multiplication and division
+for primes.
+
+-----------------------------------------------------------
+
+Ich hab das Beispiel gefunden.
+
+(das spielt sich alles in der entry loop ab)
+
+2   3   5
+|   r1  r1
+|   |   w5
+r5  |   |
+|   w3  |
+|   |   r3
+w10 |   |
+|   |   |
+|   r10 |
+|   w30 |
+r30 x   |
+x       |
+        w15
+        deadlock
+
+Das bedeutet gleichzeitig dass ein "resetten" der entry barrier
+auf 30 (nachdem der erste thread raus ist aus der loop) nicht gehen wuerde,
+weil nr 5 danach immernoch 15 schreiben
+kann und der selbe deadlock entsteht.
+
+wenn man statt dem "resetten" eine extra variable nimmt, kann das nicht passieren.
+
+email 12-10-09 18:31:
+> Hallo,
+> 
+> die Zahlen fuer hohe Thread-Anzahl koennte man auch bessern indem man in der 
+> schleife den thread "yielded" ... in anderen Sprachen/Bibliotheken kann man 
+> sagen, dass man erstmal keine rechenzeit braucht und die anderen weitermachen 
+> duerfen (nicht sicher ob pthread es auch kann. Ich nehme an: ja). Das duerfte 
+> das Problem ab 5 threads mildern oder beheben. (Was vermutlich passiert ist, 
+> das einer bis oder vier fuer sich immer wieder multiplizieren und pruefen und 
+> der 5te lang nicht dran kommt oder sich unguenstig abwechselt -- sodass die 
+> die 4 aktiven quasi sinnlos pruefen und multiplizieren ... weil ohnehin ein 
+> anderer fehlt).
+> 
+> 
+> 
+> Die dritte Variable weglassen geht in dem Code wirklich nicht. (Die ist erst 
+> dadurch ueberhaupt dazugekommen)
+> 
+> Ich wollte es dir gerade nochmal beschreiben, aber jetzt faellt mir auf, dass 
+> der deadlock scheinbar anders zustande kommt. Aber er passiert definitiv.
+> 
+> ("someoneLeftTheEntryBarrier" ueberall aus dem quellcode loeschen (und aus dem 
+> while bedingungen die und klausel auch wegmachen) und compilieren)
+> 
+> 3 threads, 1000 iterationen.
+> 
+> 5 bleibt im entry loop mit entryBarrier = 10.
+> 2, 3 sind im exit loop mit exitBarrier = 6.
+> tot.
+> 
+> Aber ich versteh auch gerade nicht warum, und muss jetzt auch los^^.
+> 
+> Ich hoffe ich konnte helfen.
+> 
+> gruesse und danke fuers angucken des codes.
+> Ronny    
+> 
+> On Tuesday, October 09, 2012 16:39:42 Marcus Völp wrote:
+> > Hi,
+> > die Zahlen sehen vielversprechend aus. Ich schaue mir heute Abend bzw.
+> > Morgen mal Deinen Code im Detail an. Deinen Deadlock sehe ich nicht auf
+> > anhieb aber Michael Scott hat auch mal gesagt, das man pro lockfreiem
+> > Algorithmus einen PhD braucht. Insofern ist das nicht verwunderlich.
+> >    
+> >     Marcus
+> > 
+> > On 10/09/2012 03:42 PM, Ronny Brendel wrote:
+> > > So, ich habe mit pthread_barrier_* das gleiche nochmal implementiert
+> > > und mal beides gemessen.
+> > > (mit "time (real)" ueber die gesamte Programmlaufzeit)
+> > >
+> > > # 2 threads 1mio iterations
+> > > pthreads: 16.103s
+> > > neu: 0.292s
+> > >
+> > > # 3 threads 1mio iterations
+> > > pthreads: 29.290s
+> > > neu: 0.561s
+> > >
+> > > # 4 threads 400k iterations
+> > > pthreads: 17.102s
+> > > neu: 0.336s
+> > >
+> > > # 5 threads 300k iterations
+> > > pthreads: 16.979s
+> > > neu: wird niemals fertig (100 iterationen dauern 4 sekunden)
+> > >
+> > > zwischen 5 und 15 threads (was das Maximum wegen Primzahlen und 64bit
+> > > integer ist) aendert es sich nicht mehr so stark ... circa Verdopplung
+> > > der Zeit die fuer 100 Iterationen benoetigt wird.
+> > >
+> > > Scheinbar liegt es ihm am Herzen auf den 4 cores (2 cores+HT)
+> > > gleichzeitig laufen zu koennen.
+> > >
+> > >
+> > > Interessant.
+> > >
+> > > Also fuer wenige Threads ist es Wahnsinnig schnell, aber wenn die
+> > > gegenseitigen Ueberschreibungen sich haeufen wird es schnell
+> > > schlimmer. (wie erwartet)
+> > > Aber der Sprung von 4 auf 5 threads. ist ein besonders krasser
+> > > Unterschied auf meinem laptop.
+> > >
+> > > disclamer:
+> > > Die Messung ist natuerlich nicht sehr schoen, weil noch ein paar
+> > > kleine Einfluesse eine Rolle spielen (zB ein bisschen
+> > > commandozeilen-output, eine bessere Uhr koennte man benutzen, die
+> > > Initialisierungs und Abbau-Phase sollte man nicht mitmessen). Aber im
+> > > groben sollte es stimmen, was da steht.
+> > >
+> > > ps: im code unten ist noch ein kleiner bug gefixt der verhindert hat
+> > > mehr als 9 threads zu benutzen (integer statt int64).
+> > >
+> > >
+> > > gruesse!
+> > > Ronny
+> > >
+> > > Quoting Ronny Brendel <ronny.brendel@tu-dresden.de>:
+> > >
+> > > > Da ich den Markus gerade nicht erwischt schreib ich mal ne mail.
+> > > >
+> > > > Hallo,
+> > > >
+> > > > ich habe jetzt eine scheinbar funktionierende Implementation der
+> > > > Barrier mit 2 Variablen, plus einer extra.
+> > > >
+> > > >
+> > > >         int64_t entryBarrierCopy = 1;
+> > > >         c->entryBarrier = 1;
+> > > >
+> > > >         /* Entry Loop */
+> > > >         do {
+> > > >             entryBarrierCopy = c->entryBarrier;
+> > > >             if (entryBarrierCopy % prime != 0) {
+> > > >                 entryBarrierCopy *= prime;
+> > > >                 c->entryBarrier = entryBarrierCopy;
+> > > >             }
+> > > >         }while (entryBarrierCopy < productOfAllPrimes &&
+> > > > c->someoneLeftTheEntryBarrier == 0);
+> > > >
+> > > >
+> > > >         c->someoneLeftTheEntryBarrier = 1;
+> > > >
+> > > >         int64_t exitBarrierCopy = 1;
+> > > >         c->exitBarrier = 1;
+> > > >
+> > > >         /* Exit Loop */
+> > > >         do {
+> > > >             exitBarrierCopy = c->exitBarrier;
+> > > >             if (exitBarrierCopy % prime != 0) {
+> > > >                 exitBarrierCopy *= prime;
+> > > >                 c->exitBarrier = exitBarrierCopy;
+> > > >             }
+> > > >         }while (exitBarrierCopy < productOfAllPrimes &&
+> > > > c->someoneLeftTheEntryBarrier == 1);
+> > > >
+> > > >         c->someoneLeftTheEntryBarrier = 0;
+> > > >     }
+> > > >
+> > > >
+> > > > Notes:
+> > > > 1)
+> > > > die *Copy-Variablen existieren, weil wenn ich statt
+> > > >
+> > > >             entryBarrierCopy = c->entryBarrier;
+> > > >             if (entryBarrierCopy % prime != 0) {
+> > > >                 entryBarrierCopy *= prime;
+> > > >                 c->entryBarrier = entryBarrierCopy;
+> > > >             }
+> > > > ---
+> > > >             if (c->entryBarrier % prime != 0) {
+> > > >                 c->entryBarrier *= prime;
+> > > >             }
+> > > >
+> > > > mache passiert der if-Vergleich und die Multiplikation eventuell nicht
+> > > > auf dem gleichen Datum und es kann zB passieren dass eine Primzahl
+> > > > zweimal auf die barrier-Variable multipliziert wird. (Ich denke das
+> > > > kann dazu fuehren dass die barrier ihr limit erreicht obwohl in
+> > > > wirklichkeit nur 1 thread 3 mal eingecheckt hat)
+> > > >
+> > > >
+> > > > 2   3   5
+> > > > ---------
+> > > > r1  r1  |
+> > > > w2  |   r2
+> > > > |   w3  |
+> > > > r3  |   |   <- barrier % 2 != 0
+> > > > |   |   w10
+> > > > r10 |   |
+> > > > w20 |   |   <- barrier *= prime  // 20 = 2 * 2 * 5
+> > > >
+> > > > XXX
+> > > >
+> > > >
+> > > > Ich habe deswegen mich ein bisschen zu cmpxchg belesen und versucht
+> > > > rauszufinden was der compiler macht. if () mit dem *= ist scheinbar
+> > > > kein Kandidat fuer diese atomare Operation. Der assembler output des
+> > > > gcc ist auch frei von cmpxchg-Befehlen (auch den 64bittigen) .
+> > > >
+> > > >
+> > > > 2)
+> > > > Wenn ich das someoneLeftTheEntryBarrier-Zeug weglasse gibt es einen
+> > > > deadlock.
+> > > > Der erste thread der aus der entry loop rausrennt kann eventuell seine
+> > > > (kurze) Anwesenheit den anderen nicht mitteilen weil seine
+> > > > schreiboperation von einem anderen thread direkt ueberschrieben wird.
+> > > >
+> > > > Sodass am Ende ein thread in der exit loop und alle anderen in der
+> > > > entry loop haengen.
+> > > >
+> > > > Dieses flag stellt sicher, dass wenn der Erste die entry loop
+> > > > verlaesst es die anderen threads merken und die entry loop verlassen
+> > > > koennen.
+> > > >
+> > > > Solange nicht alle threads in der der exit loop angekommen sind geht
+> > > > keiner heraus. Wenn der erste rausgeht setzt er das flag zurueck
+> > > > (analog zur entry loop) sodass erstens keiner vorzeitig aus der entry
+> > > > loop in der naechsten iteration heraus kann bis alle angekommen sind,
+> > > > und zweitens es alle merken wenn der erste die exit loop verlaesst
+> > > > (selbes problem wie bei der entry loop).
+> > > >
+> > > > ----
+> > > > Meine Tests (von 1 bis 9 threads mit beliebig vielen iterationen ---
+> > > > also wiederholtem nutzen der selben barriere) funktionieren alle bisher.
+> > > >
+> > > >
+> > > > Die Frage ist: Was nun?
+> > > > Besonders elegant sieht es nicht aus. Gibt es noch Sachen die ich
+> > > > veraendern kann / sollte?
+> > > >
+> > > > Ich koennte auch spasseshalber mal gegen die pthread_barrier
+> > > > benchmarken. (Das geht sicher auch fix)
+> > > >
+> > > > Wie kann ich herausfinden ob das Ding wirklich deadlock-frei ist?
+> > > > (Beziehungsweise nur der Fall des zyklischen Austauschens der
+> > > > barrier-Variable uebrig bleibt (der laesst sich scheinbar nicht
+> > > > verhindern, richtig? und er sollte sich auch "irgendwann" selbst
+> > > > erledigen, wenn er oft genug versucht auszutauschen. mh obwohl.)
+> > > >
+> > > > Mich ins modellieren einlesen und die barrier erstmal so lassen waere
+> > > > auch eine Moeglichkeit.
+> > > >
+> > > >
+> > > > Meinungen?
+> > > >
+> > > > viele Gruesse,
+> > > > Ronny
+> > >
+> > >
