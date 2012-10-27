@@ -1,3 +1,11 @@
+12-10-27:
+ * hg in Betrieb genommen
+ * Modell korrigiert / verfeinert
+ * von ascii art auf dot-file fuer das visuelle Modell gewechselt
+ * aufgeraeumt
+ * erste kleine properties eingefuegt (unmoegliche states und sowas)
+
+vorher:
 1)
 if one threads gets his value overwritten by another and sees that another threads multiplicated value is missing,
 he should multiply this value too, not only his own.
