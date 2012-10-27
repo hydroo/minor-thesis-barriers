@@ -15,10 +15,10 @@ global exit : [0..7] init 1;
 global left : bool;
 
 label "invalid_barrier" =
-	entry=0        | entry=4        | entry=5        | entry>full        |
+	entry=0      | entry=4      | entry=5      | entry>full      |
 	entry_cp_1=0 | entry_cp_1=4 | entry_cp_1=5 | entry_cp_1>full |
 	entry_cp_2=0 | entry_cp_2=4 | entry_cp_2=5 | entry_cp_2>full |
-	exit=0         | exit=4         | exit=5         | exit>full         |
+	exit=0       | exit=4       | exit=5       | exit>full       |
 	exit_cp_1=0  | exit_cp_1=4  | exit_cp_1=5  | exit_cp_1>full  |
 	exit_cp_2=0  | exit_cp_2=4  | exit_cp_2=5  | exit_cp_2>full;
 
@@ -77,7 +77,7 @@ endmodule
 
 
 module process_2 = process_1 [
-	prime_1                =prime_2,s_1=s_2,
-	entry_cp_1             =entry_cp_2,
-	exit_cp_1              =exit_cp_2
+	prime_1    =prime_2,s_1=s_2,
+	entry_cp_1 =entry_cp_2,
+	exit_cp_1  =exit_cp_2
 ] endmodule
