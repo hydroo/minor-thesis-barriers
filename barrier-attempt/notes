@@ -12,7 +12,7 @@ not as near TODO:
 far TODO:
  * model timing differences, work periods and cache latency/behaviour, too
 
-general possible directions (markus/steffen):
+general possible directions (markus/sascha):
  * timing analysis
  * "constantly resetting race" -> prove/account for the assumption behind pW/CS
  * methodolgy/tools support -> generalize modelling to also be able to check other similar algorithms
@@ -28,7 +28,7 @@ dont forget TODO:
  * measure cache impact
 
 misc:
- * assume core count >= thread count
+ * ✓ assume core count >= thread count
    This simplifies the real implementation of the algorithm. If core count < threads
    the scheduler would dissrupt the efficiency/workings of the algorithm very very much
  *
