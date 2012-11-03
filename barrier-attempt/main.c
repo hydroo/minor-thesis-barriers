@@ -1,5 +1,7 @@
+#define _GNU_SOURCE
 #include <assert.h>
 #include <pthread.h>
+#include <sched.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -90,6 +92,22 @@ void* Thread(void *userData) {
     for (int i = 0; i < threadCount; ++i) {
         full |= 0x1 << i;
     }
+
+    // set thread affinity
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(index, &cpuset);
+    assert(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) == 0);
+
+    //DEBUG
+    //pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+    //printf("%i uses cpus: ", index);
+    //for (int i = 0; i < threadCount; ++i) {
+    //    if (CPU_ISSET(i, &cpuset)) {
+    //        printf("%i, ", i);
+    //    }
+    //}
+    //printf("\n");
 
     //printf("%016llX %016llX\n", (long long unsigned) me, (long long unsigned) full);
 
