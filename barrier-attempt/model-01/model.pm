@@ -1,4 +1,4 @@
-dtmc
+mdp
 
 
 const me_1 = 1;
@@ -39,16 +39,15 @@ module process_1
 
 	[] l_1=4 -> (l_1'=5) & (entry'=cp_1);
 
-	// diamon/nondeterminis for cp_1 != full & left = false
-	[] l_1=5 & (  cp_1 != full &   left = false ) -> 0.5:(l_1'=6) + 0.5:(l_1'=7);
-	[] l_1=5 & (  cp_1 != full & !(left = false)) -> 0.5:(l_1'=6) + 0.5:(l_1'=8);
-	[] l_1=5 & (!(cp_1 != full) &  left = false ) -> 0.5:(l_1'=7) + 0.5:(l_1'=8);
+	// diamond/nondeterminism for cp_1 != full & left = false
+	[] l_1=5 & (  cp_1 != full                ) -> (l_1'=6);
+	[] l_1=5 & (                 left = false ) -> (l_1'=7);
+	[] l_1=5 & (!(cp_1 != full & left = false)) -> (l_1'=8);
 	[] l_1=6 &   left = false  -> (l_1'=1);
 	[] l_1=6 & !(left = false) -> (l_1'=8);
 	[] l_1=7 &   cp_1 != full  -> (l_1'=1);
 	[] l_1=7 & !(cp_1 != full) -> (l_1'=8);
 
-	[] l_1=5 &  !(cp_1 != full) & !(left = false) -> (l_1'=8);
 	[] l_1=8 -> (l_1'=9) & (left'=true);
 
 	[] l_1=9 -> (l_1'=10) & (exit'=1);
@@ -62,15 +61,14 @@ module process_1
 	[] l_1=13 -> (l_1'=14) & (exit'=cp_1);
 
 	// diamond/nondeterminism for cp_1 != full & left = true
-	[] l_1=14 & (  cp_1 != full  &   left = true ) -> 0.5:(l_1'=15) + 0.5:(l_1'=16);
-	[] l_1=14 & (  cp_1 != full  & !(left = true)) -> 0.5:(l_1'=15) + 0.5:(l_1'=17);
-	[] l_1=14 & (!(cp_1 != full) &   left = true ) -> 0.5:(l_1'=16) + 0.5:(l_1'=17);
+	[] l_1=14 & (  cp_1 != full               ) -> (l_1'=15);
+	[] l_1=14 & (                 left = true ) -> (l_1'=16);
+	[] l_1=14 & (!(cp_1 != full & left = true)) -> (l_1'=17);
 	[] l_1=15 &   left = true  -> (l_1'=10);
 	[] l_1=15 & !(left = true) -> (l_1'=17);
 	[] l_1=16 &   cp_1 != full  -> (l_1'=10);
 	[] l_1=16 & !(cp_1 != full) -> (l_1'=17);
 
-	[] l_1=14 & !(cp_1 != full) & !(left = true) -> (l_1'=17);
 	[] l_1=17 -> (l_1'=0) & (left'=false);
 
 endmodule
