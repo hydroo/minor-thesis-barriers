@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <papi.h>
+
 void* Thread(void*);
 
 
@@ -190,6 +192,12 @@ int main(int argc, char **args) {
 
     printContext(context);
 
+    //int papiEvents[3] = {0x8000003b, 0x80000000, 0x80000002};
+    //long long papiResultsStart[3] = {0, 0, 0};
+    //long long papiResultsEnd[3] = {0, 0, 0};
+    //printf("PAPI_start_counters %i\n", PAPI_start_counters(papiEvents, 3));
+    //printf("PAPI_read_counters %i\n", PAPI_read_counters(papiResultsStart, 3));
+
     /* start all threads */
     for (int i = 0; i < threadCount; ++i) {
         infos[i].index = i;
@@ -208,7 +216,14 @@ int main(int argc, char **args) {
         }
     }
 
+    //printf("PAPI_stop_counters %i\n", PAPI_stop_counters(papiResultsEnd, 3));
+
     printContext(context);
+
+    //printf("papi counter 0: %lli - %lli\n", papiResultsStart[0], papiResultsEnd[0]);
+    //printf("papi counter 1: %lli - %lli\n", papiResultsStart[1], papiResultsEnd[1]);
+    //printf("papi counter 2: %lli - %lli\n", papiResultsStart[2], papiResultsEnd[2]);
+    //printf("papi counter 3: %lli - %lli\n", papiResultsStart[3], papiResultsEnd[3]);
 
     finishContext(context);
 

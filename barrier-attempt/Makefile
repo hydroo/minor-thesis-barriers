@@ -1,8 +1,10 @@
 CC = gcc
-INCLUDE =
+#INCLUDE =
+INCLUDE = -I/opt/papi/include/
 CFLAGS = -Wall -Wextra -g -std=c99 -DDEBUG $(INCLUDE)
 LN = $(CC)
-LIBS = -lpthread
+#LIBS = -lpthread
+LIBS = -lpthread -lpapi
 LFLAGS = $(LIBS)
 
 BARRIER = barrier
