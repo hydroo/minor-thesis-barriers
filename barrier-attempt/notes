@@ -1,4 +1,44 @@
-12-10-27:
+--- 12-11-03 11:30: Gist of the last meeting ---
+
+near TODO:
+ * switch to bitmask from primes
+ * reuse the local copy instead of using two copies
+ * switch to MDP and introduce non-determinism in while statements where appropriate
+
+not as near TODO:
+ * switch to ctmc
+   -> script model generation, and perhaps property generation
+
+far TODO:
+ * model timing differences, work periods and cache latency/behaviour, too
+
+general possible directions (markus/steffen):
+ * timing analysis
+ * "constantly resetting race" -> prove/account for the assumption behind pW/CS
+ * methodolgy/tools support -> generalize modelling to also be able to check other similar algorithms
+ * 512 processes
+
+possibly/unimportant TODO:
+ * properly implement the barrier with a switch where it decides itself which of the two phases/while loops to enter
+
+dont forget TODO:
+ * optimization: processes memorize who they already saw and add them (besides themselves) to the barrier
+ * think of and test properties/queries and test them
+   * show the absence of other deadlocks than the "constantly resetting race"
+ * measure cache impact
+
+misc:
+ * assume core count >= thread count
+   This simplifies the real implementation of the algorithm. If core count < threads
+   the scheduler would dissrupt the efficiency/workings of the algorithm very very much
+ *
+   cp := orig              <
+   if i am not in cp {     < model timing differences here, too
+     add me to cp          <
+	 orig := cp
+   }
+
+--- 12-10-27 ---
  * hg in Betrieb genommen
  * Modell korrigiert / verfeinert
  * von ascii art auf dot-file fuer das visuelle Modell gewechselt
