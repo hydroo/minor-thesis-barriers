@@ -1,6 +1,6 @@
 const int max_time_steps;
 
-P=? [ F<max_time_steps s_1=17 ]
+P=? [ F<max_time_steps l_1=17 ]
 
 P<=0 [ F "invalid_barrier" ]
 
