@@ -10,11 +10,12 @@ void* Thread(void*);
 
 typedef struct {
     int threadCount;
-    int64_t repetitions;
+    int64_t repetitionCount;
     volatile int64_t *successfulBarrierVisitsCount;
-    volatile uint64_t entryBarrier; 
-    volatile int someoneLeftTheEntryBarrier;
-    volatile uint64_t exitBarrier; 
+    volatile uint64_t entry; //upper barrier
+    volatile int left; // true if somebody left the entry barrier, 
+                       // false if someone left the exit barrier
+    volatile uint64_t exit; // lower barrier
     int outOfSyncCount;  /* not a precise counter */
 } Context;
 
@@ -24,7 +25,7 @@ typedef struct {
 } ThreadInfo;
 
 
-Context * newContext(int threadCount, int64_t repetitions) {
+Context * newContext(int threadCount, int64_t repetitionCount) {
 
     if (threadCount > 64) {
         printf("this implementation cannot handle more than 64 threads. %i\n", threadCount);
@@ -36,16 +37,16 @@ Context * newContext(int threadCount, int64_t repetitions) {
     assert(ret != NULL);
 
     ret->threadCount = threadCount;
-    ret->repetitions = repetitions;
+    ret->repetitionCount = repetitionCount;
 
     ret->successfulBarrierVisitsCount = (int64_t*) malloc(sizeof(int64_t) * threadCount);
     for (int i = 0; i < threadCount; ++i) {
         ret->successfulBarrierVisitsCount[i] = 0;
     }
 
-    ret->entryBarrier = 0x0000000000000000;
-    ret->someoneLeftTheEntryBarrier = 0;
-    ret->exitBarrier = 0x0000000000000000;
+    ret->entry = 0x0000000000000000;
+    ret->left = 0;
+    ret->exit = 0x0000000000000000;
 
     ret->outOfSyncCount = 0;
 
@@ -56,7 +57,7 @@ Context * newContext(int threadCount, int64_t repetitions) {
 void printContext(Context *c) {
 
     printf("thread count: %i\n", c->threadCount);
-    printf("repetitions: %lli\n", (long long) c->repetitions);
+    printf("repetitions: %lli\n", (long long) c->repetitionCount);
     printf("out of sync count: %i\n", c->outOfSyncCount);
     printf("threads:\n");
     for (int i = 0 ; i < c->threadCount; ++i) {
@@ -79,10 +80,12 @@ void* Thread(void *userData) {
 
     int index = info->index;
     int threadCount = c->threadCount;
-    int64_t repetitions = c->repetitions;
+    int64_t repetitionCount = c->repetitionCount;
 
     uint64_t me = 0x1 << index;
     uint64_t full = 0x0000000000000000;
+
+    uint64_t copy; //thread local copy of the entry/exit barrier
 
     for (int i = 0; i < threadCount; ++i) {
         full |= 0x1 << i;
@@ -94,27 +97,26 @@ void* Thread(void *userData) {
     //FILE *log = fopen("a", "a");
 
 
-    for(int64_t repetition = 0; repetition < repetitions; repetition++){
+    for(int64_t repetition = 0; repetition < repetitionCount; repetition++){
 
-        uint64_t copy;
-        c->entryBarrier = 0x0000000000000000;
+        c->entry = 0x0000000000000000;
 
         /* run to wall and wait busily */
         do {
-            copy = c->entryBarrier;
+            copy = c->entry;
             //fprintf(log, "%i r %lli\n", prime, (long long) copy);
             //fflush(log);
             if ((copy & me) == 0) {
                 copy |= me;
-                c->entryBarrier = copy;
+                c->entry = copy;
                 //fprintf(log, "%i w %lli\n", prime, (long long) copy);
                 //fflush(log);
             }
-        }while (copy != full && c->someoneLeftTheEntryBarrier == 0);
+        }while (copy != full && c->left == 0);
 
-        c->someoneLeftTheEntryBarrier = 1;
+        c->left = 1;
 
-        c->exitBarrier = 0x0000000000000000;
+        c->exit = 0x0000000000000000;
 
         for (int i = 0; i < threadCount - 1; ++i) {
             if (c->successfulBarrierVisitsCount[i] != c->successfulBarrierVisitsCount[i+1]) {
@@ -128,14 +130,14 @@ void* Thread(void *userData) {
 
         /* wait busily until everyone has left the barrier */
         do {
-            copy = c->exitBarrier;
+            copy = c->exit;
             if ((copy & me) == 0) {
                 copy |= me;
-                c->exitBarrier = copy;
+                c->exit = copy;
             }
-        }while (copy != full && c->someoneLeftTheEntryBarrier == 1);
+        }while (copy != full && c->left == 1);
 
-        c->someoneLeftTheEntryBarrier = 0;
+        c->left = 0;
 
         ++(c->successfulBarrierVisitsCount[index]);
     }
@@ -152,12 +154,12 @@ int main(int argc, char **args) {
     }
 
     int threadCount = atoi(args[1]);
-    int repetitions = atoll(args[2]);
+    int repetitionCount = atoll(args[2]);
 
     assert(threadCount > 0);
-    assert(repetitions > 0);
+    assert(repetitionCount > 0);
 
-    Context *context = newContext(threadCount, repetitions);
+    Context *context = newContext(threadCount, repetitionCount);
     pthread_t t[threadCount];
     ThreadInfo infos[threadCount];
 
