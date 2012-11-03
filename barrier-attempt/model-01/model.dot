@@ -1,5 +1,7 @@
 digraph {
 
+	"mdp\nlocal variables: copy, me\nshared variables: entry, exit, left" [nojustify=true, shape=box]
+	
 	initial_state_source [style=invis]
 	initial_state_source -> "0"
 
