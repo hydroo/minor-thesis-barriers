@@ -34,6 +34,13 @@ Context * newContext(int threadCount, int64_t repetitionCount) {
         assert(0);
     }
 
+    long cpuCount = sysconf( _SC_NPROCESSORS_ONLN );
+
+    if (threadCount > cpuCount) {
+        printf("this implementation supports only as many threads as there are cpus (%li). %i\n", cpuCount, threadCount);
+        assert(0);
+    }
+
 
     Context *ret = (Context*) malloc(sizeof(Context));
     assert(ret != NULL);
