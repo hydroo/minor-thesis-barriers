@@ -24,8 +24,10 @@ possibly/unimportant TODO:
 dont forget TODO:
  * optimization: processes memorize who they already saw and add them (besides themselves) to the barrier
  * think of and test properties/queries and test them
-   * show the absence of other deadlocks than the "constantly resetting race"
- * measure cache impact
+   - show the absence of other deadlocks than the "constantly resetting race"
+ * measure cache impact (need a proper >4 multi core (without HT) machine for this)
+   - inside one HT-able core there occur simply no cache misses, since both
+     threads use the same execution units/cache and everything
 
 misc:
  * ✓ assume core count >= thread count
