@@ -12,13 +12,10 @@ typedef struct {
     int threadCount;
     int64_t repetitions;
     volatile int64_t *successfulBarrierVisitsCount;
-    volatile int64_t entryBarrier; 
+    volatile uint64_t entryBarrier; 
     volatile int someoneLeftTheEntryBarrier;
-    volatile int64_t exitBarrier; 
-    int *primes;
+    volatile uint64_t exitBarrier; 
     int outOfSyncCount;  /* not a precise counter */
-
-    int64_t productOfAllPrimes;
 } Context;
 
 typedef struct {
@@ -28,6 +25,12 @@ typedef struct {
 
 
 Context * newContext(int threadCount, int64_t repetitions) {
+
+    if (threadCount > 64) {
+        printf("this implementation cannot handle more than 64 threads. %i\n", threadCount);
+        assert(0);
+    }
+
 
     Context *ret = (Context*) malloc(sizeof(Context));
     assert(ret != NULL);
@@ -40,36 +43,11 @@ Context * newContext(int threadCount, int64_t repetitions) {
         ret->successfulBarrierVisitsCount[i] = 0;
     }
 
-    ret->entryBarrier = 1;
+    ret->entryBarrier = 0x0000000000000000;
     ret->someoneLeftTheEntryBarrier = 0;
-    ret->exitBarrier = 1;
-
-    ret->primes = (int*) malloc(sizeof(int)*threadCount);
-    int primeCandidate = 2;
-    for (int i = 0; i < threadCount; ++primeCandidate) {
-        int n = 2;
-        for (; n < primeCandidate; ++n) {
-            if (primeCandidate % n == 0) {
-                break;
-            }
-        }
-        if (n == primeCandidate) {
-            ret->primes[i] = primeCandidate;
-            ++i;
-        }
-    }
+    ret->exitBarrier = 0x0000000000000000;
 
     ret->outOfSyncCount = 0;
-
-    ret->productOfAllPrimes = 1;
-    for (int i = 0; i < ret->threadCount; ++i) {
-        ret->productOfAllPrimes *= ret->primes[i];
-    }
-
-    if (ret->productOfAllPrimes <= 0) {
-        printf("the product of primes exceed a 64bit integer. %lli\n", (long long) ret->productOfAllPrimes);
-        assert(0);
-    }
 
     return ret;
 }
@@ -82,17 +60,14 @@ void printContext(Context *c) {
     printf("out of sync count: %i\n", c->outOfSyncCount);
     printf("threads:\n");
     for (int i = 0 ; i < c->threadCount; ++i) {
-        printf("  %i: prime: %i, successful barrier visits: %lli\n", i,
-                c->primes[i],(long long) c->successfulBarrierVisitsCount[i]);
+        printf("  %i: successful barrier visits: %lli\n", i,
+                (long long) c->successfulBarrierVisitsCount[i]);
     }
-
-    printf("product of all primes: %lli\n", (long long) c->productOfAllPrimes);
 }
 
 
 void finishContext(Context *c) {
     free((int64_t*) c->successfulBarrierVisitsCount);
-    free(c->primes);
     free(c);
 }
 
@@ -104,9 +79,16 @@ void* Thread(void *userData) {
 
     int index = info->index;
     int threadCount = c->threadCount;
-    int64_t productOfAllPrimes = c->productOfAllPrimes;
-    int prime = c->primes[index];
-    int repetitions = c->repetitions;
+    int64_t repetitions = c->repetitions;
+
+    uint64_t me = 0x1 << index;
+    uint64_t full = 0x0000000000000000;
+
+    for (int i = 0; i < threadCount; ++i) {
+        full |= 0x1 << i;
+    }
+
+    //printf("%016llX %016llX\n", (long long unsigned) me, (long long unsigned) full);
 
     //unlink("a");
     //FILE *log = fopen("a", "a");
@@ -114,25 +96,25 @@ void* Thread(void *userData) {
 
     for(int64_t repetition = 0; repetition < repetitions; repetition++){
 
-        int64_t copy;
-        c->entryBarrier = 1;
+        uint64_t copy;
+        c->entryBarrier = 0x0000000000000000;
 
         /* run to wall and wait busily */
         do {
             copy = c->entryBarrier;
             //fprintf(log, "%i r %lli\n", prime, (long long) copy);
             //fflush(log);
-            if (copy % prime != 0) {
-                copy *= prime;
+            if ((copy & me) == 0) {
+                copy |= me;
                 c->entryBarrier = copy;
                 //fprintf(log, "%i w %lli\n", prime, (long long) copy);
                 //fflush(log);
             }
-        }while (copy != productOfAllPrimes && c->someoneLeftTheEntryBarrier == 0);
+        }while (copy != full && c->someoneLeftTheEntryBarrier == 0);
 
         c->someoneLeftTheEntryBarrier = 1;
 
-        c->exitBarrier = 1;
+        c->exitBarrier = 0x0000000000000000;
 
         for (int i = 0; i < threadCount - 1; ++i) {
             if (c->successfulBarrierVisitsCount[i] != c->successfulBarrierVisitsCount[i+1]) {
@@ -147,11 +129,11 @@ void* Thread(void *userData) {
         /* wait busily until everyone has left the barrier */
         do {
             copy = c->exitBarrier;
-            if (copy % prime != 0) {
-                copy *= prime;
+            if ((copy & me) == 0) {
+                copy |= me;
                 c->exitBarrier = copy;
             }
-        }while (copy != productOfAllPrimes && c->someoneLeftTheEntryBarrier == 1);
+        }while (copy != full && c->someoneLeftTheEntryBarrier == 1);
 
         c->someoneLeftTheEntryBarrier = 0;
 

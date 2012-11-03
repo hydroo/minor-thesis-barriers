@@ -3,12 +3,12 @@ digraph {
 	initial_state_source [style=invis]
 	initial_state_source -> "0"
 
-	"0"  -> "1"  [weight=100, label="entry := 1"]
-	"1"  -> "2"  [weight=100, label="copy := entry"]
+	"0"  -> "1"  [weight=10, label="entry := 0x0"]
+	"1"  -> "2"  [weight=10, label="copy := entry"]
 
-	"2"  -> "3"  [weight=100, label="copy % prime != 0"]
-	"3"  -> "4"  [weight=100, label="copy := min(max(copy * prime, max_invalid), min_invalid)"]
-	"4"  -> "5"  [weight=100, label="entry := copy"]
+	"2"  -> "3"  [weight=10, label="copy&me == 0"]
+	"3"  -> "4"  [weight=10, label="copy |= me"]
+	"4"  -> "5"  [weight=10, label="entry := copy"]
 	"2"  -> "5"  [label="else"]
 
 	"5"  -> "6"  [label="0.5: copy != full & left = false"]
@@ -23,13 +23,13 @@ digraph {
 	"7"  -> "8"  [label="!(copy != full)"]
 	"5"  -> "8"  [label="!(copy != full) & !(left = false)"]
 
-	"8"  -> "9"  [weight=100, label="left := true"]
-	"9"  -> "10" [weight=100, label="exit := 1"]
+	"8"  -> "9"  [weight=10, label="left := true"]
+	"9"  -> "10" [weight=10, label="exit := 0x0"]
 
-	"10" -> "11" [weight=100, label="copy := exit"]
-	"11" -> "12" [weight=100, label="copy % prime != 0"]
-	"12" -> "13" [weight=100, label="copy := min(max(copy * prime, max_invalid), min_invalid)"]
-	"13" -> "14" [weight=100, label="exit := copy"]
+	"10" -> "11" [weight=10, label="copy := exit"]
+	"11" -> "12" [weight=10, label="copy&me == 0"]
+	"12" -> "13" [weight=10, label="copy |= me"]
+	"13" -> "14" [weight=10, label="exit := copy"]
 	"11" -> "14" [label="else"]
 
 	"14" -> "15" [label="0.5: copy != full & left = true"]
