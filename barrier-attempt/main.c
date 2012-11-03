@@ -118,7 +118,25 @@ void* Thread(void *userData) {
     //}
     //printf("\n");
 
-    //printf("%016llX %016llX\n", (long long unsigned) me, (long long unsigned) full);
+
+    int threadToBeRecorded = -1;
+    int papiEvents[3] = {0x8000003b, 0x80000000, 0x80000002};
+    long long papiStart[3] = {0, 0, 0};
+    long long papiEnd[3] = {0, 0, 0};
+
+    if (index == threadToBeRecorded) {
+        int ret = PAPI_start_counters(papiEvents, 3);
+        if (ret != 0) {
+            printf("thread %i: PAPI_start_counters %i\n", index, ret);
+            assert(0);
+        }
+        ret = PAPI_read_counters(papiStart, 3);
+        if (ret != 0) {
+            printf("thread %i: PAPI_read_counters %i\n", index, ret);
+            assert(0);
+        }
+    }
+
 
     //unlink("a");
     //FILE *log = fopen("a", "a");
@@ -169,6 +187,18 @@ void* Thread(void *userData) {
         ++(c->successfulBarrierVisitsCount[index]);
     }
 
+    if (index == threadToBeRecorded) {
+        int ret = PAPI_stop_counters(papiEnd, 3);
+        if (ret != 0) {
+            printf("%i: PAPI_stop_counters %i\n", index, ret);
+            assert(0);
+        }
+        printf("thread %i: papi counter 0: %lli - %lli = %lli\n", index, papiEnd[0], papiStart[0], papiEnd[0] - papiStart[0]);
+        printf("thread %i: papi counter 1: %lli - %lli = %lli\n", index, papiEnd[1], papiStart[1], papiEnd[1] - papiStart[1]);
+        printf("thread %i: papi counter 2: %lli - %lli = %lli\n", index, papiEnd[2], papiStart[2], papiEnd[2] - papiStart[2]);
+        printf("\n");
+    }
+
     return NULL;
 }
 
@@ -191,12 +221,7 @@ int main(int argc, char **args) {
     ThreadInfo infos[threadCount];
 
     printContext(context);
-
-    //int papiEvents[3] = {0x8000003b, 0x80000000, 0x80000002};
-    //long long papiResultsStart[3] = {0, 0, 0};
-    //long long papiResultsEnd[3] = {0, 0, 0};
-    //printf("PAPI_start_counters %i\n", PAPI_start_counters(papiEvents, 3));
-    //printf("PAPI_read_counters %i\n", PAPI_read_counters(papiResultsStart, 3));
+    printf("\n");
 
     /* start all threads */
     for (int i = 0; i < threadCount; ++i) {
@@ -216,14 +241,7 @@ int main(int argc, char **args) {
         }
     }
 
-    //printf("PAPI_stop_counters %i\n", PAPI_stop_counters(papiResultsEnd, 3));
-
     printContext(context);
-
-    //printf("papi counter 0: %lli - %lli\n", papiResultsStart[0], papiResultsEnd[0]);
-    //printf("papi counter 1: %lli - %lli\n", papiResultsStart[1], papiResultsEnd[1]);
-    //printf("papi counter 2: %lli - %lli\n", papiResultsStart[2], papiResultsEnd[2]);
-    //printf("papi counter 3: %lli - %lli\n", papiResultsStart[3], papiResultsEnd[3]);
 
     finishContext(context);
 
