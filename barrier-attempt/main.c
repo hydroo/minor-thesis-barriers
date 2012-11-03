@@ -114,25 +114,24 @@ void* Thread(void *userData) {
 
     for(int64_t repetition = 0; repetition < repetitions; repetition++){
 
-        int64_t entryBarrierCopy;
+        int64_t copy;
         c->entryBarrier = 1;
 
         /* run to wall and wait busily */
         do {
-            entryBarrierCopy = c->entryBarrier;
-            //fprintf(log, "%i r %lli\n", prime, (long long) entryBarrierCopy);
+            copy = c->entryBarrier;
+            //fprintf(log, "%i r %lli\n", prime, (long long) copy);
             //fflush(log);
-            if (entryBarrierCopy % prime != 0) {
-                entryBarrierCopy *= prime;
-                c->entryBarrier = entryBarrierCopy;
-                //fprintf(log, "%i w %lli\n", prime, (long long) entryBarrierCopy);
+            if (copy % prime != 0) {
+                copy *= prime;
+                c->entryBarrier = copy;
+                //fprintf(log, "%i w %lli\n", prime, (long long) copy);
                 //fflush(log);
             }
-        }while (entryBarrierCopy != productOfAllPrimes && c->someoneLeftTheEntryBarrier == 0);
+        }while (copy != productOfAllPrimes && c->someoneLeftTheEntryBarrier == 0);
 
         c->someoneLeftTheEntryBarrier = 1;
 
-        int64_t exitBarrierCopy;
         c->exitBarrier = 1;
 
         for (int i = 0; i < threadCount - 1; ++i) {
@@ -147,12 +146,12 @@ void* Thread(void *userData) {
 
         /* wait busily until everyone has left the barrier */
         do {
-            exitBarrierCopy = c->exitBarrier;
-            if (exitBarrierCopy % prime != 0) {
-                exitBarrierCopy *= prime;
-                c->exitBarrier = exitBarrierCopy;
+            copy = c->exitBarrier;
+            if (copy % prime != 0) {
+                copy *= prime;
+                c->exitBarrier = copy;
             }
-        }while (exitBarrierCopy != productOfAllPrimes && c->someoneLeftTheEntryBarrier == 1);
+        }while (copy != productOfAllPrimes && c->someoneLeftTheEntryBarrier == 1);
 
         c->someoneLeftTheEntryBarrier = 0;
 
