@@ -3,7 +3,7 @@
 near TODO:
  * ✓ switch to bitmask from primes
  * ✓ reuse the local copy instead of using two copies
- * switch to MDP and introduce non-determinism in while statements where appropriate
+ * ✓ switch to MDP and introduce non-determinism in while statements where appropriate
 
 not as near TODO:
  * switch to ctmc
