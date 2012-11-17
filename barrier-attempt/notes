@@ -1,7 +1,7 @@
 --- 12-11-03 16:40 ---
 
- □ get to know ctmc s
-   □ switch to ctmc
+ ✓ get to know ctmc s
+   □ create a ctmc model for timing and probabilistic analysis
      □ script model generation, and perhaps property generation
  □ think of / make up useful properties and test them
    □ show the absence of other deadlocks than the "constantly resetting race"
