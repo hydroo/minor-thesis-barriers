@@ -1,11 +1,11 @@
 --- 12-11-03 16:40 ---
 
- ☐ get to know ctmc s
-   ☐ switch to ctmc
-     ☐ script model generation, and perhaps property generation
- ☐ think of / make up useful properties and test them
-   ☐ show the absence of other deadlocks than the "constantly resetting race"
- ☐ find a quad or more core (w/o HT) machine and check the cache impact there
+ □ get to know ctmc s
+   □ switch to ctmc
+     □ script model generation, and perhaps property generation
+ □ think of / make up useful properties and test them
+   □ show the absence of other deadlocks than the "constantly resetting race"
+ □ find a quad or more core (w/o HT) machine and check the cache impact there
    * (fyi) dual core HT notebook CPU uses about 1% of its cache bandwidth per core.
      so it is probably 2% used cache bandwidth in total for my 2core+HT notebook.
 
@@ -13,13 +13,13 @@
 --- 12-11-03 11:30: Gist of the last meeting ---
 
 near TODO:
- ☑ switch to bitmask from primes
- ☑ reuse the local copy instead of using two copies
- ☑ switch to MDP and introduce non-determinism in while statements where appropriate
+ ✓ switch to bitmask from primes
+ ✓ reuse the local copy instead of using two copies
+ ✓ switch to MDP and introduce non-determinism in while statements where appropriate
 
 not as near TODO:
- ☐ (copied to above) switch to ctmc
-   ☐ (copied to above) script model generation, and perhaps property generation
+ □ (copied to above) switch to ctmc
+   □ (copied to above) script model generation, and perhaps property generation
 
 far TODO:
  ❏ model timing differences, work periods and cache latency/behaviour, too
@@ -35,14 +35,14 @@ possibly/unimportant TODO:
 
 dont forget TODO:
  ❏ optimization: processes memorize who they already saw and add them (besides themselves) to the barrier
- ☑ (copied to above) think of and test properties/queries and test them
-   ☑ (copied to above) show the absence of other deadlocks than the "constantly resetting race"
- ☑ (copied to above) measure cache impact (need a proper >4 multi core (without HT) machine for this)
+ ✓ (copied to above) think of and test properties/queries and test them
+   ✓ (copied to above) show the absence of other deadlocks than the "constantly resetting race"
+ ✓ (copied to above) measure cache impact (need a proper >4 multi core (without HT) machine for this)
    * (fyi) inside one HT-able core there occur simply no cache misses, since both
      threads use the same execution units/cache and everything
 
 misc:
- ☑ assume core count >= thread count
+ ✓ assume core count >= thread count
    This simplifies the real implementation of the algorithm. If core count < threads
    the scheduler would dissrupt the efficiency/workings of the algorithm very very much
  ❏
