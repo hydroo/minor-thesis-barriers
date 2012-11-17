@@ -26,8 +26,8 @@ label "invalid_barrier" =
 
 module scheduler
 	l : [0..1] init 0;
-	[] l=0 -> (l'=0) & (sched'=me_1);
-	[] l=0 -> (l'=0) & (sched'=me_2);
+	[] l=0 -> (sched'=me_1);
+	[] l=0 -> (sched'=me_2);
 endmodule
 
 
