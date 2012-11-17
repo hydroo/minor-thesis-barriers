@@ -2,6 +2,37 @@
 
  * fixed huge bug in the model (initialized the entry/exit barrier wrongly)
 
+ * Probing for undersired behaviour
+
+   non-det scheduling
+   fairness enabled (strong fairness)
+   // correctness of the locations (no racing through it is possible)
+   ✓ Pmax=? [F "invalid_locations"] = 0.0
+
+   // the barrier bitmask will never be invalid
+   ✓ Pmax=?[F "invalid_barrier"] = 0.0
+
+   // if one of the processes got out of the entry/exit barrier, all of them will
+   ✓ Pmax=? [F ((p1_between|p1_exit_barrier)&((p2_entry_barrier&(G p2_entry_barrier))|(p3_entry_barrier&(G p3_entry_barrier))))] = 0.0
+   ✓ Pmax=? [F ((p1_before|p1_entry_barrier)&((p2_exit_barrier&(G p2_exit_barrier))|(p3_exit_barrier&(G p3_exit_barrier))))] = 0.0
+   ✓ Pmax=? [F ((p2_between|p2_exit_barrier)&((p1_entry_barrier&(G p1_entry_barrier))|(p3_entry_barrier&(G p3_entry_barrier))))] = 0.0
+   ✓ Pmax=? [F ((p2_before|p2_entry_barrier)&((p1_exit_barrier&(G p1_exit_barrier))|(p3_exit_barrier&(G p3_exit_barrier))))] = 0.0
+   ✓ Pmax=? [F ((p3_between|p3_exit_barrier)&((p1_entry_barrier&(G p1_entry_barrier))|(p2_entry_barrier&(G p2_entry_barrier))))] = 0.0
+   ✓ Pmax=? [F ((p3_before|p3_entry_barrier)&((p1_exit_barrier&(G p1_exit_barrier))|(p2_exit_barrier&(G p2_exit_barrier))))] = 0.0
+
+
+  * Characterization of the Constantly Resetting Race
+
+    I attempt to characterize it to be able to check wether there are other unexpected races,
+    besides this "constantly resetting race"
+
+    At the moment I cannot find it.
+    And prism says Pmax=? [F G p1_entry_barrier] = Pmax=? [F G p1_exit_barrier]= 0.0
+
+    So it might not even exist.
+    □ (make sure)
+
+
 --- 12-11-03 16:40 ---
 
  ✓ get to know ctmc s
