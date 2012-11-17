@@ -77,16 +77,14 @@ module process_2 = process_1 [
 	me_1     =me_2,
 	me_bit_1 =me_bit_2,
 	l_1      =l_2,
-	cp_1     =cp_2,
-	tick_1   =tick_2
+	cp_1     =cp_2
 ] endmodule
 
 module process_3 = process_1 [
 	me_1     =me_3,
 	me_bit_1 =me_bit_3,
 	l_1      =l_3,
-	cp_1     =cp_3,
-	tick_1   =tick_3
+	cp_1     =cp_3
 ] endmodule
 
 
