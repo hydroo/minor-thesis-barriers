@@ -18,12 +18,6 @@ global entry : [min_invalid..max_invalid] init 0;
 global exit : [min_invalid..max_invalid] init 0;
 global left : bool;
 
-label "invalid_barrier" =
-	entry=min_invalid | entry=max_invalid |
-	cp_1=min_invalid  | cp_1=max_invalid |
-	cp_2=min_invalid  | cp_2=max_invalid |
-	exit=min_invalid  | exit=max_invalid;
-
 
 module scheduler
 	l : [0..1] init 0;
@@ -92,3 +86,23 @@ module process_2 = process_1 [
 	cp_1     =cp_2,
 	tick_1   =tick_2
 ] endmodule
+
+
+label "invalid_barrier" =
+	entry=min_invalid | entry=max_invalid |
+	cp_1=min_invalid  | cp_1=max_invalid |
+	cp_2=min_invalid  | cp_2=max_invalid |
+	exit=min_invalid  | exit=max_invalid;
+
+
+formula p1_before        = l_1 = 0 | l_1 = 17;
+formula p1_entry_barrier = l_1 >= 1 & l_1 <= 7;
+formula p1_between       = l_1 = 8 | l_1 = 9;
+formula p1_exit_barrier  = l_1 >= 10 & l_1 <= 16;
+
+formula p2_before        = l_2 = 0 | l_2 = 17;
+formula p2_entry_barrier = l_2 >= 1 & l_2 <= 7;
+formula p2_between       = l_2 = 8 | l_2 = 9;
+formula p2_exit_barrier  = l_2 >= 10 & l_2 <= 16;
+
+label "invalid_locations" = (p1_before & p2_between) | (p2_before & p1_between);
