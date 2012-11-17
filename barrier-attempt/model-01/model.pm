@@ -3,8 +3,8 @@ mdp
 const me_1 = 1; //index
 const me_2 = 2;
 
-const me_bit_1 = 1;
-const me_bit_2 = 2;
+const me_bit_1 = 1; //2^0
+const me_bit_2 = 2; //2^1
 
 const full = me_bit_1 + me_bit_2;
 
