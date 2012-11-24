@@ -1,11 +1,53 @@
+--- 12-11-24: notes from the last meeting ---
+
+ □ show the model's non-blocking (with fairness for the parallel composition) with an LTL supporting modelchecker
+   (prism can only handle probabilistic queries)
+   * ronny doesnt understand spin -> this needs some more work
+   * also try 4 or 5 processes just to be sure
+   □ and/or prove it by hand
+
+ * tighten/reduce the model if you are sure no properties are lost
+   * remove non-det while/if
+   * unify previously split commands, perhaps
+
+ □ get the required numbers for the ctmc model
+   * approx:
+     * work period 1000-10000 cycles
+     * shared memory read w/ invalid cache 20-50 cycles
+     * shared memory read w/ valid cache ?? cycles
+     * shared memory write w/ copied cache lines 100 cycles
+     * shared memory write w/o copied cache lines ?? cycles
+     * maybe differ between the numbers of cores that have to invalidate their cache lines
+       * if the differences are large enough and
+       * if the model does not grow a too much
+
+   * mind:
+     * switch off powersaving / turboboost / hyperthreading
+     * check the assembly/objdump of your benchmark binaries
+     * measure rdtsc alone
+     * rdtsc's measuring point is in the middle of the command
+     * rdtsc might be reordered in the cpu
+     * rdtsc commands without using the returned values might make the compiler remove the rdtsc command
+     * rdtsc code:
+       asm volatile("rdtsc" : "=a" (lower), "=d" (upper));
+       uint64_t cycles = (((uint64_t)lower) | (((uint64_t)upper) << 32));
+     * make sure no unnessecary stuff happens during the measurement (read the asm)
+       watch out for sp/esp/rsp (stackpointer) usage (shouldn't do that)
+
+ □ try variations of the implementation (don't model it, though)
+   * using mwait or usleep after a write of the shared variable
+
+ * future: create a distributed memory push only version of this (promissing!)
+
 --- 12-11-17 ---
 
  * fixed huge bug in the model (initialized the entry/exit barrier wrongly)
 
- * Probing for undersired behaviour
+ * Probing for undesired behaviour
 
    non-det scheduling
    fairness enabled (strong fairness)
+   
    // correctness of the locations (no racing through it is possible)
    ✓ Pmax=? [F "invalid_locations"] = 0.0
 
@@ -29,8 +71,10 @@
     At the moment I cannot find it.
     And prism says Pmax=? [F G p1_entry_barrier] = Pmax=? [F G p1_exit_barrier]= 0.0
 
+    Pmin=? [G F p1_between] = 1.0
+
     So it might not even exist.
-    □ (make sure)
+    * (make sure)
 
 
 --- 12-11-03 16:40 ---
@@ -40,7 +84,7 @@
      □ script model generation, and perhaps property generation
  □ think of / make up useful properties and test them
    □ show the absence of other deadlocks than the "constantly resetting race"
- □ find a quad or more core (w/o HT) machine and check the cache impact there
+ ✓ find a quad or more core (w/o HT) machine and check the cache impact there
    * (fyi) dual core HT notebook CPU uses about 1% of its cache bandwidth per core.
      so it is probably 2% used cache bandwidth in total for my 2core+HT notebook.
 
@@ -61,7 +105,7 @@ far TODO:
 
 general possible directions (markus/sascha):
  ❏ timing analysis
- ❏ "constantly resetting race" -> prove/account for the assumption behind pW/CS
+ ✗ "constantly resetting race" -> prove/account for the assumption behind pW/CS (there is no constantly resetting race)
  ❏ methodolgy/tools support -> generalize modelling to also be able to check other similar algorithms
  ❏ 512 processes
 
@@ -80,7 +124,7 @@ misc:
  ✓ assume core count >= thread count
    This simplifies the real implementation of the algorithm. If core count < threads
    the scheduler would dissrupt the efficiency/workings of the algorithm very very much
- ❏
+ *
    cp := orig              <
    if i am not in cp {     < model timing differences here, too
      add me to cp          <
