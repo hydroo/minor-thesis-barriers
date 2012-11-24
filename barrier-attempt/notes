@@ -2,8 +2,8 @@
 
  □ show the model's non-blocking (with fairness for the parallel composition) with an LTL supporting modelchecker
    (prism can only handle probabilistic queries)
-   * ronny doesnt understand spin -> this needs some more work
-   * also try 4 or 5 processes just to be sure
+   □ ronny doesnt understand spin -> this needs some more work
+   □ also try 4 or 5 processes just to be sure
    □ and/or prove it by hand
 
  * tighten/reduce the model if you are sure no properties are lost
