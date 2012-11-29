@@ -112,7 +112,7 @@ possibly/unimportant TODO:
  ❏ properly implement the barrier with a switch where it decides itself which of the two phases/while loops to enter
 
 dont forget TODO:
- ❏ optimization: processes memorize who they already saw and add them (besides themselves) to the barrier
+ ❏ optimization: processes memorize who they already saw and add them (besides themselves) to the barrier (don't model it, though)
  ✓ (copied to above) think of and test properties/queries and test them
    ✓ (copied to above) show the absence of other deadlocks than the "constantly resetting race"
  ✓ (copied to above) measure cache impact (need a proper >4 multi core (without HT) machine for this)
@@ -120,7 +120,7 @@ dont forget TODO:
      threads use the same execution units/cache and everything
 
 misc:
- ✓ assume core count >= thread count
+ ✓ assume core count >= thread count for modelling
    This simplifies the real implementation of the algorithm. If core count < threads
    the scheduler would dissrupt the efficiency/workings of the algorithm very very much
  *
