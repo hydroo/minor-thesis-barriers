@@ -1,10 +1,9 @@
 --- 12-11-24: notes from the last meeting ---
 
- □ show the model's non-blocking (with fairness for the parallel composition) with an LTL supporting modelchecker
+ ✓ show the model's non-blocking (with fairness for the parallel composition) with an LTL supporting modelchecker
    (prism can only handle probabilistic queries)
-   □ ronny doesnt understand spin -> this needs some more work
-   □ also try 4 or 5 processes just to be sure
-   □ and/or prove it by hand
+   ✓ also try 4 or 5 processes just to be sure - used "□◇(left==true) ∧ □◇(left==false)"
+   ✗ and/or prove it by hand (maybe later, for the report)
 
  * tighten/reduce the model if you are sure no properties are lost
    * remove non-det while/if
@@ -82,8 +81,8 @@
  ✓ get to know ctmc s
    □ create a ctmc model for timing and probabilistic analysis
      □ script model generation, and perhaps property generation
- □ think of / make up useful properties and test them
-   □ show the absence of other deadlocks than the "constantly resetting race"
+ ✓ think of / make up useful properties and test them
+   ✓ show the absence of other deadlocks than the "constantly resetting race"
  ✓ find a quad or more core (w/o HT) machine and check the cache impact there
    * (fyi) dual core HT notebook CPU uses about 1% of its cache bandwidth per core.
      so it is probably 2% used cache bandwidth in total for my 2core+HT notebook.
