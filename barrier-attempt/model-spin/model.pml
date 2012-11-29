@@ -120,7 +120,7 @@ active proctype p3() {
 }
 
 
-//ltl never_0 {!([]<> ((left==true) && X (left==false)))}
-//ltl never_1 {(<>[](left==true)) || (<>[](left==false))}
-//ltl never_wrong {<>(left==true)}
+//ltl prop0 {[]<>((left==true) && X (left==false))}
+//ltl prop1 {[]<>(left==true) && []<>(left==false)}
+//ltl prop_wrong {<>(left==true)}
 
