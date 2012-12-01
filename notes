@@ -1,3 +1,13 @@
+--- 12-12-01 ---
+
+ * fixed two huge mistakes in the old prism mdp model.
+   luckily, this does not effect the correctness of the old modelchecking results,
+   since the main results come from the spin model.
+   i also rechecked that everything is alright with the corrected model.
+ * shortened mdp (omitted unnecessary transitions now that we proved its correctness through a fine grained mdp model) -> dtmc
+ * created ctmc stub with dummies for missing measured rates
+ * open questions regarding the current ctmc in mail pending
+
 --- 12-11-24: notes from the last meeting ---
 
  ✓ show the model's non-blocking (with fairness for the parallel composition) with an LTL supporting modelchecker
@@ -5,9 +15,9 @@
    ✓ also try 4 or 5 processes just to be sure - used "□◇(left==true) ∧ □◇(left==false)"
    ✗ and/or prove it by hand (maybe later, for the report)
 
- * tighten/reduce the model if you are sure no properties are lost
-   * remove non-det while/if
-   * unify previously split commands, perhaps
+ ✓ tighten/reduce the model if you are sure no properties are lost
+   ✓ remove non-det while/if
+   ✓ unify previously split commands, perhaps
 
  □ get the required numbers for the ctmc model
    * approx:
