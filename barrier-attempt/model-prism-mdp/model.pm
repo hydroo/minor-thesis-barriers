@@ -29,7 +29,7 @@ module process_1
 	[] l_1=1 -> (l_1'=2) & (cp_1'=entry);
 
 	// emulate bit manipulation: (cp_1&me) != 0
-	[] l_1=2 & mod(floor(cp_1/me_bit_1),2)=1 -> (l_1'=4);
+	[] l_1=2 & mod(floor(cp_1/me_bit_1),2)=1 -> (l_1'=5);
 	// emulate bit manipulation: (cp_1&me) == 0
 	[] l_1=2 & mod(floor(cp_1/me_bit_1),2)=0 -> (l_1'=3);
 	// prism wouldn't accept + because it might exceed the bounds ... therefore use min, max
