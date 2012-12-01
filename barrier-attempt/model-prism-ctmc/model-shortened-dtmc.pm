@@ -24,7 +24,7 @@ module process_1
 	l_1 : [0..17] init 0;
 	cp_1 : [min_invalid..max_invalid] init empty;
 
-	[] l_1=0 -> (l_1'=1) & (entry'=empty);
+	[] l_1=0 -> (l_1'=1) & (entry'=empty) & (left'=false);
 
 	[] l_1=1 -> (l_1'=2) & (cp_1'=entry);
 
@@ -37,9 +37,7 @@ module process_1
 	[] l_1=5 & (  cp_1 != full & left = false ) -> (l_1'=1);
 	[] l_1=5 & (!(cp_1 != full & left = false)) -> (l_1'=8);
 
-	[] l_1=8 -> (l_1'=9) & (left'=true);
-
-	[] l_1=9 -> (l_1'=10) & (exit'=empty);
+	[] l_1=8 -> (l_1'=10) & (exit'=empty) & (left'=true);
 
 	[] l_1=10 -> (l_1'=11) & (cp_1'=exit);
 
@@ -48,9 +46,7 @@ module process_1
 
 	// diamond/nondeterminism for cp_1 != full & left = true
 	[] l_1=14 & (  cp_1 != full & left = true ) -> (l_1'=10);
-	[] l_1=14 & (!(cp_1 != full & left = true)) -> (l_1'=17);
-
-	[] l_1=17 -> (l_1'=0) & (left'=false);
+	[] l_1=14 & (!(cp_1 != full & left = true)) -> (l_1'=0);
 
 endmodule
 
