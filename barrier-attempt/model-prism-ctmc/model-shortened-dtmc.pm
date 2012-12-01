@@ -1,4 +1,4 @@
-mdp
+dtmc
 
 const me_1 = 1; //index
 const me_2 = 2;
@@ -31,12 +31,7 @@ module process_1
 	// emulate bit manipulation: (cp_1&me) != 0
 	[] l_1=2 & mod(floor(cp_1/me_bit_1),2)=1 -> (l_1'=5);
 	// emulate bit manipulation: (cp_1&me) == 0
-	[] l_1=2 & mod(floor(cp_1/me_bit_1),2)=0 -> (l_1'=3);
-	// prism wouldn't accept + because it might exceed the bounds ... therefore use min, max
-	// emulate bit manipulation: cp_1 |= me_bit_1
-	[] l_1=3 -> (l_1'=4) & (cp_1'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
-
-	[] l_1=4 -> (l_1'=5) & (entry'=cp_1);
+	[] l_1=2 & mod(floor(cp_1/me_bit_1),2)=0 ->  (l_1'=5) & (entry'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
 	// diamond/nondeterminism for cp_1 != full & left = false
 	[] l_1=5 & (  cp_1 != full                ) -> (l_1'=6);
@@ -54,10 +49,7 @@ module process_1
 	[] l_1=10 -> (l_1'=11) & (cp_1'=exit);
 
 	[] l_1=11 & mod(floor(cp_1/me_bit_1),2)=1 -> (l_1'=14);
-	[] l_1=11 & mod(floor(cp_1/me_bit_1),2)=0 -> (l_1'=12);
-	[] l_1=12 -> (l_1'=13) & (cp_1'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
-
-	[] l_1=13 -> (l_1'=14) & (exit'=cp_1);
+	[] l_1=11 & mod(floor(cp_1/me_bit_1),2)=0 -> (l_1'=14) & (exit'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
 	// diamond/nondeterminism for cp_1 != full & left = true
 	[] l_1=14 & (  cp_1 != full               ) -> (l_1'=15);
