@@ -17,7 +17,7 @@ const max_invalid = full + 1;
 
 global entry : [min_invalid..max_invalid] init empty;
 global exit : [min_invalid..max_invalid] init empty;
-global left : bool;
+global left : bool init false;
 
 
 module process_1
