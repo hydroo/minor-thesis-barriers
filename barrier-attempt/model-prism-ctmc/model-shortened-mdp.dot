@@ -1,0 +1,22 @@
+digraph {
+
+	"shortened mdp\nlocal variables: copy := 0, me\nshared variables: entry := 0, exit := 0, left := false" [nojustify=true, shape=box]
+	
+	initial_state_source [style=invis]
+	initial_state_source -> "0"
+
+	"0" -> "1"  [weight=10, label="copy := entry"]
+	"1" -> "2"  [label="else"]
+	"1" -> "2"  [weight=10, label="copy&me == 0 : entry := copy|me"]
+
+	"2" -> "0"  [label="copy != full & left = false"]
+	"2" -> "3"  [weight=10, label="else : exit := 0; left := true"]
+
+	"3" -> "4" [weight=10, label="copy := exit"]
+	"4" -> "5" [label="else"]
+	"4" -> "5" [weight=10, label="copy&me == 0 : exit := copy|me"]
+
+	"5" -> "3" [label="copy != full & left = true"]
+	"5" -> "0" [label="else : entry := 0; left := false"]
+}
+

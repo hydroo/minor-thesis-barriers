@@ -1,4 +1,4 @@
-dtmc
+mdp
 
 const me_1 = 1; //index
 const me_2 = 2;
@@ -26,21 +26,18 @@ module process_1
 
 	[] l_1=0 -> (l_1'=1) & (cp_1'=entry);
 
-	// emulate bit manipulation: (cp_1&me) != 0
 	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=1 -> (l_1'=2);
-	// emulate bit manipulation: (cp_1&me) == 0
 	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=0 ->  (l_1'=2) & (entry'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
-	// diamond/nondeterminism for cp_1 != full & left = false
 	[] l_1=2 & (  cp_1 != full & left = false ) -> (l_1'=0);
 	[] l_1=2 & (!(cp_1 != full & left = false)) -> (l_1'=3) & (exit'=empty) & (left'=true);
+
 
 	[] l_1=3 -> (l_1'=4) & (cp_1'=exit);
 
 	[] l_1=4 & mod(floor(cp_1/me_bit_1),2)=1 -> (l_1'=5);
 	[] l_1=4 & mod(floor(cp_1/me_bit_1),2)=0 -> (l_1'=5) & (exit'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
-	// diamond/nondeterminism for cp_1 != full & left = true
 	[] l_1=5 & (  cp_1 != full & left = true ) -> (l_1'=3);
 	[] l_1=5 & (!(cp_1 != full & left = true)) -> (l_1'=0) & (entry'=empty) & (left'=false);
 
