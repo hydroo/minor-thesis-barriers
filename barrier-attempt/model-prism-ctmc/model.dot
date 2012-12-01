@@ -1,0 +1,26 @@
+digraph {
+
+	"CTMC\nlocal variables: copy := 0, me\nshared variables: entry := 0, exit := 0, left := false\n\nbase_rate = 2500\ntick=base_rate / 1\nwork=base_rate / 1000\nread=base_rate / 50\nwrite=base_rate / 100" [nojustify=true, shape=box]
+
+	initial_state_source [style=invis]
+	initial_state_source -> "0"
+
+	"0" -> "1" [weight=10, label="copy := entry (read)"]
+	"1" -> "2" [label="else (tick)"]
+	"1" -> "2" [weight=10, label="copy&me == 0 : entry := copy|me (write)"]
+
+	"2" -> "0" [label="copy != full & left = false (tick/read)"]
+	"2" -> "3" [weight=10, label="else : exit := 0; left := true (write)"]
+
+	"3" -> "4" [weight=10, label="(work)"]
+
+	"4" -> "5" [weight=10, label="copy := exit (read)"]
+	"5" -> "6" [label="else (tick)"]
+	"5" -> "6" [weight=10, label="copy&me == 0 : exit := copy|me (write)"]
+
+	"6" -> "4" [label="copy != full & left = true (tick/read)"]
+	"6" -> "7" [weight=10, label="else : entry := 0; left := false (write)"]
+
+	"7" -> "0" [label="(work)"]
+}
+
