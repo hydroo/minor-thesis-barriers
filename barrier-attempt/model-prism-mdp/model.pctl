@@ -1,7 +1,0 @@
-Pmin=? [ F l_1=17 ] = 0
-Pmax=? [ F<22 l_1=17 ] = 0
-Pmax=? [ F l_1=17 ] = 1
-
-P<=0 [ F "invalid_barrier" ]
-
-
