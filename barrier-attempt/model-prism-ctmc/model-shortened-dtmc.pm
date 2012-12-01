@@ -34,13 +34,8 @@ module process_1
 	[] l_1=2 & mod(floor(cp_1/me_bit_1),2)=0 ->  (l_1'=5) & (entry'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
 	// diamond/nondeterminism for cp_1 != full & left = false
-	[] l_1=5 & (  cp_1 != full                ) -> (l_1'=6);
-	[] l_1=5 & (                 left = false ) -> (l_1'=7);
+	[] l_1=5 & (  cp_1 != full & left = false ) -> (l_1'=1);
 	[] l_1=5 & (!(cp_1 != full & left = false)) -> (l_1'=8);
-	[] l_1=6 &   left = false  -> (l_1'=1);
-	[] l_1=6 & !(left = false) -> (l_1'=8);
-	[] l_1=7 &   cp_1 != full  -> (l_1'=1);
-	[] l_1=7 & !(cp_1 != full) -> (l_1'=8);
 
 	[] l_1=8 -> (l_1'=9) & (left'=true);
 
@@ -52,13 +47,8 @@ module process_1
 	[] l_1=11 & mod(floor(cp_1/me_bit_1),2)=0 -> (l_1'=14) & (exit'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
 	// diamond/nondeterminism for cp_1 != full & left = true
-	[] l_1=14 & (  cp_1 != full               ) -> (l_1'=15);
-	[] l_1=14 & (                 left = true ) -> (l_1'=16);
+	[] l_1=14 & (  cp_1 != full & left = true ) -> (l_1'=10);
 	[] l_1=14 & (!(cp_1 != full & left = true)) -> (l_1'=17);
-	[] l_1=15 &   left = true  -> (l_1'=10);
-	[] l_1=15 & !(left = true) -> (l_1'=17);
-	[] l_1=16 &   cp_1 != full  -> (l_1'=10);
-	[] l_1=16 & !(cp_1 != full) -> (l_1'=17);
 
 	[] l_1=17 -> (l_1'=0) & (left'=false);
 
