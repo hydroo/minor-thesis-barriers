@@ -42,7 +42,7 @@ module process_1
 	[] l_1=2 & (!(cp_1 != full & left = false)) -> write : (l_1'=3) & (exit'=empty) & (left'=true);
 
 
-    [] l_1=3 -> work : (l_1=4)
+	[] l_1=3 -> work : (l_1'=4);
 
 
 	[] l_1=4 -> read : (l_1'=5) & (cp_1'=exit);
@@ -54,7 +54,7 @@ module process_1
 	[] l_1=6 & (!(cp_1 != full & left = true)) -> write : (l_1'=7) & (entry'=empty) & (left'=false);
 
 
-    [] l_1=7 -> work : (l_1=0)
+	[] l_1=7 -> work : (l_1'=0);
 
 endmodule
 
