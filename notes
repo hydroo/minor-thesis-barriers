@@ -8,6 +8,56 @@
  * created ctmc stub with dummies for missing measured rates
  * open questions regarding the current ctmc in mail pending
 
+   """
+   1)
+   Kann ich 2 -> 3 -> 4 eigentlich zu einer Transition zusammenfassen?
+   In meinem Kopf wuerde das bedeuten, dass wenn die guard erfuellt ist er mit der work_rate
+   aus der Schleife herausgeht.
+   Was nicht ist was ich modellieren will. Sondern er soll "schnell" herausgehen und danach
+   die Transition mit der niedrigen work_rate machen.
+   Aber eventuell verstehe ich hier noch die CTMC-Semantik falsch.
+
+   2)
+   So 100%ig genau ist das nicht was da steht. Es werden noch mehr Takte benoetig um bei
+   einigen Operationen, aber ist das grob ok so?
+   Ich kann die Messungen so machen dass alles was am Kanten-Label steht gemessen wird. Das
+   sollte ja reichen, oder?
+
+   3)
+   Fast immer ist die tatsaechliche Rate an einem Punkt abhaengig vom Cacheline-Zustand!
+   Sollte ich den Cache modellieren (und wenn ja, wie detailiert? Und hat jemand so etwas
+   schonmal gemacht wo ich mir inspiration holen kann?), oder Messe ich den Algorithmus als
+   solches und bestimme eine einzelne Rate die der durchschnittlichen Takt-Anzahl (bzw
+   takt_periode / takt_anzahl) der jeweiligen Operation entspricht?
+
+   4)
+   Wenn ich den Cache nicht direkt modelliere brauche ich streng genommen auch nicht die
+   genauen Zahlen fuer reads/writes in Abhaengigkeit vom Cacheline-Zustand, richtig?
+
+   5)
+   "exit:=0; left:=false" (2->3 transition) braucht 1 oder 2 writes je nachdem ob sie auf
+   der selben Cacheline liegen, richtig? Also ist das hier vmtl. 1*write_rate, oder?
+
+   6)
+   Sollte ich bei den Raten auch Verteilungen verwenden? Wir hatten ja sowas gesagt wie
+   20-50 Takte fuer ein cache_read_miss und die Arbeitsperiode soll 1000-10000 takte lang
+   sein.
+
+   7)
+   In der Doku von prism steht dass der Scheduler (fuer parallele Komposition) anhand der
+   Raten schedulet. Das heisst vermutlich, dass ich auch den Scheduler selbst modellieren
+   muss, oder? Weil sonst waere das doch wie als ob alle auf dem selben core sind? Nee eigtl
+   nicht. Mh. Keine Ahnung, ehrlich gesagt.
+
+   8)
+   Und properties macht man genau wie in DTMCs? Koennt ihr mir ganz kurz schildern, was dann
+   anders aussehen wird als mit DTMCs?
+
+   9)
+   Ansonsten wollte ich generell fragen ob ich auf dem richtigen Weg bin, bzw. Tipps haben.
+   Ich mach das hier ja zum ersten mal.
+   """
+
 --- 12-11-24: notes from the last meeting ---
 
  ✓ show the model's non-blocking (with fairness for the parallel composition) with an LTL supporting modelchecker
