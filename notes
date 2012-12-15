@@ -1,3 +1,33 @@
+--- 12-12-15  ---
+
+ □ print out average cycles, standard deviation, ... to get a better feel what is going on with the code (maybe min and max, too)
+ □ make sure you measure correctly!!!
+
+ □ mail pending
+   """
+   [..]
+   Beobachtungen:
+    * Die Abweichungen sind ziemlich gross ... 50% ... manchmal 100% und noch hoeher
+
+    * Signifikant steigt die Zeit nicht mit hoeherer Anzahl an Cores mit invaliden
+   cachelines. Eher steigt sie gar nicht.
+
+    * Die Anzahl der restlichen unbeteiligten threads (./scaling-scores.sh) ist wie erwartet
+   (scheinbar) egal.
+
+   Fragen:
+    * (Disclamer: Es ist nicht unwahrscheinlich dass da noch Fehler drinnen sind)
+
+    * Ich messe das dann naechste Woche automatisch, und errechne auch die
+   Standardabweichung. Was koennte ich noch sinnvolles machen/ausrechnen?
+
+    * Sollte ich den Test vielleicht mit mehreren Cachelines machen, damit groessere Zeiten
+   herauskommen (die dauer einer messung liegt nur zwischen 50 und 500 Takten)? (Oder ist
+   das wegen prefetching oder w/e) eher nicht sinnvoll?
+
+    * Habt ihr sonst noch Hinweise fuer mich?
+   """
+
 --- 12-12-15 gist of last meeting ---
 
  * don't measure detailed model rates
