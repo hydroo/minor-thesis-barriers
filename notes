@@ -1,3 +1,15 @@
+--- 12-12-15 gist of last meeting ---
+
+ * don't measure detailed model rates
+ □ measure wether the number of to be invalidated cores influences the timing of a write operation
+   (use atomic exchange for measurement, otherwise queueing and intelligence will make cache writes non-blocking ~)
+ □ think of properties
+ □ split the two writes into two locations in the current ctmc
+ □ model cacheline validity to be able to assign rates for reads and writes based on the cacheline state
+
+ Ronny's personal agenda:
+  □ benchmark against gcc and intel openmp barriers (maybe more shared memory barriers? openmpi?)
+
 --- 12-12-01 ---
 
  * fixed two huge mistakes in the old prism mdp model.
@@ -69,7 +81,7 @@
    ✓ remove non-det while/if
    ✓ unify previously split commands, perhaps
 
- □ get the required numbers for the ctmc model
+ ✗ get the required numbers for the ctmc model
    * approx:
      * work period 1000-10000 cycles
      * shared memory read w/ invalid cache 20-50 cycles
@@ -139,7 +151,7 @@
 --- 12-11-03 16:40 ---
 
  ✓ get to know ctmc s
-   □ create a ctmc model for timing and probabilistic analysis
+   ✓ create a ctmc model for timing and probabilistic analysis
      □ script model generation, and perhaps property generation
  ✓ think of / make up useful properties and test them
    ✓ show the absence of other deadlocks than the "constantly resetting race"
@@ -156,11 +168,11 @@ near TODO:
  ✓ switch to MDP and introduce non-determinism in while statements where appropriate
 
 not as near TODO:
- □ (copied to above) switch to ctmc
+ ✓ (copied to above) switch to ctmc
    □ (copied to above) script model generation, and perhaps property generation
 
 far TODO:
- ❏ model timing differences, work periods and cache latency/behaviour, too
+ ✓ model timing differences, work periods and cache latency/behaviour, too
 
 general possible directions (markus/sascha):
  ❏ timing analysis
