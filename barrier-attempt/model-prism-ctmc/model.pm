@@ -2,14 +2,12 @@ ctmc
 
 const me_1 = 1; //index
 const me_2 = 2;
-const me_3 = 3;
 
 const me_bit_1 = 1; //2^0
 const me_bit_2 = 2; //2^1
-const me_bit_3 = 4;
 
 const empty = 0;
-const full = me_bit_1 + me_bit_2 + me_bit_3;
+const full = me_bit_1 + me_bit_2;
 
 const min_invalid = empty - 1;
 const max_invalid = full + 1;
@@ -67,12 +65,5 @@ module process_2 = process_1 [
 	me_bit_1 =me_bit_2,
 	l_1      =l_2,
 	cp_1     =cp_2
-] endmodule
-
-module process_3 = process_1 [
-	me_1     =me_3,
-	me_bit_1 =me_bit_3,
-	l_1      =l_3,
-	cp_1     =cp_3
 ] endmodule
 
