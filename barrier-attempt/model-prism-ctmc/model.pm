@@ -19,11 +19,11 @@ global left : bool init false;
 
 
 
-formula base_rate  = 2500;
-formula tick       = base_rate / 1;
-formula work       = base_rate / 1000;
-formula read       = base_rate / 50;
-formula write      = base_rate / 100;
+formula base_rate  = 2500.0;
+formula tick       = base_rate / 1.0;
+formula work       = base_rate / 1000.0;
+formula read       = base_rate / 50.0;
+formula write      = base_rate / 100.0;
 
 
 
