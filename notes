@@ -4,7 +4,7 @@
  □ measure wether the number of to be invalidated cores influences the timing of a write operation
    (use atomic exchange for measurement, otherwise queueing and intelligence will make cache writes non-blocking ~)
  □ think of properties
- □ split the two writes into two locations in the current ctmc
+ ✓ split the two writes into two locations in the current ctmc
  □ model cacheline validity to be able to assign rates for reads and writes based on the cacheline state
 
  Ronny's personal agenda:
