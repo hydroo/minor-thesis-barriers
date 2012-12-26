@@ -1,4 +1,0 @@
-threads: 2 ,invalid: 1 ,repetitions: 1000000, minCycles: 47, avgCycles: 55, maxCycles: 235, shortRunaways: 0, longRunaways: 10
-threads: 3 ,invalid: 2 ,repetitions: 1000000, minCycles: 56, avgCycles: 102, maxCycles: 756, shortRunaways: 0, longRunaways: 11
-threads: 4 ,invalid: 3 ,repetitions: 1000000, minCycles: 50, avgCycles: 100, maxCycles: 208, shortRunaways: 0, longRunaways: 18
-

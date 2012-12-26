@@ -1,8 +1,0 @@
-threads: 2 ,invalid: 1 ,repetitions: 1000000, minCycles: 150, avgCycles: 169, maxCycles: 777, shortRunaways: 0, longRunaways: 6
-threads: 3 ,invalid: 2 ,repetitions: 1000000, minCycles: 174, avgCycles: 185, maxCycles: 402, shortRunaways: 0, longRunaways: 4
-threads: 4 ,invalid: 3 ,repetitions: 1000000, minCycles: 171, avgCycles: 187, maxCycles: 370, shortRunaways: 0, longRunaways: 0
-threads: 5 ,invalid: 4 ,repetitions: 1000000, minCycles: 171, avgCycles: 185, maxCycles: 372, shortRunaways: 0, longRunaways: 1
-threads: 6 ,invalid: 5 ,repetitions: 1000000, minCycles: 174, avgCycles: 188, maxCycles: 381, shortRunaways: 0, longRunaways: 3
-threads: 7 ,invalid: 6 ,repetitions: 1000000, minCycles: 177, avgCycles: 188, maxCycles: 429, shortRunaways: 0, longRunaways: 0
-threads: 8 ,invalid: 7 ,repetitions: 1000000, minCycles: 177, avgCycles: 188, maxCycles: 561, shortRunaways: 0, longRunaways: 2
-
