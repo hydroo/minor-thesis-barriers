@@ -1,0 +1,54 @@
+news)
+It's this line's fault.
+
+  dummy0 = __sync_fetch_and_add(g_date0, 1);
+
+If I exchange this for a normal write with a memory barrier. It behaves as expected.
+(That is the number of threads does not matter, only the number of invalidatees does matter.)
+
+
+1a)
+"$ ./scale-cores.sh" shows that with more threads that are NOT taking part the invalidation rounds invalidation time gets longer.
+This should not be the case, since those idling threads do not receive invalidate messages, nor should they influence
+a cache write on thread 0 in any way. (But they might infuence the length of atomic operations?!)
+
+1b)
+It makes a difference how many idling threads take part in an invalidation round.
+"$./cache-test 10 4" yields higher times than "$ ./cache-test 5 4"
+
+
+2a)
+"$ ./cache-test i+1 i" shows a slight increase in invalidation time on almost all test platforms.
+
+TODO: TEST AGAIN
+
+
+2b)
+"$ ./cache-test thread-count i" shows homogeneous invalidation times across the board.
+
+TODO: TEST AGAIN
+
+2c)
+On AMD Opterion 6274 the invalidation time is often times zero(+rdtsc time)
+On my two Intel CPUs this is never the case (except when using only 1 core, ofcourse).
+
+TODO: TEST AGAIN ... this is because something happens with atomic once you go over a certain number of threads.
+They get issued instantly it seems.
+
+
+3)
+The 4 socket node on atlas behaves oddly. When going to 12 threads and beyond the invalidation times is zero again.
+Until 12 it increases. This is independent of the number of to-be-invalidated cores.
+The 2 socket headnode (same CPUs) does not show this behaviour.
+
+TODO: same as with 2c
+
+
+
+conclusion)
+ * I cannot give a definite answer to whether more invalidation messages cause more delay for a cache-write
+ * more work is needed to find out why 1a/1b/2c/3 do not show the expected results
+ * a multi socket intel or at least 8-core intel system would be nice to test on
+
+ * why do atomic operations get issued instantly on opterons above a certain thread number?
+
