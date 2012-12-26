@@ -1,0 +1,51 @@
+threads: 2 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 38, maxCycles: 138, shortRunaways: 0, longRunaways: 0
+threads: 3 ,invalid: 2 ,repetitions: 10000, minCycles: 35, avgCycles: 48, maxCycles: 866, shortRunaways: 0, longRunaways: 2
+threads: 4 ,invalid: 3 ,repetitions: 10000, minCycles: 34, avgCycles: 47, maxCycles: 776, shortRunaways: 0, longRunaways: 0
+threads: 5 ,invalid: 4 ,repetitions: 10000, minCycles: 35, avgCycles: 299, maxCycles: 869, shortRunaways: 0, longRunaways: 2
+threads: 6 ,invalid: 5 ,repetitions: 10000, minCycles: 35, avgCycles: 207, maxCycles: 952, shortRunaways: 0, longRunaways: 3
+threads: 7 ,invalid: 6 ,repetitions: 10000, minCycles: 35, avgCycles: 277, maxCycles: 787, shortRunaways: 0, longRunaways: 2
+threads: 8 ,invalid: 7 ,repetitions: 10000, minCycles: 35, avgCycles: 397, maxCycles: 760, shortRunaways: 0, longRunaways: 11
+threads: 9 ,invalid: 8 ,repetitions: 10000, minCycles: 35, avgCycles: 379, maxCycles: 905, shortRunaways: 0, longRunaways: 12
+threads: 10 ,invalid: 9 ,repetitions: 10000, minCycles: 35, avgCycles: 325, maxCycles: 811, shortRunaways: 0, longRunaways: 9
+threads: 11 ,invalid: 10 ,repetitions: 10000, minCycles: 35, avgCycles: 391, maxCycles: 760, shortRunaways: 0, longRunaways: 5
+threads: 12 ,invalid: 11 ,repetitions: 10000, minCycles: 35, avgCycles: 417, maxCycles: 741, shortRunaways: 0, longRunaways: 10
+threads: 13 ,invalid: 12 ,repetitions: 10000, minCycles: 35, avgCycles: 41, maxCycles: 558, shortRunaways: 0, longRunaways: 2
+threads: 14 ,invalid: 13 ,repetitions: 10000, minCycles: 35, avgCycles: 48, maxCycles: 962, shortRunaways: 0, longRunaways: 2
+threads: 15 ,invalid: 14 ,repetitions: 10000, minCycles: 35, avgCycles: 55, maxCycles: 781, shortRunaways: 0, longRunaways: 5
+threads: 16 ,invalid: 15 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 783, shortRunaways: 0, longRunaways: 3
+threads: 17 ,invalid: 16 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 757, shortRunaways: 0, longRunaways: 6
+threads: 18 ,invalid: 17 ,repetitions: 10000, minCycles: 35, avgCycles: 48, maxCycles: 772, shortRunaways: 0, longRunaways: 6
+threads: 19 ,invalid: 18 ,repetitions: 10000, minCycles: 35, avgCycles: 44, maxCycles: 755, shortRunaways: 0, longRunaways: 9
+threads: 20 ,invalid: 19 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 762, shortRunaways: 0, longRunaways: 9
+threads: 21 ,invalid: 20 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 769, shortRunaways: 0, longRunaways: 7
+threads: 22 ,invalid: 21 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 769, shortRunaways: 0, longRunaways: 3
+threads: 23 ,invalid: 22 ,repetitions: 10000, minCycles: 35, avgCycles: 49, maxCycles: 771, shortRunaways: 0, longRunaways: 3
+threads: 24 ,invalid: 23 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 700, shortRunaways: 0, longRunaways: 10
+threads: 25 ,invalid: 24 ,repetitions: 10000, minCycles: 35, avgCycles: 45, maxCycles: 751, shortRunaways: 0, longRunaways: 2
+threads: 26 ,invalid: 25 ,repetitions: 10000, minCycles: 35, avgCycles: 45, maxCycles: 758, shortRunaways: 0, longRunaways: 6
+threads: 27 ,invalid: 26 ,repetitions: 10000, minCycles: 35, avgCycles: 47, maxCycles: 753, shortRunaways: 0, longRunaways: 5
+threads: 28 ,invalid: 27 ,repetitions: 10000, minCycles: 35, avgCycles: 45, maxCycles: 745, shortRunaways: 0, longRunaways: 4
+threads: 29 ,invalid: 28 ,repetitions: 10000, minCycles: 35, avgCycles: 40, maxCycles: 205, shortRunaways: 0, longRunaways: 4
+threads: 30 ,invalid: 29 ,repetitions: 10000, minCycles: 35, avgCycles: 45, maxCycles: 739, shortRunaways: 0, longRunaways: 23
+threads: 31 ,invalid: 30 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 746, shortRunaways: 0, longRunaways: 5
+threads: 32 ,invalid: 31 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 764, shortRunaways: 0, longRunaways: 8
+threads: 33 ,invalid: 32 ,repetitions: 10000, minCycles: 35, avgCycles: 49, maxCycles: 782, shortRunaways: 0, longRunaways: 11
+threads: 34 ,invalid: 33 ,repetitions: 10000, minCycles: 35, avgCycles: 47, maxCycles: 945, shortRunaways: 0, longRunaways: 2
+threads: 35 ,invalid: 34 ,repetitions: 10000, minCycles: 35, avgCycles: 48, maxCycles: 783, shortRunaways: 0, longRunaways: 6
+threads: 36 ,invalid: 35 ,repetitions: 10000, minCycles: 35, avgCycles: 49, maxCycles: 775, shortRunaways: 0, longRunaways: 10
+threads: 37 ,invalid: 36 ,repetitions: 10000, minCycles: 35, avgCycles: 48, maxCycles: 778, shortRunaways: 0, longRunaways: 8
+threads: 38 ,invalid: 37 ,repetitions: 10000, minCycles: 35, avgCycles: 51, maxCycles: 773, shortRunaways: 0, longRunaways: 13
+ threads: 39 ,invalid: 38 ,repetitions: 10000, minCycles: 35, avgCycles: 48, maxCycles: 781, shortRunaways: 0, longRunaways: 7
+ threads: 40 ,invalid: 39 ,repetitions: 10000, minCycles: 34, avgCycles: 46, maxCycles: 779, shortRunaways: 0, longRunaways: 6
+ threads: 41 ,invalid: 40 ,repetitions: 10000, minCycles: 35, avgCycles: 47, maxCycles: 756, shortRunaways: 0, longRunaways: 11
+ threads: 42 ,invalid: 41 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 760, shortRunaways: 0, longRunaways: 5
+ threads: 43 ,invalid: 42 ,repetitions: 10000, minCycles: 35, avgCycles: 45, maxCycles: 744, shortRunaways: 0, longRunaways: 6
+ threads: 44 ,invalid: 43 ,repetitions: 10000, minCycles: 35, avgCycles: 43, maxCycles: 998, shortRunaways: 0, longRunaways: 7
+ threads: 45 ,invalid: 44 ,repetitions: 10000, minCycles: 35, avgCycles: 40, maxCycles: 478, shortRunaways: 0, longRunaways: 6
+ threads: 46 ,invalid: 45 ,repetitions: 10000, minCycles: 35, avgCycles: 45, maxCycles: 974, shortRunaways: 0, longRunaways: 11
+ threads: 47 ,invalid: 46 ,repetitions: 10000, minCycles: 35, avgCycles: 47, maxCycles: 749, shortRunaways: 0, longRunaways: 5
+ threads: 48 ,invalid: 47 ,repetitions: 10000, minCycles: 35, avgCycles: 46, maxCycles: 748, shortRunaways: 0, longRunaways: 6
+ threads: 49 ,invalid: 48 ,repetitions: 10000, minCycles: 35, avgCycles: 49, maxCycles: 775, shortRunaways: 0, longRunaways: 18
+ threads: 50 ,invalid: 49 ,repetitions: 10000, minCycles: 35, avgCycles: 48, maxCycles: 769, shortRunaways: 0, longRunaways: 7
+ threads: 51 ,invalid: 50 ,repetitions: 10000, minCycles: 35, avgCycles: 48, maxCycles: 946, shortRunaways: 0, longRunaways: 8
+ usw.

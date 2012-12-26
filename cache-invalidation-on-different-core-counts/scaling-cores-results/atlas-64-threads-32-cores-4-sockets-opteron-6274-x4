@@ -1,0 +1,20 @@
+threads: 2 ,invalid: 1 ,repetitions: 10000, minCycles: 37, avgCycles: 50, maxCycles: 55, shortRunaways: 0, longRunaways: 1
+threads: 3 ,invalid: 1 ,repetitions: 10000, minCycles: 32, avgCycles: 42, maxCycles: 280, shortRunaways: 0, longRunaways: 0
+threads: 4 ,invalid: 1 ,repetitions: 10000, minCycles: 33, avgCycles: 43, maxCycles: 282, shortRunaways: 0, longRunaways: 0
+threads: 5 ,invalid: 1 ,repetitions: 10000, minCycles: 37, avgCycles: 198, maxCycles: 964, shortRunaways: 0, longRunaways: 0
+threads: 6 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 153, maxCycles: 300, shortRunaways: 0, longRunaways: 0
+threads: 7 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 165, maxCycles: 537, shortRunaways: 0, longRunaways: 0
+threads: 8 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 140, maxCycles: 486, shortRunaways: 0, longRunaways: 0
+threads: 9 ,invalid: 1 ,repetitions: 10000, minCycles: 36, avgCycles: 226, maxCycles: 972, shortRunaways: 0, longRunaways: 1
+threads: 10 ,invalid: 1 ,repetitions: 10000, minCycles: 33, avgCycles: 210, maxCycles: 963, shortRunaways: 0, longRunaways: 2
+threads: 11 ,invalid: 1 ,repetitions: 10000, minCycles: 34, avgCycles: 191, maxCycles: 539, shortRunaways: 0, longRunaways: 0
+threads: 12 ,invalid: 1 ,repetitions: 10000, minCycles: 32, avgCycles: 165, maxCycles: 377, shortRunaways: 0, longRunaways: 1
+threads: 13 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 52, maxCycles: 137, shortRunaways: 0, longRunaways: 0
+threads: 14 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 54, maxCycles: 463, shortRunaways: 0, longRunaways: 0
+threads: 15 ,invalid: 1 ,repetitions: 10000, minCycles: 34, avgCycles: 55, maxCycles: 311, shortRunaways: 0, longRunaways: 1
+threads: 16 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 55, maxCycles: 3306, shortRunaways: 0, longRunaways: 0
+threads: 17 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 55, maxCycles: 1178, shortRunaways: 0, longRunaways: 3
+threads: 18 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 56, maxCycles: 763, shortRunaways: 0, longRunaways: 1
+threads: 19 ,invalid: 1 ,repetitions: 10000, minCycles: 33, avgCycles: 56, maxCycles: 3540, shortRunaways: 0, longRunaways: 4
+threads: 20 ,invalid: 1 ,repetitions: 10000, minCycles: 35, avgCycles: 56, maxCycles: 309, shortRunaways: 0, longRunaways: 2
+

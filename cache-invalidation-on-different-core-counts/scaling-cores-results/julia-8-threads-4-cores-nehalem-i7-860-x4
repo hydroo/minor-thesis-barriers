@@ -1,0 +1,34 @@
+threads: 2 ,invalid: 1 ,repetitions: 1000000, minCycles: 150, avgCycles: 167, maxCycles: 804, shortRunaways: 0, longRunaways: 5
+threads: 3 ,invalid: 1 ,repetitions: 1000000, minCycles: 174, avgCycles: 187, maxCycles: 807, shortRunaways: 0, longRunaways: 6
+threads: 4 ,invalid: 1 ,repetitions: 1000000, minCycles: 171, avgCycles: 187, maxCycles: 798, shortRunaways: 0, longRunaways: 0
+threads: 5 ,invalid: 1 ,repetitions: 1000000, minCycles: 171, avgCycles: 188, maxCycles: 456, shortRunaways: 0, longRunaways: 0
+threads: 6 ,invalid: 1 ,repetitions: 1000000, minCycles: 177, avgCycles: 189, maxCycles: 606, shortRunaways: 0, longRunaways: 1
+threads: 7 ,invalid: 1 ,repetitions: 1000000, minCycles: 177, avgCycles: 188, maxCycles: 609, shortRunaways: 0, longRunaways: 0
+threads: 8 ,invalid: 1 ,repetitions: 1000000, minCycles: 177, avgCycles: 189, maxCycles: 675, shortRunaways: 0, longRunaways: 0
+
+threads: 3 ,invalid: 2 ,repetitions: 1000000, minCycles: 171, avgCycles: 184, maxCycles: 513, shortRunaways: 0, longRunaways: 3
+threads: 4 ,invalid: 2 ,repetitions: 1000000, minCycles: 171, avgCycles: 188, maxCycles: 729, shortRunaways: 0, longRunaways: 0
+threads: 5 ,invalid: 2 ,repetitions: 1000000, minCycles: 171, avgCycles: 188, maxCycles: 492, shortRunaways: 0, longRunaways: 0
+threads: 6 ,invalid: 2 ,repetitions: 1000000, minCycles: 177, avgCycles: 190, maxCycles: 600, shortRunaways: 0, longRunaways: 2
+threads: 7 ,invalid: 2 ,repetitions: 1000000, minCycles: 177, avgCycles: 189, maxCycles: 597, shortRunaways: 0, longRunaways: 0
+threads: 8 ,invalid: 2 ,repetitions: 1000000, minCycles: 177, avgCycles: 189, maxCycles: 612, shortRunaways: 0, longRunaways: 1
+
+threads: 4 ,invalid: 3 ,repetitions: 1000000, minCycles: 171, avgCycles: 187, maxCycles: 399, shortRunaways: 0, longRunaways: 0
+threads: 5 ,invalid: 3 ,repetitions: 1000000, minCycles: 171, avgCycles: 187, maxCycles: 534, shortRunaways: 0, longRunaways: 0
+threads: 6 ,invalid: 3 ,repetitions: 1000000, minCycles: 177, avgCycles: 190, maxCycles: 654, shortRunaways: 0, longRunaways: 0
+threads: 7 ,invalid: 3 ,repetitions: 1000000, minCycles: 177, avgCycles: 189, maxCycles: 570, shortRunaways: 0, longRunaways: 0
+threads: 8 ,invalid: 3 ,repetitions: 1000000, minCycles: 177, avgCycles: 189, maxCycles: 606, shortRunaways: 0, longRunaways: 0
+
+threads: 5 ,invalid: 4 ,repetitions: 1000000, minCycles: 171, avgCycles: 184, maxCycles: 399, shortRunaways: 0, longRunaways: 1
+threads: 6 ,invalid: 4 ,repetitions: 1000000, minCycles: 177, avgCycles: 189, maxCycles: 369, shortRunaways: 0, longRunaways: 3
+threads: 7 ,invalid: 4 ,repetitions: 1000000, minCycles: 177, avgCycles: 188, maxCycles: 426, shortRunaways: 0, longRunaways: 0
+threads: 8 ,invalid: 4 ,repetitions: 1000000, minCycles: 177, avgCycles: 188, maxCycles: 597, shortRunaways: 0, longRunaways: 0
+
+threads: 6 ,invalid: 5 ,repetitions: 1000000, minCycles: 177, avgCycles: 188, maxCycles: 384, shortRunaways: 0, longRunaways: 1
+threads: 7 ,invalid: 5 ,repetitions: 1000000, minCycles: 177, avgCycles: 188, maxCycles: 438, shortRunaways: 0, longRunaways: 0
+threads: 8 ,invalid: 5 ,repetitions: 1000000, minCycles: 177, avgCycles: 187, maxCycles: 525, shortRunaways: 0, longRunaways: 0
+
+threads: 7 ,invalid: 6 ,repetitions: 1000000, minCycles: 177, avgCycles: 188, maxCycles: 441, shortRunaways: 0, longRunaways: 1
+threads: 8 ,invalid: 6 ,repetitions: 1000000, minCycles: 177, avgCycles: 187, maxCycles: 468, shortRunaways: 0, longRunaways: 1
+
+threads: 8 ,invalid: 7 ,repetitions: 1000000, minCycles: 177, avgCycles: 187, maxCycles: 525, shortRunaways: 0, longRunaways: 1

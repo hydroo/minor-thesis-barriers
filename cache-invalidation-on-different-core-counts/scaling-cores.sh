@@ -16,5 +16,6 @@ do
 	do
 		./cache-test $threads $invalid $REPETITIONS $SHORTRUNAWAYSCYCLES $LONGRUNAWAYSCYCLES
 	done
+	echo ""
 done
 
