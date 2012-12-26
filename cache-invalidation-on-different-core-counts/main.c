@@ -66,14 +66,6 @@ volatile uint8_t *g_date1;
 volatile uint8_t *g_date2;
 volatile uint8_t *g_date3;
 
-void* Thread(void*);
-
-uint64_t mytime() {
-    static struct timespec t;
-    clock_gettime(CLOCK_REALTIME, &t);
-    return 1000 * 1000 * t.tv_sec + t.tv_nsec;
-}
-
 void* Thread(void *userData) {
 
     int threadIndex = (int)(long int)userData;
@@ -121,11 +113,6 @@ void* Thread(void *userData) {
                 dummy2 = *g_date2;
                 dummy3 = *g_date3;
                 __sync_synchronize();
-
-                (void) dummy0;
-                (void) dummy1;
-                (void) dummy2;
-                (void) dummy3;
             }
 
             g_threadState[threadIndex] = CachePrepared;
@@ -149,14 +136,7 @@ void* Thread(void *userData) {
         /* *** trigger the cache invalidation *** */
         if (threadIndex > 0) {
             while(g_threadState[threadIndex-1] != Done) {}
-            /* do something with g_date, just to make sure the invalidation of the cacheline is useful
-               in everyone's (the cpu's?!) perception */
-            /*dummy0 = *g_date0;
-            dummy1 = *g_date1;
-            dummy2 = *g_date2;
-            dummy3 = *g_date3;*/
             g_threadState[threadIndex] = Done;
-
         } else { /* threadIndex == 0 */
             while(g_threadState[g_threadCount-1] != CachePrepared) {}
 
@@ -190,12 +170,12 @@ void* Thread(void *userData) {
             g_threadState[threadIndex] = Initialized;
         }
 
-        (void) dummy0;
-        (void) dummy1;
-        (void) dummy2;
-        (void) dummy3;
-
     }
+
+    (void) dummy0;
+    (void) dummy1;
+    (void) dummy2;
+    (void) dummy3;
 
     return NULL;
 }
