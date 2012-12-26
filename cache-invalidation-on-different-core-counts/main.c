@@ -15,11 +15,11 @@ typedef enum {
     Done = 3
 }ThreadState;
 
-long int g_invalidatedThreadCount;
-long int g_threadCount;
+int g_invalidatedThreadCount;
+int g_threadCount;
 volatile ThreadState *g_threadState;
-long int g_repetitionCount;
-uint64_t g_cycles = 0;
+int g_repetitionCount;
+uint64_t *g_cycles;
 
 uint8_t g_data[128] = {
          0,    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,  15,
@@ -28,9 +28,9 @@ uint8_t g_data[128] = {
         32,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
         48,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
         64,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        70,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        86,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        92,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9, 127 };
+        80,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
+        96,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
+        112,   9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9, 127 };
 uint8_t *g_date;
 
 void* Thread(void*);
@@ -43,13 +43,8 @@ uint64_t mytime() {
 
 void* Thread(void *userData) {
 
-    long int index = (long int)userData;
-    int threadCount;
-    int invalidatedThreadCount;
-    volatile ThreadState *threadState;
-    int repetitionCount;
-    uint8_t *date;
-    void *dummy;
+    int threadIndex = (int)(long int)userData;
+    uint8_t dummy;
 
     uint64_t before;
     int beforeLower;
@@ -63,82 +58,79 @@ void* Thread(void *userData) {
 
     cpu_set_t cpuset;
 
-    /* *** initialize the thread *** */
-    if (index > 0) {
-        while(g_threadState[index-1] != Initialized) {}
-    }
 
-    threadCount = g_threadCount;
-    invalidatedThreadCount = g_invalidatedThreadCount;
-    threadState = (ThreadState*) g_threadState;
-    repetitionCount = g_repetitionCount;
-    date = g_date;
+    /* *** initialize the thread *** */
+    if (threadIndex > 0) {
+        while(g_threadState[threadIndex-1] != Initialized) {}
+    }
 
 
     /* set thread affinity */
     CPU_ZERO(&cpuset);
-    CPU_SET(index, &cpuset);
+    CPU_SET(threadIndex, &cpuset);
     assert(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) == 0);
 
-    threadState[index] = Initialized;
+    g_threadState[threadIndex] = Initialized;
 
-    for (repetition = 0; repetition < repetitionCount; repetition += 1) {
+
+    for (repetition = 0; repetition < g_repetitionCount; repetition += 1) {
 
         /* *** prepare the cache *** */
-        if (index > 0) {
-            while(threadState[index-1] != CachePrepared) {}
+        if (threadIndex > 0) {
+            while(g_threadState[threadIndex-1] != CachePrepared) {}
 
-            if (index <= invalidatedThreadCount /* 1 to last */) {
-                dummy = (void*) date;
+            if (threadIndex <= g_invalidatedThreadCount /* 1 to last */) {
+                dummy = *g_date;
                 __sync_synchronize();
 
                 (void) dummy;
             }
 
-            threadState[index] = CachePrepared;
+            g_threadState[threadIndex] = CachePrepared;
 
-        } else { /* index == 0 */
-            while(threadState[threadCount-1] != Initialized) {}
+        } else { /* threadIndex == 0 */
+            while(g_threadState[g_threadCount-1] != Initialized) {}
 
-            *date = 0; /* write */
-            dummy = (void*)(long int) __sync_fetch_and_add(date, 1); /* write/read + full memory barrier */
+            *g_date = 0; /* write */
+            dummy = __sync_fetch_and_add(g_date, 1); /* write/read + full memory barrier */
 
-            threadState[index] = CachePrepared;
+            g_threadState[threadIndex] = CachePrepared;
         }
 
+
         /* *** trigger the cache invalidation *** */
-
-        if (index > 0) {
-            while(threadState[index-1] != Done) {}
-            /* do something with date, just to make sure the invalidation of the cacheline is useful
+        if (threadIndex > 0) {
+            while(g_threadState[threadIndex-1] != Done) {}
+            /* do something with g_date, just to make sure the invalidation of the cacheline is useful
                in everyone's (the cpu's?!) perception */
-            dummy = (void*)(long int)*date;
-            threadState[index] = Done;
+            /*dummy = *g_date;*/
+            g_threadState[threadIndex] = Done;
 
-        } else { /* index == 0 */
-            while(threadState[threadCount-1] != CachePrepared) {}
+        } else { /* threadIndex == 0 */
+            while(g_threadState[g_threadCount-1] != CachePrepared) {}
 
             asm volatile("rdtsc" : "=a" (beforeLower), "=d" (beforeUpper));
 
-            dummy = (void*)(long int) __sync_fetch_and_add(date, 1); /* write/read + full memory barrier */
+            *g_date = 0;
+            dummy = __sync_fetch_and_add(g_date, 1); /* write/read + full memory barrier */
 
             asm volatile("rdtsc" : "=a" (afterLower), "=d" (afterUpper));
 
             before = (((uint64_t)beforeLower) | (((uint64_t)beforeUpper) << 32));
             after = (((uint64_t)afterLower) | (((uint64_t)afterUpper) << 32));
 
-            g_cycles += after - before;
+            g_cycles[repetition] = after - before;
 
-            threadState[index] = Done;
+            g_threadState[threadIndex] = Done;
         }
 
         /* *** reset *** */
-        if (index > 0) {
-            while(threadState[index-1] != Initialized) {}
-            threadState[index] = Initialized;
-        } else { /* index == 0 */
-            while(threadState[threadCount-1] != Done) {}
-            threadState[index] = Initialized;
+        if (threadIndex > 0) {
+            while(g_threadState[threadIndex-1] != Initialized) {}
+            g_threadState[threadIndex] = Initialized;
+        } else { /* threadIndex == 0 */
+            while(g_threadState[g_threadCount-1] != Done) {}
+            g_threadState[threadIndex] = Initialized;
         }
 
         (void) dummy;
@@ -153,9 +145,28 @@ int main(int argc, char **args) {
     int i;
     pthread_t *t;
 
+    uint64_t minCycles = -1;
+    uint64_t avgCycles;
+    uint64_t maxCycles = 0;
+    uint64_t sumOfCycles = 0;
+    int shortRunaways = 0;
+    int longRunaways = 0;
+
+    uint64_t shortRunawaysCycles = 0; /*35 on my notebook, 45 on erwin is perfect*/
+    uint64_t longRunawaysCycles = 1000;
+
     if (argc < 4) {
-        printf("  cache-test <threadcount> <invalidatethreadcount> <repetitions>\n");
+        printf("  cache-test <threadcount> <invalidatethreadcount> <repetitions> <too short cyclecount> <too long cyclecount>\n");
         exit(0);
+    }
+
+    if (argc > 4) {
+        shortRunawaysCycles = atoi(args[4]);
+        assert(atoi(args[4]) >= 0);
+    }
+    if (argc > 5) {
+        longRunawaysCycles = atoi(args[5]);
+        assert(atoi(args[5]) > 0);
     }
 
     g_date = (uint8_t*)((uint64_t)(&(g_data[64])) - (((uint64_t)(&(g_data[64]))%64)));
@@ -176,6 +187,8 @@ int main(int argc, char **args) {
     g_threadState = (ThreadState*)malloc(g_threadCount * sizeof(ThreadState));
     for (i = 0; i < g_threadCount; i += 1) { g_threadState[i] = Start; }
 
+    g_cycles = (uint64_t*) malloc(sizeof(uint64_t)*g_repetitionCount);
+
 
     t = (pthread_t*) malloc(g_threadCount * sizeof(pthread_t));
 
@@ -189,10 +202,36 @@ int main(int argc, char **args) {
         if(pthread_join(t[i], NULL)){ perror("pthread_join"); exit(-1); }
     }
 
-    printf("threads: %li ,invalid: %li ,repetitions: %li ,cycles: %li\n", g_threadCount, g_invalidatedThreadCount, g_repetitionCount, g_cycles);
+
+    /* *** analyze results *** */
+
+    for (i=0; i<g_repetitionCount; i += 1) {
+
+        if (g_cycles[i] >= longRunawaysCycles) {
+            longRunaways += 1;
+            continue;
+        } else if (g_cycles[i] <= shortRunawaysCycles) {
+            shortRunaways += 1;
+            continue;
+        }
+
+        /*printf("%li\n", g_cycles[i]);*/
+        sumOfCycles += g_cycles[i];
+        if (g_cycles[i] < minCycles) {
+            minCycles = g_cycles[i];
+        }
+        if (g_cycles[i] > maxCycles) {
+            maxCycles = g_cycles[i];
+        }
+    }
+
+    avgCycles = sumOfCycles / g_repetitionCount;
+
+
+    printf("threads: %i ,invalid: %i ,repetitions: %i, minCycles: %li, avgCycles: %li, maxCycles: %li, shortRunaways: %i, longRunaways: %i\n", g_threadCount, g_invalidatedThreadCount, g_repetitionCount, minCycles, avgCycles, maxCycles, shortRunaways, longRunaways);
 
     free(t);
-    free((ThreadState*) g_threadState);
+    free((ThreadState*)g_threadState);
 
     return 0;
 }
