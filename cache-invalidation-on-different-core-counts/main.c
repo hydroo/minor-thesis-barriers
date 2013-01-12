@@ -31,40 +31,7 @@ uint8_t g_data0[128] = {
         80,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
         96,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
         112,   9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9, 127 };
-uint8_t g_data1[128] = {
-         0,    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,  15,
-
-        16,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        32,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        48,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        64,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        80,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        96,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        112,   9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9, 127 };
-uint8_t g_data2[128] = {
-         0,    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,  15,
-
-        16,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        32,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        48,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        64,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        80,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        96,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        112,   9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9, 127 };
-uint8_t g_data3[128] = {
-         0,    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,  15,
-
-        16,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        32,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        48,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        64,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        80,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        96,    9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9,   9,
-        112,   9, 9, 9, 9, 9, 9, 9, 9, 9,  9,  9,  9,  9,  9, 127 };
 volatile uint8_t *g_date0;
-volatile uint8_t *g_date1;
-volatile uint8_t *g_date2;
-volatile uint8_t *g_date3;
 
 void* Thread(void *userData) {
 
@@ -95,6 +62,7 @@ void* Thread(void *userData) {
 
     /* set thread affinity */
     CPU_ZERO(&cpuset);
+    /*CPU_SET(((threadIndex*8)%64)+(threadIndex/8), &cpuset); /* for amd bulldozer maybe, not sure how cores are enumerated */
     CPU_SET(threadIndex, &cpuset);
     assert(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) == 0);
 
@@ -109,9 +77,6 @@ void* Thread(void *userData) {
 
             if (threadIndex <= g_invalidatedThreadCount /* 1 to last */) {
                 dummy0 = *g_date0;
-                dummy1 = *g_date1;
-                dummy2 = *g_date2;
-                dummy3 = *g_date3;
                 __sync_synchronize();
             }
 
@@ -121,13 +86,7 @@ void* Thread(void *userData) {
             while(g_threadState[g_threadCount-1] != Initialized) {}
 
             *g_date0 = 0; /* write */
-            *g_date1 = 0; /* write */
-            *g_date2 = 0; /* write */
-            *g_date3 = 0; /* write */
             dummy0 = __sync_fetch_and_add(g_date0, 1); /* write/read + full memory barrier */
-            dummy1 = __sync_fetch_and_add(g_date1, 1); /* write/read + full memory barrier */
-            dummy2 = __sync_fetch_and_add(g_date2, 1); /* write/read + full memory barrier */
-            dummy3 = __sync_fetch_and_add(g_date3, 1); /* write/read + full memory barrier */
 
             g_threadState[threadIndex] = CachePrepared;
         }
@@ -143,13 +102,7 @@ void* Thread(void *userData) {
             asm volatile("rdtsc" : "=a" (beforeLower), "=d" (beforeUpper));
 
             *g_date0 = 0;
-            *g_date1 = 0;
-            *g_date2 = 0;
-            *g_date3 = 0;
             dummy0 = __sync_fetch_and_add(g_date0, 1); /* write/read + full memory barrier */
-            dummy1 = __sync_fetch_and_add(g_date1, 1); /* write/read + full memory barrier */
-            dummy2 = __sync_fetch_and_add(g_date2, 1); /* write/read + full memory barrier */
-            dummy3 = __sync_fetch_and_add(g_date3, 1); /* write/read + full memory barrier */
 
             asm volatile("rdtsc" : "=a" (afterLower), "=d" (afterUpper));
 
@@ -210,25 +163,10 @@ int main(int argc, char **args) {
     }
 
     g_date0 = (uint8_t*)((uint64_t)(&(g_data0[64])) - (((uint64_t)(&(g_data0[64]))%64)));
-    g_date1 = (uint8_t*)((uint64_t)(&(g_data1[64])) - (((uint64_t)(&(g_data1[64]))%64)));
-    g_date2 = (uint8_t*)((uint64_t)(&(g_data2[64])) - (((uint64_t)(&(g_data2[64]))%64)));
-    g_date3 = (uint8_t*)((uint64_t)(&(g_data3[64])) - (((uint64_t)(&(g_data3[64]))%64)));
 
     assert(g_date0 >= g_data0); /* make sure g_date is calculated correctly */
     assert(&(g_date0[63]) <= &(g_data0[127]));
     assert(((long int) g_date0 % 64) == 0);
-
-    assert(g_date1 >= g_data1); /* make sure g_date is calculated correctly */
-    assert(&(g_date1[63]) <= &(g_data1[127]));
-    assert(((long int) g_date1 % 64) == 0);
-
-    assert(g_date2 >= g_data2); /* make sure g_date is calculated correctly */
-    assert(&(g_date2[63]) <= &(g_data2[127]));
-    assert(((long int) g_date2 % 64) == 0);
-
-    assert(g_date3 >= g_data3); /* make sure g_date is calculated correctly */
-    assert(&(g_date3[63]) <= &(g_data3[127]));
-    assert(((long int) g_date3 % 64) == 0);
 
     g_threadCount = atoi(args[1]);
     g_invalidatedThreadCount = atoi(args[2]);
