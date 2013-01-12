@@ -101,8 +101,14 @@ void* Thread(void *userData) {
 
             asm volatile("rdtsc" : "=a" (beforeLower), "=d" (beforeUpper));
 
-            *g_date0 = 0;
+            /* possibility 1 */
+            /*g_date0 = 0;
             dummy0 = __sync_fetch_and_add(g_date0, 1); /* write/read + full memory barrier */
+
+            /* possibility 2 */
+            *g_date0 = 0;
+            dummy0 = *g_date0;
+            __sync_synchronize();
 
             asm volatile("rdtsc" : "=a" (afterLower), "=d" (afterUpper));
 
