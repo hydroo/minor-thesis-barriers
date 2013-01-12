@@ -1,37 +1,23 @@
+--- 13-01-12  ---
+
+ * see cache-invalidation-on-different-core-counts/observations
+   in short: the number of invalidatees influences the time needed,
+   but I cannot quanitify it
+
 --- 12-12-15  ---
 
- □ print out average cycles, standard deviation, ... to get a better feel what is going on with the code (maybe min and max, too)
- □ make sure you measure correctly!!!
+ ✓ print out average cycles, standard deviation, ... to get a better feel what is going on with the code (maybe min and max, too)
+ ✓ make sure you measure correctly!!!
 
- □ mail pending
+ ✗ mail pending
    """
    [..]
-   Beobachtungen:
-    * Die Abweichungen sind ziemlich gross ... 50% ... manchmal 100% und noch hoeher
-
-    * Signifikant steigt die Zeit nicht mit hoeherer Anzahl an Cores mit invaliden
-   cachelines. Eher steigt sie gar nicht.
-
-    * Die Anzahl der restlichen unbeteiligten threads (./scaling-scores.sh) ist wie erwartet
-   (scheinbar) egal.
-
-   Fragen:
-    * (Disclamer: Es ist nicht unwahrscheinlich dass da noch Fehler drinnen sind)
-
-    * Ich messe das dann naechste Woche automatisch, und errechne auch die
-   Standardabweichung. Was koennte ich noch sinnvolles machen/ausrechnen?
-
-    * Sollte ich den Test vielleicht mit mehreren Cachelines machen, damit groessere Zeiten
-   herauskommen (die dauer einer messung liegt nur zwischen 50 und 500 Takten)? (Oder ist
-   das wegen prefetching oder w/e) eher nicht sinnvoll?
-
-    * Habt ihr sonst noch Hinweise fuer mich?
    """
 
 --- 12-12-15 gist of last meeting ---
 
- * don't measure detailed model rates
- □ measure wether the number of to be invalidated cores influences the timing of a write operation
+ * don't measure detailed model rates (it would have been to cumbersome and error prone to measure so tiny amounts of time)
+ ✓ measure wether the number of to be invalidated cores influences the timing of a write operation
    (use atomic exchange for measurement, otherwise queueing and intelligence will make cache writes non-blocking ~)
  □ think of properties
  ✓ split the two writes into two locations in the current ctmc
@@ -50,54 +36,9 @@
  * created ctmc stub with dummies for missing measured rates
  * open questions regarding the current ctmc in mail pending
 
+   email:
    """
-   1)
-   Kann ich 2 -> 3 -> 4 eigentlich zu einer Transition zusammenfassen?
-   In meinem Kopf wuerde das bedeuten, dass wenn die guard erfuellt ist er mit der work_rate
-   aus der Schleife herausgeht.
-   Was nicht ist was ich modellieren will. Sondern er soll "schnell" herausgehen und danach
-   die Transition mit der niedrigen work_rate machen.
-   Aber eventuell verstehe ich hier noch die CTMC-Semantik falsch.
-
-   2)
-   So 100%ig genau ist das nicht was da steht. Es werden noch mehr Takte benoetig um bei
-   einigen Operationen, aber ist das grob ok so?
-   Ich kann die Messungen so machen dass alles was am Kanten-Label steht gemessen wird. Das
-   sollte ja reichen, oder?
-
-   3)
-   Fast immer ist die tatsaechliche Rate an einem Punkt abhaengig vom Cacheline-Zustand!
-   Sollte ich den Cache modellieren (und wenn ja, wie detailiert? Und hat jemand so etwas
-   schonmal gemacht wo ich mir inspiration holen kann?), oder Messe ich den Algorithmus als
-   solches und bestimme eine einzelne Rate die der durchschnittlichen Takt-Anzahl (bzw
-   takt_periode / takt_anzahl) der jeweiligen Operation entspricht?
-
-   4)
-   Wenn ich den Cache nicht direkt modelliere brauche ich streng genommen auch nicht die
-   genauen Zahlen fuer reads/writes in Abhaengigkeit vom Cacheline-Zustand, richtig?
-
-   5)
-   "exit:=0; left:=false" (2->3 transition) braucht 1 oder 2 writes je nachdem ob sie auf
-   der selben Cacheline liegen, richtig? Also ist das hier vmtl. 1*write_rate, oder?
-
-   6)
-   Sollte ich bei den Raten auch Verteilungen verwenden? Wir hatten ja sowas gesagt wie
-   20-50 Takte fuer ein cache_read_miss und die Arbeitsperiode soll 1000-10000 takte lang
-   sein.
-
-   7)
-   In der Doku von prism steht dass der Scheduler (fuer parallele Komposition) anhand der
-   Raten schedulet. Das heisst vermutlich, dass ich auch den Scheduler selbst modellieren
-   muss, oder? Weil sonst waere das doch wie als ob alle auf dem selben core sind? Nee eigtl
-   nicht. Mh. Keine Ahnung, ehrlich gesagt.
-
-   8)
-   Und properties macht man genau wie in DTMCs? Koennt ihr mir ganz kurz schildern, was dann
-   anders aussehen wird als mit DTMCs?
-
-   9)
-   Ansonsten wollte ich generell fragen ob ich auf dem richtigen Weg bin, bzw. Tipps haben.
-   Ich mach das hier ja zum ersten mal.
+   [..]
    """
 
 --- 12-11-24: notes from the last meeting ---
@@ -111,7 +52,7 @@
    ✓ remove non-det while/if
    ✓ unify previously split commands, perhaps
 
- ✗ get the required numbers for the ctmc model
+ ✓ get the required numbers for the ctmc model
    * approx:
      * work period 1000-10000 cycles
      * shared memory read w/ invalid cache 20-50 cycles
@@ -138,7 +79,7 @@
  □ try variations of the implementation (don't model it, though)
    * using mwait or usleep after a write of the shared variable
 
- * future: create a distributed memory push only version of this (promissing!)
+ □ future: create a distributed memory push only version of this (promissing!)
 
 --- 12-11-17 ---
 
@@ -148,7 +89,7 @@
 
    non-det scheduling
    fairness enabled (strong fairness)
-   
+
    // correctness of the locations (no racing through it is possible)
    ✓ Pmax=? [F "invalid_locations"] = 0.0
 
@@ -205,10 +146,10 @@ far TODO:
  ✓ model timing differences, work periods and cache latency/behaviour, too
 
 general possible directions (markus/sascha):
- ❏ timing analysis
+ * timing analysis
  ✗ "constantly resetting race" -> prove/account for the assumption behind pW/CS (there is no constantly resetting race)
- ❏ methodolgy/tools support -> generalize modelling to also be able to check other similar algorithms
- ❏ 512 processes
+ * methodolgy/tools support -> generalize modelling to also be able to check other similar algorithms
+ * 512 processes
 
 possibly/unimportant TODO:
  ❏ properly implement the barrier with a switch where it decides itself which of the two phases/while loops to enter
