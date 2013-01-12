@@ -5,3 +5,5 @@ syntax: glob
 barrier-attempt/model-01/model.pdf
 barrier
 *.tmp
+*.s
+
