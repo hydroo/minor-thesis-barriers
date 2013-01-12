@@ -1,54 +1,180 @@
-news)
-It's this line's fault.
+### Notes ####################################################################
 
-  dummy0 = __sync_fetch_and_add(g_date0, 1);
+* needs more work (what are the causes of the measured numbers?)
+* needs to be repeated on an intel platform
 
-If I exchange this for a normal write with a memory barrier. It behaves as expected.
-(That is the number of threads does not matter, only the number of invalidatees does matter.)
+### atlas.hrsk.tu-dresden.de #################################################
+$ cat /proc/cpuinfo
+vendor_id       : AuthenticAMD
+cpu family      : 21
+model           : 1
+model name      : AMD Opteron(TM) Processor 6274                 
+stepping        : 2
+physical id     : 3
+siblings        : 16
+core id         : 7
+cpu cores       : 16
+cpuid level     : 13
+wp              : yes
+clflush size    : 64
+cache_alignment : 64
 
+## invalidation code ##
+"""
+*g_date0 = 0;
+dummy0 = __sync_fetch_and_add(g_date0, 1);
+"""
 
-1a)
-"$ ./scale-cores.sh" shows that with more threads that are NOT taking part the invalidation rounds invalidation time gets longer.
-This should not be the case, since those idling threads do not receive invalidate messages, nor should they influence
-a cache write on thread 0 in any way. (But they might infuence the length of atomic operations?!)
+# scaling-cores without more invalidatees #
+* I am not sure how the cpus are enumerated, but I can still draw the below conclusions
+* the number of total threads spawned influence the length of the atomic operation
+* measurement takes up to 10 times longer (50 to 600 cycles (always including rdtsc on cpu 0))
+* shows weird up and down depending on core count (~50 ... ~600 ~200 ~100 ~50 ... ~50 cycles for 0 to 64 processors)
 
-1b)
-It makes a difference how many idling threads take part in an invalidation round.
-"$./cache-test 10 4" yields higher times than "$ ./cache-test 5 4"
+# scaling-invalidatees #
+* with a fixed number of threads (e.g. 16 or 32) the times correspond to the scaling-cores' ones.
+  you get a constant time for all numbers of invalidatees (a very small one for 16 or 32, but a larger one for 18 e.g.)
 
+* with scaling the number of cores along-side the number of invalidatees the times approx. correspond to
+  to scaling-cores script (approx. a factor 2 for larger times (400 instead of 200 cycles),
+  but e.g. 50 for 16 threads and 15 invalidatees or 1 invalidatee
 
-2a)
-"$ ./cache-test i+1 i" shows a slight increase in invalidation time on almost all test platforms.
+# conclusion #
+Atomic operations are interested in how many total threads have been spawned. What I measure is dominated
+by the execution(preparation/finishing) of such an operation. I am not sure how large the part of the actual
+invalidation only of the intended lines is.
 
-TODO: TEST AGAIN
+The numbers vary in a way I am not sure how to interpret:
+example:
+$ ./scaling-invalids.sh 
+threads: 32 ,invalid: 1 ,minCycles: 35, avgCycles: 57, maxCycles: 272
+threads: 32 ,invalid: 2 ,minCycles: 34, avgCycles: 61, maxCycles: 694
+threads: 32 ,invalid: 3 ,minCycles: 34, avgCycles: 61, maxCycles: 729
+threads: 32 ,invalid: 4 ,minCycles: 35, avgCycles: 62, maxCycles: 678
+threads: 32 ,invalid: 5 ,minCycles: 35, avgCycles: 61, maxCycles: 685
+threads: 32 ,invalid: 6 ,minCycles: 32, avgCycles: 61, maxCycles: 680
+threads: 32 ,invalid: 7 ,minCycles: 35, avgCycles: 60, maxCycles: 806
+threads: 32 ,invalid: 8 ,minCycles: 35, avgCycles: 61, maxCycles: 910
+threads: 32 ,invalid: 9 ,minCycles: 35, avgCycles: 63, maxCycles: 899
+threads: 32 ,invalid: 10 ,minCycles: 35, avgCycles: 60, maxCycles: 694
+threads: 32 ,invalid: 11 ,minCycles: 35, avgCycles: 60, maxCycles: 693
+threads: 32 ,invalid: 12 ,minCycles: 35, avgCycles: 61, maxCycles: 786
+threads: 32 ,invalid: 13 ,minCycles: 35, avgCycles: 60, maxCycles: 933
+threads: 32 ,invalid: 14 ,minCycles: 35, avgCycles: 60, maxCycles: 775
+threads: 32 ,invalid: 15 ,minCycles: 35, avgCycles: 62, maxCycles: 744
+threads: 32 ,invalid: 16 ,minCycles: 36, avgCycles: 59, maxCycles: 761
+threads: 32 ,invalid: 17 ,minCycles: 33, avgCycles: 61, maxCycles: 700
+threads: 32 ,invalid: 18 ,minCycles: 35, avgCycles: 61, maxCycles: 951
+threads: 32 ,invalid: 19 ,minCycles: 35, avgCycles: 63, maxCycles: 678
+threads: 32 ,invalid: 20 ,minCycles: 35, avgCycles: 63, maxCycles: 720
+threads: 32 ,invalid: 21 ,minCycles: 34, avgCycles: 61, maxCycles: 927
+threads: 32 ,invalid: 22 ,minCycles: 33, avgCycles: 62, maxCycles: 712
+threads: 32 ,invalid: 23 ,minCycles: 35, avgCycles: 60, maxCycles: 913
+threads: 32 ,invalid: 24 ,minCycles: 35, avgCycles: 62, maxCycles: 808
+threads: 32 ,invalid: 25 ,minCycles: 38, avgCycles: 61, maxCycles: 745
+threads: 32 ,invalid: 26 ,minCycles: 35, avgCycles: 55, maxCycles: 741
+threads: 32 ,invalid: 27 ,minCycles: 34, avgCycles: 60, maxCycles: 753
+threads: 32 ,invalid: 28 ,minCycles: 35, avgCycles: 61, maxCycles: 974
+threads: 32 ,invalid: 29 ,minCycles: 34, avgCycles: 59, maxCycles: 768
+threads: 32 ,invalid: 30 ,minCycles: 35, avgCycles: 59, maxCycles: 740
+threads: 32 ,invalid: 31 ,minCycles: 35, avgCycles: 60, maxCycles: 755
 
+other example:
+$ ./scaling-cores.sh 
+threads: 2 ,invalid: 1 ,minCycles: 35, avgCycles: 51, maxCycles: 68
+threads: 3 ,invalid: 1 ,minCycles: 32, avgCycles: 41, maxCycles: 286
+threads: 4 ,invalid: 1 ,minCycles: 32, avgCycles: 48, maxCycles: 283
+threads: 5 ,invalid: 1 ,minCycles: 36, avgCycles: 166, maxCycles: 641
+threads: 6 ,invalid: 1 ,minCycles: 32, avgCycles: 132, maxCycles: 347
+threads: 7 ,invalid: 1 ,minCycles: 33, avgCycles: 173, maxCycles: 417
+threads: 8 ,invalid: 1 ,minCycles: 35, avgCycles: 114, maxCycles: 973
+threads: 9 ,invalid: 1 ,minCycles: 35, avgCycles: 183, maxCycles: 434
+threads: 10 ,invalid: 1 ,minCycles: 33, avgCycles: 188, maxCycles: 633
+threads: 11 ,invalid: 1 ,minCycles: 32, avgCycles: 190, maxCycles: 450
+threads: 12 ,invalid: 1 ,minCycles: 36, avgCycles: 177, maxCycles: 883
+threads: 13 ,invalid: 1 ,minCycles: 34, avgCycles: 52, maxCycles: 231
+threads: 14 ,invalid: 1 ,minCycles: 35, avgCycles: 54, maxCycles: 465
+threads: 15 ,invalid: 1 ,minCycles: 35, avgCycles: 55, maxCycles: 309
+threads: 16 ,invalid: 1 ,minCycles: 32, avgCycles: 55, maxCycles: 355
+threads: 17 ,invalid: 1 ,minCycles: 35, avgCycles: 56, maxCycles: 309
+threads: 18 ,invalid: 1 ,minCycles: 35, avgCycles: 55, maxCycles: 311
 
-2b)
-"$ ./cache-test thread-count i" shows homogeneous invalidation times across the board.
+regardless of how physical cores are mapped to cpu ids (which I am not sure about) I cannot make sense of it.
 
-TODO: TEST AGAIN
+* whether I invalid 4 cachelines or just 1 does not change the measurements. There are multiple possible
+  interpretations for that.
 
-2c)
-On AMD Opterion 6274 the invalidation time is often times zero(+rdtsc time)
-On my two Intel CPUs this is never the case (except when using only 1 core, ofcourse).
+## invalidation code ##
+"""
+*g_date0 = 0;
+dummy0 = *g_date0;
+__sync_synchronize();
+"""
 
-TODO: TEST AGAIN ... this is because something happens with atomic once you go over a certain number of threads.
-They get issued instantly it seems.
+# scaling-cores without more invalidatees #
+* shows a super tiny increase in cycles with more threads (~+1 every two new threads on average)
+  (140 cycles on one thread to 153 on 32 threads).
 
+  I think we can safely ignore this. Perhaps it has to do with "bookkeeping"?.
 
-3)
-The 4 socket node on atlas behaves oddly. When going to 12 threads and beyond the invalidation times is zero again.
-Until 12 it increases. This is independent of the number of to-be-invalidated cores.
-The 2 socket headnode (same CPUs) does not show this behaviour.
+# scaling-invalids #
+* 150 cycles inside one bulldozer module (2 threads, 1 invalidatee).
+* starting from 2 invalidatees (2 different bulldozer modules) the numbers are always around 450 to 530 cycles per invalidatee
+  with an up and down on certain invalidatee counts (they don't make a lot of sense to me)
 
-TODO: same as with 2c
+$ ./scaling-invalids.sh 
+threads: 2 ,invalid: 1 ,minCycles: 139, avgCycles: 143
+threads: 3 ,invalid: 2 ,minCycles: 422, avgCycles: 578
+threads: 4 ,invalid: 3 ,minCycles: 406, avgCycles: 495
+threads: 5 ,invalid: 4 ,minCycles: 403, avgCycles: 501
+threads: 6 ,invalid: 5 ,minCycles: 400, avgCycles: 489
+threads: 7 ,invalid: 6 ,minCycles: 402, avgCycles: 486
+threads: 8 ,invalid: 7 ,minCycles: 404, avgCycles: 499
+threads: 9 ,invalid: 8 ,minCycles: 409, avgCycles: 493
+threads: 10 ,invalid: 9 ,minCycles: 400, avgCycles: 492
+threads: 11 ,invalid: 10 ,minCycles: 406, avgCycles: 515
+threads: 12 ,invalid: 11 ,minCycles: 406, avgCycles: 496
+threads: 13 ,invalid: 12 ,minCycles: 141, avgCycles: 452
+threads: 14 ,invalid: 13 ,minCycles: 164, avgCycles: 454
+threads: 15 ,invalid: 14 ,minCycles: 410, avgCycles: 456
+threads: 16 ,invalid: 15 ,minCycles: 209, avgCycles: 454
+threads: 17 ,invalid: 16 ,minCycles: 408, avgCycles: 450
+threads: 18 ,invalid: 17 ,minCycles: 408, avgCycles: 455
+threads: 19 ,invalid: 18 ,minCycles: 410, avgCycles: 453
+threads: 20 ,invalid: 19 ,minCycles: 406, avgCycles: 452
+threads: 21 ,invalid: 20 ,minCycles: 405, avgCycles: 453
+threads: 22 ,invalid: 21 ,minCycles: 415, avgCycles: 456
+threads: 23 ,invalid: 22 ,minCycles: 408, avgCycles: 456
+threads: 24 ,invalid: 23 ,minCycles: 409, avgCycles: 458
+threads: 25 ,invalid: 24 ,minCycles: 186, avgCycles: 527
+threads: 26 ,invalid: 25 ,minCycles: 487, avgCycles: 526
+threads: 27 ,invalid: 26 ,minCycles: 186, avgCycles: 531
+threads: 28 ,invalid: 27 ,minCycles: 185, avgCycles: 529
+threads: 29 ,invalid: 28 ,minCycles: 166, avgCycles: 530
+threads: 30 ,invalid: 29 ,minCycles: 165, avgCycles: 531
+threads: 31 ,invalid: 30 ,minCycles: 141, avgCycles: 528
+threads: 32 ,invalid: 31 ,minCycles: 165, avgCycles: 531
+threads: 33 ,invalid: 32 ,minCycles: 214, avgCycles: 475
+threads: 34 ,invalid: 33 ,minCycles: 187, avgCycles: 475
+threads: 35 ,invalid: 34 ,minCycles: 428, avgCycles: 473
+threads: 36 ,invalid: 35 ,minCycles: 205, avgCycles: 476
+threads: 37 ,invalid: 36 ,minCycles: 428, avgCycles: 474
+threads: 38 ,invalid: 37 ,minCycles: 429, avgCycles: 475
+threads: 39 ,invalid: 38 ,minCycles: 428, avgCycles: 474
+threads: 40 ,invalid: 39 ,minCycles: 196, avgCycles: 474
+threads: 41 ,invalid: 40 ,minCycles: 186, avgCycles: 525
+threads: 42 ,invalid: 41 ,minCycles: 465, avgCycles: 523
 
+# conclusion #
+* the number of invalidatees does indeed influence duration of an invalidation,
+  but I cannot quantify this influence.
+* the mechanism inside a cpus seems to be very refined (I could imagine a cross linking between different cores,
+  and certain cores have a shorter link to hypertransport then others and therefore broadcast quicker to others
+  then if the threads would be allocated differently.
 
+  A short test showed when I allocate threads sparsely and wildly across multiple sockets average cycle times increase up to 800.
+  When I then allocate threads between those wildly allocated ones the cycle times decrease again.
 
-conclusion)
- * I cannot give a definite answer to whether more invalidation messages cause more delay for a cache-write
- * more work is needed to find out why 1a/1b/2c/3 do not show the expected results
- * a multi socket intel or at least 8-core intel system would be nice to test on
+  I am guessing here. It could be entirely different.
 
- * why do atomic operations get issued instantly on opterons above a certain thread number?
-
+* it is also possible that this read/write/memorybarrier is a wrong way to measure a cache invalidation
