@@ -1,3 +1,35 @@
+--- 13-01-14  ---
+ □ don't forgot to model that work periods might change the cacheline's state.
+   Or maybe model it as a self loop in the cacheline to make it "randomly" invalidate itself
+   with a certain probability/rate
+
+ TODO:
+ * ~/desktop/barrier/barrier-attempt/model-prism-ctmc-with-cache-invalidation/model
+  □ add valid bool
+  □ split writes into two transitions so that we do not modify global state in a synchronous transition
+  □ add synchronous transition labels to the process
+  □ test exhaustively
+
+ DONE:
+ * cleaned up spin model
+
+ * moved "entry := 0" to the end of the algorithm / model, because it belongs after the second loop and thusly
+   inside the else if branch in a unified entry (this wouldn't work without moving it to the end).
+   The model is still correct.
+
+ * using if (left==false) and else if (left==true) we can indeed decide correctly in which
+   barrier part we are ("model-spin-unified-entry-point")
+   thus we can nicely implement this algorithm without using two barriers for one round. yay!
+
+ * old ctmc
+  * bugfix
+  * slight changes
+  * split the else branch of "while()" into two transitions to model
+    that a cacheline is invalidated between the cacheread of "left==false" and the cachewrite on "exit := 0"
+
+ * new ctmc "model-prism-ctmc-with-cache-invalidation"
+   * began working on integrating the cacheline state into the model
+
 --- 13-01-12  ---
 
  * see cache-invalidation-on-different-core-counts/observations
