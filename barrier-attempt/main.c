@@ -141,10 +141,7 @@ void* Thread(void *userData) {
     //unlink("a");
     //FILE *log = fopen("a", "a");
 
-
     for(int64_t repetition = 0; repetition < repetitionCount; repetition++){
-
-        c->entry = 0x0000000000000000;
 
         /* run to wall and wait busily */
         do {
@@ -183,6 +180,8 @@ void* Thread(void *userData) {
         }while (copy != full && c->left == 1);
 
         c->left = 0;
+
+        c->entry = 0x0000000000000000;
 
         ++(c->successfulBarrierVisitsCount[index]);
     }

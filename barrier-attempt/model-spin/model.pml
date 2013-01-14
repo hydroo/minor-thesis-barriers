@@ -7,7 +7,7 @@ active proctype p1() {
     int copy = 0;
 
     do
-        :: entry = 0;
+        ::
 
         do
         :: copy = entry;
@@ -20,6 +20,8 @@ active proctype p1() {
            :: else -> skip
            fi
         od;
+
+        between:
 
         left = true;
         exit = 0;
@@ -37,6 +39,9 @@ active proctype p1() {
         od;
 
         left = false;
+        entry = 0;
+
+        progress:
     od
 }
 
@@ -46,7 +51,7 @@ active proctype p2() {
     int copy = 0;
 
     do
-        :: entry = 0;
+        ::
 
         do
         :: copy = entry;
@@ -59,6 +64,8 @@ active proctype p2() {
            :: else -> skip
            fi
         od;
+
+        between:
 
         left = true;
         exit = 0;
@@ -76,6 +83,9 @@ active proctype p2() {
         od;
 
         left = false;
+        entry = 0;
+
+        progress:
     od
 }
 
@@ -85,7 +95,7 @@ active proctype p3() {
     int copy = 0;
 
     do
-        :: entry = 0;
+        ::
 
         do
         :: copy = entry;
@@ -99,7 +109,8 @@ active proctype p3() {
            fi
         od;
 
-        progress:
+        between:
+
         left = true;
         exit = 0;
 
@@ -116,9 +127,13 @@ active proctype p3() {
         od;
 
         left = false;
+        entry = 0;
+
+        progress:
     od
 }
 
+//ltl never_01 {[](!(p1@between && p2@progress))}
 
 //ltl prop0 {[]<>((left==true) && X (left==false))}
 //ltl prop1 {[]<>(left==true) && []<>(left==false)}
