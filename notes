@@ -152,7 +152,7 @@ general possible directions (markus/sascha):
  * 512 processes
 
 possibly/unimportant TODO:
- ❏ properly implement the barrier with a switch where it decides itself which of the two phases/while loops to enter
+ ✓ properly implement the barrier with a switch where it decides itself which of the two phases/while loops to enter
 
 dont forget TODO:
  ❏ optimization: processes memorize who they already saw and add them (besides themselves) to the barrier (don't model it, though)
