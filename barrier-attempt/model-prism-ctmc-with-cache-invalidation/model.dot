@@ -1,30 +1,65 @@
 digraph {
 
-	"CTMC\nlocal variables: copy := 0, me\nshared variables: entry := 0, exit := 0, left := false\n\nbase_rate = 2500\ntick=base_rate / 1\nwork=base_rate / 1000\nread=base_rate / 50\nwrite=base_rate / 100" [nojustify=true, shape=box]
+	"CTMC\nlocal variables: copy := 0, me\nshared variables: entry := 0, exit := 0, left := false\n\nbase_rate = 2500\ntick=base_rate / 1\nwork=base_rate / 1000\nread=base_rate / 50\nwrite=base_rate / 100\n\nothers = red, me = blue transitions" [nojustify=true, shape=box]
+
+	"process" [nojustify=true, shape=box, style=bold, fontsize=20]
 
 	initial_state_source [style=invis]
+
+	// process
+
 	initial_state_source -> "0"
 
-	"0" -> "1" [weight=10, label="copy := entry (read)"]
-	"1" -> "2" [label="else (tick)"]
-	"1" -> "2" [weight=10, label="copy&me == 0 : entry := copy|me (write)"]
+	"0"  -> "1"  [weight=10, label="copy := entry (read)"]
+	"1"  -> "3"  [label="else (tick)"]
+	"1"  -> "2"  [weight=10, label="copy&me == 0 : / (write)"]
+	"2" [style=dotted]
+	"2"  -> "3"  [weight=10, label="entry := copy|me (tick)"]
 
-	"2" -> "0" [label="copy != full & left = false (read)"]
-	"2" -> "3" [weight=10, label="else : / (read)"]
-	"3" -> "4" [weight=10, label="exit := 0 (write)"]
-	"4" -> "5" [weight=10, label="left := true (write)"]
+	"3"  -> "0"  [label="copy != full & left = false (read)"]
+	"3"  -> "4"  [weight=10, label="else : / (read)"]
+	"4"  -> "5"  [weight=10, label="/ (write)"]
+	"5" [style=dotted]
+	"5"  -> "6"  [weight=10, label="exit := 0 (tick)"]
+	"6"  -> "7"  [weight=10, label="/ (write)"]
+	"7" [style=dotted]
+	"7"  -> "8"  [weight=10, label="left := true (tick)"]
 
-	"5" -> "6" [weight=10, label="(work)"]
+	"8"  -> "9"  [weight=10, label="(work)"]
 
-	"6" -> "7" [weight=10, label="copy := exit (read)"]
-	"7" -> "8" [label="else (tick)"]
-	"7" -> "8" [weight=10, label="copy&me == 0 : exit := copy|me (write)"]
+	"9"  -> "10" [weight=10, label="copy := exit (read)"]
+	"10" -> "12" [label="else (tick)"]
+	"10" -> "11" [weight=10, label="copy&me == 0 : / (write)"]
+	"11" [style=dotted]
+	"11" -> "12" [weight=10, label="exit := copy|me (tick)"]
 
-	"8" -> "6" [label="copy != full & left = true (read)"]
-	"8" -> "9" [weight=10, label="else : / (read)"]
-	"9" -> "10" [weight=10, label="entry := 0 (write)"]
-	"10" -> "11" [weight=10, label="left := false (write)"]
+	"12" -> "9"  [label="copy != full & left = true (read)"]
+	"12" -> "13" [weight=10, label="else : / (read)"]
+	"13" -> "14" [weight=10, label="/ (write)"]
+	"14" [style=dotted]
+	"14" -> "15" [weight=10, label="entry := 0 (tick)"]
+	"15" -> "16" [weight=10, label="/ (write)"]
+	"16" [style=dotted]
+	"16" -> "17" [weight=10, label="left := false (tick)"]
 
-	"11" -> "0" [label="(work)"]
+	"17" -> "0" [label="(work)"]
+
+	// cacheline
+	"cacheline" [nojustify=true, shape=box, style=bold, fontsize=20]
+
+	initial_state_source2 [style=invis]
+	initial_state_source2 -> "invalid"
+
+	"invalid"  -> "invalid"  [label="r/w", color=red]
+	"invalid"  -> "shared"   [label="r",   color=blue]
+	"invalid"  -> "modified" [label="w",   color=blue]
+
+	"shared"   -> "shared"   [label="r",   color=red]
+	"shared"   -> "invalid"  [label="w",   color=red]
+	"shared"   -> "shared"   [label="r",   color=blue]
+	"shared"   -> "modified" [label="w",   color=blue]
+
+	"modified" -> "shared"   [label="r",   color=red]
+	"modified" -> "invalid"  [label="w",   color=red]
+	"modified" -> "modified" [label="r/w", color=blue]
 }
-

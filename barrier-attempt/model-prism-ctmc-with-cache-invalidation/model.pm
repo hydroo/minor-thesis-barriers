@@ -28,35 +28,35 @@ formula write      = base_rate / 100.0;
 
 
 module process_1
-	l_1 : [0..11] init 0;
+	l_1 : [0..17] init 0;
 	cp_1 : [min_invalid..max_invalid] init empty;
 
 	[] l_1=0 -> read : (l_1'=1) & (cp_1'=entry);
 
-	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=2);
-	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=0 -> write : (l_1'=2) & (entry'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
+	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=3);
+	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=0 -> write : (l_1'=3) & (entry'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
-	[] l_1=2 & (  cp_1 != full & left = false ) -> read : (l_1'=0);
-	[] l_1=2 & (!(cp_1 != full & left = false)) -> read : (l_1'=3);
-	[] l_1=3 -> write : (l_1'=4) & (exit'=empty);
-	[] l_1=4 -> write : (l_1'=5) & (left'=true);
-
-
-	[] l_1=5 -> work : (l_1'=6);
+	[] l_1=3 & (  cp_1 != full & left = false ) -> read : (l_1'=0);
+	[] l_1=3 & (!(cp_1 != full & left = false)) -> read : (l_1'=4);
+	[] l_1=4 -> write : (l_1'=6) & (exit'=empty);
+	[] l_1=6 -> write : (l_1'=8) & (left'=true);
 
 
-	[] l_1=6 -> read : (l_1'=7) & (cp_1'=exit);
-
-	[] l_1=7 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=8);
-	[] l_1=7 & mod(floor(cp_1/me_bit_1),2)=0 -> write : (l_1'=8) & (exit'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
-
-	[] l_1=8 & (  cp_1 != full & left = true ) -> read : (l_1'=5);
-	[] l_1=8 & (!(cp_1 != full & left = true)) -> read : (l_1'=9);
-	[] l_1=9 -> write : (l_1'=10) & (entry'=empty);
-	[] l_1=10 -> write : (l_1'=11) & (left'=false);
+	[] l_1=8 -> work : (l_1'=9);
 
 
-	[] l_1=11 -> work : (l_1'=0);
+	[] l_1=9 -> read : (l_1'=10) & (cp_1'=exit);
+
+	[] l_1=10 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=12);
+	[] l_1=10 & mod(floor(cp_1/me_bit_1),2)=0 -> write : (l_1'=12) & (exit'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
+
+	[] l_1=12 & (  cp_1 != full & left = true ) -> read : (l_1'=9);
+	[] l_1=12 & (!(cp_1 != full & left = true)) -> read : (l_1'=13);
+	[] l_1=13 -> write : (l_1'=15) & (entry'=empty);
+	[] l_1=15 -> write : (l_1'=17) & (left'=false);
+
+
+	[] l_1=17 -> work : (l_1'=0);
 
 endmodule
 
