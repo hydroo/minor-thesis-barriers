@@ -1,14 +1,15 @@
 --- 13-01-14  ---
- □ don't forgot to model that work periods might change the cacheline's state.
+ □ don't forget to model that work periods might change the cacheline's state.
    Or maybe model it as a self loop in the cacheline to make it "randomly" invalidate itself
    with a certain probability/rate
 
  TODO:
  * ~/desktop/barrier/barrier-attempt/model-prism-ctmc-with-cache-invalidation/model
-  □ add valid bool
-  □ split writes into two transitions so that we do not modify global state in a synchronous transition
-  □ add synchronous transition labels to the process
-  □ test exhaustively
+  ✓ model cache behaviour
+   ✓ add validity state
+   ✓ split writes into two transitions so that we do not modify global state in a synchronous transition (forbidden in prism)
+   ✓ add synchronous transition labels to the process
+   □ test exhaustively
 
  DONE:
  * cleaned up spin model
@@ -53,7 +54,7 @@
    (use atomic exchange for measurement, otherwise queueing and intelligence will make cache writes non-blocking ~)
  □ think of properties
  ✓ split the two writes into two locations in the current ctmc
- □ model cacheline validity to be able to assign rates for reads and writes based on the cacheline state
+ ✓ model cacheline validity to be able to assign rates for reads and writes based on the cacheline state
 
  Ronny's personal agenda:
   □ benchmark against gcc and intel openmp barriers (maybe more shared memory barriers? openmpi?)
