@@ -1,0 +1,31 @@
+// DO NOT FORGET to enable weak fairness !
+
+// cache impossibilities
+P<=0 [G (mesi_1=modified & mesi_2=modified)]
+P<=0 [G (mesi_1=modified & mesi_3=modified)]
+P<=0 [G (mesi_2=modified & mesi_1=modified)]
+P<=0 [G (mesi_2=modified & mesi_3=modified)]
+P<=0 [G (mesi_3=modified & mesi_1=modified)]
+P<=0 [G (mesi_3=modified & mesi_2=modified)]
+
+P<=0 [G (mesi_1=shared & !(mesi_2=shared | mesi_3=shared))]
+P<=0 [G (mesi_2=shared & !(mesi_1=shared | mesi_3=shared))]
+P<=0 [G (mesi_3=shared & !(mesi_1=shared | mesi_2=shared))]
+
+// impossible values
+P<=0 [F entry=min_invalid ]
+P<=0 [F entry=max_invalid ]
+P<=0 [F exit =min_invalid ]
+P<=0 [F exit =max_invalid ]
+P<=0 [F cp_1 =min_invalid ]
+P<=0 [F cp_1 =max_invalid ]
+P<=0 [F cp_2 =min_invalid ]
+P<=0 [F cp_2 =max_invalid ]
+P<=0 [F cp_3 =min_invalid ]
+P<=0 [F cp_3 =max_invalid ]
+
+//non-blocking
+P>=1 [G F l_1=17]
+P>=1 [G F l_2=17]
+P>=1 [G F l_3=17]
+

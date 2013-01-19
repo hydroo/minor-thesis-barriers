@@ -1,3 +1,30 @@
+--- 13-01-19  ---
+
+ * modelchecking 3 processes takes too long (building model 3 minutes), modelchecking >20min perhaps way more. (4000 states for 2 processes, 5mio for 3 states)
+  □ perhaps make a version with "assign labels" in order to remove the dotted states
+
+
+ * what are interesting questions? (--> queries)
+  * how long does it take to get past the first barrier?
+    (second is symmetric and therefor not really interesting?)
+  * how much is the cache strained?
+    (is not much because false sharing has a limit to its speed, and therefor
+     only uses a measured sub 2% of the cachebandwidth)
+  * in which states is the cache how much of the time?
+  * more?
+
+ * rather benchmarking than modelchecking?
+
+questions:
+ □ how do the rates influence the time modelchecking (or building) takes?
+ □ next steps
+  * goal for complexlab and lab!
+  * paper?
+  * benchmarking?
+  * actual implementation? test mwait and whatnot
+   * contributing to gnu openmp?
+
+
 --- 13-01-14  ---
  □ don't forget to model that work periods might change the cacheline's state.
    Or maybe model it as a self loop in the cacheline to make it "randomly" invalidate itself
