@@ -78,7 +78,7 @@ module process_1
 	[write_1] l_1=13 & mesi_1 =modified -> tick  : (l_1'=14);
 	[]        l_1=14 -> micro : (l_1'=15) & (entry'=empty);
 	[write_1] l_1=15 & mesi_1!=modified -> write : (l_1'=16) & (mesi_1'=modified);
-	[write_1] l_1=15 & mesi_1 =modified -> write : (l_1'=16);
+	[write_1] l_1=15 & mesi_1 =modified -> tick : (l_1'=16);
 	[]        l_1=16 -> micro : (l_1'=17) & (left'=false);
 
 
