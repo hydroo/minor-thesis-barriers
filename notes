@@ -1,3 +1,11 @@
+--- 13-01-21  ---
+ * bug fix (a wrong rate)
+ * left is now a synced local variable. This saves ~ 1/7th of the state spaces.
+ * reordered variables to reduce the mtbdd by 1%
+
+ * 3 processes - P>=1 [ G F l_1=17 ] (MC-DRA product) - 511.272s
+ * 3 processes - S=? [ "modified_1" ] - a long time >=10min ... more like 30min? - "10k iterations is not enough"
+
 --- 13-01-19  ---
 
  * modelchecking 3 processes takes too long (building model 3 minutes), modelchecking >20min perhaps way more. (4000 states for 2 processes, 5mio for 3 states)
