@@ -19,8 +19,8 @@ const modified = 0;
 const shared = 1;
 const invalid = 2;
 
-global entry : [min_invalid..max_invalid] init empty;
 global exit : [min_invalid..max_invalid] init empty;
+global entry : [min_invalid..max_invalid] init empty;
 
 
 
@@ -36,8 +36,8 @@ formula write      = base_rate / 100.0;
 module process_1
 	l_1 : [0..17] init 0;
 	cp_1 : [min_invalid..max_invalid] init empty;
-	mesi_1 : [0..2] init invalid;
 	left_1 : bool init false;
+	mesi_1 : [0..2] init invalid;
 
 	//process
 	[read_1]  l_1=0 & mesi_1 =invalid -> read : (l_1'=1) & (cp_1'=entry) & (mesi_1'=shared);
@@ -114,8 +114,8 @@ module process_2 = process_1 [
 	me_bit_1 =me_bit_2,
 	l_1      =l_2,
 	cp_1     =cp_2,
-	mesi_1   =mesi_2,
 	left_1   =left_2,
+	mesi_1   =mesi_2,
 	read_1   =read_2,
 	read_2   =read_1,
 	write_1  =write_2,
@@ -137,8 +137,8 @@ module process_3 = process_1 [
 	me_bit_1 =me_bit_3,
 	l_1      =l_3,
 	cp_1     =cp_3,
-	mesi_1   =mesi_3,
 	left_1   =left_3,
+	mesi_1   =mesi_3,
 	read_1   =read_3,
 	read_3   =read_1,
 	write_1  =write_3,
