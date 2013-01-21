@@ -21,9 +21,7 @@ digraph {
 	"4"  -> "5"  [weight=10, label="/ (write)"]
 	"5" [style=dotted]
 	"5"  -> "6"  [weight=10, label="exit := 0 (micro)"]
-	"6"  -> "7"  [weight=10, label="/ (write)"]
-	"7" [style=dotted]
-	"7"  -> "8"  [weight=10, label="left := true (micro)"]
+	"6"  -> "8"  [weight=10, label="left := true (write)"]
 
 	"8"  -> "9"  [weight=10, label="(work)"]
 
@@ -38,9 +36,7 @@ digraph {
 	"13" -> "14" [weight=10, label="/ (write)"]
 	"14" [style=dotted]
 	"14" -> "15" [weight=10, label="entry := 0 (micro)"]
-	"15" -> "16" [weight=10, label="/ (write)"]
-	"16" [style=dotted]
-	"16" -> "17" [weight=10, label="left := false (micro)"]
+	"15" -> "17" [weight=10, label="left := false (write)"]
 
 	"17" -> "0" [label="(work)"]
 
