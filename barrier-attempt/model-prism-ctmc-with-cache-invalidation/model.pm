@@ -57,10 +57,9 @@ module process_1
 	[read_1]  l_1=2 & mesi_1 =invalid & (!(cp_1 != full & left_1 = false)) -> read : (l_1'=3) & (mesi_1'=shared);
 	[read_1]  l_1=2 & mesi_1!=invalid & (!(cp_1 != full & left_1 = false)) -> tick : (l_1'=3);
 
-	[set_exit_0_23] l_1=3 & mesi_1!=modified -> write : (l_1'=4) & (exit_1'=empty) & (mesi_1'=modified);
-	[set_exit_0_23] l_1=3 & mesi_1 =modified -> tick  : (l_1'=4) & (exit_1'=empty);
-
-	[set_left_true_23] l_1=4 & mesi_1!=modified -> write : (left_1'=true) & (l_1'=5) & (mesi_1'=modified);
+	[set_exit_0_23]    l_1=3 & mesi_1!=modified -> write : (l_1'=4) & (exit_1'=empty) & (mesi_1'=modified);
+	[set_exit_0_23]    l_1=3 & mesi_1 =modified -> tick  : (l_1'=4) & (exit_1'=empty);
+	[set_left_true_23] l_1=4 & mesi_1!=modified -> write : (left_1'=true) & (l_1'=5)  & (mesi_1'=modified);
 	[set_left_true_23] l_1=4 & mesi_1 =modified -> tick  : (left_1'=true) & (l_1'=5);
 
 
@@ -90,9 +89,9 @@ module process_1
 	[read_1]  l_1=8 & mesi_1!=invalid & (  cp_1 != full & left_1 = true ) -> tick : (l_1'=6);
 	[read_1]  l_1=8 & mesi_1 =invalid & (!(cp_1 != full & left_1 = true)) -> read : (l_1'=9) & (mesi_1'=shared);
 	[read_1]  l_1=8 & mesi_1!=invalid & (!(cp_1 != full & left_1 = true)) -> tick : (l_1'=9);
-	[set_entry_0_23] l_1=9 & mesi_1!=modified -> write : (l_1'=10) & (entry_1'=empty) & (mesi_1'=modified);
-	[set_entry_0_23] l_1=9 & mesi_1 =modified -> tick  : (l_1'=10) & (entry_1'=empty);
-	[set_left_false_23] l_1=10 & mesi_1!=modified -> write : (l_1'=11) & (left_1'=false) & (mesi_1'=modified);
+	[set_entry_0_23]    l_1=9  & mesi_1!=modified -> write : (l_1'=10) & (entry_1'=empty) & (mesi_1'=modified);
+	[set_entry_0_23]    l_1=9  & mesi_1 =modified -> tick  : (l_1'=10) & (entry_1'=empty);
+	[set_left_false_23] l_1=10 & mesi_1!=modified -> write : (l_1'=11) & (left_1'=false)  & (mesi_1'=modified);
 	[set_left_false_23] l_1=10 & mesi_1 =modified -> tick  : (l_1'=11) & (left_1'=false);
 
 
@@ -108,182 +107,182 @@ module process_1
 	[read_2]  mesi_1=modified -> (mesi_1'=shared);
 	[read_3]  mesi_1=modified -> (mesi_1'=shared);
 
-	[set_left_false_12]  true -> (left_1'=false) & (mesi_1'=invalid);
-	[set_left_false_13]  true -> (left_1'=false) & (mesi_1'=invalid);
-	[set_left_true_12]   true -> (left_1'=true)  & (mesi_1'=invalid);
-	[set_left_true_13]   true -> (left_1'=true)  & (mesi_1'=invalid);
+	[set_left_false_12]  true -> (left_1'=false)  & (mesi_1'=invalid);
+	[set_left_false_13]  true -> (left_1'=false)  & (mesi_1'=invalid);
+	[set_left_true_12]   true -> (left_1'=true)   & (mesi_1'=invalid);
+	[set_left_true_13]   true -> (left_1'=true)   & (mesi_1'=invalid);
 
-	[set_entry_0_12] true -> (entry_1'=empty) & (mesi_1'=invalid);
-	[set_entry_0_13] true -> (entry_1'=empty) & (mesi_1'=invalid);
-	[set_entry_1_12] true -> (entry_1'=1)     & (mesi_1'=invalid);
-	[set_entry_1_13] true -> (entry_1'=1)     & (mesi_1'=invalid);
-	[set_entry_2_12] true -> (entry_1'=2)     & (mesi_1'=invalid);
-	[set_entry_2_13] true -> (entry_1'=2)     & (mesi_1'=invalid);
-	[set_entry_3_12] true -> (entry_1'=3)     & (mesi_1'=invalid);
-	[set_entry_3_13] true -> (entry_1'=3)     & (mesi_1'=invalid);
-	[set_entry_4_12] true -> (entry_1'=4)     & (mesi_1'=invalid);
-	[set_entry_4_13] true -> (entry_1'=4)     & (mesi_1'=invalid);
-	[set_entry_5_12] true -> (entry_1'=5)     & (mesi_1'=invalid);
-	[set_entry_5_13] true -> (entry_1'=5)     & (mesi_1'=invalid);
-	[set_entry_6_12] true -> (entry_1'=6)     & (mesi_1'=invalid);
-	[set_entry_6_13] true -> (entry_1'=6)     & (mesi_1'=invalid);
-	[set_entry_7_12] true -> (entry_1'=full)  & (mesi_1'=invalid);
-	[set_entry_7_13] true -> (entry_1'=full)  & (mesi_1'=invalid);
+	[set_entry_0_12]     true -> (entry_1'=empty) & (mesi_1'=invalid);
+	[set_entry_0_13]     true -> (entry_1'=empty) & (mesi_1'=invalid);
+	[set_entry_1_12]     true -> (entry_1'=1)     & (mesi_1'=invalid);
+	[set_entry_1_13]     true -> (entry_1'=1)     & (mesi_1'=invalid);
+	[set_entry_2_12]     true -> (entry_1'=2)     & (mesi_1'=invalid);
+	[set_entry_2_13]     true -> (entry_1'=2)     & (mesi_1'=invalid);
+	[set_entry_3_12]     true -> (entry_1'=3)     & (mesi_1'=invalid);
+	[set_entry_3_13]     true -> (entry_1'=3)     & (mesi_1'=invalid);
+	[set_entry_4_12]     true -> (entry_1'=4)     & (mesi_1'=invalid);
+	[set_entry_4_13]     true -> (entry_1'=4)     & (mesi_1'=invalid);
+	[set_entry_5_12]     true -> (entry_1'=5)     & (mesi_1'=invalid);
+	[set_entry_5_13]     true -> (entry_1'=5)     & (mesi_1'=invalid);
+	[set_entry_6_12]     true -> (entry_1'=6)     & (mesi_1'=invalid);
+	[set_entry_6_13]     true -> (entry_1'=6)     & (mesi_1'=invalid);
+	[set_entry_7_12]     true -> (entry_1'=full)  & (mesi_1'=invalid);
+	[set_entry_7_13]     true -> (entry_1'=full)  & (mesi_1'=invalid);
 
-	[set_exit_0_12]  true -> (exit_1'=empty)  & (mesi_1'=invalid);
-	[set_exit_0_13]  true -> (exit_1'=empty)  & (mesi_1'=invalid);
-	[set_exit_1_12]  true -> (exit_1'=1)      & (mesi_1'=invalid);
-	[set_exit_1_13]  true -> (exit_1'=1)      & (mesi_1'=invalid);
-	[set_exit_2_12]  true -> (exit_1'=2)      & (mesi_1'=invalid);
-	[set_exit_2_13]  true -> (exit_1'=2)      & (mesi_1'=invalid);
-	[set_exit_3_12]  true -> (exit_1'=3)      & (mesi_1'=invalid);
-	[set_exit_3_13]  true -> (exit_1'=3)      & (mesi_1'=invalid);
-	[set_exit_4_12]  true -> (exit_1'=4)      & (mesi_1'=invalid);
-	[set_exit_4_13]  true -> (exit_1'=4)      & (mesi_1'=invalid);
-	[set_exit_5_12]  true -> (exit_1'=5)      & (mesi_1'=invalid);
-	[set_exit_5_13]  true -> (exit_1'=5)      & (mesi_1'=invalid);
-	[set_exit_6_12]  true -> (exit_1'=6)      & (mesi_1'=invalid);
-	[set_exit_6_13]  true -> (exit_1'=6)      & (mesi_1'=invalid);
-	[set_exit_7_12]  true -> (exit_1'=full)   & (mesi_1'=invalid);
-	[set_exit_7_13]  true -> (exit_1'=full)   & (mesi_1'=invalid);
+	[set_exit_0_12]      true -> (exit_1'=empty)  & (mesi_1'=invalid);
+	[set_exit_0_13]      true -> (exit_1'=empty)  & (mesi_1'=invalid);
+	[set_exit_1_12]      true -> (exit_1'=1)      & (mesi_1'=invalid);
+	[set_exit_1_13]      true -> (exit_1'=1)      & (mesi_1'=invalid);
+	[set_exit_2_12]      true -> (exit_1'=2)      & (mesi_1'=invalid);
+	[set_exit_2_13]      true -> (exit_1'=2)      & (mesi_1'=invalid);
+	[set_exit_3_12]      true -> (exit_1'=3)      & (mesi_1'=invalid);
+	[set_exit_3_13]      true -> (exit_1'=3)      & (mesi_1'=invalid);
+	[set_exit_4_12]      true -> (exit_1'=4)      & (mesi_1'=invalid);
+	[set_exit_4_13]      true -> (exit_1'=4)      & (mesi_1'=invalid);
+	[set_exit_5_12]      true -> (exit_1'=5)      & (mesi_1'=invalid);
+	[set_exit_5_13]      true -> (exit_1'=5)      & (mesi_1'=invalid);
+	[set_exit_6_12]      true -> (exit_1'=6)      & (mesi_1'=invalid);
+	[set_exit_6_13]      true -> (exit_1'=6)      & (mesi_1'=invalid);
+	[set_exit_7_12]      true -> (exit_1'=full)   & (mesi_1'=invalid);
+	[set_exit_7_13]      true -> (exit_1'=full)   & (mesi_1'=invalid);
 endmodule
 
 module process_2 = process_1 [
-	me_1     =me_2,
-	me_bit_1 =me_bit_2,
-	l_1      =l_2,
-	cp_1     =cp_2,
-	exit_1   =exit_2,
-	entry_1  =entry_2,
-	left_1   =left_2,
-	mesi_1   =mesi_2,
-	read_1   =read_2,
-	read_2   =read_1,
-	write_1  =write_2,
-	write_2  =write_1,
-	set_left_false_12 = set_left_false_12,
-	set_left_false_13 = set_left_false_23,
-	set_left_false_23 = set_left_false_13,
-	set_left_true_12  = set_left_true_12,
-	set_left_true_13  = set_left_true_23,
-	set_left_true_23  = set_left_true_13,
-	set_entry_0_12    = set_entry_0_12,
-	set_entry_0_13    = set_entry_0_23,
-	set_entry_0_23    = set_entry_0_13,
-	set_entry_1_12    = set_entry_1_12,
-	set_entry_1_13    = set_entry_1_23,
-	set_entry_1_23    = set_entry_1_13,
-	set_entry_2_12    = set_entry_2_12,
-	set_entry_2_13    = set_entry_2_23,
-	set_entry_2_23    = set_entry_2_13,
-	set_entry_3_12    = set_entry_3_12,
-	set_entry_3_13    = set_entry_3_23,
-	set_entry_3_23    = set_entry_3_13,
-	set_entry_4_12    = set_entry_4_12,
-	set_entry_4_13    = set_entry_4_23,
-	set_entry_4_23    = set_entry_4_13,
-	set_entry_5_12    = set_entry_5_12,
-	set_entry_5_13    = set_entry_5_23,
-	set_entry_5_23    = set_entry_5_13,
-	set_entry_6_12    = set_entry_6_12,
-	set_entry_6_13    = set_entry_6_23,
-	set_entry_6_23    = set_entry_6_13,
-	set_entry_7_12    = set_entry_7_12,
-	set_entry_7_13    = set_entry_7_23,
-	set_entry_7_23    = set_entry_7_13,
-	set_exit_0_12     = set_exit_0_12,
-	set_exit_0_13     = set_exit_0_23,
-	set_exit_0_23     = set_exit_0_13,
-	set_exit_1_12     = set_exit_1_12,
-	set_exit_1_13     = set_exit_1_23,
-	set_exit_1_23     = set_exit_1_13,
-	set_exit_2_12     = set_exit_2_12,
-	set_exit_2_13     = set_exit_2_23,
-	set_exit_2_23     = set_exit_2_13,
-	set_exit_3_12     = set_exit_3_12,
-	set_exit_3_13     = set_exit_3_23,
-	set_exit_3_23     = set_exit_3_13,
-	set_exit_4_12     = set_exit_4_12,
-	set_exit_4_13     = set_exit_4_23,
-	set_exit_4_23     = set_exit_4_13,
-	set_exit_5_12     = set_exit_5_12,
-	set_exit_5_13     = set_exit_5_23,
-	set_exit_5_23     = set_exit_5_13,
-	set_exit_6_12     = set_exit_6_12,
-	set_exit_6_13     = set_exit_6_23,
-	set_exit_6_23     = set_exit_6_13,
-	set_exit_7_12     = set_exit_7_12,
-	set_exit_7_13     = set_exit_7_23,
-	set_exit_7_23     = set_exit_7_13
+	me_1              =me_2,
+	me_bit_1          =me_bit_2,
+	l_1               =l_2,
+	cp_1              =cp_2,
+	exit_1            =exit_2,
+	entry_1           =entry_2,
+	left_1            =left_2,
+	mesi_1            =mesi_2,
+	read_1            =read_2,
+	read_2            =read_1,
+	write_1           =write_2,
+	write_2           =write_1,
+	set_left_false_12 =set_left_false_12,
+	set_left_false_13 =set_left_false_23,
+	set_left_false_23 =set_left_false_13,
+	set_left_true_12  =set_left_true_12,
+	set_left_true_13  =set_left_true_23,
+	set_left_true_23  =set_left_true_13,
+	set_entry_0_12    =set_entry_0_12,
+	set_entry_0_13    =set_entry_0_23,
+	set_entry_0_23    =set_entry_0_13,
+	set_entry_1_12    =set_entry_1_12,
+	set_entry_1_13    =set_entry_1_23,
+	set_entry_1_23    =set_entry_1_13,
+	set_entry_2_12    =set_entry_2_12,
+	set_entry_2_13    =set_entry_2_23,
+	set_entry_2_23    =set_entry_2_13,
+	set_entry_3_12    =set_entry_3_12,
+	set_entry_3_13    =set_entry_3_23,
+	set_entry_3_23    =set_entry_3_13,
+	set_entry_4_12    =set_entry_4_12,
+	set_entry_4_13    =set_entry_4_23,
+	set_entry_4_23    =set_entry_4_13,
+	set_entry_5_12    =set_entry_5_12,
+	set_entry_5_13    =set_entry_5_23,
+	set_entry_5_23    =set_entry_5_13,
+	set_entry_6_12    =set_entry_6_12,
+	set_entry_6_13    =set_entry_6_23,
+	set_entry_6_23    =set_entry_6_13,
+	set_entry_7_12    =set_entry_7_12,
+	set_entry_7_13    =set_entry_7_23,
+	set_entry_7_23    =set_entry_7_13,
+	set_exit_0_12     =set_exit_0_12,
+	set_exit_0_13     =set_exit_0_23,
+	set_exit_0_23     =set_exit_0_13,
+	set_exit_1_12     =set_exit_1_12,
+	set_exit_1_13     =set_exit_1_23,
+	set_exit_1_23     =set_exit_1_13,
+	set_exit_2_12     =set_exit_2_12,
+	set_exit_2_13     =set_exit_2_23,
+	set_exit_2_23     =set_exit_2_13,
+	set_exit_3_12     =set_exit_3_12,
+	set_exit_3_13     =set_exit_3_23,
+	set_exit_3_23     =set_exit_3_13,
+	set_exit_4_12     =set_exit_4_12,
+	set_exit_4_13     =set_exit_4_23,
+	set_exit_4_23     =set_exit_4_13,
+	set_exit_5_12     =set_exit_5_12,
+	set_exit_5_13     =set_exit_5_23,
+	set_exit_5_23     =set_exit_5_13,
+	set_exit_6_12     =set_exit_6_12,
+	set_exit_6_13     =set_exit_6_23,
+	set_exit_6_23     =set_exit_6_13,
+	set_exit_7_12     =set_exit_7_12,
+	set_exit_7_13     =set_exit_7_23,
+	set_exit_7_23     =set_exit_7_13
 ] endmodule
 
 module process_3 = process_1 [
-	me_1     =me_3,
-	me_bit_1 =me_bit_3,
-	l_1      =l_3,
-	cp_1     =cp_3,
-	exit_1   =exit_3,
-	entry_1  =entry_3,
-	left_1   =left_3,
-	mesi_1   =mesi_3,
-	read_1   =read_3,
-	read_3   =read_1,
-	write_1  =write_3,
-	write_3  =write_1,
-	set_left_false_12 = set_left_false_13,
-	set_left_false_13 = set_left_false_23,
-	set_left_false_23 = set_left_false_12,
-	set_left_true_12  = set_left_true_13,
-	set_left_true_13  = set_left_true_23,
-	set_left_true_23  = set_left_true_12,
-	set_entry_0_12    = set_entry_0_23,
-	set_entry_0_13    = set_entry_0_13,
-	set_entry_0_23    = set_entry_0_12,
-	set_entry_1_12    = set_entry_1_23,
-	set_entry_1_13    = set_entry_1_13,
-	set_entry_1_23    = set_entry_1_12,
-	set_entry_2_12    = set_entry_2_23,
-	set_entry_2_13    = set_entry_2_13,
-	set_entry_2_23    = set_entry_2_12,
-	set_entry_3_12    = set_entry_3_23,
-	set_entry_3_13    = set_entry_3_13,
-	set_entry_3_23    = set_entry_3_12,
-	set_entry_4_12    = set_entry_4_23,
-	set_entry_4_13    = set_entry_4_13,
-	set_entry_4_23    = set_entry_4_12,
-	set_entry_5_12    = set_entry_5_23,
-	set_entry_5_13    = set_entry_5_13,
-	set_entry_5_23    = set_entry_5_12,
-	set_entry_6_12    = set_entry_6_23,
-	set_entry_6_13    = set_entry_6_13,
-	set_entry_6_23    = set_entry_6_12,
-	set_entry_7_12    = set_entry_7_23,
-	set_entry_7_13    = set_entry_7_13,
-	set_entry_7_23    = set_entry_7_12,
-	set_exit_0_12     = set_exit_0_23,
-	set_exit_0_13     = set_exit_0_13,
-	set_exit_0_23     = set_exit_0_12,
-	set_exit_1_12     = set_exit_1_23,
-	set_exit_1_13     = set_exit_1_13,
-	set_exit_1_23     = set_exit_1_12,
-	set_exit_2_12     = set_exit_2_23,
-	set_exit_2_13     = set_exit_2_13,
-	set_exit_2_23     = set_exit_2_12,
-	set_exit_3_12     = set_exit_3_23,
-	set_exit_3_13     = set_exit_3_13,
-	set_exit_3_23     = set_exit_3_12,
-	set_exit_4_12     = set_exit_4_23,
-	set_exit_4_13     = set_exit_4_13,
-	set_exit_4_23     = set_exit_4_12,
-	set_exit_5_12     = set_exit_5_23,
-	set_exit_5_13     = set_exit_5_13,
-	set_exit_5_23     = set_exit_5_12,
-	set_exit_6_12     = set_exit_6_23,
-	set_exit_6_13     = set_exit_6_13,
-	set_exit_6_23     = set_exit_6_12,
-	set_exit_7_12     = set_exit_7_23,
-	set_exit_7_13     = set_exit_7_13,
-	set_exit_7_23     = set_exit_7_12
+	me_1              =me_3,
+	me_bit_1          =me_bit_3,
+	l_1               =l_3,
+	cp_1              =cp_3,
+	exit_1            =exit_3,
+	entry_1           =entry_3,
+	left_1            =left_3,
+	mesi_1            =mesi_3,
+	read_1            =read_3,
+	read_3            =read_1,
+	write_1           =write_3,
+	write_3           =write_1,
+	set_left_false_12 =set_left_false_13,
+	set_left_false_13 =set_left_false_23,
+	set_left_false_23 =set_left_false_12,
+	set_left_true_12  =set_left_true_13,
+	set_left_true_13  =set_left_true_23,
+	set_left_true_23  =set_left_true_12,
+	set_entry_0_12    =set_entry_0_23,
+	set_entry_0_13    =set_entry_0_13,
+	set_entry_0_23    =set_entry_0_12,
+	set_entry_1_12    =set_entry_1_23,
+	set_entry_1_13    =set_entry_1_13,
+	set_entry_1_23    =set_entry_1_12,
+	set_entry_2_12    =set_entry_2_23,
+	set_entry_2_13    =set_entry_2_13,
+	set_entry_2_23    =set_entry_2_12,
+	set_entry_3_12    =set_entry_3_23,
+	set_entry_3_13    =set_entry_3_13,
+	set_entry_3_23    =set_entry_3_12,
+	set_entry_4_12    =set_entry_4_23,
+	set_entry_4_13    =set_entry_4_13,
+	set_entry_4_23    =set_entry_4_12,
+	set_entry_5_12    =set_entry_5_23,
+	set_entry_5_13    =set_entry_5_13,
+	set_entry_5_23    =set_entry_5_12,
+	set_entry_6_12    =set_entry_6_23,
+	set_entry_6_13    =set_entry_6_13,
+	set_entry_6_23    =set_entry_6_12,
+	set_entry_7_12    =set_entry_7_23,
+	set_entry_7_13    =set_entry_7_13,
+	set_entry_7_23    =set_entry_7_12,
+	set_exit_0_12     =set_exit_0_23,
+	set_exit_0_13     =set_exit_0_13,
+	set_exit_0_23     =set_exit_0_12,
+	set_exit_1_12     =set_exit_1_23,
+	set_exit_1_13     =set_exit_1_13,
+	set_exit_1_23     =set_exit_1_12,
+	set_exit_2_12     =set_exit_2_23,
+	set_exit_2_13     =set_exit_2_13,
+	set_exit_2_23     =set_exit_2_12,
+	set_exit_3_12     =set_exit_3_23,
+	set_exit_3_13     =set_exit_3_13,
+	set_exit_3_23     =set_exit_3_12,
+	set_exit_4_12     =set_exit_4_23,
+	set_exit_4_13     =set_exit_4_13,
+	set_exit_4_23     =set_exit_4_12,
+	set_exit_5_12     =set_exit_5_23,
+	set_exit_5_13     =set_exit_5_13,
+	set_exit_5_23     =set_exit_5_12,
+	set_exit_6_12     =set_exit_6_23,
+	set_exit_6_13     =set_exit_6_13,
+	set_exit_6_23     =set_exit_6_12,
+	set_exit_7_12     =set_exit_7_23,
+	set_exit_7_13     =set_exit_7_13,
+	set_exit_7_23     =set_exit_7_12
 ] endmodule
 
 
