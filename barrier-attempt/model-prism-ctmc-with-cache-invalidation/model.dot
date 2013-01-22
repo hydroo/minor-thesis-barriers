@@ -1,6 +1,6 @@
 digraph {
 
-	"CTMC\nlocal variables: copy := 0, me\nshared variables: entry := 0, exit := 0, left := false\n\nbase_rate = 2500\nmicro = base_rate * 100.0\ntick=base_rate / 1\nwork=base_rate / 1000\nread=base_rate / 50\nwrite=base_rate / 100\n\nothers = red, me = blue transitions" [nojustify=true, shape=box]
+	"CTMC\nlocal variables: copy := 0, me\nshared variables: entry := 0, exit := 0, left := false\n\nbase_rate = 2500\ntick=base_rate / 1\nwork=base_rate / 1000\nread=base_rate / 50\nwrite=base_rate / 100\n\nothers = red, me = blue transitions" [nojustify=true, shape=box]
 
 	"process" [nojustify=true, shape=box, style=bold, fontsize=20]
 
