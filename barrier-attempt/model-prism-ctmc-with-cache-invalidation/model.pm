@@ -11,9 +11,6 @@ const me_bit_3 = 4; //2^2
 const empty = 0;
 const full = me_bit_1 + me_bit_2 + me_bit_3;
 
-const min_invalid = empty - 1;
-const max_invalid = full + 1;
-
 const modified = 0;
 const shared = 1;
 const invalid = 2;
