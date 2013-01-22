@@ -1,4 +1,4 @@
-// cache impossibilities
+// cache properties
 P<=0 [G (mesi_1=modified & mesi_2=modified)]
 P<=0 [G (mesi_1=modified & mesi_3=modified)]
 P<=0 [G (mesi_2=modified & mesi_1=modified)]
@@ -10,7 +10,17 @@ P<=0 [G (mesi_1=shared & !(mesi_2=shared | mesi_3=shared))]
 P<=0 [G (mesi_2=shared & !(mesi_1=shared | mesi_3=shared))]
 P<=0 [G (mesi_3=shared & !(mesi_1=shared | mesi_2=shared))]
 
-// imitiation of left as a global variable
+P>=1  [F (mesi_1=modified)]
+P>=1  [F (mesi_1=shared)]
+P>=1  [F (mesi_1=invalid)]
+P>=1  [F (mesi_2=modified)]
+P>=1  [F (mesi_2=shared)]
+P>=1  [F (mesi_2=invalid)]
+P>=1  [F (mesi_3=modified)]
+P>=1  [F (mesi_3=shared)]
+P>=1  [F (mesi_3=invalid)]
+
+// imitiation of global variables
 P<=0 [F left_1  != left_2]
 P<=0 [F left_1  != left_3]
 P<=0 [F left_2  != left_3]
