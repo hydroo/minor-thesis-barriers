@@ -26,7 +26,7 @@ P<=0 [F exit_1  != exit_3]
 P<=0 [F exit_2  != exit_3]
 
 //non-blocking
-P>=1 [G F l_1=17]
-P>=1 [G F l_2=17]
-P>=1 [G F l_3=17]
+P>=1 [G F l_1=11]
+P>=1 [G F l_2=11]
+P>=1 [G F l_3=11]
 
