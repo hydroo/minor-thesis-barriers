@@ -12,30 +12,22 @@ digraph {
 
 	"0"  -> "1"  [weight=10, label="copy := entry (read)"]
 	"1"  -> "3"  [label="else (tick)"]
-	"1"  -> "2"  [weight=10, label="copy&me == 0 : / (write)"]
-	"2" [style=dotted]
-	"2"  -> "3"  [weight=10, label="entry := copy|me (micro)"]
+	"1"  -> "3"  [weight=10, label="copy&me == 0 : entry := copy|me (write)"]
 
 	"3"  -> "0"  [label="copy != full & left = false (read)"]
 	"3"  -> "4"  [weight=10, label="else : / (read)"]
-	"4"  -> "5"  [weight=10, label="/ (write)"]
-	"5" [style=dotted]
-	"5"  -> "6"  [weight=10, label="exit := 0 (micro)"]
+	"4"  -> "6"  [weight=10, label="exit := 0 (write)"]
 	"6"  -> "8"  [weight=10, label="left := true (write)"]
 
 	"8"  -> "9"  [weight=10, label="(work)"]
 
 	"9"  -> "10" [weight=10, label="copy := exit (read)"]
 	"10" -> "12" [label="else (tick)"]
-	"10" -> "11" [weight=10, label="copy&me == 0 : / (write)"]
-	"11" [style=dotted]
-	"11" -> "12" [weight=10, label="exit := copy|me (micro)"]
+	"10" -> "12" [weight=10, label="copy&me == 0 : exit := copy|me (write)"]
 
 	"12" -> "9"  [label="copy != full & left = true (read)"]
 	"12" -> "13" [weight=10, label="else : / (read)"]
-	"13" -> "14" [weight=10, label="/ (write)"]
-	"14" [style=dotted]
-	"14" -> "15" [weight=10, label="entry := 0 (micro)"]
+	"13" -> "15" [weight=10, label="entry := 0 (write)"]
 	"15" -> "17" [weight=10, label="left := false (write)"]
 
 	"17" -> "0" [label="(work)"]

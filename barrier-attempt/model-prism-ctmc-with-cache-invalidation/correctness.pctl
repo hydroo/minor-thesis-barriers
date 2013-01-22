@@ -12,22 +12,18 @@ P<=0 [G (mesi_1=shared & !(mesi_2=shared | mesi_3=shared))]
 P<=0 [G (mesi_2=shared & !(mesi_1=shared | mesi_3=shared))]
 P<=0 [G (mesi_3=shared & !(mesi_1=shared | mesi_2=shared))]
 
-// impossible values
-P<=0 [F entry=min_invalid ]
-P<=0 [F entry=max_invalid ]
-P<=0 [F exit =min_invalid ]
-P<=0 [F exit =max_invalid ]
-P<=0 [F cp_1 =min_invalid ]
-P<=0 [F cp_1 =max_invalid ]
-P<=0 [F cp_2 =min_invalid ]
-P<=0 [F cp_2 =max_invalid ]
-P<=0 [F cp_3 =min_invalid ]
-P<=0 [F cp_3 =max_invalid ]
-
 // imitiation of left as a global variable
 P<=0 [F left_1  != left_2]
 P<=0 [F left_1  != left_3]
 P<=0 [F left_2  != left_3]
+
+P<=0 [F entry_1  != entry_2]
+P<=0 [F entry_1  != entry_3]
+P<=0 [F entry_2  != entry_3]
+
+P<=0 [F exit_1  != exit_2]
+P<=0 [F exit_1  != exit_3]
+P<=0 [F exit_2  != exit_3]
 
 //non-blocking
 P>=1 [G F l_1=17]
