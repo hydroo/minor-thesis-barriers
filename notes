@@ -1,3 +1,10 @@
+--- 13-01-22  ---
+ * 2 processes - ss prob: m=0.431, s=0.138, i=0.431
+ * 3 processes - P=? [ true U<=(500/2500) l_1=5 ] - sparse - gauss-seidel - 1min - 0.42
+ * 3 processes - S=? [ "shared_1" ]  - sparse - gauss-seidel  - 15min - 0.401
+ * 3 processes - S=? [ "modified_1" ] - sparse - gauss-seidel - 15min - 0.143
+ * 3 processes - S=? [ "invalid_1" ] - sparse - gauss-seidel - 15min - 0.455
+
 --- 13-01-21  ---
  * bug fix (a wrong rate)
  * left is now a synced local variable. This saves ~ 1/7th of the state spaces.
@@ -9,7 +16,7 @@
 --- 13-01-19  ---
 
  * modelchecking 3 processes takes too long (building model 3 minutes), modelchecking >20min perhaps way more. (4000 states for 2 processes, 5mio for 3 states)
-  □ perhaps make a version with "assign labels" in order to remove the dotted states
+  ✓ perhaps make a version with "assign labels" in order to remove the dotted states
 
 
  * what are interesting questions? (--> queries)
