@@ -1,26 +1,26 @@
 ctmc
 
-const me_1 = 1; //index
-const me_2 = 2;
-const me_3 = 3;
+const int me_1 = 1; //index
+const int me_2 = 2;
+const int me_3 = 3;
 
-const me_bit_1 = 1; //2^0
-const me_bit_2 = 2; //2^1
-const me_bit_3 = 4; //2^2
+const int me_bit_1 = 1; //2^0
+const int me_bit_2 = 2; //2^1
+const int me_bit_3 = 4; //2^2
 
-const empty = 0;
-const full = me_bit_1 + me_bit_2 + me_bit_3;
+const int empty = 0;
+const int full  = me_bit_1 + me_bit_2 + me_bit_3;
 
-const modified = 0;
-const shared = 1;
-const invalid = 2;
+const int modified = 0;
+const int shared   = 1;
+const int invalid  = 2;
 
 
-formula base_rate  = 2500.0;
-formula tick       = base_rate / 1.0;
-formula work       = base_rate / 1000.0;
-formula read       = base_rate / 50.0;
-formula write      = base_rate / 100.0;
+const double base_rate = 2500.0;
+const double tick      = base_rate / 1.0;
+const double work      = base_rate / 1000.0;
+const double read      = base_rate / 50.0;
+const double write     = base_rate / 100.0;
 
 
 module process_1
