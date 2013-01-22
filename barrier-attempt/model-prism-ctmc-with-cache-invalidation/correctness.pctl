@@ -1,5 +1,3 @@
-// DO NOT FORGET to enable weak fairness !
-
 // cache impossibilities
 P<=0 [G (mesi_1=modified & mesi_2=modified)]
 P<=0 [G (mesi_1=modified & mesi_3=modified)]
