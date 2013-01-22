@@ -10,7 +10,6 @@ const me_bit_3 = 4; //2^2
 
 const empty = 0;
 const full = me_bit_1 + me_bit_2 + me_bit_3;
-//const full = me_bit_1 + me_bit_2;
 
 const min_invalid = empty - 1;
 const max_invalid = full + 1;
@@ -21,88 +20,86 @@ const invalid = 2;
 
 
 formula base_rate  = 2500.0;
-formula micro      = base_rate * 100.0; //used for intermediate transitions that should fire very quickly
 formula tick       = base_rate / 1.0;
 formula work       = base_rate / 1000.0;
 formula read       = base_rate / 50.0;
 formula write      = base_rate / 100.0;
 
 
-
 module process_1
-	l_1 : [0..17] init 0;
+	l_1 : [0..11] init 0;
 	cp_1 : [empty..full] init empty;
+	mesi_1 : [0..2] init invalid;
 	exit_1 : [empty..full] init empty;
 	entry_1 : [empty..full] init empty;
 	left_1 : bool init false;
-	mesi_1 : [0..2] init invalid;
 
 	//process
 	[read_1]  l_1=0 & mesi_1 =invalid -> read : (l_1'=1) & (cp_1'=entry_1) & (mesi_1'=shared);
 	[read_1]  l_1=0 & mesi_1!=invalid -> tick : (l_1'=1) & (cp_1'=entry_1);
 
-	[]        l_1=1 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=3);
+	[]        l_1=1 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=2);
 
-	[set_entry_1_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=1-me_bit_1 -> write : (l_1'=3) & (entry_1'=1) & (mesi_1'=modified); //5
-	[set_entry_1_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=1-me_bit_1 -> tick  : (l_1'=3) & (entry_1'=1);
-	[set_entry_2_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=2-me_bit_1 -> write : (l_1'=3) & (entry_1'=2) & (mesi_1'=modified);
-	[set_entry_2_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=2-me_bit_1 -> tick  : (l_1'=3) & (entry_1'=2);
-	[set_entry_3_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=3-me_bit_1 -> write : (l_1'=3) & (entry_1'=3) & (mesi_1'=modified);
-	[set_entry_3_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=3-me_bit_1 -> tick  : (l_1'=3) & (entry_1'=3);
-	[set_entry_4_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=4-me_bit_1 -> write : (l_1'=3) & (entry_1'=4) & (mesi_1'=modified);
-	[set_entry_4_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=4-me_bit_1 -> tick  : (l_1'=3) & (entry_1'=4);
-	[set_entry_5_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=5-me_bit_1 -> write : (l_1'=3) & (entry_1'=5) & (mesi_1'=modified);
-	[set_entry_5_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=5-me_bit_1 -> tick  : (l_1'=3) & (entry_1'=5);
-	[set_entry_6_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=6-me_bit_1 -> write : (l_1'=3) & (entry_1'=6) & (mesi_1'=modified); //15
-	[set_entry_6_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=6-me_bit_1 -> tick  : (l_1'=3) & (entry_1'=6);
-	[set_entry_7_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=7-me_bit_1 -> write : (l_1'=3) & (entry_1'=7) & (mesi_1'=modified);
-	[set_entry_7_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=7-me_bit_1 -> tick  : (l_1'=3) & (entry_1'=7);
+	[set_entry_1_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=1-me_bit_1 -> write : (l_1'=2) & (entry_1'=1) & (mesi_1'=modified); //5
+	[set_entry_1_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=1-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=1);
+	[set_entry_2_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=2-me_bit_1 -> write : (l_1'=2) & (entry_1'=2) & (mesi_1'=modified);
+	[set_entry_2_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=2-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=2);
+	[set_entry_3_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=3-me_bit_1 -> write : (l_1'=2) & (entry_1'=3) & (mesi_1'=modified);
+	[set_entry_3_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=3-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=3);
+	[set_entry_4_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=4-me_bit_1 -> write : (l_1'=2) & (entry_1'=4) & (mesi_1'=modified);
+	[set_entry_4_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=4-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=4);
+	[set_entry_5_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=5-me_bit_1 -> write : (l_1'=2) & (entry_1'=5) & (mesi_1'=modified);
+	[set_entry_5_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=5-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=5);
+	[set_entry_6_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=6-me_bit_1 -> write : (l_1'=2) & (entry_1'=6) & (mesi_1'=modified); //15
+	[set_entry_6_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=6-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=6);
+	[set_entry_7_23] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=7-me_bit_1 -> write : (l_1'=2) & (entry_1'=7) & (mesi_1'=modified);
+	[set_entry_7_23] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=7-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=7);
 
-	[read_1]  l_1=3 & mesi_1 =invalid & (  cp_1 != full & left_1 = false ) -> read : (l_1'=0) & (mesi_1'=shared);
-	[read_1]  l_1=3 & mesi_1!=invalid & (  cp_1 != full & left_1 = false ) -> tick : (l_1'=0);
-	[read_1]  l_1=3 & mesi_1 =invalid & (!(cp_1 != full & left_1 = false)) -> read : (l_1'=4) & (mesi_1'=shared);
-	[read_1]  l_1=3 & mesi_1!=invalid & (!(cp_1 != full & left_1 = false)) -> tick : (l_1'=4);
+	[read_1]  l_1=2 & mesi_1 =invalid & (  cp_1 != full & left_1 = false ) -> read : (l_1'=0) & (mesi_1'=shared);
+	[read_1]  l_1=2 & mesi_1!=invalid & (  cp_1 != full & left_1 = false ) -> tick : (l_1'=0);
+	[read_1]  l_1=2 & mesi_1 =invalid & (!(cp_1 != full & left_1 = false)) -> read : (l_1'=3) & (mesi_1'=shared);
+	[read_1]  l_1=2 & mesi_1!=invalid & (!(cp_1 != full & left_1 = false)) -> tick : (l_1'=3);
 
-	[set_exit_0_23] l_1=4 & mesi_1!=modified -> write : (l_1'=6) & (exit_1'=empty) & (mesi_1'=modified);
-	[set_exit_0_23] l_1=4 & mesi_1 =modified -> tick  : (l_1'=6) & (exit_1'=empty);
+	[set_exit_0_23] l_1=3 & mesi_1!=modified -> write : (l_1'=4) & (exit_1'=empty) & (mesi_1'=modified);
+	[set_exit_0_23] l_1=3 & mesi_1 =modified -> tick  : (l_1'=4) & (exit_1'=empty);
 
-	[set_left_true_23] l_1=6 & mesi_1!=modified -> write : (left_1'=true) & (l_1'=8) & (mesi_1'=modified);
-	[set_left_true_23] l_1=6 & mesi_1 =modified -> tick  : (left_1'=true) & (l_1'=8);
-
-
-	[]        l_1=8 -> work : (l_1'=9);
+	[set_left_true_23] l_1=4 & mesi_1!=modified -> write : (left_1'=true) & (l_1'=5) & (mesi_1'=modified);
+	[set_left_true_23] l_1=4 & mesi_1 =modified -> tick  : (left_1'=true) & (l_1'=5);
 
 
-	[read_1]  l_1=9 & mesi_1 =invalid -> read : (l_1'=10) & (cp_1'=exit_1) & (mesi_1'=shared);
-	[read_1]  l_1=9 & mesi_1!=invalid -> tick : (l_1'=10) & (cp_1'=exit_1);
-	[]        l_1=10 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=12);
-
-	[set_exit_1_23] l_1=10 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=1-me_bit_1 -> write : (l_1'=12) & (exit_1'=1) & (mesi_1'=modified);
-	[set_exit_1_23] l_1=10 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=1-me_bit_1 -> tick  : (l_1'=12) & (exit_1'=1);
-	[set_exit_2_23] l_1=10 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=2-me_bit_1 -> write : (l_1'=12) & (exit_1'=2) & (mesi_1'=modified);
-	[set_exit_2_23] l_1=10 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=2-me_bit_1 -> tick  : (l_1'=12) & (exit_1'=2);
-	[set_exit_3_23] l_1=10 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=3-me_bit_1 -> write : (l_1'=12) & (exit_1'=3) & (mesi_1'=modified);
-	[set_exit_3_23] l_1=10 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=3-me_bit_1 -> tick  : (l_1'=12) & (exit_1'=3);
-	[set_exit_4_23] l_1=10 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=4-me_bit_1 -> write : (l_1'=12) & (exit_1'=4) & (mesi_1'=modified);
-	[set_exit_4_23] l_1=10 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=4-me_bit_1 -> tick  : (l_1'=12) & (exit_1'=4);
-	[set_exit_5_23] l_1=10 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=5-me_bit_1 -> write : (l_1'=12) & (exit_1'=5) & (mesi_1'=modified);
-	[set_exit_5_23] l_1=10 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=5-me_bit_1 -> tick  : (l_1'=12) & (exit_1'=5);
-	[set_exit_6_23] l_1=10 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=6-me_bit_1 -> write : (l_1'=12) & (exit_1'=6) & (mesi_1'=modified);
-	[set_exit_6_23] l_1=10 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=6-me_bit_1 -> tick  : (l_1'=12) & (exit_1'=6);
-	[set_exit_7_23] l_1=10 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=7-me_bit_1 -> write : (l_1'=12) & (exit_1'=7) & (mesi_1'=modified);
-	[set_exit_7_23] l_1=10 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=7-me_bit_1 -> tick  : (l_1'=12) & (exit_1'=7);
-
-	[read_1]  l_1=12 & mesi_1 =invalid & (  cp_1 != full & left_1 = true ) -> read : (l_1'=9) & (mesi_1'=shared);
-	[read_1]  l_1=12 & mesi_1!=invalid & (  cp_1 != full & left_1 = true ) -> tick : (l_1'=9);
-	[read_1]  l_1=12 & mesi_1 =invalid & (!(cp_1 != full & left_1 = true)) -> read : (l_1'=13) & (mesi_1'=shared);
-	[read_1]  l_1=12 & mesi_1!=invalid & (!(cp_1 != full & left_1 = true)) -> tick : (l_1'=13);
-	[set_entry_0_23] l_1=13 & mesi_1!=modified -> write : (l_1'=15) & (entry_1'=empty) & (mesi_1'=modified);
-	[set_entry_0_23] l_1=13 & mesi_1 =modified -> tick  : (l_1'=15) & (entry_1'=empty);
-	[set_left_false_23] l_1=15 & mesi_1!=modified -> write : (l_1'=17) & (left_1'=false) & (mesi_1'=modified);
-	[set_left_false_23] l_1=15 & mesi_1 =modified -> tick  : (l_1'=17) & (left_1'=false);
+	[]        l_1=5 -> work : (l_1'=6);
 
 
-	[]        l_1=17 -> work : (l_1'=0);
+	[read_1]  l_1=6 & mesi_1 =invalid -> read : (l_1'=7) & (cp_1'=exit_1) & (mesi_1'=shared);
+	[read_1]  l_1=6 & mesi_1!=invalid -> tick : (l_1'=7) & (cp_1'=exit_1);
+	[]        l_1=7 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=8);
+
+	[set_exit_1_23] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=1-me_bit_1 -> write : (l_1'=8) & (exit_1'=1) & (mesi_1'=modified);
+	[set_exit_1_23] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=1-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=1);
+	[set_exit_2_23] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=2-me_bit_1 -> write : (l_1'=8) & (exit_1'=2) & (mesi_1'=modified);
+	[set_exit_2_23] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=2-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=2);
+	[set_exit_3_23] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=3-me_bit_1 -> write : (l_1'=8) & (exit_1'=3) & (mesi_1'=modified);
+	[set_exit_3_23] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=3-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=3);
+	[set_exit_4_23] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=4-me_bit_1 -> write : (l_1'=8) & (exit_1'=4) & (mesi_1'=modified);
+	[set_exit_4_23] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=4-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=4);
+	[set_exit_5_23] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=5-me_bit_1 -> write : (l_1'=8) & (exit_1'=5) & (mesi_1'=modified);
+	[set_exit_5_23] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=5-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=5);
+	[set_exit_6_23] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=6-me_bit_1 -> write : (l_1'=8) & (exit_1'=6) & (mesi_1'=modified);
+	[set_exit_6_23] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=6-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=6);
+	[set_exit_7_23] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=7-me_bit_1 -> write : (l_1'=8) & (exit_1'=7) & (mesi_1'=modified);
+	[set_exit_7_23] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=7-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=7);
+
+	[read_1]  l_1=8 & mesi_1 =invalid & (  cp_1 != full & left_1 = true ) -> read : (l_1'=6) & (mesi_1'=shared);
+	[read_1]  l_1=8 & mesi_1!=invalid & (  cp_1 != full & left_1 = true ) -> tick : (l_1'=6);
+	[read_1]  l_1=8 & mesi_1 =invalid & (!(cp_1 != full & left_1 = true)) -> read : (l_1'=9) & (mesi_1'=shared);
+	[read_1]  l_1=8 & mesi_1!=invalid & (!(cp_1 != full & left_1 = true)) -> tick : (l_1'=9);
+	[set_entry_0_23] l_1=9 & mesi_1!=modified -> write : (l_1'=10) & (entry_1'=empty) & (mesi_1'=modified);
+	[set_entry_0_23] l_1=9 & mesi_1 =modified -> tick  : (l_1'=10) & (entry_1'=empty);
+	[set_left_false_23] l_1=10 & mesi_1!=modified -> write : (l_1'=11) & (left_1'=false) & (mesi_1'=modified);
+	[set_left_false_23] l_1=10 & mesi_1 =modified -> tick  : (l_1'=11) & (left_1'=false);
+
+
+	[]        l_1=11 -> work : (l_1'=0);
 
 	//cacheline
 	[read_2]  mesi_1=invalid  -> (mesi_1'=invalid);
@@ -152,7 +149,6 @@ module process_1
 	[set_exit_6_13]  true -> (exit_1'=6)      & (mesi_1'=invalid);
 	[set_exit_7_12]  true -> (exit_1'=full)   & (mesi_1'=invalid);
 	[set_exit_7_13]  true -> (exit_1'=full)   & (mesi_1'=invalid);
-
 endmodule
 
 module process_2 = process_1 [
