@@ -16,11 +16,16 @@ const int shared   = 1;
 const int invalid  = 2;
 
 
+const int work_ticks = 1000;
+const int read_ticks = 50;
+const int write_ticks = 100;
+
+
 const double base_rate = 2500.0;
 const double tick      = base_rate / 1.0;
-const double work      = base_rate / 1000.0;
-const double read      = base_rate / 50.0;
-const double write     = base_rate / 100.0;
+const double work      = base_rate / work_ticks;
+const double read      = base_rate / read_ticks;
+const double write     = base_rate / write_ticks;
 
 
 module process_1
