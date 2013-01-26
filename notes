@@ -1,4 +1,11 @@
 --- 13-01-22  ---
+ * Important realization: barrier implementations might forbid entering a new barrier
+   before the last barrier of the team in question has been left by all participants.
+   my barrier does not have this "limitation"
+   when benchmarking keep in mind that our barrier makes progress while in other implementations still wait
+   for the previous barrier to finish.
+
+--- 13-01-22  ---
  * 2 processes - ss prob: m=0.431, s=0.138, i=0.431
  * 3 processes - P=? [ true U<=(500/2500) l_1=5 ] - sparse - gauss-seidel - 1min - 0.42
  * 3 processes - S=? [ "shared_1" ]  - sparse - gauss-seidel  - 15min - 0.401
