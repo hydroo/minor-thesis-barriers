@@ -1,7 +1,7 @@
-// how long does it take to get behind the entry barrier?
+// how long does it take for one process to get behind the first barrier
 P=? [true U<=time l_1=5]
 
-// how long does it take to get behind the exit barrier (one work period included)
+// how long does it take for one process to get behind the exit barrier (one work period included)
 P=? [true U<=time l_1=11]
 
 // in which state is the cache and how much of the time?
