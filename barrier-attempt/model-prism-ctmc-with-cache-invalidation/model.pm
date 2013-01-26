@@ -23,9 +23,9 @@ const int write_ticks = 100;
 
 const double base_rate = 2500.0;
 const double tick      = base_rate / 1.0;
-const double work      = base_rate / work_ticks;
-const double read      = base_rate / read_ticks;
-const double write     = base_rate / write_ticks;
+const double work      = tick / work_ticks;
+const double read      = tick / read_ticks;
+const double write     = tick / write_ticks;
 
 
 module process_1
