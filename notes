@@ -1,9 +1,22 @@
---- 13-01-22  ---
+--- 13-01-26  ---
+ * gist of the last meeting
+  □ implement model minimizations that do not change the specific query answers, but would break other properties
+    e.g. remove the second half of the algorithm if possible
+   □ scale model for more threads
+    □ scripting is probably necessary for the scaling
+   -> measure new things that were not possible before the better scaling
+
  * Important realization: barrier implementations might forbid entering a new barrier
    before the last barrier of the team in question has been left by all participants.
    my barrier does not have this "limitation"
    when benchmarking keep in mind that our barrier makes progress while in other implementations still wait
    for the previous barrier to finish.
+
+ * done today:
+  * mini changes to the model
+  * some new / different queries
+  * 2 new experiment graphs for getting behind the entry and exit barrier
+   □ "l_*>=11" shows odd behaviour ... why is that?
 
 --- 13-01-22  ---
  * 2 processes - ss prob: m=0.431, s=0.138, i=0.431
