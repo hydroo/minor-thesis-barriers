@@ -1,24 +1,36 @@
+const double error=1.0E-6;
+
 // cache properties
-P<=0 [G (mesi_1=modified & mesi_2=modified)]
-P<=0 [G (mesi_1=modified & mesi_3=modified)]
-P<=0 [G (mesi_2=modified & mesi_1=modified)]
-P<=0 [G (mesi_2=modified & mesi_3=modified)]
-P<=0 [G (mesi_3=modified & mesi_1=modified)]
-P<=0 [G (mesi_3=modified & mesi_2=modified)]
+P<=0 [G ("modified_1" & "modified_2")]
+P<=0 [G ("modified_1" & "modified_3")]
+P<=0 [G ("modified_2" & "modified_1")]
+P<=0 [G ("modified_2" & "modified_3")]
+P<=0 [G ("modified_3" & "modified_1")]
+P<=0 [G ("modified_3" & "modified_2")]
 
-P<=0 [G (mesi_1=shared & !(mesi_2=shared | mesi_3=shared))]
-P<=0 [G (mesi_2=shared & !(mesi_1=shared | mesi_3=shared))]
-P<=0 [G (mesi_3=shared & !(mesi_1=shared | mesi_2=shared))]
+P<=0 [G ("shared_1" & !("shared_2" | "shared_3"))]
+P<=0 [G ("shared_2" & !("shared_1" | "shared_3"))]
+P<=0 [G ("shared_3" & !("shared_1" | "shared_2"))]
 
-P>=1  [F (mesi_1=modified)]
-P>=1  [F (mesi_1=shared)]
-P>=1  [F (mesi_1=invalid)]
-P>=1  [F (mesi_2=modified)]
-P>=1  [F (mesi_2=shared)]
-P>=1  [F (mesi_2=invalid)]
-P>=1  [F (mesi_3=modified)]
-P>=1  [F (mesi_3=shared)]
-P>=1  [F (mesi_3=invalid)]
+P>=1  [F ("modified_1")]
+P>=1  [F ("shared_1")]
+P>=1  [F ("invalid_1")]
+P>=1  [F ("modified_2")]
+P>=1  [F ("shared_2")]
+P>=1  [F ("invalid_2")]
+P>=1  [F ("modified_3")]
+P>=1  [F ("shared_3")]
+P>=1  [F ("invalid_3")]
+
+((S=? [ "modified_1" ] - S=? [ "modified_2" ]) <= error) | (error*-1 <= (S=? [ "modified_1" ] - S=? [ "modified_2" ]))
+((S=? [ "modified_2" ] - S=? [ "modified_3" ]) <= error) | (error*-1 <= (S=? [ "modified_1" ] - S=? [ "modified_2" ]))
+
+((S=? [ "shared_1" ] - S=? [ "shared_2" ]) <= error) | (error*-1 <= (S=? [ "shared_1" ] - S=? [ "shared_2" ]))
+((S=? [ "shared_2" ] - S=? [ "shared_3" ]) <= error) | (error*-1 <= (S=? [ "shared_1" ] - S=? [ "shared_2" ]))
+
+// implicitly correct if the 4 above are
+//((S=? [ "invalid_1" ] - S=? [ "invalid_2" ]) <= error) | (error*-1 <= (S=? [ "invalid_1" ] - S=? [ "invalid_2" ]))
+//((S=? [ "invalid_2" ] - S=? [ "invalid_3" ]) <= error) | (error*-1 <= (S=? [ "invalid_1" ] - S=? [ "invalid_2" ]))
 
 // imitiation of global variables
 P<=0 [F left_1  != left_2]
