@@ -1,3 +1,9 @@
+--- 13-02-04  ---
+ some queries and results (3 processes):
+  * expected value for one process to get behind the first barrier = 575 ticks
+  * all processes = 683.4144882738982
+  * one process is exactly behind the barrier to all of them are = 204 ticks
+
 --- 13-01-26  ---
  * gist of the last meeting
   □ implement model minimizations that do not change the specific query answers, but would break other properties
@@ -16,7 +22,7 @@
   * mini changes to the model
   * some new / different queries
   * 2 new experiment graphs for getting behind the entry and exit barrier
-   □ "l_*>=11" shows odd behaviour ... why is that?
+   ✗ "l_*>=11" shows odd behaviour ... why is that? (because it should have been l_1 <=5 | l_1>=11)
 
 --- 13-01-22  ---
  * 2 processes - ss prob: m=0.431, s=0.138, i=0.431
@@ -51,14 +57,15 @@
  * rather benchmarking than modelchecking?
 
 questions:
- □ how do the rates influence the time modelchecking (or building) takes?
+ ✓ how do the rates influence the time modelchecking (or building) takes?
+  * convergence behaviour is dependend on the numbers itself
+    no way to predict this or to influence it directly, though
  □ next steps
   * goal for complexlab and lab!
   * paper?
   * benchmarking?
   * actual implementation? test mwait and whatnot
    * contributing to gnu openmp?
-
 
 --- 13-01-14  ---
  □ don't forget to model that work periods might change the cacheline's state.
