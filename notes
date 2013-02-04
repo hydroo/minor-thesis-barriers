@@ -1,4 +1,11 @@
 --- 13-02-04  ---
+
+ * began scripting the model. can now reproduce the old model for 3 and 2 processes correctly
+  □ clean up
+  □ generate queries depending on the process count
+
+  □ next step is to think of reductions and implement them
+
  some queries and results (3 processes):
   * expected value for one process to get behind the first barrier = 575 ticks
   * all processes = 683.4144882738982

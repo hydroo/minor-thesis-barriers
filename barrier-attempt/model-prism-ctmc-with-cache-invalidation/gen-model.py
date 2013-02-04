@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+# work only up until 9 processes!!!!
+
 #import os
 import sys
 
@@ -100,6 +102,13 @@ if __name__ == "__main__":
 
 	# ### actual process module ### #
 
+	def allBut (i) :
+		group = ""
+		for j in range(1, processCount+1):
+			if i != j:
+				group += str(j)
+		return group
+
 	f.write("module process_1\n")
 	f.write("	l_1 : [0..11] init 0;\n")
 	f.write("	cp_1 : [empty..full] init empty;\n")
@@ -159,8 +168,8 @@ if __name__ == "__main__":
 	f.write("\n")
 
 	for value in range(1, full+1):
-		f.write("	[set_exit_" + str(value) + "_23] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> write : (l_1'=8) & (exit_1'=" + str(value) + ") & (mesi_1'=modified);\n")
-		f.write("	[set_exit_" + str(value) + "_23] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=" + str(value) + ");\n")
+		f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> write : (l_1'=8) & (exit_1'=" + str(value) + ") & (mesi_1'=modified);\n")
+		f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=" + str(value) + ");\n")
 
 	f.write("\n")
 
@@ -171,10 +180,10 @@ if __name__ == "__main__":
 
 	f.write("\n")
 
-	f.write("	[set_entry_0_23]    l_1=9  & mesi_1!=modified -> write : (l_1'=10) & (entry_1'=empty) & (mesi_1'=modified);\n")
-	f.write("	[set_entry_0_23]    l_1=9  & mesi_1 =modified -> tick  : (l_1'=10) & (entry_1'=empty);\n")
-	f.write("	[set_left_false_23] l_1=10 & mesi_1!=modified -> write : (l_1'=11) & (left_1'=false)  & (mesi_1'=modified);\n")
-	f.write("	[set_left_false_23] l_1=10 & mesi_1 =modified -> tick  : (l_1'=11) & (left_1'=false);\n")
+	f.write("	[set_entry_0_" + allBut(1) + "]    l_1=9  & mesi_1!=modified -> write : (l_1'=10) & (entry_1'=empty) & (mesi_1'=modified);\n")
+	f.write("	[set_entry_0_" + allBut(1) + "]    l_1=9  & mesi_1 =modified -> tick  : (l_1'=10) & (entry_1'=empty);\n")
+	f.write("	[set_left_false_" + allBut(1) + "] l_1=10 & mesi_1!=modified -> write : (l_1'=11) & (left_1'=false)  & (mesi_1'=modified);\n")
+	f.write("	[set_left_false_" + allBut(1) + "] l_1=10 & mesi_1 =modified -> tick  : (l_1'=11) & (left_1'=false);\n")
 
 	f.write("\n")
 	f.write("\n")
@@ -183,62 +192,97 @@ if __name__ == "__main__":
 
 	f.write("	//cacheline\n")
 
-#	[read_2]  mesi_1=invalid  -> (mesi_1'=invalid);
-#	[read_3]  mesi_1=invalid  -> (mesi_1'=invalid);
-#
-#	[read_2]  mesi_1=shared   -> (mesi_1'=shared);
-#	[read_3]  mesi_1=shared   -> (mesi_1'=shared);
-#
-#	[read_2]  mesi_1=modified -> (mesi_1'=shared);
-#	[read_3]  mesi_1=modified -> (mesi_1'=shared);
-#
-#	[set_left_false_12]  true -> (left_1'=false)  & (mesi_1'=invalid);
-#	[set_left_false_13]  true -> (left_1'=false)  & (mesi_1'=invalid);
-#	[set_left_true_12]   true -> (left_1'=true)   & (mesi_1'=invalid);
-#	[set_left_true_13]   true -> (left_1'=true)   & (mesi_1'=invalid);
-#
-#	[set_entry_0_12]     true -> (entry_1'=empty) & (mesi_1'=invalid);
-#	[set_entry_0_13]     true -> (entry_1'=empty) & (mesi_1'=invalid);
-#	[set_entry_1_12]     true -> (entry_1'=1)     & (mesi_1'=invalid);
-#	[set_entry_1_13]     true -> (entry_1'=1)     & (mesi_1'=invalid);
-#	[set_entry_2_12]     true -> (entry_1'=2)     & (mesi_1'=invalid);
-#	[set_entry_2_13]     true -> (entry_1'=2)     & (mesi_1'=invalid);
-#	[set_entry_3_12]     true -> (entry_1'=3)     & (mesi_1'=invalid);
-#	[set_entry_3_13]     true -> (entry_1'=3)     & (mesi_1'=invalid);
-#	[set_entry_4_12]     true -> (entry_1'=4)     & (mesi_1'=invalid);
-#	[set_entry_4_13]     true -> (entry_1'=4)     & (mesi_1'=invalid);
-#	[set_entry_5_12]     true -> (entry_1'=5)     & (mesi_1'=invalid);
-#	[set_entry_5_13]     true -> (entry_1'=5)     & (mesi_1'=invalid);
-#	[set_entry_6_12]     true -> (entry_1'=6)     & (mesi_1'=invalid);
-#	[set_entry_6_13]     true -> (entry_1'=6)     & (mesi_1'=invalid);
-#	[set_entry_7_12]     true -> (entry_1'=full)  & (mesi_1'=invalid);
-#	[set_entry_7_13]     true -> (entry_1'=full)  & (mesi_1'=invalid);
-#
-#	[set_exit_0_12]      true -> (exit_1'=empty)  & (mesi_1'=invalid);
-#	[set_exit_0_13]      true -> (exit_1'=empty)  & (mesi_1'=invalid);
-#	[set_exit_1_12]      true -> (exit_1'=1)      & (mesi_1'=invalid);
-#	[set_exit_1_13]      true -> (exit_1'=1)      & (mesi_1'=invalid);
-#	[set_exit_2_12]      true -> (exit_1'=2)      & (mesi_1'=invalid);
-#	[set_exit_2_13]      true -> (exit_1'=2)      & (mesi_1'=invalid);
-#	[set_exit_3_12]      true -> (exit_1'=3)      & (mesi_1'=invalid);
-#	[set_exit_3_13]      true -> (exit_1'=3)      & (mesi_1'=invalid);
-#	[set_exit_4_12]      true -> (exit_1'=4)      & (mesi_1'=invalid);
-#	[set_exit_4_13]      true -> (exit_1'=4)      & (mesi_1'=invalid);
-#	[set_exit_5_12]      true -> (exit_1'=5)      & (mesi_1'=invalid);
-#	[set_exit_5_13]      true -> (exit_1'=5)      & (mesi_1'=invalid);
-#	[set_exit_6_12]      true -> (exit_1'=6)      & (mesi_1'=invalid);
-#	[set_exit_6_13]      true -> (exit_1'=6)      & (mesi_1'=invalid);
-#	[set_exit_7_12]      true -> (exit_1'=full)   & (mesi_1'=invalid);
-#	[set_exit_7_13]      true -> (exit_1'=full)   & (mesi_1'=invalid);
+	for i in range(2, processCount+1):
+		f.write("	[read_" + str(i) + "] mesi_1=invalid  -> (mesi_1'=invalid);\n")
+	
+	f.write("\n")
+
+	for i in range(2, processCount+1):
+		f.write("	[read_" + str(i) + "] mesi_1=shared   -> (mesi_1'=shared);\n")
+
+	f.write("\n")
+
+	for i in range(2, processCount+1):
+		f.write("	[read_" + str(i) + "] mesi_1=modified -> (mesi_1'=shared);\n")
+	
+	f.write("\n")
+
+
+
+	for i in range(processCount, 1, -1):
+		f.write("	[set_left_false_" + allBut(i) + "]  true -> (left_1'=false)  & (mesi_1'=invalid);\n")
+
+	for i in range(processCount, 1, -1):
+		f.write("	[set_left_true_" + allBut(i) + "]   true -> (left_1'=true)   & (mesi_1'=invalid);\n")
+
+	f.write("\n")
+
+	for value in range(0, full+1):
+		for i in range(processCount, 1, -1):
+			f.write("	[set_entry_" + str(value) + "_" + allBut(i) + "]     true -> (entry_1'=" + str(value) + ")     & (mesi_1'=invalid);\n")
+
+	f.write("\n")
+
+	for value in range(0, full+1):
+		for i in range(processCount, 1, -1):
+			f.write("	[set_exit_" + str(value) + "_" + allBut(i) + "]      true -> (exit_1'=" + str(value) + ")      & (mesi_1'=invalid);\n")
 
 	f.write("endmodule\n")
 
+	f.write("\n")
+	f.write("\n")
+
 	# ### duplicating ### #
 
+	def switchSort(s, k):
+		assert len(str(k)) == 1
+		for i in range(0, len(s)) :
+			if s[i] == '1':
+				s = s[:i] + str(k)[0] + s[i+1:]
+			elif s[i] == str(k)[0]:
+				s = s[:i] + '1' + s[i+1:]
+		return "".join(sorted(s))
 
-	# ### appendix ### #
+	for i in range(2, processCount+1):
+		f.write("module process_" + str(i) + " = process_1 [\n")
+		f.write("	me_1              =me_" + str(i) + ",\n")
+		f.write("	me_bit_1          =me_bit_" + str(i) + ",\n")
+		f.write("	l_1               =l_" + str(i) + ",\n")
+		f.write("	cp_1              =cp_" + str(i) + ",\n")
+		f.write("	exit_1            =exit_" + str(i) + ",\n")
+		f.write("	entry_1           =entry_" + str(i) + ",\n")
+		f.write("	left_1            =left_" + str(i) + ",\n")
+		f.write("	mesi_1            =mesi_" + str(i) + ",\n")
+		f.write("	read_1            =read_" + str(i) + ",\n")
+		f.write("	read_" + str(i) + "            =read_1,\n")
+		f.write("	write_1           =write_" + str(i) + ",\n")
+		f.write("	write_" + str(i) + "           =write_1,\n")
+
+
+		for j in range(processCount, 0, -1):
+			f.write("	set_left_false_" + str(allBut(j)) + " =set_left_false_" + switchSort(allBut(j), i) + ",\n")
+
+		for j in range(processCount, 0, -1):
+			f.write("	set_left_true_" + str(allBut(j)) + "  =set_left_true_" + switchSort(allBut(j), i) + ",\n")
+
+		for value in range(0, full+1):
+			for j in range(processCount, 0, -1):
+				f.write("	set_entry_" + str(value) + "_" + str(allBut(j))+ "    =set_entry_" + str(value) + "_" + switchSort(allBut(j), i) + ",\n")
+
+		for value in range(0, full+1):
+			for j in range(processCount, 0, -1):
+				add = ","
+				if value == full and j == 1:
+					add = ""
+				f.write("	set_exit_" + str(value) + "_" + str(allBut(j))+ "     =set_exit_" + str(value) + "_" + switchSort(allBut(j), i) + "" + add + "\n")
+
+
+		f.write("] endmodule\n")
 
 	f.write("\n")
+	f.write("\n")
+
+	# ### appendix ### #
 
 	f.write("rewards \"time\"\n")
 	f.write("	true : 1;\n")
