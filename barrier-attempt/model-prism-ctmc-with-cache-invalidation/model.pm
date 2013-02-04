@@ -16,7 +16,7 @@ const int shared   = 1;
 const int invalid  = 2;
 
 
-const int work_ticks = 1000;
+const int work_ticks = 1;
 const int read_ticks = 50;
 const int write_ticks = 100;
 
@@ -289,6 +289,11 @@ module process_3 = process_1 [
 	set_exit_7_13     =set_exit_7_13,
 	set_exit_7_23     =set_exit_7_12
 ] endmodule
+
+
+rewards "time"
+	true : 1;
+endrewards
 
 
 label "modified_1" = mesi_1=modified;
