@@ -85,7 +85,7 @@ questions:
    ✓ add validity state
    ✓ split writes into two transitions so that we do not modify global state in a synchronous transition (forbidden in prism)
    ✓ add synchronous transition labels to the process
-   □ test exhaustively
+   ✓ test exhaustively
 
  DONE:
  * cleaned up spin model
