@@ -1,3 +1,15 @@
+--- 13-02-07 gist of the last meeting ---
+
+ * quantitatively analyze one loop without the second and varying work periods
+   interesting queries and numbers because this version is not terminating,
+   but a stochastic algorithm with failure probability
+ * scale on more cores
+ * do a presentation on implementation/benchmarking and theory/modelling
+ □ saturday: measure scaling-cores anew and try non-idling and idling cores as part-takers
+   marcus hypothesis is that powered down cores slow down atomic ops, where as busy cores do not
+   (they don't actively take part in anything and don't communicate, ofc)
+ □ maybe redo benchmarks where you make sure that the barrier is started anew when all threads left the previous one
+
 --- 13-02-04  ---
 
  * began scripting the model. can now reproduce the old model for 3 and 2 processes correctly
