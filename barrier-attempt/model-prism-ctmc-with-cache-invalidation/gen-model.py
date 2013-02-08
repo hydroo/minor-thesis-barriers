@@ -2,7 +2,6 @@
 
 # work only up until 9 processes!!!!
 
-#import os
 import sys
 
 helpMessage = \
@@ -11,9 +10,11 @@ helpMessage = \
 
   -h, --help        print help message
   -p <nr>           set process count
-  --work <ticks>    set tick count for a work period
-  --read <ticks>    set tick count for a cache read
-  --write <ticks>   set tick count a cache write
+  --work <ticks>    set tick count for a work period [default 1]
+  --read <ticks>    set tick count for a cache read  [default 50]
+  --write <ticks>   set tick count a cache write     [default 100]
+
+  --oneloop         omit the second loop
 """
 
 if __name__ == "__main__":
@@ -24,6 +25,8 @@ if __name__ == "__main__":
 	workTicks  = 1
 	readTicks  = 50
 	writeTicks = 100
+
+	oneLoop = False
 
 	if len(sys.argv) < 2 :
 		print(helpMessage)
@@ -43,6 +46,8 @@ if __name__ == "__main__":
 		elif sys.argv[i] == "--read":
 			readTicks = int(sys.argv[i+1])
 			i += 1
+		elif sys.argv[i] == "--oneloop":
+			oneLoop = True
 		elif sys.argv[i] == "--write":
 			writeTicks = int(sys.argv[i+1])
 			i += 1
@@ -110,10 +115,15 @@ if __name__ == "__main__":
 		return group
 
 	f.write("module process_1\n")
-	f.write("	l_1 : [0..11] init 0;\n")
+	if oneLoop == False :
+		f.write("	l_1 : [0..11] init 0;\n")
+	else :
+		f.write("	l_1 : [0..6] init 0;\n")
+
 	f.write("	cp_1 : [empty..full] init empty;\n")
 	f.write("	mesi_1 : [0..2] init invalid;\n")
-	f.write("	exit_1 : [empty..full] init empty;\n")
+	if oneLoop == False :
+		f.write("	exit_1 : [empty..full] init empty;\n")
 	f.write("	entry_1 : [empty..full] init empty;\n")
 	f.write("	left_1 : bool init false;\n")
 
@@ -147,48 +157,60 @@ if __name__ == "__main__":
 
 	f.write("\n")
 
-	f.write("	[set_exit_0_" + otherProcesses + "]    l_1=3 & mesi_1!=modified -> write : (l_1'=4) & (exit_1'=empty) & (mesi_1'=modified);\n")
-	f.write("	[set_exit_0_" + otherProcesses + "]    l_1=3 & mesi_1 =modified -> tick  : (l_1'=4) & (exit_1'=empty);\n")
-	f.write("	[set_left_true_" + otherProcesses + "] l_1=4 & mesi_1!=modified -> write : (left_1'=true) & (l_1'=5)  & (mesi_1'=modified);\n")
-	f.write("	[set_left_true_" + otherProcesses + "] l_1=4 & mesi_1 =modified -> tick  : (left_1'=true) & (l_1'=5);\n")
+	if oneLoop == True :
+		f.write("	[set_left_true_" + otherProcesses + "] l_1=3 & mesi_1!=modified -> write : (left_1'=true) & (l_1'=4)  & (mesi_1'=modified);\n")
+		f.write("	[set_left_true_" + otherProcesses + "] l_1=3 & mesi_1 =modified -> tick  : (left_1'=true) & (l_1'=4);\n")
 
-	f.write("\n")
-	f.write("\n")
+		f.write("	[]        l_1=4 -> work : (l_1'=5);\n")
+		f.write("	[set_entry_0_" + allBut(1) + "]    l_1=5  & mesi_1!=modified -> write : (l_1'=6) & (entry_1'=empty) & (mesi_1'=modified);\n")
+		f.write("	[set_entry_0_" + allBut(1) + "]    l_1=5  & mesi_1 =modified -> tick  : (l_1'=6) & (entry_1'=empty);\n")
+		f.write("	[set_left_false_" + allBut(1) + "] l_1=6 & mesi_1!=modified -> write : (l_1'=0) & (left_1'=false)  & (mesi_1'=modified);\n")
+		f.write("	[set_left_false_" + allBut(1) + "] l_1=6 & mesi_1 =modified -> tick  : (l_1'=0) & (left_1'=false);\n")
 
-	f.write("	[]        l_1=5 -> work : (l_1'=6);\n")
+	else :
 
-	f.write("\n")
-	f.write("\n")
+		f.write("	[set_exit_0_" + otherProcesses + "]    l_1=3 & mesi_1!=modified -> write : (l_1'=4) & (exit_1'=empty) & (mesi_1'=modified);\n")
+		f.write("	[set_exit_0_" + otherProcesses + "]    l_1=3 & mesi_1 =modified -> tick  : (l_1'=4) & (exit_1'=empty);\n")
+		f.write("	[set_left_true_" + otherProcesses + "] l_1=4 & mesi_1!=modified -> write : (left_1'=true) & (l_1'=5)  & (mesi_1'=modified);\n")
+		f.write("	[set_left_true_" + otherProcesses + "] l_1=4 & mesi_1 =modified -> tick  : (left_1'=true) & (l_1'=5);\n")
+
+		f.write("\n")
+		f.write("\n")
+
+		f.write("	[]        l_1=5 -> work : (l_1'=6);\n")
+
+		f.write("\n")
+		f.write("\n")
 
 
-	f.write("	[read_1]  l_1=6 & mesi_1 =invalid -> read : (l_1'=7) & (cp_1'=exit_1) & (mesi_1'=shared);\n")
-	f.write("	[read_1]  l_1=6 & mesi_1!=invalid -> tick : (l_1'=7) & (cp_1'=exit_1);\n")
-	f.write("	[]        l_1=7 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=8);\n")
+		f.write("	[read_1]  l_1=6 & mesi_1 =invalid -> read : (l_1'=7) & (cp_1'=exit_1) & (mesi_1'=shared);\n")
+		f.write("	[read_1]  l_1=6 & mesi_1!=invalid -> tick : (l_1'=7) & (cp_1'=exit_1);\n")
+		f.write("	[]        l_1=7 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=8);\n")
 
-	f.write("\n")
+		f.write("\n")
 
-	for value in range(1, full+1):
-		f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> write : (l_1'=8) & (exit_1'=" + str(value) + ") & (mesi_1'=modified);\n")
-		f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=" + str(value) + ");\n")
+		for value in range(1, full+1):
+			f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> write : (l_1'=8) & (exit_1'=" + str(value) + ") & (mesi_1'=modified);\n")
+			f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=" + str(value) + ");\n")
 
-	f.write("\n")
+		f.write("\n")
 
-	f.write("	[read_1]  l_1=8 & mesi_1 =invalid & (  cp_1 != full & left_1 = true ) -> read : (l_1'=6) & (mesi_1'=shared);\n")
-	f.write("	[read_1]  l_1=8 & mesi_1!=invalid & (  cp_1 != full & left_1 = true ) -> tick : (l_1'=6);\n")
-	f.write("	[read_1]  l_1=8 & mesi_1 =invalid & (!(cp_1 != full & left_1 = true)) -> read : (l_1'=9) & (mesi_1'=shared);\n")
-	f.write("	[read_1]  l_1=8 & mesi_1!=invalid & (!(cp_1 != full & left_1 = true)) -> tick : (l_1'=9);\n")
+		f.write("	[read_1]  l_1=8 & mesi_1 =invalid & (  cp_1 != full & left_1 = true ) -> read : (l_1'=6) & (mesi_1'=shared);\n")
+		f.write("	[read_1]  l_1=8 & mesi_1!=invalid & (  cp_1 != full & left_1 = true ) -> tick : (l_1'=6);\n")
+		f.write("	[read_1]  l_1=8 & mesi_1 =invalid & (!(cp_1 != full & left_1 = true)) -> read : (l_1'=9) & (mesi_1'=shared);\n")
+		f.write("	[read_1]  l_1=8 & mesi_1!=invalid & (!(cp_1 != full & left_1 = true)) -> tick : (l_1'=9);\n")
 
-	f.write("\n")
+		f.write("\n")
 
-	f.write("	[set_entry_0_" + allBut(1) + "]    l_1=9  & mesi_1!=modified -> write : (l_1'=10) & (entry_1'=empty) & (mesi_1'=modified);\n")
-	f.write("	[set_entry_0_" + allBut(1) + "]    l_1=9  & mesi_1 =modified -> tick  : (l_1'=10) & (entry_1'=empty);\n")
-	f.write("	[set_left_false_" + allBut(1) + "] l_1=10 & mesi_1!=modified -> write : (l_1'=11) & (left_1'=false)  & (mesi_1'=modified);\n")
-	f.write("	[set_left_false_" + allBut(1) + "] l_1=10 & mesi_1 =modified -> tick  : (l_1'=11) & (left_1'=false);\n")
+		f.write("	[set_entry_0_" + allBut(1) + "]    l_1=9  & mesi_1!=modified -> write : (l_1'=10) & (entry_1'=empty) & (mesi_1'=modified);\n")
+		f.write("	[set_entry_0_" + allBut(1) + "]    l_1=9  & mesi_1 =modified -> tick  : (l_1'=10) & (entry_1'=empty);\n")
+		f.write("	[set_left_false_" + allBut(1) + "] l_1=10 & mesi_1!=modified -> write : (l_1'=11) & (left_1'=false)  & (mesi_1'=modified);\n")
+		f.write("	[set_left_false_" + allBut(1) + "] l_1=10 & mesi_1 =modified -> tick  : (l_1'=11) & (left_1'=false);\n")
 
-	f.write("\n")
-	f.write("\n")
+		f.write("\n")
+		f.write("\n")
 
-	f.write("	[]        l_1=11 -> work : (l_1'=0);\n")
+		f.write("	[]        l_1=11 -> work : (l_1'=0);\n")
 
 	f.write("	//cacheline\n")
 
@@ -223,9 +245,10 @@ if __name__ == "__main__":
 
 	f.write("\n")
 
-	for value in range(0, full+1):
-		for i in range(processCount, 1, -1):
-			f.write("	[set_exit_" + str(value) + "_" + allBut(i) + "]      true -> (exit_1'=" + str(value) + ")      & (mesi_1'=invalid);\n")
+	if oneLoop == False :
+		for value in range(0, full+1):
+			for i in range(processCount, 1, -1):
+				f.write("	[set_exit_" + str(value) + "_" + allBut(i) + "]      true -> (exit_1'=" + str(value) + ")      & (mesi_1'=invalid);\n")
 
 	f.write("endmodule\n")
 
@@ -249,7 +272,8 @@ if __name__ == "__main__":
 		f.write("	me_bit_1          =me_bit_" + str(i) + ",\n")
 		f.write("	l_1               =l_" + str(i) + ",\n")
 		f.write("	cp_1              =cp_" + str(i) + ",\n")
-		f.write("	exit_1            =exit_" + str(i) + ",\n")
+		if oneLoop == False :
+			f.write("	exit_1            =exit_" + str(i) + ",\n")
 		f.write("	entry_1           =entry_" + str(i) + ",\n")
 		f.write("	left_1            =left_" + str(i) + ",\n")
 		f.write("	mesi_1            =mesi_" + str(i) + ",\n")
@@ -265,17 +289,17 @@ if __name__ == "__main__":
 		for j in range(processCount, 0, -1):
 			f.write("	set_left_true_" + str(allBut(j)) + "  =set_left_true_" + switchSort(allBut(j), i) + ",\n")
 
-		for value in range(0, full+1):
-			for j in range(processCount, 0, -1):
-				f.write("	set_entry_" + str(value) + "_" + str(allBut(j))+ "    =set_entry_" + str(value) + "_" + switchSort(allBut(j), i) + ",\n")
+		if oneLoop == False :
+			for value in range(0, full+1):
+				for j in range(processCount, 0, -1):
+					f.write("	set_exit_" + str(value) + "_" + str(allBut(j))+ "     =set_exit_" + str(value) + "_" + switchSort(allBut(j), i) + ",\n")
 
 		for value in range(0, full+1):
 			for j in range(processCount, 0, -1):
 				add = ","
 				if value == full and j == 1:
 					add = ""
-				f.write("	set_exit_" + str(value) + "_" + str(allBut(j))+ "     =set_exit_" + str(value) + "_" + switchSort(allBut(j), i) + "" + add + "\n")
-
+				f.write("	set_entry_" + str(value) + "_" + str(allBut(j))+ "    =set_entry_" + str(value) + "_" + switchSort(allBut(j), i) + add + "\n")
 
 		f.write("] endmodule\n")
 
