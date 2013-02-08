@@ -1,0 +1,18 @@
+#atlas.hrsk.tu-dresden.de
+
+#not reliable since it is an interative node with some load on it
+
+#4 cores: 100k repetitions / 30k / 20k
+#8:       30k / 20k / 20k
+#16:      15k / 30k / 20k
+#32:      10k / 10k / 20k
+#48:      5k  /
+#64:
+
+#cores  openmp pthreads ronny / 1us: openmp pthreads ronny / 0.1ms openmp pthreads ronny
+ 4      3.307  3.533    0.2          3.298  3.5      2.5           5.15   5.15     4.62
+ 8      3.25   3.5      0.3          2.6    2.67     1.85          5.5    5.5      4.77
+ 16     3.2    3.75     0.63         4.7    4.7      3.3           5.9    5.9      5.15
+ 32     5.0    5.5      1.4          2.6    2.35     1.5           7.0    7.0      6.1
+ 48     4.0    4.3
+ 64
