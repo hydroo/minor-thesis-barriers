@@ -9,3 +9,14 @@ barrier
 model.pdf
 cache-invalidation-on-different-core-counts/cache-test
 
+report/*.out
+report/*.aux
+report/*.log
+report/*.pdf
+report/*.bbl
+report/*.blg
+report/*.dvi
+
+barrier-attempt/benchmark/pthreads
+barrier-attempt/benchmark/openmp
+barrier-attempt/benchmark/ronny
