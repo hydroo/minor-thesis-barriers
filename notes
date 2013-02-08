@@ -1,3 +1,19 @@
+--- 13-02-08 ---
+
+ * bulldozer 33+ processes can cause a race to appear, barrier breaks
+  (some are out, some are not ... deadlock for those that are not)
+   not yet researched what exactly goes wrong, but it is certainly because
+   the committing of only 32bit to the shared variable at one moment in time
+
+ done :
+  * add an openmp, pthread, ronny barrier micro benchmark
+  * make a oneloop version of the ctmc
+  * script query generation
+  * add begin of report and presentation
+  * fix: add a missing cp_1'=value and saved an insane amount of states
+    500k instead of 2mio for 3 processes
+    □ 4/5 processes might now be feasible 
+
 --- 13-02-07 gist of the last meeting ---
 
  * quantitatively analyze one loop without the second and varying work periods
@@ -10,7 +26,7 @@
    (they don't actively take part in anything and don't communicate, ofc)
  □ maybe redo benchmarks where you make sure that the barrier is started anew when all threads left the previous one
 
---- 13-02-04  ---
+--- 13-02-04 ---
 
  * began scripting the model. can now reproduce the old model for 3 and 2 processes correctly
   □ clean up
@@ -23,7 +39,7 @@
   * all processes = 683.4144882738982
   * one process is exactly behind the barrier to all of them are = 204 ticks
 
---- 13-01-26  ---
+--- 13-01-26 ---
  * gist of the last meeting
   □ implement model minimizations that do not change the specific query answers, but would break other properties
     e.g. remove the second half of the algorithm if possible
@@ -43,7 +59,7 @@
   * 2 new experiment graphs for getting behind the entry and exit barrier
    ✗ "l_*>=11" shows odd behaviour ... why is that? (because it should have been l_1 <=5 | l_1>=11)
 
---- 13-01-22  ---
+--- 13-01-22 ---
  * 2 processes - ss prob: m=0.431, s=0.138, i=0.431
  * 3 processes - P=? [ true U<=(500/2500) l_1=5 ] - sparse - gauss-seidel - 1min - 0.42
  * 3 processes - S=? [ "shared_1" ]  - sparse - gauss-seidel  - 15min - 0.401
@@ -58,7 +74,7 @@
  * 3 processes - P>=1 [ G F l_1=17 ] (MC-DRA product) - 511.272s
  * 3 processes - S=? [ "modified_1" ] - a long time >=10min ... more like 30min? - "10k iterations is not enough"
 
---- 13-01-19  ---
+--- 13-01-19 ---
 
  * modelchecking 3 processes takes too long (building model 3 minutes), modelchecking >20min perhaps way more. (4000 states for 2 processes, 5mio for 3 states)
   ✓ perhaps make a version with "assign labels" in order to remove the dotted states
@@ -86,7 +102,7 @@ questions:
   * actual implementation? test mwait and whatnot
    * contributing to gnu openmp?
 
---- 13-01-14  ---
+--- 13-01-14 ---
  □ don't forget to model that work periods might change the cacheline's state.
    Or maybe model it as a self loop in the cacheline to make it "randomly" invalidate itself
    with a certain probability/rate
@@ -119,13 +135,13 @@ questions:
  * new ctmc "model-prism-ctmc-with-cache-invalidation"
    * began working on integrating the cacheline state into the model
 
---- 13-01-12  ---
+--- 13-01-12 ---
 
  * see cache-invalidation-on-different-core-counts/observations
    in short: the number of invalidatees influences the time needed,
    but I cannot quanitify it
 
---- 12-12-15  ---
+--- 12-12-15 ---
 
  ✓ print out average cycles, standard deviation, ... to get a better feel what is going on with the code (maybe min and max, too)
  ✓ make sure you measure correctly!!!
