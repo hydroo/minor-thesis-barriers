@@ -6,7 +6,7 @@ import sys
 
 helpMessage = \
 """
- gen-model.py [OPTIONS] [outfile]
+ gen-quantitative-queries.py [OPTIONS] [outfile]
 
   -h, --help        print help message
   -p <nr>           set process count
@@ -36,6 +36,8 @@ if __name__ == "__main__":
 		elif sys.argv[i] == "--write":
 			writeTicks = int(sys.argv[i+1])
 			i += 1
+		elif sys.argv[i] == "--oneloop":
+			oneLoop = True
 		else:
 			queryFileName = sys.argv[i]
 		i += 1
