@@ -6,4 +6,6 @@ barrier-attempt/model-01/model.pdf
 barrier
 *.tmp
 *.s
+model.pdf
+cache-invalidation-on-different-core-counts/cache-test
 
