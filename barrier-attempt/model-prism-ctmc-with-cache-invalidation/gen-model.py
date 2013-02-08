@@ -145,8 +145,8 @@ if __name__ == "__main__":
 		otherProcesses += str(i)
 
 	for value in range(1, full+1):
-		f.write("	[set_entry_" + str(value) + "_" + otherProcesses + "] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> write : (l_1'=2) & (entry_1'=" + str(value) + ") & (mesi_1'=modified);\n")
-		f.write("	[set_entry_" + str(value) + "_" + otherProcesses + "] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=" + str(value) + ");\n")
+		f.write("	[set_entry_" + str(value) + "_" + otherProcesses + "] l_1=1 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> write : (l_1'=2) & (entry_1'=" + str(value) + ") & (cp_1'=" + str(value) + ") & (mesi_1'=modified);\n")
+		f.write("	[set_entry_" + str(value) + "_" + otherProcesses + "] l_1=1 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> tick  : (l_1'=2) & (entry_1'=" + str(value) + ") & (cp_1'=" + str(value) + ");\n")
 
 	f.write("\n")
 
@@ -190,8 +190,8 @@ if __name__ == "__main__":
 		f.write("\n")
 
 		for value in range(1, full+1):
-			f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> write : (l_1'=8) & (exit_1'=" + str(value) + ") & (mesi_1'=modified);\n")
-			f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=" + str(value) + ");\n")
+			f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1!=modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> write : (l_1'=8) & (exit_1'=" + str(value) + ") & (cp_1'=" + str(value) + ") & (mesi_1'=modified);\n")
+			f.write("	[set_exit_" + str(value) + "_" + allBut(1) + "] l_1=7 & mesi_1 =modified & mod(floor(cp_1/me_bit_1),2)=0 & cp_1=" + str(value) + "-me_bit_1 -> tick  : (l_1'=8) & (exit_1'=" + str(value) + ") & (cp_1'=" + str(value) + ");\n")
 
 		f.write("\n")
 
