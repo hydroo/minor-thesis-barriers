@@ -25,7 +25,7 @@ typedef struct {
     Context *c;
 } ThreadInfo;
 
-Context * newContext(int threadCount, int64_t repetitionCount, int sleepMicroSeconds) {
+Context* newContext(int threadCount, int64_t repetitionCount, int sleepMicroSeconds) {
 
     assert(threadCount <= 64);
     assert(threadCount <= sysconf( _SC_NPROCESSORS_ONLN ));
@@ -45,10 +45,6 @@ Context * newContext(int threadCount, int64_t repetitionCount, int sleepMicroSec
     pthread_barrier_init(&(ret->pthreadBarrier), NULL, threadCount);
 
     return ret;
-}
-
-void finishContext(Context *c) {
-    free(c);
 }
 
 void barrier(int me, uint64_t full, Context *c) {
@@ -164,7 +160,7 @@ int main(int argc, char **args) {
     }
 
     /* join all threads */
-    for (int i = 0; i < threadCount; ++i){
+    for (int i = 0; i < threadCount; ++i) {
         if(pthread_join(t[i], NULL)){
             perror("pthread_join");
             exit(-1);
@@ -172,7 +168,7 @@ int main(int argc, char **args) {
     }
 #endif
 
-    finishContext(context);
+    free(context);
 
     return 0;
 }
