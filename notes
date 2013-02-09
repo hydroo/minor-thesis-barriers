@@ -2,6 +2,11 @@
 
  ✓ is the model still correct?
 
+ done:
+ * began a correctness check on 4 processes on yoda.inf.tu-dresden.de
+ * cache test on yoda.inf.tu-dresden.de
+ * update experiment with 3 processes according to the new/modified model
+
 --- 13-02-08 ---
 
  * bulldozer and sandybridge 33+ processes can cause a race to appear, barrier breaks
