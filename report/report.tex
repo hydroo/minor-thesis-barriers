@@ -19,11 +19,34 @@
 \maketitle
 
 \begin{abstract}
-asdf\cite{PDSH}
 \end{abstract}
 
 \section{Introduction}
 asdf
+
+\section{Future Work}
+\begin{itemize}
+	\item reduce model
+		\begin{itemize}
+		\item symmetry
+		\item query specific
+			\begin{itemize}
+				\item shorten second loop to just trigger cache state change from time to time
+			\end{itemize}
+		\item others?
+		\end{itemize}
+	\item implement
+		\begin{itemize}
+			\item GNU openmp
+		\end{itemize}
+	\item optimize
+		\begin{itemize}
+			\item use mwait or perhaps usleep()
+			\item keep track who you personally have seen already in the barrier and him, too
+		\end{itemize}
+	\item evaluate for making it work for more than 32 processes
+\end{itemize}
+
 
 \nocite{*} % give out non cited references
 \bibliographystyle{abbrv}
