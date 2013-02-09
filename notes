@@ -24,7 +24,8 @@
    interesting queries and numbers because this version is not terminating,
    but a stochastic algorithm with failure probability
  * scale on more cores
- * do a presentation on implementation/benchmarking and theory/modelling
+ □ do a presentation on implementation/benchmarking and theory/modelling
+ □ write a report
  ✓ saturday: measure scaling-cores anew and try non-idling and idling cores as part-takers
    marcus hypothesis is that powered down cores slow down atomic ops, where as busy cores do not
    (they don't actively take part in anything and don't communicate, ofc)
