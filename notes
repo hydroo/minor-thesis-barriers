@@ -37,10 +37,11 @@
 --- 13-02-04 ---
 
  * began scripting the model. can now reproduce the old model for 3 and 2 processes correctly
-  □ clean up
-  □ generate queries depending on the process count
+  ✓ clean up
+  ✓ generate queries depending on the process count
 
   □ next step is to think of reductions and implement them
+   ✓ oneloop version
 
  some queries and results (3 processes):
   * expected value for one process to get behind the first barrier = 575 ticks
@@ -52,7 +53,7 @@
   □ implement model minimizations that do not change the specific query answers, but would break other properties
     e.g. remove the second half of the algorithm if possible
    □ scale model for more threads
-    □ scripting is probably necessary for the scaling
+    ✓ scripting is probably necessary for the scaling
    -> measure new things that were not possible before the better scaling
 
  * Important realization: barrier implementations might forbid entering a new barrier
@@ -268,7 +269,7 @@ questions:
 
  ✓ get to know ctmc s
    ✓ create a ctmc model for timing and probabilistic analysis
-     □ script model generation, and perhaps property generation
+     ✓ script model generation, and perhaps property generation
  ✓ think of / make up useful properties and test them
    ✓ show the absence of other deadlocks than the "constantly resetting race"
  ✓ find a quad or more core (w/o HT) machine and check the cache impact there
@@ -285,7 +286,7 @@ near TODO:
 
 not as near TODO:
  ✓ (copied to above) switch to ctmc
-   □ (copied to above) script model generation, and perhaps property generation
+   ✓ (copied to above) script model generation, and perhaps property generation
 
 far TODO:
  ✓ model timing differences, work periods and cache latency/behaviour, too
