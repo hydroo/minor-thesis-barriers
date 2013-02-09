@@ -1,0 +1,26 @@
+// how long does it take for one process to get behind the first barrier
+P=? [F<=time (l_1>=5|l_2>=5|l_3>=5|false)]
+
+//excpected number of ticks
+base_rate * R{"time"}=? [F (l_1>=5|l_2>=5|l_3>=5|false)]
+
+// how long does it take for all processes to get behind the first barrier
+P=? [F<=time (l_1>=5&l_2>=5&l_3>=5&true)]
+
+//excpected number of ticks
+base_rate * R{"time"}=? [F (l_1>=5&l_2>=5&l_3>=5&true)]
+
+// how longshared does it take from one process being behind the entry barrier to all processes being behind it
+clrP=? [F<=time (l_1>=5&l_2>=5&l_3>=5&true), (l_1=5&l_2<5&l_3<5&true)|(l_1<5&l_2=5&l_3<5&true)|(l_1<5&l_2<5&l_3=5&true)|(false)]
+
+//expected number of ticks
+base_rate * clraR{"time"}=? [F (l_1>=5&l_2>=5&l_3>=5&true), (l_1=5&l_2<5&l_3<5&true)|(l_1<5&l_2=5&l_3<5&true)|(l_1<5&l_2<5&l_3=5&true)|(false)]
+
+// in which state is the cache and how much of the time?
+S=? ["modified_1"]
+S=? ["shared_1"]
+S=? ["invalid_1"]
+
+
+const double time=ticks/base_rate;
+const double ticks;
