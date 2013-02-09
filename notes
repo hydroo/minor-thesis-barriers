@@ -25,10 +25,14 @@
    but a stochastic algorithm with failure probability
  * scale on more cores
  * do a presentation on implementation/benchmarking and theory/modelling
- □ saturday: measure scaling-cores anew and try non-idling and idling cores as part-takers
+ ✓ saturday: measure scaling-cores anew and try non-idling and idling cores as part-takers
    marcus hypothesis is that powered down cores slow down atomic ops, where as busy cores do not
    (they don't actively take part in anything and don't communicate, ofc)
- □ maybe redo benchmarks where you make sure that the barrier is started anew when all threads left the previous one
+
+     they busy wait all the time
+
+ ✓ maybe redo benchmarks where you make sure that the barrier is started anew when all threads left the previous one
+   barrier-attempt/benchmark/*
 
 --- 13-02-04 ---
 
