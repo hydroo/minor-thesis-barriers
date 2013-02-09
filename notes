@@ -7,6 +7,13 @@
  * cache test on yoda.inf.tu-dresden.de
  * update experiment with 3 processes according to the new/modified model
 
+ todo:
+ □ experiments with one loop and varying working periods
+   ~failure probability
+ □ begin planning the report and slides
+ □ if possible do experiments with 4 processes on yoda
+ * ignore further reductions (?maybe not?)
+
 --- 13-02-08 ---
 
  * bulldozer and sandybridge 33+ processes can cause a race to appear, barrier breaks
@@ -21,7 +28,7 @@
   * add begin of report and presentation
   * fix: add a missing cp_1'=value and saved an insane amount of states
     500k instead of 2mio for 3 processes
-    □ 4/5 processes might now be feasible 
+    ✓ 4/5 processes might now be feasible 
 
 --- 13-02-07 gist of the last meeting ---
 
@@ -46,7 +53,7 @@
   ✓ clean up
   ✓ generate queries depending on the process count
 
-  □ next step is to think of reductions and implement them
+  ✓ next step is to think of reductions and implement them
    ✓ oneloop version
 
  some queries and results (3 processes):
@@ -110,9 +117,9 @@ questions:
  ✓ how do the rates influence the time modelchecking (or building) takes?
   * convergence behaviour is dependend on the numbers itself
     no way to predict this or to influence it directly, though
- □ next steps
+ ✓ next steps
   * goal for complexlab and lab!
-  * paper?
+  □ paper? = probably
   * benchmarking?
   * actual implementation? test mwait and whatnot
    * contributing to gnu openmp?
@@ -171,12 +178,12 @@ questions:
  * don't measure detailed model rates (it would have been to cumbersome and error prone to measure so tiny amounts of time)
  ✓ measure wether the number of to be invalidated cores influences the timing of a write operation
    (use atomic exchange for measurement, otherwise queueing and intelligence will make cache writes non-blocking ~)
- □ think of properties
+ ✓ think of properties
  ✓ split the two writes into two locations in the current ctmc
  ✓ model cacheline validity to be able to assign rates for reads and writes based on the cacheline state
 
  Ronny's personal agenda:
-  □ benchmark against gcc and intel openmp barriers (maybe more shared memory barriers? openmpi?)
+  ✓ benchmark against gcc and intel openmp barriers (maybe more shared memory barriers? openmpi?)
 
 --- 12-12-01 ---
 
