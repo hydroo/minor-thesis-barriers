@@ -1,6 +1,10 @@
+--- 13-02-09 ---
+
+ ✓ is the model still correct?
+
 --- 13-02-08 ---
 
- * bulldozer 33+ processes can cause a race to appear, barrier breaks
+ * bulldozer and sandybridge 33+ processes can cause a race to appear, barrier breaks
   (some are out, some are not ... deadlock for those that are not)
    not yet researched what exactly goes wrong, but it is certainly because
    the committing of only 32bit to the shared variable at one moment in time
