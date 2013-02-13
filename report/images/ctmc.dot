@@ -4,7 +4,7 @@ digraph {
 
 	"0" -> "1" [weight=10, label="copy := entry (read)"]
 	"1" -> "2" [label="else (tick)"]
-	"1" -> "2" [weight=10, label="copy&me == 0 : entry := copy|me & cp := copy|me (write)"]
+	"1" -> "2" [weight=10, label="copy&me = 0 : entry := copy|me & cp := copy|me (write)"]
 
 	"2" -> "0" [label="copy != full & left = false (read)"]
 	"2" -> "3" [weight=10, label="else : / (read)"]
@@ -15,7 +15,7 @@ digraph {
 
 	"6" -> "7" [weight=10, label="copy := exit (read)"]
 	"7" -> "8" [label="else (tick)"]
-	"7" -> "8" [weight=10, label="copy&me == 0 : exit := copy|me & copy := copy|me (write)"]
+	"7" -> "8" [weight=10, label="copy&me = 0 : exit := copy|me & copy := copy|me (write)"]
 
 	"8" -> "6" [label="copy != full & left = true (read)"]
 	"8" -> "9" [weight=10, label="else : / (read)"]

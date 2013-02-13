@@ -5,7 +5,7 @@ digraph {
 
 	"0"  -> "1"  [weight=10, label="copy := entry"]
 
-	"1"  -> "2"  [weight=10, label="copy&me == 0"]
+	"1"  -> "2"  [weight=10, label="copy&me = 0"]
 	"2"  -> "3"  [weight=10, label="copy |= me"]
 	"3"  -> "4"  [weight=10, label="entry := copy"]
 	"1"  -> "4"  [label="else"]
@@ -22,7 +22,7 @@ digraph {
 	"8"  -> "9"  [weight=10, label="exit := 0"]
 
 	"9"  -> "10" [weight=10, label="copy := exit"]
-	"10" -> "11" [weight=10, label="copy&me == 0"]
+	"10" -> "11" [weight=10, label="copy&me = 0"]
 	"11" -> "12" [weight=10, label="copy |= me"]
 	"12" -> "13" [weight=10, label="exit := copy"]
 	"10" -> "13" [label="else"]
