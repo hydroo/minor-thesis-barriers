@@ -34,7 +34,7 @@ module process_1
 	[] l_1=0 -> read : (l_1'=1) & (cp_1'=entry);
 
 	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=2);
-	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=0 -> write : (l_1'=2) & (entry'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
+	[] l_1=1 & mod(floor(cp_1/me_bit_1),2)=0 -> write : (l_1'=2) & (entry'=min(max_invalid,max(cp_1+me_bit_1, min_invalid))) & (cp_1'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
 	[] l_1=2 & (  cp_1 != full & left = false ) -> read : (l_1'=0);
 	[] l_1=2 & (!(cp_1 != full & left = false)) -> read : (l_1'=3);
@@ -48,7 +48,7 @@ module process_1
 	[] l_1=6 -> read : (l_1'=7) & (cp_1'=exit);
 
 	[] l_1=7 & mod(floor(cp_1/me_bit_1),2)=1 -> tick : (l_1'=8);
-	[] l_1=7 & mod(floor(cp_1/me_bit_1),2)=0 -> write : (l_1'=8) & (exit'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
+	[] l_1=7 & mod(floor(cp_1/me_bit_1),2)=0 -> write : (l_1'=8) & (exit'=min(max_invalid,max(cp_1+me_bit_1, min_invalid))) & (cp_1'=min(max_invalid,max(cp_1+me_bit_1, min_invalid)));
 
 	[] l_1=8 & (  cp_1 != full & left = true ) -> read : (l_1'=5);
 	[] l_1=8 & (!(cp_1 != full & left = true)) -> read : (l_1'=9);
