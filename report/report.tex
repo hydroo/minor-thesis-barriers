@@ -30,18 +30,20 @@
 \maketitle
 
 \begin{abstract}
-	In this report I will present a new barrier protocol. I will prove its termination by means of checking appropriate properties on a markov decision process model. Furthermore the results of a quantitative analysis on a continuous-time markov chain model of the protocol will be evaluated. I will also present an implementation and evaluate its performance in comparison to current barrier implementations. To conclude the report I repeat the main points and achievements of the work, and give a perspective on possible next steps.
+	In this report I present a new barrier protocol, that does not need locking mechanisms nor atomic operations. I prove its termination by means of checking appropriate properties on a markov decision process model. Furthermore the results of a quantitative analysis on a continuous-time markov chain model of the protocol will be evaluated. Moreover I present implementation and evaluate its performance in comparison to current barrier implementations. To conclude the report I repeat the main points and achievements of the work, and give a perspective on possible next steps.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 Inspired by the idea of pW/CS\cite{pwcs} we intend to evaluate which other synchronisation operations can be improved through stochastic algorithms. One of those operations is the barrier.
 
-A barrier is a synchronisation primitive where all processes in a team wait until all of them reach this barrier.
+A barrier is a synchronisation primitive where all processes in a team wait until all of them reach this barrier. \cite{hoefler2005} gives a good overview and analysis of current barrier protocols.
 
 The barrier is a common synchronisation operation. In OpenMP\cite{omp} by default many operations such as for loops, sections, single directives invoke an implicit barrier at the end of the operation. Many distributed computing algorithms use a \emph{lock-step} approach to interleave computation with communication phases. For example a program simulating weather divides the region in question into a grid. In each of the squares on this grid the weather progression of the next 20 seconds is simulated concurrently. As a next step the squares need to exchange information such as the temperature and humidity at the borders to the neighbouring squares in order to be able to simulate the next 20 seconds. To facilitate this behaviour barriers are used to make sure all squares have been simulated and are ready to exchange data, before repeating this process.
 
 According to a survey conducted at the HLRS\footnote{url{http://http://www.hlrs.de}}\cite{rab00} the barrier is the 5th most time-consuming MPI\footnote{short for Message Passing Interface}\cite{mpi} operation. On average 6\% of the whole CPU time spent in MPI calls and 0.81\% of the whole program time is spent in barriers. A very small fraction of this is the actual time spent synchronizing. The majority is due to waiting for other processes to arrive, because the computation between processes is unbalanced - some take longer, some are quicker. It is still useful to pursue improvements in the barrier protocol for benchmarks and programs that require a lot of synchronisation.
+
+The report is structured as follows. First I present the new protocol. After this I prove its correctness/termination. The next step is to analyse quantitative properties of the protocol. Furthermore an implementation will be evaluated and compared to the barrier implementations of GNU OpenMP\cite{gomp} and PThreads\cite{glibc} implementation.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{A lockless shared memory barrier without atomic operations}
@@ -101,10 +103,10 @@ An important assumption is that the write/read of entry and exit happen atomical
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Termination of the protocol}
-To prove termination we use a markov decision process model of the protocol (figure~\ref{fig:mdp}) and ask whether location 17 can be reached infinitely often. Two models, one in Spin\cite{spin} and one PRISM\cite{prism} have been implemented. Both show that the protocol terminates under the mild assumption of weak fairness for scheduling the threads.
+To prove termination we use a markov decision process model of the protocol (figure~\ref{fig:mdp}) and ask whether location 17 can be reached infinitely often. This implies that the protocol is deadlock-free. Two models, one in Spin\cite{spin} and one PRISM\cite{prism} have been implemented. Both show that the protocol terminates under the mild assumption of weak fairness for scheduling the threads.
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=3.5in]{mdp}
+	\includegraphics[width=4.5in]{mdp}
 	\caption{Markov decision process model of the protocol}
 	\label{fig:mdp}
 \end{figure}
@@ -114,29 +116,30 @@ Note that in a real implementation, for example in the C programming language, i
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Continuous-time markov chain for the barrier protocol}
-In order to analyse quantitative properties of the protocol, we need to determine the expensive operations. Since the protocol uses shared variables to communicate, reads and writes from and to those variables are potentially costly. Each time a shared variable is modified or read, depending on the state of the cache line it is on, the operation takes a very different amount of CPU time. Therefore we consider it worthwhile to model the cache behaviour aside from the protocol itself. The cache model will be discussed in the next section. Details that are not important for the timing of the protocol have been omitted. The resulting CTMC is shown in figure~\ref{fig:ctmc}. The rate is given in parenthesis behind the guard and effect of a transition.
+In order to analyse quantitative properties of the protocol, we need to determine the expensive operations. Since the protocol uses shared variables to communicate, reads and writes from and to those variables are potentially costly. Each time a shared variable is modified or read, depending on the state of the cache line it is on, the operation takes a very different amount of CPU time. Therefore we consider it worthwhile to model the cache behaviour aside from the protocol itself. The cache model will be discussed in the next section. Details that are not important for the timing of the protocol, like the non-determinism in the while condition, have been omitted. The resulting CTMC is shown in figure~\ref{fig:ctmc}. The rate of a transition is given in parenthesis.
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=3.5in]{ctmc}
+	\includegraphics[width=5.2in]{ctmc}
 	\caption{Continuous-time Markov chain model of the protocol}
 	\label{fig:ctmc}
 \end{figure}
+\clearpage
 \subsection{Modeling a cache line copy}
-The following description shows a very simple view on the CPU cache and omits many details of current cache protocols. This is necessary to keep the model at manageable size.
+The following description shows a very simple view on the CPU cache and omits many details of current cache protocols. This is necessary to keep the model at a manageable size.
 
-Each CPU core has its own copy of a cache line in its local cache. A copy of a cache line has three distinct states. It can be \emph{modified}, which means the core has the only up-to-date copy of the cache line and all other copies are marked \emph{invalid}. It might be \emph{shared}, which means the core has an up-to-date copy, but one or more other cores have a correct copy, too. Or the cache line copy is \emph{invalid} meaning the local copy is not up-to-date. Figure~\ref{fig:cache} shows how a cache line copy changes its state depending on events occurring. The \textcolor{blue}{blue} transitions are due to events (read/write) on the core itself, the \textcolor{red}{red} transitions are triggered by events occurring on other cores.
+Each CPU core has its own copy of a cache line in its local cache. A copy of a cache line has three distinct states. It can be \emph{modified}, which means the core has the only up-to-date copy of the cache line and all other copies are marked \emph{invalid}. It might be \emph{shared}, which means the core has an up-to-date copy, but one or more other cores have a correct copy, too. Or the cache line copy is \emph{invalid}, meaning the local copy is not up-to-date. Figure~\ref{fig:cache} shows how a cache line copy changes its state depending on events occurring. The dotted transitions are triggered by events (read/write) occurring on other cores, whereas the solid transitions are due to events on the core itself.
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=2in]{cache}
+	\includegraphics[width=2.7in]{cache}
 	\caption{Model of the cache behaviour}
 	\label{fig:cache}
 \end{figure}
 
-For example if a core reads a variable, it first needs to make sure that all other cores take notice and change its cache line copy state from modified to shared, or leave it invalid. After this the core fetches the cache line, marks it shared and continues reading the variable.
+For example if a core reads a variable, it first needs to make sure that all other cores take notice and change its cache line copy state to shared in case it was modified before. After this the core fetches the cache line, marks it shared and continues reading the variable.
 
-The timings of read and write are as follows. A read on a modified or shared variable does not imply any extra work but using the cached data. Therefore we consider it instantaneous. If a read is done on an invalid copy, it has to first fetch an up-to-date copy of the cache line and make sure all other cores are notified, until it can proceed. Therefor this operation takes usually around 50 CPU cycles. A write on a modified variable is instantaneous, since all other cores do not have an up-to-date copy and therefor do not have to be contacted. If the cache line in question is in a shared or invalid state, we first have to wait until all other cores follow the request to invalidate their copies of the  cache line. After this we can safely write to our local copy. This operation usually takes around 100 cycles.
+The timings of read and write are as follows. A read on a modified or shared variable does not imply any extra work but using the cached data. Therefore we consider this operation instantaneous. If a read is done on an invalid copy, it has to first fetch an up-to-date copy of the cache line and make sure all other cores are notified, until it can proceed. Therefor this operation takes usually around 50 CPU cycles. A write on a modified variable is instantaneous, since all other cores do not have an up-to-date copy and therefor do not have to be contacted. If the cache line in question is in a shared or invalid state, we first have to wait until all other cores follow the request to invalidate their copies of the  cache line. After this we can safely write to our local copy. This operation usually takes around 100 cycles.
 
-The cycle number for those operations is strongly dependent on the CPU itself. For the model we set a cache read to 50 cycles and a cache write to 100 cycles.
+The number of cycles those operations need is strongly dependent on the CPU itself. For the model we assume a cache read to use 50 cycles and a cache write to use 100 cycles.
 \subsection{Properties}
 We are interested to predict how long the barrier operation takes to complete. Therefore the following three property have been chosen.
 \begin{enumerate}
