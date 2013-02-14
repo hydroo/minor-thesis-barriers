@@ -2,16 +2,15 @@ digraph {
 	initial_state_source2 [style=invis]
 	initial_state_source2 -> "invalid"
 
-	"invalid"  -> "invalid"  [label="r / w", color=red]
-	"invalid"  -> "shared"   [label="r",   color=blue]
-	"invalid"  -> "modified" [label="w",   color=blue]
+	"invalid"  -> "invalid"  [label="r / w", style=dotted]
+	"invalid"  -> "shared"   [label="r"]
+	"invalid"  -> "modified" [label="w"]
 
-	"shared"   -> "shared"   [label="r",   color=red]
-	"shared"   -> "invalid"  [label="w",   color=red]
-	"shared"   -> "shared"   [label="r",   color=blue]
-	"shared"   -> "modified" [label="w",   color=blue]
+	"shared"   -> "shared"   [label="r",     style=dotted]
+	"shared"   -> "invalid"  [label="w",     style=dotted]
+	"shared"   -> "shared"   [label="r"]
+	"shared"   -> "modified" [label="w"]
 
-	"modified" -> "shared"   [label="r",   color=red]
-	"modified" -> "invalid"  [label="w",   color=red]
-	"modified" -> "modified" [label="r / w", color=blue]
-}
+	"modified" -> "shared"   [label="r",     style=dotted]
+	"modified" -> "invalid"  [label="w",     style=dotted]
+	"modified" -> "modified" [label="r / w"]
