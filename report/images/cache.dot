@@ -14,3 +14,4 @@ digraph {
 	"modified" -> "shared"   [label="r",     style=dotted]
 	"modified" -> "invalid"  [label="w",     style=dotted]
 	"modified" -> "modified" [label="r / w"]
+}
