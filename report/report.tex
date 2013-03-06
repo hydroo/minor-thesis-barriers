@@ -25,14 +25,11 @@
 \def \todo#1{\textcolor{blue}{#1}}
 
 \title{A lockless shared memory barrier without atomic operations}
-\author{Ronny Brendel}
+\author{Ronny Brendel\\Tutors: Sascha Kl\"uppelholz, Marcus V\"olp}
 
 \begin{document}
 \section*{Notes}
 \begin{itemize}
-	\item where to add Sascha and Marcus and whom else?
-	\item prepend motivation to abstract?
-	\item English commas - how do they work?
 	\item add intuitive explanation why the protocol terminates?
 	\item add more detail to algorithm section describing the chaotic overwriting?
 \end{itemize}
@@ -42,20 +39,20 @@
 \maketitle
 
 \begin{abstract}
-In this report I present a new barrier protocol, that does not need locking mechanisms nor atomic operations. I prove its correctness by means of checking appropriate properties on a markov decision process model. Furthermore the results of a quantitative analysis on a continuous-time markov chain model of the protocol will be evaluated. Moreover I present an implementation and evaluate its performance in comparison to two current barrier implementations. To conclude the report I repeat the main points and achievements of the work and give a perspective on possible next steps.
+In this report I present an extension of Mc Guire's proposed lockless barrier protocol. I prove its correctness by means of checking appropriate properties on a markov decision process model. Furthermore the results of a quantitative analysis on a continuous-time markov chain model of the protocol will be evaluated. I present an implementation and evaluate its performance in comparison to two current barrier implementations. To conclude the report I repeat the main points and achievements of the work and give a perspective on possible next steps.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-Inspired by the idea of pW/CS\cite{pwcs} we intend to evaluate which other parallel synchronisation operations can be improved through stochastic algorithms. One of those operations is the barrier.
+Inspired by the idea of pW/CS\cite{pwcs} we intend to evaluate which other parallel synchronisation operations can be improved through stochastic algorithms. One of these operations is the barrier.
 
-A barrier is a synchronisation primitive where all processes in a team wait until all of them reach this barrier. \cite{hoefler2005} gives a good overview and analysis of current barrier protocols.
+A barrier is a synchronisation primitive where all processes in a team wait until all of them reach this barrier. Torsten H\"ofler's diploma thesis\cite{hoefler2005} gives a good overview and analysis of current barrier protocols.
 
-The barrier is a common synchronisation operation. In OpenMP\cite{omp} by default many operations such as for loops, sections, single directives invoke an implicit barrier at the end of the operation. Many distributed computing algorithms use a \emph{lock-step} approach to interleave computation with communication phases. For example a program simulating weather divides the region in question into a grid. In each of the squares on this grid the weather progression of the next 20 seconds is simulated concurrently. As a next step the squares need to exchange information such as the temperature and humidity at the borders to the neighbouring squares in order to be able to simulate the next 20 seconds. To facilitate this behaviour, barriers are used to make sure all squares are done simulating and ready to exchange data, before repeating this process.
+The barrier is a common synchronisation operation. In OpenMP\cite{omp}, by default many, operations such as for-loops, sections, and single directives invoke an implicit barrier at the end of the operation. Many distributed computing algorithms use a \emph{lock-step} approach to interleave computation with communication phases. For example a program simulating weather divides the region in question into a grid. In each of the squares on this grid the weather progression of the next 20 seconds is simulated concurrently. As a next step the squares need to exchange information such as the temperature and humidity at the borders to the neighbouring squares in order to be able to simulate the next 20 seconds. To facilitate this behaviour, barriers are used to make sure all squares are done simulating and ready to exchange data, before repeating this process.
 
-According to a survey conducted at the HLRS\footnote{\url{http://http://www.hlrs.de}}\cite{rab00} the barrier is the 5th most time-consuming MPI\footnote{short for Message Passing Interface}\cite{mpi} operation. On average 6\% of the whole CPU time spent in MPI calls and 0.81\% of the whole program time is spent in barriers. A very small fraction of this is the actual time spent synchronizing. The majority is due to waiting for other processes to arrive, because the computation between processes is unbalanced - some take longer, some are quicker. It is still useful to pursue improvements in the barrier protocol for benchmarks and programs that require lots of synchronisation.
+According to a survey conducted at the HLRS\cite{rab00} the barrier is the 5th most time-consuming Message Passing Interface\cite{mpi} (MPI) operation. On average 6\% of the whole CPU time spent in MPI calls and 0.81\% of the whole program time is spent in barriers. A very small fraction of this is the actual time spent synchronizing. The majority is due to waiting for other processes to arrive, because the computation between processes is unbalanced (some take longer, some are quicker). It is still useful to pursue improvements in the barrier protocol for benchmarks and programs that require lots of synchronisation.
 
-The report is structured as follows. First I present the new protocol. After this I prove its correctness/termination. The next step is to analyse quantitative properties of the protocol. Furthermore an implementation will be evaluated and compared to the barrier implementations of GNU OpenMP\cite{gomp} and PThreads\cite{glibc} implementation.
+The report is structured as follows. First, I present the new protocol. In Section~\ref{sec:correctness} I prove its correctness/termination. The next step is to analyse quantitative properties of the protocol. Furthermore an implementation will be evaluated and compared to the barrier implementations of GNU OpenMP\cite{gomp} and PThreads\cite{glibc}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The new protocol}
@@ -111,10 +108,11 @@ As mentioned before, it is not obvious why left is needed. If we would not use l
 
 If we would omit the distinction between the entry and exit loop, a thread would not be able to safely reenter the barrier while other threads are still in it. He could immediately exit it again, which is not a desired behaviour. A means of stopping this thread until all other threads have left would be necessary. Since 1 bit per process is not much memory and we can nicely distinguish between loop 1 and 2 using the variable left, this approach has been chosen.
 
-An important assumption is that the write/read of entry and exit happen in one step. If writing to entry would take multiple steps, a deadlock scenario could be created. This means on current computer systems this approach is limited to 32 threads. Notice that no atomic operations have been used.
+An important assumption is that the write/read of entry and exit happen in one step. If writing to entry would take multiple steps, a deadlock scenario could be created. This means on current computer systems this approach is limited to 32 threads. Notice, no atomic operations have been used.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Correctness of the protocol}
+\label{sec:correctness}
 Correctness for this protocol means that it terminates and a thread can only leave the barrier if all others are present. To verify those two properties we use a markov decision process model of the protocol (figure~\ref{fig:mdp}). To prove termination we check whether location 17 can be reached infinitely often. This implies that the protocol is deadlock-free. Two models, one in Spin\cite{spin} and one PRISM\cite{prism} have been implemented. Both show that the protocol terminates under the mild assumption of weak fairness for scheduling the threads. To prove the second part we query the model checkers whether it is possible that two threads are in different loops at the same time. Both PRISM and Spin show that this is not the case.
 \begin{figure}[htbp]
 	\centering
@@ -137,7 +135,7 @@ In order to analyse quantitative properties of the protocol, we need to determin
 	\label{fig:ctmc}
 \end{figure}
 \clearpage
-\subsection{Modeling a cache line copy}
+\subsection{Modeling cache behaviour}
 The following description shows a very simple view on the CPU cache and omits many details of current cache protocols. This is necessary to keep the model at a manageable size.
 
 Each CPU core has its own local copy of a cache line. A cache line copy has three distinct states. It can be \emph{modified}, which means the core has the only up-to-date copy of the cache line and all other copies are marked \emph{invalid}. It might be \emph{shared}, which means the core has an up-to-date copy, but one or more other cores have a correct copy, too. Or the cache line copy is \emph{invalid}, meaning the local copy is not up-to-date. Figure~\ref{fig:cache} shows how a cache line copy changes its state depending on events occurring. The dotted transitions are triggered by events (read/write) occurring on other cores, whereas the solid transitions are due to events issued by the own core.
@@ -163,9 +161,9 @@ We are interested to predict how long the barrier operation takes to complete. T
 
 To formalise the above properties we use a continuous stochastic logic\cite{assb96}\cite{bkh99} representation. For the third query we use the \emph{conditional long-run probability}, which is explained in detail in \cite{fmix}. $n$ represents the number of threads and $t$ is a constant for the time waited in the bounded eventually ($\Diamond_{\le t} \phi$)
 \begin{enumerate}
-	\item $P=? \big[\Diamond_{\le t} \bigvee_{1 \le i \le n} loc_i \ge 5\big]$
-	\item $P=? \big[\Diamond_{\le t} \bigwedge_{1 \le i \le n} loc_i \ge 5\big]$
-	\item $CrlP=? \big[\Diamond_{\le t} \bigwedge_{1 \le i \le n} loc_i \ge 5, \bigvee_{1 \le i \le n} (loc_i \ge 5 \wedge \bigwedge_{1 \le j \le n, i \neq j} loc_j < 5)\big]$
+	\item $P_{=?} \big[\Diamond_{\le t} \bigvee_{1 \le i \le n} loc_i \ge 5\big]$
+	\item $P_{=?} \big[\Diamond_{\le t} \bigwedge_{1 \le i \le n} loc_i \ge 5\big]$
+	\item $CrlP_{=?} \big[\Diamond_{\le t} \bigwedge_{1 \le i \le n} loc_i \ge 5, \bigvee_{1 \le i \le n} (loc_i \ge 5 \wedge \bigwedge_{1 \le j \le n, i \neq j} loc_j < 5)\big]$
 \end{enumerate}
 \subsection{Evaluation}
 The results of the queries for a barrier operation between three threads are shown in figure~\ref{fig:one-and-all} and \ref{fig:one2all}. We can see that 90\% of the time the barrier is completed, i.e. all threads are past it, within 1000 CPU cycles. If one thread is past the barrier, all other threads will get past it in less than 380 cycles with a probability of 90\%.
@@ -195,7 +193,7 @@ In order to evaluate the performance of the barrier, we spawn a certain amount o
 
 The measurements were conducted on a 64 thread, 32 core, 4 socket AMD Opteron\texttrademark 6274 system.
 \subsection{Evaluation}
-The results are shown in figure~\ref{fig:measurement-1} and \ref{fig:measurement-2}. Due to time constraints the measurements are not 100 percent reliable. They should give an intuition in which ballpark the performance is, though.
+The results are shown in figure~\ref{fig:measurement-1} and \ref{fig:measurement-2}. Due to time constraints, the measurements are not 100 percent reliable. They should give an intuition in which ballpark the performance is, though.
 \begin{figure}[htbp]
 	\centering
 	\begin{tabular}{r | l l l }
@@ -226,7 +224,7 @@ When not having any delay, but rather repeating the barrier as quickly as possib
 	\label{fig:measurement-2}
 \end{figure}
 
-When adding one millisecond of calculation (or sleep for this measurement) the runtime of new barrier still finishes roughly 10\% earlier.
+When adding one millisecond of calculation (or sleep for this measurement) the runtime of the new barrier still finishes roughly 10\% earlier.
 
 A minor drawback of the new barrier protocol is that due to the intended false-sharing of the cache line with the variables on it, it adds strain to the cache bandwidth. Measurements show that about 1\% of the total cache bandwidth is lost, regardless of the thread count. The number is that low, because the speed of false-sharing is limited by the waiting time for transferring a cache line between two caches.
 
@@ -242,7 +240,7 @@ I proved the correctness of the protocol by checking an MDP model in two differe
 Furthermore I presented a brief analysis of a CTMC model showing some basic properties of the protocol.
 Moreover we saw that a straight forward implementation of the new barrier is significantly faster than two currently used barrier implementations.
 \section{Future Work}
-Due to time-constraints much of what needs to be done is now enumerated in this section.
+Due to time-constraints, much of what needs to be done is enumerated in this section.
 
 The CTMC model of the protocol is already too large to be analysed when being used with four threads. One should explore ways to reduce its size. Common approaches include symmetry reduction, partial order reduction and reducing the model manually depending on the properties to be checked. Once this has been achieved, further quantitative analysis on the model seems worthwhile.
 
@@ -250,7 +248,7 @@ There are various possibilities to make an actual implementation faster and/or m
 
 One should also explore ways to circumvent the current 32 thread limit.
 
-Another interesting pursuit is evaluating ways to modify the protocol in order to make it work in a distributed setting, thus making it an alternative to current distributed memory barrier protocols as seen in \cite{hoefler2005}.
+Another interesting pursuit is to evaluate ways to modify the protocol in order to make it work in a distributed setting, thus making it an alternative to current distributed memory barrier protocols.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \nocite{*} % give out non cited references
