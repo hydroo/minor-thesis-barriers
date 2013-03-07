@@ -30,7 +30,6 @@
 \begin{document}
 \section*{Notes}
 \begin{itemize}
-	\item add intuitive explanation why the protocol terminates?
 	\item add more detail to algorithm section describing the chaotic overwriting?
 \end{itemize}
 
@@ -56,7 +55,7 @@ The report is structured as follows. First, I present the new protocol. In Secti
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The new protocol}
-The protocol depicted in figure~\ref{fig:barrier-source-code} went through multiple iterations. Therefore it is not immediately obvious why there are two distinct loops and what the purpose of the variable \emph{left} is.
+The protocol depicted in Figure~\ref{fig:barrier-source-code} went through multiple iterations. Therefore it is not immediately obvious why there are two distinct loops and what the purpose of the variable \emph{left} is.
 \begin{figure}[htbp]
 	\centering
 	\begin{lstlisting}
@@ -113,7 +112,7 @@ An important assumption is that the write/read of entry and exit happen in one s
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Correctness of the protocol}
 \label{sec:correctness}
-Correctness for this protocol means that it terminates and a thread can only leave the barrier if all others are present. To verify those two properties we use a markov decision process model of the protocol (figure~\ref{fig:mdp}). To prove termination we check whether location 17 can be reached infinitely often. This implies that the protocol is deadlock-free. Two models, one in Spin\cite{spin} and one PRISM\cite{prism} have been implemented. Both show that the protocol terminates under the mild assumption of weak fairness for scheduling the threads. To prove the second part we query the model checkers whether it is possible that two threads are in different loops at the same time. Both PRISM and Spin show that this is not the case.
+Correctness for this protocol means it terminates and a thread can only leave the barrier, if all others are present. To verify these two properties we use a markov decision process model of the protocol (Figure~\ref{fig:mdp}). To prove termination we check whether location 17 can be reached infinitely often. This implies that the protocol is deadlock-free. Two models, one in Spin\cite{spin} and one PRISM\cite{prism} have been implemented. Both show the protocol terminates under the mild assumption of weak fairness for scheduling threads. To prove the second part, we query the model checkers whether it is possible that two threads are in different loops at the same time. Both, PRISM and Spin, show this is not the case.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=3.2in]{mdp}
@@ -123,11 +122,13 @@ Correctness for this protocol means that it terminates and a thread can only lea
 
 Note that in a real implementation, for example in the C programming language, it would be up to the compiler to decide in which order to evaluate the two subexpressions in the while condition. This freedom of choice is reflected in the model using non-determinism.
 
+Intuitively the protocol terminates, because every time all processes have looped at least once, a minimum of one process has been successfully committed to the entry variable. Thus, after n repetitions, where n is the number of threads, all the processes have been registered and the barrier is completed.
+
 \clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Continuous-time markov chain for the barrier protocol}
-In order to analyse quantitative properties of the protocol, we need to determine the expensive operations. Since the protocol uses shared variables to communicate, reads and writes from and to those variables are potentially costly. Each time a shared variable is modified or read, depending on the state of the cache line it is on, the operation takes a very different amount of CPU time. Therefore we consider it worthwhile to model the cache behaviour aside from the protocol itself. The cache model will be discussed in the next section. Details that are not important for the timing of the protocol, like the non-determinism in the while condition, have been omitted. The resulting CTMC is shown in figure~\ref{fig:ctmc}. The rate of a transition is given in parenthesis.
+In order to analyse quantitative properties of the protocol, we need to determine the expensive operations. Since the protocol uses shared variables to communicate, reads and writes from and to those variables are potentially costly. Each time a shared variable is modified or read, depending on the state of the cache line it is on, the operation takes a very different amount of CPU time. Therefore we consider it worthwhile to model the cache behaviour aside from the protocol itself. The cache model will be discussed in the next section. Details that are not important for the timing of the protocol, like the non-determinism in the while condition, have been omitted. The resulting CTMC is shown in Figure~\ref{fig:ctmc}. The rate of a transition is given in parenthesis.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=5.2in]{ctmc}
@@ -166,7 +167,7 @@ To formalise the above properties we use a continuous stochastic logic\cite{assb
 	\item $CrlP_{=?} \big[\Diamond_{\le t} \bigwedge_{1 \le i \le n} loc_i \ge 5, \bigvee_{1 \le i \le n} (loc_i \ge 5 \wedge \bigwedge_{1 \le j \le n, i \neq j} loc_j < 5)\big]$
 \end{enumerate}
 \subsection{Evaluation}
-The results of the queries for a barrier operation between three threads are shown in figure~\ref{fig:one-and-all} and \ref{fig:one2all}. We can see that 90\% of the time the barrier is completed, i.e. all threads are past it, within 1000 CPU cycles. If one thread is past the barrier, all other threads will get past it in less than 380 cycles with a probability of 90\%.
+The results of the queries for a barrier operation between three threads are shown in Figure~\ref{fig:one-and-all} and \ref{fig:one2all}. We can see that 90\% of the time the barrier is completed, i.e. all threads are past it, within 1000 CPU cycles. If one thread is past the barrier, all other threads will get past it in less than 380 cycles with a probability of 90\%.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=3in]{one-and-all}
@@ -189,11 +190,11 @@ I was unable to scale this model beyond three threads, due to the huge size of t
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementation and measurement}
 \subsection{Considerations}
-In order to evaluate the performance of the barrier, we spawn a certain amount of threads, repeatedly visit the barrier with a fixed number of repetitions, and afterwards end all threads. We measure the whole running time of the program. To get more reliable results we make sure the operating system's scheduler cannot reposition threads between cores, i.e. we create a one-to-one mapping between threads and cores and pin this configuration for the duration of the measurement. The implementation of the algorithm is an exact translation of the pseudocode in figure~\ref{fig:barrier-source-code} into the C programming language.
+In order to evaluate the performance of the barrier, we spawn a certain amount of threads, repeatedly visit the barrier with a fixed number of repetitions, and afterwards end all threads. We measure the whole running time of the program. To get more reliable results we make sure the operating system's scheduler cannot reposition threads between cores, i.e. we create a one-to-one mapping between threads and cores and pin this configuration for the duration of the measurement. The implementation of the algorithm is an exact translation of the pseudocode in Figure~\ref{fig:barrier-source-code} into the C programming language.
 
 The measurements were conducted on a 64 thread, 32 core, 4 socket AMD Opteron\texttrademark 6274 system.
 \subsection{Evaluation}
-The results are shown in figure~\ref{fig:measurement-1} and \ref{fig:measurement-2}. Due to time constraints, the measurements are not 100 percent reliable. They should give an intuition in which ballpark the performance is, though.
+The results are shown in Figure~\ref{fig:measurement-1} and \ref{fig:measurement-2}. Due to time constraints, the measurements are not 100 percent reliable. They should give an intuition in which ballpark the performance is, though.
 \begin{figure}[htbp]
 	\centering
 	\begin{tabular}{r | l l l }
