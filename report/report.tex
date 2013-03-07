@@ -112,7 +112,7 @@ An important assumption is that the write/read of entry and exit happen in one s
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Correctness of the protocol}
 \label{sec:correctness}
-Correctness for this protocol means it terminates and a thread can only leave the barrier, if all others are present. To verify these two properties we use a markov decision process model of the protocol (Figure~\ref{fig:mdp}). To prove termination we check whether location 17 can be reached infinitely often. This implies that the protocol is deadlock-free. Two models, one in Spin\cite{spin} and one PRISM\cite{prism} have been implemented. Both show the protocol terminates under the mild assumption of weak fairness for scheduling threads. To prove the second part, we query the model checkers whether it is possible that two threads are in different loops at the same time. Both, PRISM and Spin, show this is not the case.
+Correctness for this protocol means it terminates and a thread can only leave the barrier if all others are present. To verify these two properties we use a markov decision process model of the protocol (Figure~\ref{fig:mdp}). To prove termination we check whether location 17 can be reached infinitely often. This implies that the protocol is deadlock-free. Two models, one in Spin\cite{spin} and one PRISM\cite{prism}, have been implemented. Both show that the protocol terminates under the mild assumption of weak fairness for scheduling threads. To prove the second part we query the model checkers whether it is possible that two threads are in different loops at the same time. Both, PRISM and Spin, show that this is not the case.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=3.2in]{mdp}
