@@ -40,16 +40,76 @@ Inspired by the idea of pW/CS\cite{pwcs} we intend to evaluate which other paral
 
 A barrier is a synchronisation primitive where all processes in a team wait until all of them reach this barrier. Torsten H\"ofler's diploma thesis\cite{hoefler2005} gives a good overview and analysis of current barrier protocols.
 
-The barrier is a common synchronisation operation. In OpenMP\cite{omp}, by default many, operations such as for-loops, sections, and single directives invoke an implicit barrier at the end of the operation. Many distributed computing algorithms use a \emph{lock-step} approach to interleave computation with communication phases. For example a program simulating weather divides the region in question into a grid. In each of the squares on this grid the weather progression of the next 20 seconds is simulated concurrently. As a next step the squares need to exchange information such as the temperature and humidity at the borders to the neighbouring squares in order to be able to simulate the next 20 seconds. To facilitate this behaviour, barriers are used to make sure all squares finished simulating and ready to exchange data, before repeating this process.
+The barrier is a common synchronisation operation. In OpenMP\cite{omp}, by default, many operations such as for-loops, sections, and single directives invoke an implicit barrier at the end of the operation. Many distributed computing algorithms use a \emph{lock-step} approach to interleave computation with communication phases. For example a program simulating weather divides the region in question into a grid. In each of the squares on this grid the weather progression of the next 20 seconds is simulated concurrently. As a next step the squares need to exchange information such as the temperature and humidity at the borders to the neighbouring squares in order to be able to simulate the next 20 seconds. To facilitate this behaviour, barriers are used to make sure all squares finished simulating and are ready to exchange data, before repeating this process.
 
 According to a survey conducted at the HLRS\cite{rab00} the barrier is the 5th most time-consuming Message Passing Interface\cite{mpi} (MPI) operation. On average 6\% of the whole CPU time spent in MPI calls and 0.81\% of the whole program time is spent in barriers. A very small fraction of this is the actual time spent synchronizing. The majority is due to waiting for other processes to arrive, because the computation between processes is unbalanced (some take longer, some are quicker). It is still useful to pursue improvements in the barrier protocol for benchmarks and programs that require lots of synchronisation.
 
 The report is structured as follows: First, I present the new protocol. In Section~\ref{sec:correctness} I prove its correctness. The next step is to analyse quantitative properties of the protocol. Furthermore an implementation will be evaluated and compared to the barrier implementations of GNU OpenMP\cite{gomp} and PThreads\cite{glibc}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{The new protocol}
-The protocol depicted in Figure~\ref{fig:barrier-source-code} went through multiple iterations, therefore it is not immediately obvious why there are two distinct loops, that look roughly the same, and what the purpose of the variable \emph{left} is.
+\section{Analysis of the proposed barrier protocol}
+The protocol depicted in Figure~\ref{fig:original-barrier-source-code} is part of a personal communication with Nicholas Mc Guire. Therefore no reference can be cited.
+
 \begin{figure}[htbp]
+	\centering
+	\begin{lstlisting}
+shared: barrier := 1
+local: me:=primes[index], other=primes[len-1-index]
+
+do {
+	if barrier%me != 0 {
+		barrier *= me
+	}
+} while barrier%productOfAllPrimes != 0
+
+do {
+	if barrier%other = 0 {
+		barrier /= other
+	}
+} while barrier != 1
+	\end{lstlisting}
+	\caption{Pseudo code of the proposed barrier protocol}
+	\label{fig:original-barrier-source-code}
+\end{figure}
+The idea is that each thread in a team is identified by two different primes. The primes are chosen from a given set of primes which has
+as many elements as there are threads.
+
+One run of the barrier is a run through both loops. In the first loop a thread multiplies himself to the barrier variable. All threads arrived when barrier equals the product of all primes in the set. Analogously, in the second loop, each thread divides himself from the barrier variable until it equals one. After this, the barrier is completed.
+
+Intuitively each thread runs busily in his loop trying to commit himself to the barrier. Since modification of the barrier variable (read until write) is not atomic, the threads rapidly overwrite each other's commitment attempts. But eventually all threads will be multiplied to the barrier. The idea is that even though the threads read and write wildly, this approach is potentially faster than currently used protocols, which are lock-based or lock-less using atomic operations.
+
+Having two different primes for one thread (Why not just use one?) is an attempt to avoid a possible deadlock: Assume me=other. A thread finishes the first loop and enters the second, and then divides himself from the barrier again. Since the thread responsible for multiplying himself to the barrier is already in the second loop, the barrier cannot equal the product of all primes anymore. Thus some threads are stuck in the upper loop. A similar scenario can still be created in the proposed protocol: Suppose two threads sharing one prime (as \texttt{me} and \texttt{other}) exit together. They both divide their primes from the barrier in the second loop. Since the thread having the shared prime as \texttt{me} cannot multiply himself to the barrier again, the other threads are again stuck in the upper loop. Because the memory used by the barrier variable is little, we can introduce a second one to solve this issue. The second and first loop would then both multiply until they reach the product of all primes, but on two distinct variables.
+
+Another problem is that "\texttt{if~barrier~\%~me~>~0~\{~barrier~*=~me~\}}" is not an atomic operation -- We read barrier twice. A thread can multiply itself multiple times to the barrier and eventually overflow the bound of it. Figure~\ref{fig:deadlock1} depicts an example to multiply a thread's prime twice to the barrier variable. This problem can be solved by introducing a local copy of barrier. On this copy we then execute the operations above and write the copy back.
+\begin{figure}[htbp]
+	\centering
+	\begin{tabular}{r | c c c | l}
+		time & prime    &         &          & comment &
+			 & 2        & 3       & 5        &         &
+		\hline
+		1    & read 1   & read 1  &          &         &
+		2    & write 2  &         &          &         &
+		3    &          &         & read 2   &         &
+		4    &          & write 3 &          &         &
+		5    & read 3   &         &          & barrier\%2 $>$ != 0 &
+		6    &          &         & write 10 &         &
+		7    & read 10  &         &          &         &
+		8    & write 20 &         &          & $20 = 2 * 2 * 5$ &
+	\end{tabular}
+	\caption{Example execution of multiplying a thread twice to the barrier}
+	\label{fig:deadlock1}
+\end{figure}
+
+Having solved these two issues, it is still possible to have a deadlock. Suppose one thread completes the first loop and leaves. Then another thread rewrites barrier to a value where the thread which has already left is not present. This thread now has no means of multiplying himself to the barrier again. Thus all threads except one are locked inside the first loop. My solution to this problem is to introduce a new shared variable that signals all threads whether one thread has completed the barrier.
+
+Having all the above problems in mind, I came up with an extension to the proposed protocol, which I will discuss in the next section.
+
+\section{The extended protocol}
+In addition to solving the problems mentioned before, I switched from multiplying primes to the barrier variable to a bitset representation (one thread per bit). This way we can have more threads, up to 64, in the barrier variable whereas the product of the first 64 primes would, by far, exceed the bounds of a 64-bit integer variable.
+
+The resulting protocol is depicted in Figure~\ref{fig:barrier-source-code}.
+
+\begin{figure}[htb]
 	\centering
 	\begin{lstlisting}
 shared: entry:=0, exit:=0, left:=false
@@ -83,12 +143,11 @@ if left = false {
 
 }
 	\end{lstlisting}
-	\caption{Pseudo code of the barrier protocol}
+	\caption{Pseudo code of the extended barrier protocol}
 	\label{fig:barrier-source-code}
 \end{figure}
-But let's start with an explanation on how the protocol works before going into these details.
 
-\emph{entry} is a bitset where each bit stands for one thread having arrived in the first loop. \emph{exit} has the same role for the second loop. \emph{copy} is a local copy of entry or exit depending on the loop the thread is currently in. \emph{left} is true if one thread has left the first loop, or in other words the first barrier is completed and everyone can now leave it. Conversely if left is false, the second barrier has been completed. \emph{me} is the bit of the current thread; It is always a power of two. \emph{full} is a constant meaning all threads have successfully committed themselves to entry/exit.
+Allow me to explain. \emph{entry} is a bitset where each bit stands for one thread having arrived in the first loop. \emph{exit} has the same role for the second loop. \emph{copy} is a local copy of entry or exit depending on the loop the thread is currently in. \emph{left} is true if one thread has left the first loop, or in other words the first barrier is completed and everyone can now leave it. Conversely if left is false, the second barrier has been completed. \emph{me} is the bit of the current thread; It is always a power of two. \emph{full} is a constant meaning all threads have successfully committed themselves to entry/exit.
 
 Initially entry and exit are zero and left is false. A process arriving in the first loop takes a copy of entry and checks whether he is in it (\texttt{copy\&me = 0}). If not, he adds himself and writes the result back to entry. Next he checks whether everyone has committed his bit to the entry variable (\texttt{entry = full}) or at least one thread has left the loop (\texttt{left = true}). If so, he can leave and if not, he has to repeat from the point where he takes a copy of entry.
 
@@ -96,11 +155,9 @@ Suppose one thread has passed the first loop. He then sets left to true signalli
 
 Suppose one thread encounters the barrier again. Because left has been set to true after having left the previous barrier, the outermost \texttt{if} now directs the thread to the second loop and repeats the procedure described above. Instead of entry he will now use the variable exit instead. When this barrier is completed, left will be set to false, thus the third encounter will use the first loop again. Repeat. The first barrier is used on every even number of visits, and the second on every odd number of visits.
 
-Intuitively each thread runs busily in his loop and tries to commit himself to the barrier. Since modification of the barrier variable (read until write) is not atomic, the threads rapidly overwrite each others commitment attempts. But eventually all threads will be added to entry/exit. Then the first thread, realizing that this is the case, leaves the barrier and signals all others that the barrier has been successfully completed and they can leave, too. The idea is that even though the threads read and write wildly, this approach is potentially faster than lock-based and lock-less barriers using atomic operations.
+This is another deviation from the original protocol, where it was necessary to finish both loops to complete the barrier operation. During the development and analysis of the new protocol it became apparent that switching with the variable left, between loops, still makes for a correct protocol, which I will prove in the next section. By doing speed up the barrier by a factor of two.
 
-As mentioned at the start of this section, it is not obvious why left is needed. If we remove left, a race would occur where a thread leaves the first barrier and another rewrites entry to a value where the thread which has already left is not present. This thread now has no means of committing himself to entry again. Thus all threads except this one are locked inside the first loop. A deadlock occurs.
-
-If we omit the distinction between the entry and exit loop, a thread would not be able to safely reenter the barrier while other threads are still in it. He could immediately exit it again, which is not a desired behaviour. A means of stopping this thread until all other threads have left would be necessary. Since 1 bit per process is not much memory and we can nicely distinguish between loop 1 and 2, using the variable left, this approach has been chosen.
+If we omit the distinction between the entry and exit loop, a thread would not be able to safely reenter the barrier while other threads are still in it. He could immediately exit it again, which is not a desired behaviour. A means of stopping this thread, until all other threads have left, would be necessary. Since 1 bit per process is not much memory and we can nicely distinguish between loop 1 and 2, using the variable left, this approach has been chosen.
 
 An important assumption is that the write/read of entry and exit happen in one step. If writing to and reading from entry would take multiple steps, a deadlock scenario could be created. Thus on current computer systems this approach is limited to 32 threads. Interestingly, even on pure 64-bit systems the limit is 32. Circumventing this restriction is part of future work.
 
@@ -245,7 +302,7 @@ The CTMC model of the protocol is already too large to be analysed when being us
 
 There are various possibilities to make an actual implementation faster and/or more resource-friendly than the straight forward one shown in this report. For example one could experiment with using the \emph{mwait} instruction in order to wait for changes in a shared variable, thus not having to actively poll it. Another way to speed up the protocol is that a thread keeps track of which other threads he has already seen inside the barrier and does not only commit himself to the it but the other threads he has seen, too.
 
-One should also explore ways to circumvent the current 32 thread limit.
+One should also explore ways to circumvent the current 32 thread limit. Using an array of entry/exit variables and only operating on the items we need should resolve the problem. Since we only want to add one bit at a time, writes would then be atomic again.
 
 Another interesting pursuit is to evaluate ways to modify the protocol in order to make it work in a distributed setting, thus making it an alternative to current distributed memory barrier protocols.
 
