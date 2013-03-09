@@ -1,3 +1,8 @@
+--- 13-03-09 ---
+
+ □ it might work to just remove copy and work directly on the shared vars.
+   One more shared read, but a variable less (the model would be happy, perhaps)
+
 --- 13-02-09 ---
 
  ✓ is the model still correct?
