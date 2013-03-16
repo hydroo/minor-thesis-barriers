@@ -52,21 +52,21 @@ The protocol depicted in Figure~\ref{fig:original-barrier-source-code} is part o
 
 \begin{figure}[htbp]
 	\centering
-	\begin{lstlisting}
+	\begin{lstlisting}[mathescape]
 shared: barrier := 1
-local: me:=primes[index], other=primes[len-1-index]
+local: me:=primes[index], other:=primes[len-1-index]
 
 do {
-	if barrier%me != 0 {
-		barrier *= me
+	if barrier$\not\equiv 0 \bmod{}$me {
+		barrier := barrier * me
 	}
-} while barrier%productOfAllPrimes != 0
+} while barrier$\not\equiv 0 \bmod{}$productOfAllPrimes
 
 do {
-	if barrier%other = 0 {
-		barrier /= other
+	if barrier$\equiv 0 \bmod{}$other {
+		barrier := barrier / other
 	}
-} while barrier != 1
+} while barrier$\neq 1$
 	\end{lstlisting}
 	\caption{Pseudo code of the proposed barrier protocol}
 	\label{fig:original-barrier-source-code}
