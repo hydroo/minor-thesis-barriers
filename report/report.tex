@@ -44,7 +44,7 @@ The barrier is a common synchronisation operation. In OpenMP\cite{omp}, by defau
 
 According to a survey conducted at the HLRS\cite{rab00} the barrier is the 5th most time-consuming Message Passing Interface (MPI)\cite{mpi} operation. On average 6\% of the whole CPU time spent in MPI calls and 0.81\% of the whole program time is spent in barriers. A very small fraction of this is the actual time spent synchronizing. The majority is due to waiting for other processes to arrive, because the computation between processes is unbalanced (some take longer, some are quicker). It is still useful to pursue improvements in the barrier protocol for benchmarks and programs that require lots of synchronisation.
 
-The report is structured as follows: First, I present the new protocol. In Section~\ref{sec:correctness} I prove its correctness. The next step is to analyse quantitative properties of the protocol. Furthermore an implementation will be evaluated and compared to the barrier implementations of GNU OpenMP\cite{gomp} and PThreads\cite{glibc}. Concluding thoughts, and ideas for future work wrap up the report.
+The report is structured as follows: First, we present the new protocol. In Section~\ref{sec:correctness} we prove its correctness. The next step is to analyse quantitative properties of the protocol. Furthermore an implementation will be evaluated and compared to the barrier implementations of GNU OpenMP\cite{gomp} and PThreads\cite{glibc}. Concluding thoughts, and ideas for future work wrap up the report.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Analysis of the proposed barrier protocol}
@@ -236,7 +236,7 @@ The results of the queries for a barrier operation between three threads are sho
 
 Note that for these queries the duration of the work period has little influence and is set to 1 cycle.
 
-I was unable to scale this model beyond three threads due to the huge size of the resulting state space. Future work includes tackling this limitation.
+We were unable to scale this model beyond three threads due to the huge size of the resulting state space. Future work includes tackling this limitation.
 
 \clearpage
 
@@ -289,10 +289,9 @@ There exist approaches to reduce the negative effects of both these problems. Th
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
-In this report I presented a new barrier protocol, whose main difference to existing protocols is, that it neither relies on locking mechanisms nor atomic operations.
-In its current state the number of threads supported by this protocol is limited to the number of bits a read/write can transfer in one uninterceptable operation -- 32 on current generation CPUs.
-I proved the correctness of the protocol by checking an MDP model in two different model checkers for potential deadlocks and inconsistencies.
-Furthermore I presented a brief analysis of a CTMC model showing some basic properties of the protocol.
+In this report we presented a new barrier protocol whose main advantage over existing protocols is that it neither relies on locking mechanisms nor atomic operations.
+We proved the correctness of the protocol by checking an MDP model in two different model checkers for potential deadlocks and inconsistencies.
+Furthermore we presented a brief analysis of a CTMC model showing some basic properties of the protocol.
 Moreover we saw that a straightforward implementation of the new barrier is significantly faster than two currently used barrier implementations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
