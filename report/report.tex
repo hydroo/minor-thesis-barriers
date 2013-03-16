@@ -38,11 +38,11 @@ Today's concurrent code wastes time, because it often works in a needlessly dete
 \section{Introduction}
 Inspired by the idea of pW/CS\cite{pwcs} we intend to evaluate which other parallel synchronisation operations can be improved through stochastic algorithms. One of these operations is the barrier.
 
-A barrier is a synchronisation primitive where all processes in a team wait until all of them reach this barrier. Torsten H\"ofler's diploma thesis\cite{hoefler2005} gives a good overview and analysis of current barrier protocols.
+A barrier is a synchronisation primitive where all threads in a team wait until all of them reach this barrier. Torsten H\"ofler's diploma thesis\cite{hoefler2005} gives a good overview and analysis of current barrier protocols.
 
 The barrier is a common synchronisation operation. In OpenMP\cite{omp}, by default, many operations such as for-loops, sections, and single directives invoke an implicit barrier at the end of the operation. Many distributed computing algorithms use a \emph{lock-step} approach to interleave computation with communication phases. For example a program simulating weather divides the region in question into a grid. In each of the squares on this grid the weather progression of the next 20 seconds is simulated concurrently. As a next step the squares need to exchange information such as the temperature and humidity at the borders to the neighbouring squares in order to be able to simulate the next 20 seconds. To facilitate this behaviour, barriers are used to make sure all squares finished simulating and are ready to exchange data, before repeating this process.
 
-According to a survey conducted at the HLRS\cite{rab00} the barrier is the 5th most time-consuming Message Passing Interface (MPI)\cite{mpi} operation. On average 6\% of the whole CPU time spent in MPI calls and 0.81\% of the whole program time is spent in barriers. A very small fraction of this is the actual time spent synchronizing. The majority is due to waiting for other processes to arrive, because the computation between processes is unbalanced (some take longer, some are quicker). It is still useful to pursue improvements in the barrier protocol for benchmarks and programs that require lots of synchronisation.
+According to a survey conducted at the HLRS\cite{rab00} the barrier is the 5th most time-consuming Message Passing Interface (MPI)\cite{mpi} operation. On average 6\% of the whole CPU time spent in MPI calls and 0.81\% of the whole program time is spent in barriers. A very small fraction of this is the actual time spent synchronizing. The majority is due to waiting for other threads to arrive, because the computation between threads is unbalanced (some take longer, some are quicker). It is still useful to pursue improvements in the barrier protocol for benchmarks and programs that require lots of synchronisation.
 
 The report is structured as follows: First, we present the new protocol. In Section~\ref{sec:correctness} we prove its correctness. The next step is to analyse quantitative properties of the protocol. Furthermore an implementation will be evaluated and compared to the barrier implementations of GNU OpenMP\cite{gomp} and PThreads\cite{glibc}. Concluding thoughts, and ideas for future work wrap up the report.
 
@@ -149,7 +149,7 @@ if left = false {
 
 Allow me to explain. \& is the bitwise and operator. $|$ is the bitwise or operator. They are used to check for bits and add bits to a bitset. \emph{entry} is a bitset where each bit stands for one thread having arrived in the first loop. \emph{exit} has the same role for the second loop. \emph{copy} is a local copy of entry or exit depending on the loop the thread is currently in. \emph{left} is true if one thread has left the first loop, or in other words the first barrier is completed and everyone can now leave it. Conversely if left is false, the second barrier has been completed. \emph{me} is the bit of the current thread; it is always a power of two. \emph{full} is a constant meaning all threads have successfully committed themselves to entry/exit.
 
-Initially entry and exit are zero and left is false. A process arriving in the first loop takes a copy of entry and checks whether it is in it (\texttt{copy\&me = 0}). If not, it adds itself and writes the result back to entry. Next it checks whether everyone has committed its bit to the entry variable (\texttt{entry = full}) or at least one thread has left the loop (\texttt{left = true}). If so, it can leave and if not, it has to repeat from the point where it takes a copy of entry.
+Initially entry and exit are zero and left is false. A thread arriving in the first loop takes a copy of entry and checks whether it is in it (\texttt{copy\&me = 0}). If not, it adds itself and writes the result back to entry. Next it checks whether everyone has committed its bit to the entry variable (\texttt{entry = full}) or at least one thread has left the loop (\texttt{left = true}). If so, it can leave and if not, it has to repeat from the point where it takes a copy of entry.
 
 Suppose one thread has passed the first loop. It then sets left to true signalling the other threads that the barrier has been completed. All other threads will exit the loop soon, too.
 
@@ -157,7 +157,7 @@ Suppose one thread encounters the barrier again. Because left has been set to tr
 
 This is another deviation from the original protocol, where it was necessary to finish both loops to complete the barrier operation. During the development and analysis of the new protocol it became apparent that switching, using the variable left, between loops still makes for a correct protocol, which we will prove in the next section. With this optimization, we speed up the barrier by a factor of two.
 
-If we omit the distinction between the entry and exit loop, a thread would not be able to safely reenter the barrier while other threads are still in it. It could immediately exit it again, which is not a desired behaviour. A means of stopping this thread, until all other threads have left, would be necessary. Since 1 bit per process is not much memory and we can nicely distinguish between the first and second loop, using the variable left, this approach has been chosen.
+If we omit the distinction between the entry and exit loop, a thread would not be able to safely reenter the barrier while other threads are still in it. It could immediately exit it again, which is not a desired behaviour. A means of stopping this thread, until all other threads have left, would be necessary. Since 1 bit per thread is not much memory and we can nicely distinguish between the first and second loop, using the variable left, this approach has been chosen.
 
 An important assumption is that the read/write of entry and exit happen in one step. If writing to and reading from entry would take multiple steps, a deadlock scenario could be created. Thus on current computer systems this approach is limited to 32 threads. Interestingly, even on pure 64-bit systems the limit is 32. Circumventing this restriction is part of future work.
 
@@ -168,7 +168,7 @@ Correctness for this protocol means it always terminates and a thread can only l
 
 Note that in a real implementation, for example in the C programming language, it would be up to the compiler to decide in which order to evaluate the two subexpressions in the while condition. This freedom of choice is reflected in the model using non-determinism.
 
-Intuitively the protocol terminates, because every time all processes have looped at least once, a minimum of one process has been successfully committed to the entry variable. Thus, after n repetitions, where n is the number of threads, all the processes have been registered and the barrier is completed.
+Intuitively the protocol terminates, because every time all threads have looped at least once, a minimum of one thread has been successfully committed to the entry variable. Thus, after n repetitions, where n is the number of threads, all the threads have been registered and the barrier is completed.
 
 \begin{figure}[htbp]
 	\centering
