@@ -105,7 +105,7 @@ Having solved these two issues, it is still possible to have a deadlock. Suppose
 Having all of the above problems and solutions in mind, we now present an extended version of the protocol.
 
 \section{The extended protocol}
-In addition to solving the problems mentioned before, I switched from multiplying primes to the barrier variable to a bitset representation (one thread per bit). This way we can have more threads, up to 64, in the barrier variable whereas the product of the first 64 primes would, by far, exceed the bounds of a 64-bit integer variable.
+In addition to solving the problems mentioned before, we switch from multiplying primes to the barrier variable to a bitset representation (one thread per bit). This way we can have up to 64 threads in the barrier variable whereas the product of the first 64 primes would  exceed the bounds of a 64-bit integer variable.
 
 The resulting protocol is depicted in Figure~\ref{fig:barrier-source-code}.
 
@@ -155,11 +155,11 @@ Suppose one thread has passed the first loop. He then sets left to true signalli
 
 Suppose one thread encounters the barrier again. Because left has been set to true after having left the previous barrier, the outermost \texttt{if} now directs the thread to the second loop and repeats the procedure described above. Instead of entry he will now use the variable exit instead. When this barrier is completed, left will be set to false, thus the third encounter will use the first loop again. Repeat. The first barrier is used on every even number of visits, and the second on every odd number of visits.
 
-This is another deviation from the original protocol, where it was necessary to finish both loops to complete the barrier operation. During the development and analysis of the new protocol it became apparent that switching with the variable left, between loops, still makes for a correct protocol, which I will prove in the next section. By doing speed up the barrier by a factor of two.
+This is another deviation from the original protocol, where it was necessary to finish both loops to complete the barrier operation. During the development and analysis of the new protocol it became apparent that switching, using the variable left, between loops still makes for a correct protocol, which we will prove in the next section. With this optimization, we speed up the barrier by a factor of two.
 
-If we omit the distinction between the entry and exit loop, a thread would not be able to safely reenter the barrier while other threads are still in it. He could immediately exit it again, which is not a desired behaviour. A means of stopping this thread, until all other threads have left, would be necessary. Since 1 bit per process is not much memory and we can nicely distinguish between loop 1 and 2, using the variable left, this approach has been chosen.
+If we omit the distinction between the entry and exit loop, a thread would not be able to safely reenter the barrier while other threads are still in it. He could immediately exit it again, which is not a desired behaviour. A means of stopping this thread, until all other threads have left, would be necessary. Since 1 bit per process is not much memory and we can nicely distinguish between the first and second loop, using the variable left, this approach has been chosen.
 
-An important assumption is that the write/read of entry and exit happen in one step. If writing to and reading from entry would take multiple steps, a deadlock scenario could be created. Thus on current computer systems this approach is limited to 32 threads. Interestingly, even on pure 64-bit systems the limit is 32. Circumventing this restriction is part of future work.
+An important assumption is that the read/write of entry and exit happen in one step. If writing to and reading from entry would take multiple steps, a deadlock scenario could be created. Thus on current computer systems this approach is limited to 32 threads. Interestingly, even on pure 64-bit systems the limit is 32. Circumventing this restriction is part of future work.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Correctness of the protocol}
