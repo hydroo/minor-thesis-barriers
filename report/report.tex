@@ -84,17 +84,17 @@ Another problem is that "\texttt{if~barrier~\%~me~>~0~\{~barrier~*=~me~\}}" is n
 \begin{figure}[htbp]
 	\centering
 	\begin{tabular}{r | c c c | l}
-		time & prime    &         &          & comment &
-			 & 2        & 3       & 5        &         &
+		time & prime    &         &          & comment \\
+			 & 2        & 3       & 5        &         \\
 		\hline
-		1    & read 1   & read 1  &          &         &
-		2    & write 2  &         &          &         &
-		3    &          &         & read 2   &         &
-		4    &          & write 3 &          &         &
-		5    & read 3   &         &          & barrier\%2 $>$ != 0 &
-		6    &          &         & write 10 &         &
-		7    & read 10  &         &          &         &
-		8    & write 20 &         &          & $20 = 2 * 2 * 5$ &
+		1    & read 1   & read 1  &          &         \\
+		2    & write 2  &         &          &         \\
+		3    &          &         & read 2   &         \\
+		4    &          & write 3 &          &         \\
+		5    & read 3   &         &          & barrier\%2 $>$ != 0 \\
+		6    &          &         & write 10 &         \\
+		7    & read 10  &         &          &         \\
+		8    & write 20 &         &          & $20 = 2 * 2 * 5$ \\
 	\end{tabular}
 	\caption{Example execution of multiplying a thread twice to the barrier}
 	\label{fig:deadlock1}
