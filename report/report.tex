@@ -111,19 +111,19 @@ The resulting protocol is depicted in Figure~\ref{fig:barrier-source-code}.
 
 \begin{figure}[htb]
 	\centering
-	\begin{lstlisting}
+	\begin{lstlisting}[mathescape]
 shared: entry:=0, exit:=0, left:=false
-local: copy, me:=2<<threadIndex, full:=(2<<numThreads)-1
+local: copy, me:=$2^{threadIndex}$, full:=$\sum_{i=0}^{numThreads-1}2^i$
 
 if left = false {
 
 	do {
 		copy := entry
 		if copy&me = 0 {
-			copy |= me
+			copy  := copy | me
 			entry := copy
 		}
-	} while copy != full && left = false
+	} while copy $\neq$ full and left = false
 
 	left := true
 	exit := 0
@@ -133,12 +133,12 @@ if left = false {
 	do {
 		copy := exit
 		if copy&me = 0 {
-			copy |= me
+			copy := copy | me
 			exit := copy
 		}
-	} while copy != full && left = true
+	} while copy $\neq$ full and left = true
 
-	left := false
+	left  := false
 	entry := 0
 
 }
