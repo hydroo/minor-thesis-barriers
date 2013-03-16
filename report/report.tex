@@ -242,21 +242,22 @@ I was unable to scale this model beyond three threads due to the huge size of th
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementation and measurement}
+In this section we compare a straightforward implementation of the protocol to two common barrier implementations.
 \subsection{Considerations}
 In order to evaluate the performance of the barrier, we spawn a certain amount of threads, repeatedly visit the barrier with a fixed number of repetitions, and afterwards end all threads. We measure the whole running time of the program. To get more reliable results we make sure the operating system's scheduler cannot reposition threads between cores, i.e., we create a one-to-one mapping between threads and cores and pin this configuration for the duration of the measurement. The implementation of the algorithm is an exact translation of the pseudocode in Figure~\ref{fig:barrier-source-code} into the C programming language.
 
 The measurements were conducted on a 64 thread, 32 core and 4 socket AMD Opteron\texttrademark 6274 system.
 \subsection{Evaluation}
-The results are shown in Figure~\ref{fig:measurement-1} and \ref{fig:measurement-2}. Due to time constraints, the measurements are not 100 percent reliable. They should give an intuition in which ballpark the performance is, though.
+The results are shown in Figure~\ref{fig:measurement-1} and \ref{fig:measurement-2}. Due to time constraints, the measurements are not 100 percent reliable. But they should give an intuition in which ballpark the performance is.
 \begin{figure}[htbp]
 	\centering
 	\begin{tabular}{r | l l l }
-		threads & OpenMP  & PThreads  & new \\
+		thread count & OpenMP  & PThreads  & new \\
 		\hline
-		 4      & 3.3s    & 3.5s      & 0.2s \\
-		 8      & 3.3s    & 3.5s      & 0.3s \\
-		16      & 3.2s    & 3.7s      & 0.6s \\
-		32      & 5.0s    & 5.5s      & 1.4s \\
+		 4           & 3.3s    & 3.5s      & 0.2s \\
+		 8           & 3.3s    & 3.5s      & 0.3s \\
+		16           & 3.2s    & 3.7s      & 0.6s \\
+		32           & 5.0s    & 5.5s      & 1.4s \\
 	\end{tabular}
 	\caption{Measurement results for consecutive barrier visits without delay}
 	\label{fig:measurement-1}
@@ -267,22 +268,22 @@ When not having any delay, but rather repeating the barrier as quickly as possib
 \begin{figure}[htbp]
 	\centering
 	\begin{tabular}{r | l l l}
-		threads & OpenMP & PThreads & new \\
+		thread count& OpenMP & PThreads & new \\
 		\hline
-		 4      & 5.1s   & 5.1s     & 4.6s \\
-		 8      & 5.5s   & 5.5s     & 4.8s \\
-		16      & 5.9s   & 5.9s     & 5.1s \\
-		32      & 7.0s   & 7.0s     & 6.1s \\
+		 4          & 5.1s   & 5.1s     & 4.6s \\
+		 8          & 5.5s   & 5.5s     & 4.8s \\
+		16          & 5.9s   & 5.9s     & 5.1s \\
+		32          & 7.0s   & 7.0s     & 6.1s \\
 	\end{tabular}
 	\caption{Measurement results for barrier visits with 1ms delay}
 	\label{fig:measurement-2}
 \end{figure}
 
-When adding one millisecond (roughly two million cycles) of waiting time, the runtime of the new barrier still finishes roughly 10\% earlier.
+When adding one millisecond (about two million cycles) of waiting time, the runtime of the new barrier still finishes roughly 10\% earlier.
 
 A minor drawback of the new barrier protocol is that the intended false-sharing of the cache line, with the variables on it, adds strain to the cache bandwidth. Measurements show that about 1\% of the total cache bandwidth is lost, regardless of the thread count. The percentage is this low, because the speed of false-sharing is limited by the waiting time for transferring a cache line between two caches and the time it takes to invalidate the line on all other caches.
 
-Another drawback is that due to the busy waiting, the total number CPU cycles used by the protocol is way larger than for callback-based approaches. In a setting were performance is important this would not be a problem, because the CPU does not spend the cycles saved on any 'real work'. But it would indeed save energy to remove strain from the CPU.
+Another drawback is that, due to the busy waiting, the total number CPU cycles used by the protocol is larger than for callback-based approaches. In a setting were performance is important this would not be a problem, because the CPU does not spend the cycles saved on any real work. But it would indeed save energy to remove strain from the CPU.
 
 There exist approaches to reduce the negative effects of both these problems. This will be part of future work.
 
@@ -292,7 +293,7 @@ In this report I presented a new barrier protocol, whose main difference to exis
 In its current state the number of threads supported by this protocol is limited to the number of bits a read/write can transfer in one uninterceptable operation -- 32 on current generation CPUs.
 I proved the correctness of the protocol by checking an MDP model in two different model checkers for potential deadlocks and inconsistencies.
 Furthermore I presented a brief analysis of a CTMC model showing some basic properties of the protocol.
-Moreover we saw that a straight forward implementation of the new barrier is significantly faster than two currently used barrier implementations.
+Moreover we saw that a straightforward implementation of the new barrier is significantly faster than two currently used barrier implementations.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Future Work}
