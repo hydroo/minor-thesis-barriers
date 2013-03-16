@@ -105,7 +105,7 @@ Having solved these two issues, it is still possible to have a deadlock. Suppose
 Having all of the above problems and solutions in mind, we now present an extended version of the protocol.
 
 \section{The extended protocol}
-In addition to solving the problems mentioned before, we switch from multiplying primes to the barrier variable to a bitset representation (one thread per bit). This way we can have up to 64 threads in the barrier variable whereas the product of the first 64 primes would  exceed the bounds of a 64-bit integer variable.
+In addition to solving the problems mentioned before, we switch from multiplying primes to the barrier variable to a bitset representation (one thread per bit). This way we can have up to 64 threads in the barrier whereas the product of the first 64 primes would  exceed the bounds of a 64-bit integer variable.
 
 The resulting protocol is depicted in Figure~\ref{fig:barrier-source-code}.
 
@@ -119,7 +119,7 @@ if left = false {
 
 	do {
 		copy := entry
-		if copy&me = 0 {
+		if copy & me = 0 {
 			copy  := copy | me
 			entry := copy
 		}
@@ -132,7 +132,7 @@ if left = false {
 
 	do {
 		copy := exit
-		if copy&me = 0 {
+		if copy & me = 0 {
 			copy := copy | me
 			exit := copy
 		}
@@ -147,7 +147,7 @@ if left = false {
 	\label{fig:barrier-source-code}
 \end{figure}
 
-Allow me to explain. \& is the bitwise and operator. $|$ is the bitwise or operator. They are used to check for bits, or add bits to a bitset. \emph{entry} is a bitset where each bit stands for one thread having arrived in the first loop. \emph{exit} has the same role for the second loop. \emph{copy} is a local copy of entry or exit depending on the loop the thread is currently in. \emph{left} is true if one thread has left the first loop, or in other words the first barrier is completed and everyone can now leave it. Conversely if left is false, the second barrier has been completed. \emph{me} is the bit of the current thread; it is always a power of two. \emph{full} is a constant meaning all threads have successfully committed themselves to entry/exit.
+Allow me to explain. \& is the bitwise and operator. $|$ is the bitwise or operator. They are used to check for bits and add bits to a bitset. \emph{entry} is a bitset where each bit stands for one thread having arrived in the first loop. \emph{exit} has the same role for the second loop. \emph{copy} is a local copy of entry or exit depending on the loop the thread is currently in. \emph{left} is true if one thread has left the first loop, or in other words the first barrier is completed and everyone can now leave it. Conversely if left is false, the second barrier has been completed. \emph{me} is the bit of the current thread; it is always a power of two. \emph{full} is a constant meaning all threads have successfully committed themselves to entry/exit.
 
 Initially entry and exit are zero and left is false. A process arriving in the first loop takes a copy of entry and checks whether he is in it (\texttt{copy\&me = 0}). If not, he adds himself and writes the result back to entry. Next he checks whether everyone has committed his bit to the entry variable (\texttt{entry = full}) or at least one thread has left the loop (\texttt{left = true}). If so, he can leave and if not, he has to repeat from the point where he takes a copy of entry.
 
