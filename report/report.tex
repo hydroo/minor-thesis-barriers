@@ -299,7 +299,7 @@ Moreover we saw that a straightforward implementation of the new barrier is sign
 \section{Future Work}
 Due to time-constraints, much of what needs to be done is enumerated in this section.
 
-The CTMC model of the protocol is already too large to be analysed when being used with four threads. One should explore ways to reduce its size. Common approaches include symmetry reduction, partial order reduction and reducing the model manually depending on the properties to be checked. Once this has been achieved, further quantitative analysis on the model seems worthwhile.
+The CTMC model of the protocol is already too large to be analysed when being used with four threads. One should explore ways to reduce its size. Common approaches include symmetry reduction, partial order reduction and reducing the model manually depending on the properties to be checked. Once this has been achieved, further quantitative analysis on the model should be done.
 
 There are various possibilities to make an actual implementation faster and/or more resource-friendly than the straight forward one shown in this report. For example one could experiment with using the \emph{mwait} instruction in order to wait for changes in a shared variable, thus not having to actively poll it. Another way to speed up the protocol is that a thread keeps track of which other threads he has already seen inside the barrier and does not only commit himself to the it but the other threads he has seen, too.
 
