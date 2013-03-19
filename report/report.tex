@@ -32,7 +32,7 @@
 \maketitle
 
 \begin{abstract}
-Today's concurrent code wastes time, because it often works in a needlessly deterministic fashion. In this report we present an extension of Mc Guire's lock-less, chaotic barrier protocol. We prove its correctness by means of checking appropriate properties on a markov decision process model. Furthermore the results of a quantitative analysis on a continuous-time markov chain model of the protocol will be evaluated. Last we compare the performance of a straight-forward implementation of the new protocol to two common barrier implementations.
+Today's concurrent algorithms waste time, because they often work in a needlessly deterministic fashion. One of these is the barrier. In this report we present an extension of Mc Guire's lock-less, chaotic barrier protocol. We prove its correctness by means of checking appropriate properties on a markov decision process model. Furthermore we analyse quantitative properties on a continuous-time markov chain model of the protocol. Last we compare the performance of a straight-forward implementation to two common barrier implementations. The new protocol improves barrier performance by using the CPU's inherent probabilistic behaviour rather than enforcing a deterministic protocol to follow. The barrier example shows that implementing this idea in concurrent algorithms has the potential to greatly benefit performance and should definitely be pursued.
 \end{abstract}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
