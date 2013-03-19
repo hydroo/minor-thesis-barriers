@@ -185,7 +185,7 @@ Intuitively the protocol terminates, because every time all threads have looped 
 In order to analyse quantitative properties of the protocol, we need to determine the expensive operations. Since the protocol uses shared variables to communicate, reads and writes from and to those variables are potentially costly. Each time a shared variable is modified or read, depending on the state of the cache line it is on, the operation takes a different amount of CPU time. Therefore we consider it worthwhile to model the cache behaviour aside from the protocol itself. The cache model will be discussed in the next subsection. Details that are not important for the timing of the protocol, like the non-determinism in the while condition, have been omitted. The resulting Continuous-time markov chain (CTMC) is shown in Figure~\ref{fig:ctmc}. The rate of a transition is given in parenthesis. There are three different rates: shared read, shared write and work. A \emph{tick} represents an instantaneous operation and therefore receives a transition rate of 1.0. \emph{work} is used to account for computation periods between barrier visits. We explain the rates for shared reads and writes in the following subsection.
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=5.2in]{ctmc}
+	\includegraphics[width=4.8in]{ctmc}
 	\caption{Continuous-time Markov chain model of the protocol}
 	\label{fig:ctmc}
 \end{figure}
@@ -239,7 +239,7 @@ Note that for these queries the duration of the work period has little influence
 
 We were unable to scale this model beyond three threads due to the huge size of the resulting state space. Future work includes tackling this limitation.
 
-\clearpage
+%\clearpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Implementation and measurement}
