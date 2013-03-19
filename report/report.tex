@@ -15,6 +15,7 @@
 		numbers=left,
 		numberstyle=\small\color{gray},
 		tabsize=4,
+		morekeywords={if, else, do, while, mod, and},
 	}
 \usepackage{multirow}
 \usepackage{setspace}
@@ -57,13 +58,13 @@ shared: barrier := 1
 local: me:=primes[index], other:=primes[len-1-index]
 
 do {
-	if barrier$\not\equiv 0 \bmod{}$me {
+	if barrier$\not\equiv 0$ mod me {
 		barrier := barrier * me
 	}
 } while barrier$\not\equiv 0 \bmod{}$productOfAllPrimes
 
 do {
-	if barrier$\equiv 0 \bmod{}$other {
+	if barrier$\equiv 0$ mod other {
 		barrier := barrier / other
 	}
 } while barrier$\neq 1$
