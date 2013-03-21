@@ -280,7 +280,7 @@ When not having any delay, but rather repeating the barrier as quickly as possib
 	\label{fig:measurement-2}
 \end{figure}
 
-When adding one millisecond (about two million cycles) of waiting time, the runtime of the new barrier still finishes roughly 10\% earlier.
+When adding 0.1 millisecond (about 200,000 cycles) of waiting time, the runtime of the new barrier still finishes roughly 10\% earlier.
 
 A minor drawback of the new barrier protocol is that the intended false-sharing of the cache line, with the variables on it, adds strain to the cache bandwidth. Measurements show that about 1\% of the total cache bandwidth is lost, regardless of the thread count. The percentage is this low, because the speed of false-sharing is limited by the waiting time for transferring a cache line between two caches and the time it takes to invalidate the line on all other caches.
 
