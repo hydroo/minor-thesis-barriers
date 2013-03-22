@@ -34,5 +34,5 @@ all: $(REPORT_TARGET)
 
 .PHONY: clean
 clean:
-	@rm -f *.out *.aux *.log *.pdf *.bbl *.blg *.dvi
+	@rm -f *.out *.aux *.log *.pdf *.bbl *.blg *.dvi images/mdp.pdf images/ctmc.pdf images/cache.pdf
 	
