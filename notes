@@ -1,5 +1,6 @@
---- 13-03-20 ---
+--- 13-03-20/26 ---
 
+ □ benchmark against pthread_spin_*
  □ implement atomic increment barrier and compare against our protocol
 
 --- 13-03-09 ---
