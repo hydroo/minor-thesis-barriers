@@ -73,7 +73,7 @@ do {
 	\label{fig:original-barrier-source-code}
 \end{figure}
 The idea is that each thread in a team is identified by two different primes. The primes are chosen from a given set of primes which has
-as many elements as there are threads. One run of the barrier is a run through both loops. In the first loop a thread multiplies itself to the barrier variable. All threads arrived when barrier equals the product of all primes in the set. Analogously, in the second loop, each thread divides itself from the barrier variable until it equals one. After this, the barrier operation is completed.
+as many elements as there are threads. One run of the barrier is a run through both loops. In the first loop a thread multiplies itself to the barrier variable. All threads arrived when barrier equals the product of all primes in the set. Analogously, in the second loop, each thread divides its other prime from the barrier variable until it equals one. After this, the barrier operation is completed.
 
 Intuitively each thread runs busily in its loop trying to commit itself to the barrier. Since modification of the barrier variable (read until write) is not atomic, the threads rapidly overwrite each other's commitment attempts. But eventually all threads will be multiplied to the barrier. The idea is that, even though the threads read and write wildly, this approach is potentially faster than currently used protocols, which are lock-based or lock-less using atomic operations.
 
@@ -104,6 +104,9 @@ Another problem is that "\texttt{if~barrier~\%~me~>~0~\{~barrier~*=~me~\}}" is n
 Having solved these two issues, there is still another way to create a deadlock. Suppose one thread completes the first loop and leaves. Then another thread rewrites barrier to a value where the thread which has already left is not committed. This thread now has no means of multiplying itself to the barrier again. Thus all threads except one are locked inside the first loop. A solution to this problem is to introduce a new shared variable that signals all threads whether one thread has completed the barrier. A thread is then allowed to leave the loop, if either barrier equals the product of all primes or another thread has already left.
 
 Having all of the above problems and solutions in mind, we now present an extended version of the protocol.
+
+\textbf{Note:} We found out later that the initial protocol was never intended to work for more than two threads. For this scenario
+none of the above deadlocks can occur. So think of this section as an attempt to make the original protocol work for more than two threads.
 
 \section{The extended protocol}
 In addition to solving the problems mentioned before, we switch from multiplying primes to the barrier variable to a bitset representation (one thread per bit). This way we can have up to 64 threads in the barrier whereas the product of the first 64 primes would  exceed the bounds of a 64-bit integer variable.
