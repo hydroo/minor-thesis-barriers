@@ -1,8 +1,0 @@
-const int x;
-
-P=? [ F s=7&v=x ]
-
-R=? [ F s=7 ]
-
-P=? [ F s=7 ]
-
