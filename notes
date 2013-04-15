@@ -1,6 +1,39 @@
 --- 13-04-15 ---
 
- paper meeting (baier,klueppel,tews,mc guire, +mvoelp):
+ paper meeting (baier,klueppel,tews,mc guire,mvoelp):
+
+                 | las vegas  | monte carlo
+ ----------------+------------+-----------------
+ bounded runtime | variant y? | current barrier
+ ----------------+------------+-----------------
+ prob runtime    | pwcs       | variant x?
+ ----------------+------------+-----------------
+ energy effic    | ?          | ?
+
+
+ possible topics
+  * barrier construction (story?)
+   * variants
+  * model
+  * analysis
+   * garantierter fortschritt
+
+  * energie
+   * mwait/backoff
+   * ???
+   * ???
+ 
+ schedule
+  * 4-15 today
+  ???
+  * 4-22 small meeting
+   * discuss variants
+  ???
+  * 4-29 bigger meeting
+  ???
+  * 5-13 to 5-30 writing
+
+  * konferenz aussuchen
 
 --- 13-04-13 ---
 
