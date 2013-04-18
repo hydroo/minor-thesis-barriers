@@ -3,24 +3,5 @@
 *~
 *.tmp
 *.s
+barrier
 
-/barrier-attempt/benchmark/pthreads
-/barrier-attempt/benchmark/openmp
-/barrier-attempt/benchmark/ronny
-
-/barrier-attempt/model-*/*.pdf
-
-/barrier-attempt/model-prism-ctmc-with-cache-invalidation/*.pm
-/barrier-attempt/model-prism-ctmc-with-cache-invalidation/*.pctl
-
-/report/*.out
-/report/*.aux
-/report/*.log
-/report/*.pdf
-/report/*.bbl
-/report/*.blg
-/report/*.dvi
-
-/report/images/cache.pdf
-/report/images/ctmc.pdf
-/report/images/mdp.pdf
