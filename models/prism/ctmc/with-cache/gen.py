@@ -241,7 +241,7 @@ def generateCorrectnessProperties(processCount) :
 
 	s += "// deadlock-freedom\n"
 	for i in range(1, processCount+1) :
-		s += "P>=1 [G F l_" + str(i) +"=9]\n"
+		s += "P>=1 [G F l_" + str(i) +"=3]\n"
 	s += "\n"
 
 	s += "// consistency of the barrier\n"
