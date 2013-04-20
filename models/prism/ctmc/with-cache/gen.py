@@ -82,8 +82,8 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 
 	s += "\tl_# : [0..11] init 0;\n"
 	s += "\tcp_# : [empty..full] init empty;\n"
-	s += "\tentry_# : [empty..full] init empty;\n"
 	s += "\tleft__# : bool init false;\n"
+	s += "\tentry_# : [empty..full] init empty;\n"
 	if oneLoop == False :
 		s += "\texit__# : [empty..full] init empty;\n"
 	s += "\n"
