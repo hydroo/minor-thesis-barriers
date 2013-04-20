@@ -180,33 +180,36 @@ def generateCache(processCount) :
 
 	s += "module cache\n"
 
-	s += "\tstate : [allAreInvalid..someoneIsShared] init allAreInvalid;\n"
-	s += "\twho   : [empty..full] init empty;\n"
+	s += "\tstate_c : [allAreInvalid..someoneIsShared] init allAreInvalid;\n"
+	s += "\twho_c   : [empty..full] init empty;\n"
 	s += "\n"
 
 	for p in range(1,processCount+1) :
-		me_bit = 2**(p-1)
+		bit = 2**(p-1)
 		others = everyProcessButMyself (p, processCount, '')
 		for variable in ["entry", "exit"] :
 			for value in possibleValues :
-				s += "\t[set_" + variable + "_to_" + value + "_at_" + others + "]  (state=someoneIsModified & who=" + str(me_bit) + ") -> tick : true;\n"
-				s += "\t[set_" + variable + "_to_" + value + "_at_" + others + "] !(state=someoneIsModified & who=" + str(me_bit) + ") -> write : (state'=someoneIsModified) & (who'=" + str(me_bit) + ");\n"
+				s += "\t[set_" + variable + "_to_" + value + "_at_" + others + "]  (state_c=someoneIsModified & who_c=$) -> tick : true;\n"
+				s += "\t[set_" + variable + "_to_" + value + "_at_" + others + "] !(state_c=someoneIsModified & who_c=$) -> write : (state_c'=someoneIsModified) & (who_c'=$);\n"
 
 		for value in ["false", "true"] :
-			s += "\t[set_left_to_" + value + "_at_" + others + "]  (state=someoneIsModified & who= " + str(me_bit) + ") -> tick : true;\n"
-			s += "\t[set_left_to_" + value + "_at_" + others + "] !(state=someoneIsModified & who= " + str(me_bit) + ") -> write : (state'=someoneIsModified) & (who'=" + str(me_bit) + ");\n"
+			s += "\t[set_left_to_" + value + "_at_" + others + "]  (state_c=someoneIsModified & who_c=$) -> tick : true;\n"
+			s += "\t[set_left_to_" + value + "_at_" + others + "] !(state_c=someoneIsModified & who_c=$) -> write : (state_c'=someoneIsModified) & (who_c'=$);\n"
 
-		s += "\t[read_" + str(p) + "] state=allAreInvalid -> read : (state'=someoneIsShared) & (who'=" + str(me_bit) + ");\n"
-		s += "\t[read_" + str(p) + "] state=someoneIsModified & who=" + str(me_bit) + " -> tick : true;\n"
-		s += "\t[read_" + str(p) + "] state=someoneIsModified & who!=" + str(me_bit) + " -> read : (state'=someoneIsShared) & (who'=min(full,max(who+" + str(me_bit) + ", empty)));\n"
-		s += "\t[read_" + str(p) + "] state=someoneIsShared & mod(floor(who/" + str(me_bit) + "),2)=1 -> tick : true;\n"
-		s += "\t[read_" + str(p) + "] state=someoneIsShared & mod(floor(who/" + str(me_bit) + "),2)=0 -> read : (who'=min(full,max(who+" + str(me_bit)+ ", empty)));\n"
+		s += "\t[read_#] state_c=allAreInvalid -> read : (state_c'=someoneIsShared) & (who_c'=$);\n"
+		s += "\t[read_#] state_c=someoneIsModified & who_c=$ -> tick : true;\n"
+		s += "\t[read_#] state_c=someoneIsModified & who_c!=$ -> read : (state_c'=someoneIsShared) & (who_c'=min(full,max(who_c+$, empty)));\n"
+		s += "\t[read_#] state_c=someoneIsShared & mod(floor(who_c/$),2)=1 -> tick : true;\n"
+		s += "\t[read_#] state_c=someoneIsShared & mod(floor(who_c/$),2)=0 -> read : (who_c'=min(full,max(who_c+$, empty)));\n"
 
 		s += "\n"
+
+		s = s.replace('#', str(p)).replace('$', str(bit))
 
 	# todo
 
 	s += "endmodule\n"
+	s += "\n"
 
 	s += generateCacheLabels()
 
