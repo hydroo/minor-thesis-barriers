@@ -49,12 +49,6 @@ def generateGlobalConstants(processCount) :
 	s += "0;\n"
 	s += "\n"
 
-	s += "const int modified = 0;\n"
-	s += "const int shared   = 1;\n"
-	s += "const int invalid  = 2;\n"
-
-	s += "\n"
-
 	s += "const int work_ticks  = " + str(workTicks) + ";\n"
 	s += "const int read_ticks  = " + str(readTicks) + ";\n"
 	s += "const int write_ticks = " + str(writeTicks) + ";\n"
