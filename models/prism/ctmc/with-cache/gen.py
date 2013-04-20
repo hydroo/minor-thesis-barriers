@@ -215,6 +215,10 @@ def generateCache(processCount) :
 def generateCacheLabels() :
 	return ""
 
+# ### correctness props ### ###################################################
+def generateCorrectnessProperties(processCount, workTicks, readTicks, writeTicks) :
+	return ""
+
 # ### helper ### ##############################################################
 def everyProcessButMyself (p, processCount, delimiter) :
 	s = ""
@@ -252,15 +256,11 @@ helpMessage = \
 if __name__ == "__main__":
 
 	processCount = 0
-	modelFileName = ""
+	filePrefix = modelFileName = correctnessPropertiesFileName = ""
 
 	workTicks  = 1
 	readTicks  = 50
 	writeTicks = 100
-
-	if len(sys.argv) < 2 :
-		print(helpMessage)
-		exit(0)
 
 	i = 1
 	while i < len(sys.argv):
@@ -280,8 +280,14 @@ if __name__ == "__main__":
 			writeTicks = int(sys.argv[i+1])
 			i += 1
 		else:
-			modelFileName = sys.argv[i]
+			filePrefix = sys.argv[i]
+			modelFileName = filePrefix + ".pm"
+			correctnessPropertiesFileName = filePrefix + "-correctness.props"
 		i += 1
+
+	if len(filePrefix) == 0 :
+		print(helpMessage)
+		exit(0)
 
 	assert processCount >= 2
 	assert workTicks    >= 1
@@ -290,9 +296,13 @@ if __name__ == "__main__":
 
 	modelString = generateModel(processCount, workTicks, readTicks, writeTicks)
 
-	f = sys.stdout
-	if modelFileName != "":
-		f = open(modelFileName, 'w')
+	correctnessPropertiesString = generateCorrectnessProperties(processCount, workTicks, readTicks, writeTicks)
 
+	f = open(modelFileName, 'w')
 	f.write(modelString)
+	f.close()
+
+	f = open(correctnessPropertiesFileName, 'w')
+	f.write(correctnessPropertiesString)
+	f.close()
 
