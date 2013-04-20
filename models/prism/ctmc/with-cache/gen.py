@@ -59,7 +59,7 @@ def generateGlobalConstants(processCount) :
 
 	s += "\n"
 
-	s += "const double base_rate = 2500.0;\n"
+	s += "const double base_rate = 1000.0;\n"
 	s += "const double tick      = base_rate / 1.0;\n"
 	s += "const double work      = tick / work_ticks;\n"
 	s += "const double read      = tick / read_ticks;\n"
