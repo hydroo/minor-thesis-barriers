@@ -101,16 +101,16 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	s += "\t[read_#] l_#=2 & (!(cp_# != full & left__# = false)) -> (l_#'=3);\n"
 	s += "\n"
 
-	s += "\t[set_exit__to_0_at_" + others + "]    l_#=3 -> (l_#'=4) & (exit__#'=empty);\n"
+	s += "\t[set_left__to_true_at_" + others + "] l_#=3 -> (l_#'=4) & (left__#'=true);\n"
 	if useWorkPeriod :
-		s += "\t[set_left__to_true_at_" + others + "] l_#=4 -> (l_#'=5) & (left__#'=true);\n"
+		s += "\t[set_exit__to_0_at_" + others + "]    l_#=4 -> (l_#'=5) & (exit__#'=empty);\n"
 
 		s += "\n"
 		s += "\n"
 
 		s += "\t[] l_#=5 -> work : (l_#'=6);\n"
 	else :
-		s += "\t[set_left__to_true_at_" + others + "] l_#=4 -> (l_#'=6) & (left__#'=true);\n"
+		s += "\t[set_exit__to_0_at_" + others + "]    l_#=4 -> (l_#'=6) & (exit__#'=empty);\n"
 
 	s += "\n"
 	s += "\n"
@@ -128,14 +128,14 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	s += "\t[read_#] l_#=8 & (!(cp_# != full & left__# = true)) -> (l_#'=9);\n"
 	s += "\n"
 
-	s += "\t[set_entry_to_0_at_" + others + "]    l_#=9  -> (l_#'=10) & (entry_#'=empty);\n"
+	s += "\t[set_left__to_false_at_" + others + "] l_#=9 -> (l_#'=10) & (left__#'=false);\n"
 	if useWorkPeriod :
-		s += "\t[set_left__to_false_at_" + others + "] l_#=10 -> (l_#'=11) & (left__#'=false);\n"
+		s += "\t[set_entry_to_0_at_" + others + "]    l_#=10  -> (l_#'=11) & (entry_#'=empty);\n"
 		s += "\n"
 		s += "\n"
 		s += "\t[] l_#=11 -> work : (l_#'=0);\n"
 	else :
-		s += "\t[set_left__to_false_at_" + others + "] l_#=10 -> (l_#'=0) & (left__#'=false);\n"
+		s += "\t[set_entry_to_0_at_" + others + "]    l_#=10  -> (l_#'=0) & (entry_#'=empty);\n"
 
 	s += "\n"
 	s += "\n"
