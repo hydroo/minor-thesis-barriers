@@ -238,18 +238,18 @@ def forMe(p, processCount) :
 	return l
 
 # #############################################################################
+helpMessage = \
+"""
+ gen.py [OPTIONS] [outfile-prefix]
+
+  -h, --help                    print help message
+  -p <nr>, --processes <nr>     set process count
+  --work      <ticks>           set tick count for a work period [default 1]
+  --read      <ticks>           set tick count for a cache read  [default 50]
+  --write     <ticks>           set tick count a cache write     [default 100]
+"""
+
 if __name__ == "__main__":
-
-	helpMessage = \
-	"""
-	 gen-model.py [OPTIONS] [outfile]
-
-	  -h, --help                    print help message
-	  -p <nr>, --processes <nr>     set process count
-	  --work      <ticks>           set tick count for a work period [default 1]
-	  --read      <ticks>           set tick count for a cache read  [default 50]
-	  --write     <ticks>           set tick count a cache write     [default 100]
-	"""
 
 	processCount = 0
 	modelFileName = ""
