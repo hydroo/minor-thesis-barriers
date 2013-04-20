@@ -216,7 +216,16 @@ def generateCache(processCount) :
 	return s
 
 def generateCacheLabels() :
-	return ""
+	s = ""
+
+	for p in range(1, processCount+1) :
+		bit = 2**(p-1)
+		s += "label \"invalid_#\"  = (state_c=allAreInvalid) | ((state_c=someoneIsModified | state_c=someoneIsShared) & mod(floor(who_c/$),2)=0);\n"
+		s += "label \"modified_#\" = (state_c=someoneIsModified & mod(floor(who_c/$),2)=1);\n"
+		s += "label \"shared_#\"   = (state_c=someoneIsShared   & mod(floor(who_c/$),2)=1);\n"
+		s = s.replace('#', str(p)).replace('$', str(bit))
+
+	return s
 
 # ### correctness props ### ###################################################
 def generateCorrectnessProperties(processCount, workTicks, readTicks, writeTicks) :
