@@ -19,7 +19,7 @@ def generateModel(processCount, workTicks, readTicks, writeTicks) :
 	s += "\n"
 
 	for p in range(1, processCount+1) :
-		s += generateProcess(p, processCount)
+		s += generateProcess(p, processCount, workTicks > 0)
 		s += "\n"
 	s += "\n"
 
@@ -70,7 +70,7 @@ def generateGlobalConstants(processCount) :
 def generateGlobalVariables() :
 	return ""
 
-def generateProcess(p, processCount) :
+def generateProcess(p, processCount, useWorkPeriod) :
 
 	s = ""
 
@@ -102,17 +102,21 @@ def generateProcess(p, processCount) :
 	s += "\n"
 
 	s += "\t[set_exit__to_0_at_" + others + "]    l_#=3 -> (l_#'=4) & (exit__#'=empty);\n"
-	s += "\t[set_left__to_true_at_" + others + "] l_#=4 -> (l_#'=5) & (left__#'=true);\n"
+	if useWorkPeriod :
+		s += "\t[set_left__to_true_at_" + others + "] l_#=4 -> (l_#'=5) & (left__#'=true);\n"
 
-	s += "\n"
-	s += "\n"
+		s += "\n"
+		s += "\n"
 
-	s += "\t[] l_#=5 -> work : (l_#'=6);\n"
+		s += "\t[] l_#=5 -> work : (l_#'=6);\n"
+	else :
+		s += "\t[set_left__to_true_at_" + others + "] l_#=4 -> (l_#'=6) & (left__#'=true);\n"
 
 	s += "\n"
 	s += "\n"
 
 	s += "\t[read_#] l_#=6 -> (l_#'=7) & (cp_#'=exit__#);\n"
+
 	s += "\n"
 
 	s += "\t[] l_#=7 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=8);\n"
@@ -125,12 +129,13 @@ def generateProcess(p, processCount) :
 	s += "\n"
 
 	s += "\t[set_entry_to_0_at_" + others + "]    l_#=9  -> (l_#'=10) & (entry_#'=empty);\n"
-	s += "\t[set_left__to_false_at_" + others + "] l_#=10 -> (l_#'=11) & (left__#'=false);\n"
-
-	s += "\n"
-	s += "\n"
-
-	s += "\t[] l_#=11 -> work : (l_#'=0);\n"
+	if useWorkPeriod :
+		s += "\t[set_left__to_false_at_" + others + "] l_#=10 -> (l_#'=11) & (left__#'=false);\n"
+		s += "\n"
+		s += "\n"
+		s += "\t[] l_#=11 -> work : (l_#'=0);\n"
+	else :
+		s += "\t[set_left__to_false_at_" + others + "] l_#=10 -> (l_#'=0) & (left__#'=false);\n"
 
 	s += "\n"
 	s += "\n"
@@ -236,7 +241,7 @@ def generateCorrectnessProperties(processCount) :
 
 	s += "// deadlock-freedom\n"
 	for i in range(1, processCount+1) :
-		s += "P>=1 [G F l_" + str(i) +"=11]\n"
+		s += "P>=1 [G F l_" + str(i) +"=9]\n"
 	s += "\n"
 
 	s += "// consistency of the barrier\n"
@@ -351,7 +356,7 @@ if __name__ == "__main__":
 		exit(0)
 
 	assert processCount >= 2
-	assert workTicks    >= 1
+	assert workTicks    >= 0
 	assert readTicks    >= 1
 	assert writeTicks   >= 1
 
