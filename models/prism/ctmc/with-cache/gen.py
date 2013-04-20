@@ -92,7 +92,7 @@ def generateProcess(p, processCount) :
 	s += "\t[read_#] l_#=0 -> (l_#'=1) & (cp_#'=entry_#);\n"
 	s += "\n"
 
-	s += "\t[] l_#=1 & mod(floor(cp_#/me_bit_#),2)=1 -> (l_#'=2);\n"
+	s += "\t[] l_#=1 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=2);\n"
 	for value in possibleValues:
 		s += "\t[set_entry_to_" + value + "_at_" + others + "] l_#=1 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=2) & (entry_#'=" + value + ") & (cp_#'=" + value + ");\n"
 	s += "\n"
@@ -115,7 +115,7 @@ def generateProcess(p, processCount) :
 	s += "\t[read_#] l_#=6 -> (l_#'=7) & (cp_#'=exit__#);\n"
 	s += "\n"
 
-	s += "\t[] l_#=7 & mod(floor(cp_#/me_bit_#),2)=1 -> (l_#'=8);\n"
+	s += "\t[] l_#=7 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=8);\n"
 	for value in possibleValues:
 		s += "\t[set_exit__to_" + value + "_at_" + others + "] l_#=7 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=8) & (exit__#'=" + value + ") & (cp_#'=" + value + ");\n"
 	s += "\n"
