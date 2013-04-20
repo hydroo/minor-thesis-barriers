@@ -76,7 +76,6 @@ def generateProcess(p, processCount) :
 
 	s += "module process_" + str(p) + "\n"
 
-	me_bit = 2**(p-1)
 	empty = str(0)
 	full = str((2**processCount)-1)
 	possibleValues = [str(i) for i in range(int(empty), int(full)+1)]
