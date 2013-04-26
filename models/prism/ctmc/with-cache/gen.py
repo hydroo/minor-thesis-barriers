@@ -2,7 +2,7 @@
 
 import sys
 
-def generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop) :
+def generateModel(processCount, workTicks, readTicks, writeTicks) :
 
 	s = ""
 
@@ -15,11 +15,11 @@ def generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop) :
 	s += generateGlobalVariables()
 	s += "\n"
 
-	s += generateCache(processCount, oneLoop)
+	s += generateCache(processCount)
 	s += "\n"
 
 	for p in range(1, processCount+1) :
-		s += generateProcess(p, processCount, workTicks > 0, oneLoop)
+		s += generateProcess(p, processCount, workTicks > 0)
 		s += "\n"
 	s += "\n"
 
@@ -70,7 +70,7 @@ def generateGlobalConstants(processCount) :
 def generateGlobalVariables() :
 	return ""
 
-def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
+def generateProcess(p, processCount, useWorkPeriod) :
 
 	s = ""
 
@@ -84,8 +84,7 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 	s += "\tcp_# : [empty..full] init empty;\n"
 	s += "\tleft__# : bool init false;\n"
 	s += "\tentry_# : [empty..full] init empty;\n"
-	if oneLoop == False :
-		s += "\texit__# : [empty..full] init empty;\n"
+	s += "\texit__# : [empty..full] init empty;\n"
 	s += "\n"
 
 	others = "".join([ str(i) for i in everyProcessButMyself(p, processCount)])
@@ -104,40 +103,32 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 
 	s += "\t[set_left__to_true_at_" + others + "] l_#=3 -> (l_#'=4) & (left__#'=true);\n"
 
-	if oneLoop :
+	if useWorkPeriod :
+		s += "\t[set_exit__to_0_at_" + others + "]    l_#=4 -> (l_#'=5) & (exit__#'=empty);\n"
 		s += "\n"
 		s += "\n"
-		s += "\t[block] l_#=4 -> (l_#'=9);\n"
-		s += "\n"
-		s += "\n"
-
+		s += "\t[] l_#=5 -> work : (l_#'=6);\n"
 	else :
-		if useWorkPeriod :
-			s += "\t[set_exit__to_0_at_" + others + "]    l_#=4 -> (l_#'=5) & (exit__#'=empty);\n"
-			s += "\n"
-			s += "\n"
-			s += "\t[] l_#=5 -> work : (l_#'=6);\n"
-		else :
-			s += "\t[set_exit__to_0_at_" + others + "]    l_#=4 -> (l_#'=6) & (exit__#'=empty);\n"
-			s += "\n"
-			s += "\n"
-			s += "\t// work period\n"
-
+		s += "\t[set_exit__to_0_at_" + others + "]    l_#=4 -> (l_#'=6) & (exit__#'=empty);\n"
 		s += "\n"
 		s += "\n"
+		s += "\t// work period\n"
 
-		s += "\t[read_#] l_#=6 -> (l_#'=7) & (cp_#'=exit__#);\n"
+	s += "\n"
+	s += "\n"
 
-		s += "\n"
+	s += "\t[read_#] l_#=6 -> (l_#'=7) & (cp_#'=exit__#);\n"
 
-		s += "\t[] l_#=7 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=8);\n"
-		for value in possibleValues:
-			s += "\t[set_exit__to_" + value + "_at_" + others + "] l_#=7 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=8) & (exit__#'=" + value + ") & (cp_#'=" + value + ");\n"
-		s += "\n"
+	s += "\n"
 
-		s += "\t[read_#] l_#=8 & (  cp_# != full & left__# = true ) -> (l_#'=6);\n"
-		s += "\t[read_#] l_#=8 & (!(cp_# != full & left__# = true)) -> (l_#'=9);\n"
-		s += "\n"
+	s += "\t[] l_#=7 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=8);\n"
+	for value in possibleValues:
+		s += "\t[set_exit__to_" + value + "_at_" + others + "] l_#=7 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=8) & (exit__#'=" + value + ") & (cp_#'=" + value + ");\n"
+	s += "\n"
+
+	s += "\t[read_#] l_#=8 & (  cp_# != full & left__# = true ) -> (l_#'=6);\n"
+	s += "\t[read_#] l_#=8 & (!(cp_# != full & left__# = true)) -> (l_#'=9);\n"
+	s += "\n"
 
 	s += "\t[set_left__to_false_at_" + others + "] l_#=9   -> (l_#'=10) & (left__#'=false);\n"
 
@@ -156,8 +147,7 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 	s += "\n"
 
 	s += generateSyncTransitionsForLocalVariables(p, processCount, "entry_", possibleValues)
-	if oneLoop == False :
-		s += generateSyncTransitionsForLocalVariables(p, processCount, "exit__", possibleValues)
+	s += generateSyncTransitionsForLocalVariables(p, processCount, "exit__", possibleValues)
 	s += generateSyncTransitionsForLocalVariables(p, processCount, "left__", ["false", "true"])
 
 	s += "endmodule\n"
@@ -183,7 +173,7 @@ def generateLabels(processCount) :
 
 # ### cache ### ###############################################################
 
-def generateCache(processCount, oneLoop) :
+def generateCache(processCount) :
 	s = ""
 
 	empty = str(0)
@@ -202,15 +192,10 @@ def generateCache(processCount, oneLoop) :
 	s += "\twho_c   : [empty..full] init me_bit_1;\n"
 	s += "\n"
 
-	if oneLoop :
-		variables = ["entry"]
-	else :
-		variables = ["entry", "exit_"]
-
 	for p in range(1,processCount+1) :
 		bit = 2**(p-1)
 		others = "".join([ str(i) for i in everyProcessButMyself (p, processCount)])
-		for variable in variables :
+		for variable in ["entry", "exit_"] :
 			for value in possibleValues :
 				s += "\t[set_" + variable + "_to_" + value + "_at_" + others + "]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
 				s += "\t[set_" + variable + "_to_" + value + "_at_" + others + "] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
@@ -247,12 +232,7 @@ def generateCacheLabels() :
 	return s
 
 # ### correctness props ### ###################################################
-def generateCorrectnessProperties(processCount, oneLoop) :
-
-	if oneLoop :
-		variables = ["entry_", "left__"]
-	else :
-		variables = ["entry_", "exit__", "left__"]
+def generateCorrectnessProperties(processCount) :
 
 	s = ""
 
@@ -260,7 +240,7 @@ def generateCorrectnessProperties(processCount, oneLoop) :
 	s += "\n"
 
 	s += "// synchronized local variables have the same values\n"
-	for variable in variables :
+	for variable in ["entry_", "exit__", "left__"] :
 		for i in range(1, processCount) :
 			s += "P<=0 [F " + variable + str(i) + "  != " + variable + str(i+1) + "]\n"
 	s += "\n"
@@ -354,7 +334,6 @@ if __name__ == "__main__":
 	workTicks  = 1
 	readTicks  = 50
 	writeTicks = 100
-	oneLoop = False
 
 	i = 1
 	while i < len(sys.argv):
@@ -373,8 +352,6 @@ if __name__ == "__main__":
 		elif sys.argv[i] == "--write":
 			writeTicks = int(sys.argv[i+1])
 			i += 1
-		elif sys.argv[i] == "--one-loop":
-			oneLoop = True
 		else:
 			filePrefix = sys.argv[i]
 			modelFileName = filePrefix + ".pm"
@@ -390,9 +367,9 @@ if __name__ == "__main__":
 	assert readTicks    >= 1
 	assert writeTicks   >= 1
 
-	modelString = generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop)
+	modelString = generateModel(processCount, workTicks, readTicks, writeTicks)
 
-	correctnessPropertiesString = generateCorrectnessProperties(processCount, oneLoop)
+	correctnessPropertiesString = generateCorrectnessProperties(processCount)
 
 	f = open(modelFileName, 'w')
 	f.write(modelString)
