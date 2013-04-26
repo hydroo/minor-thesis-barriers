@@ -405,10 +405,16 @@ if __name__ == "__main__":
 			i += 1
 		elif sys.argv[i] == "--one-loop":
 			oneLoop = True
-		else:
+		elif sys.argv[i].startswith("--") :
+			print ("unknown parameter: " + sys.argv[i])
+			exit(-1)
+		elif filePrefix == "":
 			filePrefix = sys.argv[i]
 			modelFileName = filePrefix + ".pm"
 			correctnessPropertiesFileName = filePrefix + "-correctness.props"
+		else :
+			print ("unknown parameter: " + sys.argv[i])
+			exit(-1)
 		i += 1
 
 	if len(filePrefix) == 0 :
