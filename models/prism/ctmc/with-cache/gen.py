@@ -65,6 +65,24 @@ def generateGlobalConstants(processCount) :
 	s += "const double read      = tick / read_ticks;\n"
 	s += "const double write     = tick / write_ticks;\n"
 
+	s += "\n"
+	s += "const int l_init       = 0;\n"
+
+	s += "const int l_entry_0    = 1;\n"
+	s += "const int l_entry_1    = 2;\n"
+	s += "const int l_entry_2    = 3;\n"
+
+	s += "const int l_between_0  = 4;\n"
+	s += "const int l_between_1  = 5;\n"
+	s += "const int l_between_2  = 6;\n"
+
+	s += "const int l_exit_0     = 7;\n"
+	s += "const int l_exit_1     = 8;\n"
+	s += "const int l_exit_2     = 9;\n"
+	s += "const int l_after_0    = 10;\n"
+	s += "const int l_after_1    = 11;\n"
+	s += "const int l_after_2    = l_init;\n"
+
 	return s
 
 def generatePseudoGlobalVariables(processCount) :
@@ -111,46 +129,46 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	possibleValues = [str(i) for i in range(int(empty), int(full)+1)]
 
 	if useWorkPeriod :
-		s += "\tl_# : [0..11] init 0;\n"
+		s += "\tl_# : [l_init..l_after_1] init l_init;\n"
 	else :
-		s += "\tl_# : [0..11] init 1;\n"
+		s += "\tl_# : [l_init..l_after_1] init l_entry_0;\n"
 	s += "\tcp_# : [empty..full] init empty;\n"
 	s += "\n"
 
 	if useWorkPeriod :
-		s += "\t[set_entry_to_0_#]     l_#=11  -> (l_#'=0);\n"
+		s += "\t[set_entry_to_0_#]     l_#=l_after_1  -> (l_#'=l_init);\n"
 		s += "\n"
 		s += "\n"
-		s += "\t[] l_#=0 -> work : (l_#'=1);\n"
+		s += "\t[] l_#=l_init -> work : (l_#'=l_entry_0);\n"
 	else :
-		s += "\t[set_entry_to_0_#]     l_#=11  -> (l_#'=1);\n"
+		s += "\t[set_entry_to_0_#]     l_#=l_after_1  -> (l_#'=l_entry_0);\n"
 		s += "\n"
 		s += "\n"
 		s += "\t// work period\n"
 
 	s += "\n"
 
-	s += "\t[read_#] l_#=1 -> (l_#'=2) & (cp_#'=entry);\n"
+	s += "\t[read_#] l_#=l_entry_0 -> (l_#'=l_entry_1) & (cp_#'=entry);\n"
 	s += "\n"
 
-	s += "\t[] l_#=2 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=3);\n"
+	s += "\t[] l_#=l_entry_1 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=l_entry_2);\n"
 	for value in possibleValues:
-		s += "\t[set_entry_to_" + value + "_#] l_#=2 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=3) & (cp_#'=" + value + ");\n"
+		s += "\t[set_entry_to_" + value + "_#] l_#=l_entry_1 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=l_entry_2) & (cp_#'=" + value + ");\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=3 & (  cp_# != full & left = false ) -> (l_#'=1);\n"
-	s += "\t[read_#] l_#=3 & (!(cp_# != full & left = false)) -> (l_#'=4);\n"
+	s += "\t[read_#] l_#=l_entry_2 & (  cp_# != full & left = false ) -> (l_#'=l_entry_0);\n"
+	s += "\t[read_#] l_#=l_entry_2 & (!(cp_# != full & left = false)) -> (l_#'=l_between_0);\n"
 	s += "\n"
 
-	s += "\t[set_left_to_true_#] l_#=4 -> (l_#'=5);\n"
+	s += "\t[set_left_to_true_#] l_#=l_between_0 -> (l_#'=l_between_1);\n"
 
 	if useWorkPeriod :
-		s += "\t[set_exit_to_0_#]    l_#=5 -> (l_#'=6);\n"
+		s += "\t[set_exit_to_0_#]    l_#=l_between_1 -> (l_#'=l_between_2);\n"
 		s += "\n"
 		s += "\n"
-		s += "\t[] l_#=6 -> work : (l_#'=7);\n"
+		s += "\t[] l_#=l_between_2 -> work : (l_#'=l_exit_0);\n"
 	else :
-		s += "\t[set_exit_to_0_#]    l_#=5 -> (l_#'=7);\n"
+		s += "\t[set_exit_to_0_#]    l_#=l_between_1 -> (l_#'=l_exit_0);\n"
 		s += "\n"
 		s += "\n"
 		s += "\t// work period\n"
@@ -158,20 +176,20 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	s += "\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=7 -> (l_#'=8) & (cp_#'=exit);\n"
+	s += "\t[read_#] l_#=l_exit_0 -> (l_#'=l_exit_1) & (cp_#'=exit);\n"
 
 	s += "\n"
 
-	s += "\t[] l_#=8 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=9);\n"
+	s += "\t[] l_#=l_exit_1 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=l_exit_2);\n"
 	for value in possibleValues:
-		s += "\t[set_exit_to_" + value + "_#] l_#=8 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=9) & (cp_#'=" + value + ");\n"
+		s += "\t[set_exit_to_" + value + "_#] l_#=l_exit_1 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=l_exit_2) & (cp_#'=" + value + ");\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=9 & (  cp_# != full & left = true ) -> (l_#'=7);\n"
-	s += "\t[read_#] l_#=9 & (!(cp_# != full & left = true)) -> (l_#'=10);\n"
+	s += "\t[read_#] l_#=l_exit_2 & (  cp_# != full & left = true ) -> (l_#'=l_exit_0);\n"
+	s += "\t[read_#] l_#=l_exit_2 & (!(cp_# != full & left = true)) -> (l_#'=l_after_0);\n"
 	s += "\n"
 
-	s += "\t[set_left_to_false_#] l_#=10  -> (l_#'=11);\n"
+	s += "\t[set_left_to_false_#] l_#=l_after_0  -> (l_#'=l_after_1);\n"
 
 	s += "endmodule\n"
 
@@ -254,14 +272,14 @@ def generateCorrectnessProperties(processCount) :
 
 	s += "// deadlock-freedom\n"
 	for i in range(1, processCount+1) :
-		s += "P>=1 [G F l_" + str(i) +"=4]\n"
+		s += "P>=1 [G F l_" + str(i) +"=l_between_0]\n"
 	s += "\n"
 
 	s += "// consistency of the barrier\n"
 	for p in range(1, processCount+1) :
-		s += "P<=0 [F (l_" + str(p) + "=4 & ("
+		s += "P<=0 [F (l_" + str(p) + "=l_between_0 & ("
 		for q in everyProcessButMyself(p, processCount) :
-			s += "l_" + str(q) + "=10|"
+			s += "l_" + str(q) + "=l_after_0|"
 		s += "false))]\n"
 	s += "\n"
 
