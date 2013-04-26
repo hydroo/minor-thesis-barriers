@@ -344,6 +344,70 @@ def generateCorrectnessProperties(processCount) :
 
 	return s
 
+# ### quantitative props ### ##################################################
+def generateQuantitativeProperties(processCount) :
+
+	s = ""
+
+	if oneLoop :
+		loc = "l_between_1"
+	else :
+		loc = "l_between_2"
+
+	s += "// how long does it take for one process to get behind the first barrier\n"
+	q = ""
+	for p in range(1, processCount+1) :
+		q += "l_" + str(p) + ">=" + loc + "|"
+	s += "P=? [F<=time (" + q + "false)]\n"
+	s += "\n"
+	s += "// excpected number of ticks\n"
+	s += "base_rate * R{\"time\"}=? [F (" + q + "false)]\n"
+	s += "\n"
+
+	s += "// how long does it take for all processes to get behind the first barrier\n"
+	q = ""
+	for p in range(1, processCount+1) :
+		q += "l_" + str(p) + ">=" + loc + "&"
+	s += "P=? [F<=time (" + q + "true)]\n"
+	s += "\n"
+	s += "//excpected number of ticks\n"
+	s += "base_rate * R{\"time\"}=? [F (" + q + "true)]\n"
+	s += "\n"
+
+	s += "// how long does it take from one process being behind the entry barrier to all processes being behind it\n"
+	q = ""
+	for i in range(1, processCount+1) :
+		q += "l_" + str(i) + ">=" + loc + "&" 
+	q += "true), ("
+	for i in range(1, processCount+1) :
+		for j in range(1, processCount+1) :
+			if i == j :
+				comp = ">="
+			else :
+				comp = "<"
+			q += "l_" + str(j) + comp + loc + "&"
+		q += "true)|("
+
+	s += "clrP=? [F<=time (" + q + "false)]\n"
+	s += "\n"
+	s += "// expected number of ticks\n"
+	s += "base_rate * clraR{\"time\"}=? [F (" + q + "false)]\n"
+
+	s += "\n"
+
+	s += "// in which state is the cache and how much of the time?\n"
+	s += "S=? [\"modified_1\"]\n"
+	s += "S=? [\"shared_1\"]\n"
+	s += "S=? [\"invalid_1\"]\n"
+
+	s += "\n"
+	s += "\n"
+
+	s += "const double time=ticks/base_rate;\n"
+	s += "const double ticks;\n"
+
+	return s
+
 # ### helper ### ##############################################################
 def everyProcessButMyself (p, processCount) :
 	l = []
@@ -412,6 +476,7 @@ if __name__ == "__main__":
 			filePrefix = sys.argv[i]
 			modelFileName = filePrefix + ".pm"
 			correctnessPropertiesFileName = filePrefix + "-correctness.props"
+			quantitativePropertiesFileName = filePrefix + "-quantitative.props"
 		else :
 			print ("unknown parameter: " + sys.argv[i])
 			exit(-1)
@@ -430,11 +495,17 @@ if __name__ == "__main__":
 
 	correctnessPropertiesString = generateCorrectnessProperties(processCount)
 
+	quantitativePropertiesString = generateQuantitativeProperties(processCount)
+
 	f = open(modelFileName, 'w')
 	f.write(modelString)
 	f.close()
 
 	f = open(correctnessPropertiesFileName, 'w')
 	f.write(correctnessPropertiesString)
+	f.close()
+
+	f = open(quantitativePropertiesFileName, 'w')
+	f.write(quantitativePropertiesString)
 	f.close()
 

@@ -1,3 +1,21 @@
+--- 13-04-26 ---
+
+       |normal-no-work one-loop-no-work
+-------+-------------------------------
+states |364701         10795
+trans  |1094103        31647
+matrix |438694         39024
+
+clraR 1|304            326
+clraR 2|487            533
+clraR 3|414            177
+SS m   |0.076          0.291
+SS s   |0.617          0.100
+SS i   |0.307          0.608
+
+deutet auf fehler im normal-no-work, oder?
+
+
 --- 13-04-15 ---
 
  paper meeting (baier,klueppel,tews,mc guire,mvoelp):
