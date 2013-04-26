@@ -12,7 +12,7 @@ def generateModel(processCount, workTicks, readTicks, writeTicks) :
 	s += generateGlobalConstants(processCount)
 	s += "\n"
 
-	s += generateGlobalVariables()
+	s += generatePseudoGlobalVariables(processCount)
 	s += "\n"
 
 	s += generateCache(processCount)
@@ -67,8 +67,38 @@ def generateGlobalConstants(processCount) :
 
 	return s
 
-def generateGlobalVariables() :
-	return ""
+def generatePseudoGlobalVariables(processCount) :
+
+	s = ""
+
+	empty = str(0)
+	full = str((2**processCount)-1)
+
+	s += generatePseudoGlobalVariable("left", "bool",  "false", ["false", "true"], processCount)
+	s += "\n"
+	s += generatePseudoGlobalVariable("exit", "[empty..full]",  "empty", [str(i) for i in range(int(empty), int(full)+1)], processCount)
+	s += "\n"
+	s += generatePseudoGlobalVariable("entry", "[empty..full]", "empty", [str(i) for i in range(int(empty), int(full)+1)], processCount)
+	s += "\n"
+	s += "\n"
+
+	return s
+
+def generatePseudoGlobalVariable(name, typee, init, values, processCount) :
+
+	s = ""
+
+	s += "module " + name + "_g\n"
+	s += "\t" + name + " : " + typee + " init " + init + ";\n"
+
+	for p in range(1, processCount+1) :
+		for value in values :
+			s += "\t[set_" + name + "_to_" + value + "_#] true -> (" + name + "'=" + value + ");\n"
+		s = s.replace('#', str(p))
+
+	s += "endmodule\n"
+
+	return s
 
 def generateProcess(p, processCount, useWorkPeriod) :
 
@@ -85,45 +115,42 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	else :
 		s += "\tl_# : [0..11] init 1;\n"
 	s += "\tcp_# : [empty..full] init empty;\n"
-	s += "\tleft__# : bool init false;\n"
-	s += "\tentry_# : [empty..full] init empty;\n"
-	s += "\texit__# : [empty..full] init empty;\n"
 	s += "\n"
 
-	others = "".join([ str(i) for i in everyProcessButMyself(p, processCount)])
-
 	if useWorkPeriod :
-		s += "\t[set_entry_to_0_at_" + others + "]     l_#=11  -> (l_#'=0) & (entry_#'=empty);\n"
+		s += "\t[set_entry_to_0_#]     l_#=11  -> (l_#'=0);\n"
 		s += "\n"
 		s += "\n"
 		s += "\t[] l_#=0 -> work : (l_#'=1);\n"
 	else :
-		s += "\t[set_entry_to_0_at_" + others + "]     l_#=11  -> (l_#'=1) & (entry_#'=empty);\n"
+		s += "\t[set_entry_to_0_#]     l_#=11  -> (l_#'=1);\n"
 		s += "\n"
 		s += "\n"
 		s += "\t// work period\n"
 
-	s += "\t[read_#] l_#=1 -> (l_#'=2) & (cp_#'=entry_#);\n"
+	s += "\n"
+
+	s += "\t[read_#] l_#=1 -> (l_#'=2) & (cp_#'=entry);\n"
 	s += "\n"
 
 	s += "\t[] l_#=2 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=3);\n"
 	for value in possibleValues:
-		s += "\t[set_entry_to_" + value + "_at_" + others + "] l_#=2 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=3) & (entry_#'=" + value + ") & (cp_#'=" + value + ");\n"
+		s += "\t[set_entry_to_" + value + "_#] l_#=2 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=3) & (cp_#'=" + value + ");\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=3 & (  cp_# != full & left__# = false ) -> (l_#'=1);\n"
-	s += "\t[read_#] l_#=3 & (!(cp_# != full & left__# = false)) -> (l_#'=4);\n"
+	s += "\t[read_#] l_#=3 & (  cp_# != full & left = false ) -> (l_#'=1);\n"
+	s += "\t[read_#] l_#=3 & (!(cp_# != full & left = false)) -> (l_#'=4);\n"
 	s += "\n"
 
-	s += "\t[set_left__to_true_at_" + others + "] l_#=4 -> (l_#'=5) & (left__#'=true);\n"
+	s += "\t[set_left_to_true_#] l_#=4 -> (l_#'=5);\n"
 
 	if useWorkPeriod :
-		s += "\t[set_exit__to_0_at_" + others + "]    l_#=5 -> (l_#'=6) & (exit__#'=empty);\n"
+		s += "\t[set_exit_to_0_#]    l_#=5 -> (l_#'=6);\n"
 		s += "\n"
 		s += "\n"
 		s += "\t[] l_#=6 -> work : (l_#'=7);\n"
 	else :
-		s += "\t[set_exit__to_0_at_" + others + "]    l_#=5 -> (l_#'=7) & (exit__#'=empty);\n"
+		s += "\t[set_exit_to_0_#]    l_#=5 -> (l_#'=7);\n"
 		s += "\n"
 		s += "\n"
 		s += "\t// work period\n"
@@ -131,38 +158,24 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	s += "\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=7 -> (l_#'=8) & (cp_#'=exit__#);\n"
+	s += "\t[read_#] l_#=7 -> (l_#'=8) & (cp_#'=exit);\n"
 
 	s += "\n"
 
 	s += "\t[] l_#=8 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=9);\n"
 	for value in possibleValues:
-		s += "\t[set_exit__to_" + value + "_at_" + others + "] l_#=8 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=9) & (exit__#'=" + value + ") & (cp_#'=" + value + ");\n"
+		s += "\t[set_exit_to_" + value + "_#] l_#=8 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=9) & (cp_#'=" + value + ");\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=9 & (  cp_# != full & left__# = true ) -> (l_#'=7);\n"
-	s += "\t[read_#] l_#=9 & (!(cp_# != full & left__# = true)) -> (l_#'=10);\n"
+	s += "\t[read_#] l_#=9 & (  cp_# != full & left = true ) -> (l_#'=7);\n"
+	s += "\t[read_#] l_#=9 & (!(cp_# != full & left = true)) -> (l_#'=10);\n"
 	s += "\n"
 
-	s += "\t[set_left__to_false_at_" + others + "] l_#=10  -> (l_#'=11) & (left__#'=false);\n"
-
-	s += "\n"
-	s += "\n"
-
-	s += generateSyncTransitionsForLocalVariables(p, processCount, "entry_", possibleValues)
-	s += generateSyncTransitionsForLocalVariables(p, processCount, "exit__", possibleValues)
-	s += generateSyncTransitionsForLocalVariables(p, processCount, "left__", ["false", "true"])
+	s += "\t[set_left_to_false_#] l_#=10  -> (l_#'=11);\n"
 
 	s += "endmodule\n"
 
 	return s.replace('#', str(p))
-
-def generateSyncTransitionsForLocalVariables(p, processCount, prefix, l) :
-	s = ""
-	for value in l :
-		for forWhom in forMe(p, processCount) :
-			s += "\t[set_" + prefix + "to_" + value + "_at_" + forWhom + "] true -> (" + prefix + "#'=" + value + ");\n"
-	return s
 
 def generateRewards() :
 	s = ""
@@ -196,23 +209,21 @@ def generateCache(processCount) :
 	s += "\n"
 
 	for p in range(1,processCount+1) :
-		bit = 2**(p-1)
-		others = "".join([ str(i) for i in everyProcessButMyself (p, processCount)])
-		for variable in ["entry", "exit_"] :
+
+		for variable in ["entry", "exit"] :
 			for value in possibleValues :
-				s += "\t[set_" + variable + "_to_" + value + "_at_" + others + "]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
-				s += "\t[set_" + variable + "_to_" + value + "_at_" + others + "] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
+				s += "\t[set_" + variable + "_to_" + value + "_#]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
+				s += "\t[set_" + variable + "_to_" + value + "_#] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
 
 		for value in ["false", "true"] :
-			s += "\t[set_left__to_" + value + "_at_" + others + "]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
-			s += "\t[set_left__to_" + value + "_at_" + others + "] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
+			s += "\t[set_left_to_" + value + "_#]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
+			s += "\t[set_left_to_" + value + "_#] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
 
-		s += "\t[read_#] state_c=someoneIsModified & who_c=me_bit_# -> tick : true;\n"
-		s += "\t[read_#] state_c=someoneIsModified & who_c!=me_bit_# -> read : (state_c'=someoneIsShared) & (who_c'=min(full,max(who_c+me_bit_#, empty)));\n"
-		s += "\t[read_#] state_c=someoneIsShared & mod(floor(who_c/me_bit_#),2)=1 -> tick : true;\n"
-		s += "\t[read_#] state_c=someoneIsShared & mod(floor(who_c/me_bit_#),2)=0 -> read : (who_c'=min(full,max(who_c+me_bit_#, empty)));\n"
-		s += "\n"
-
+			s += "\t[read_#] state_c=someoneIsModified & who_c=me_bit_# -> tick : true;\n"
+			s += "\t[read_#] state_c=someoneIsModified & who_c!=me_bit_# -> read : (state_c'=someoneIsShared) & (who_c'=min(full,max(who_c+me_bit_#, empty)));\n"
+			s += "\t[read_#] state_c=someoneIsShared & mod(floor(who_c/me_bit_#),2)=1 -> tick : true;\n"
+			s += "\t[read_#] state_c=someoneIsShared & mod(floor(who_c/me_bit_#),2)=0 -> read : (who_c'=min(full,max(who_c+me_bit_#, empty)));\n"
+			s += "\n"
 		s = s.replace('#', str(p))
 
 	s += "endmodule\n"
@@ -226,7 +237,6 @@ def generateCacheLabels() :
 	s = ""
 
 	for p in range(1, processCount+1) :
-		bit = 2**(p-1)
 		s += "label \"invalid_#\"  = ((state_c=someoneIsModified | state_c=someoneIsShared) & mod(floor(who_c/me_bit_#),2)=0);\n"
 		s += "label \"modified_#\" = (state_c=someoneIsModified & who_c=me_bit_#);\n"
 		s += "label \"shared_#\"   = (state_c=someoneIsShared   & mod(floor(who_c/me_bit_#),2)=1);\n"
@@ -241,13 +251,6 @@ def generateCorrectnessProperties(processCount) :
 
 	s += "const double error=1.0E-6;\n"
 	s += "\n"
-
-	s += "// synchronized local variables have the same values\n"
-	for variable in ["entry_", "exit__", "left__"] :
-		for i in range(1, processCount) :
-			s += "P<=0 [F " + variable + str(i) + "  != " + variable + str(i+1) + "]\n"
-	s += "\n"
-
 
 	s += "// deadlock-freedom\n"
 	for i in range(1, processCount+1) :
@@ -268,7 +271,6 @@ def generateCorrectnessProperties(processCount) :
 	s += "// one and only one process can be in modified state at a time\n"
 	s += "P<=0 [F (state_c=someoneIsModified & !("
 	for p in range(1, processCount+1) :
-		bit = 2**(p-1)
 		s += "who_c=me_bit_" + str(p) + "|"
 	s += "false))];\n"
 	s += "\n"
