@@ -80,7 +80,10 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	full = str((2**processCount)-1)
 	possibleValues = [str(i) for i in range(int(empty), int(full)+1)]
 
-	s += "\tl_# : [0..11] init 0;\n"
+	if useWorkPeriod :
+		s += "\tl_# : [0..11] init 0;\n"
+	else :
+		s += "\tl_# : [0..11] init 1;\n"
 	s += "\tcp_# : [empty..full] init empty;\n"
 	s += "\tleft__# : bool init false;\n"
 	s += "\tentry_# : [empty..full] init empty;\n"
@@ -89,27 +92,38 @@ def generateProcess(p, processCount, useWorkPeriod) :
 
 	others = "".join([ str(i) for i in everyProcessButMyself(p, processCount)])
 
-	s += "\t[read_#] l_#=0 -> (l_#'=1) & (cp_#'=entry_#);\n"
+	if useWorkPeriod :
+		s += "\t[set_entry_to_0_at_" + others + "]     l_#=11  -> (l_#'=0) & (entry_#'=empty);\n"
+		s += "\n"
+		s += "\n"
+		s += "\t[] l_#=0 -> work : (l_#'=1);\n"
+	else :
+		s += "\t[set_entry_to_0_at_" + others + "]     l_#=11  -> (l_#'=1) & (entry_#'=empty);\n"
+		s += "\n"
+		s += "\n"
+		s += "\t// work period\n"
+
+	s += "\t[read_#] l_#=1 -> (l_#'=2) & (cp_#'=entry_#);\n"
 	s += "\n"
 
-	s += "\t[] l_#=1 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=2);\n"
+	s += "\t[] l_#=2 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=3);\n"
 	for value in possibleValues:
-		s += "\t[set_entry_to_" + value + "_at_" + others + "] l_#=1 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=2) & (entry_#'=" + value + ") & (cp_#'=" + value + ");\n"
+		s += "\t[set_entry_to_" + value + "_at_" + others + "] l_#=2 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=3) & (entry_#'=" + value + ") & (cp_#'=" + value + ");\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=2 & (  cp_# != full & left__# = false ) -> (l_#'=0);\n"
-	s += "\t[read_#] l_#=2 & (!(cp_# != full & left__# = false)) -> (l_#'=3);\n"
+	s += "\t[read_#] l_#=3 & (  cp_# != full & left__# = false ) -> (l_#'=1);\n"
+	s += "\t[read_#] l_#=3 & (!(cp_# != full & left__# = false)) -> (l_#'=4);\n"
 	s += "\n"
 
-	s += "\t[set_left__to_true_at_" + others + "] l_#=3 -> (l_#'=4) & (left__#'=true);\n"
+	s += "\t[set_left__to_true_at_" + others + "] l_#=4 -> (l_#'=5) & (left__#'=true);\n"
 
 	if useWorkPeriod :
-		s += "\t[set_exit__to_0_at_" + others + "]    l_#=4 -> (l_#'=5) & (exit__#'=empty);\n"
+		s += "\t[set_exit__to_0_at_" + others + "]    l_#=5 -> (l_#'=6) & (exit__#'=empty);\n"
 		s += "\n"
 		s += "\n"
-		s += "\t[] l_#=5 -> work : (l_#'=6);\n"
+		s += "\t[] l_#=6 -> work : (l_#'=7);\n"
 	else :
-		s += "\t[set_exit__to_0_at_" + others + "]    l_#=4 -> (l_#'=6) & (exit__#'=empty);\n"
+		s += "\t[set_exit__to_0_at_" + others + "]    l_#=5 -> (l_#'=7) & (exit__#'=empty);\n"
 		s += "\n"
 		s += "\n"
 		s += "\t// work period\n"
@@ -117,31 +131,20 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	s += "\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=6 -> (l_#'=7) & (cp_#'=exit__#);\n"
+	s += "\t[read_#] l_#=7 -> (l_#'=8) & (cp_#'=exit__#);\n"
 
 	s += "\n"
 
-	s += "\t[] l_#=7 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=8);\n"
+	s += "\t[] l_#=8 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=9);\n"
 	for value in possibleValues:
-		s += "\t[set_exit__to_" + value + "_at_" + others + "] l_#=7 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=8) & (exit__#'=" + value + ") & (cp_#'=" + value + ");\n"
+		s += "\t[set_exit__to_" + value + "_at_" + others + "] l_#=8 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=9) & (exit__#'=" + value + ") & (cp_#'=" + value + ");\n"
 	s += "\n"
 
-	s += "\t[read_#] l_#=8 & (  cp_# != full & left__# = true ) -> (l_#'=6);\n"
-	s += "\t[read_#] l_#=8 & (!(cp_# != full & left__# = true)) -> (l_#'=9);\n"
+	s += "\t[read_#] l_#=9 & (  cp_# != full & left__# = true ) -> (l_#'=7);\n"
+	s += "\t[read_#] l_#=9 & (!(cp_# != full & left__# = true)) -> (l_#'=10);\n"
 	s += "\n"
 
-	s += "\t[set_left__to_false_at_" + others + "] l_#=9   -> (l_#'=10) & (left__#'=false);\n"
-
-	if useWorkPeriod :
-		s += "\t[set_entry_to_0_at_" + others + "]     l_#=10  -> (l_#'=11) & (entry_#'=empty);\n"
-		s += "\n"
-		s += "\n"
-		s += "\t[] l_#=11 -> work : (l_#'=0);\n"
-	else :
-		s += "\t[set_entry_to_0_at_" + others + "]     l_#=10  -> (l_#'=0) & (entry_#'=empty);\n"
-		s += "\n"
-		s += "\n"
-		s += "\t// work period\n"
+	s += "\t[set_left__to_false_at_" + others + "] l_#=10  -> (l_#'=11) & (left__#'=false);\n"
 
 	s += "\n"
 	s += "\n"
@@ -248,14 +251,14 @@ def generateCorrectnessProperties(processCount) :
 
 	s += "// deadlock-freedom\n"
 	for i in range(1, processCount+1) :
-		s += "P>=1 [G F l_" + str(i) +"=3]\n"
+		s += "P>=1 [G F l_" + str(i) +"=4]\n"
 	s += "\n"
 
 	s += "// consistency of the barrier\n"
 	for p in range(1, processCount+1) :
-		s += "P<=0 [F (l_" + str(p) + "=3 & ("
+		s += "P<=0 [F (l_" + str(p) + "=4 & ("
 		for q in everyProcessButMyself(p, processCount) :
-			s += "l_" + str(q) + "=9|"
+			s += "l_" + str(q) + "=10|"
 		s += "false))]\n"
 	s += "\n"
 
