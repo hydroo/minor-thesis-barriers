@@ -2,7 +2,7 @@
 
 import sys
 
-def generateModel(processCount, workTicks, readTicks, writeTicks) :
+def generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop) :
 
 	s = ""
 
@@ -12,14 +12,14 @@ def generateModel(processCount, workTicks, readTicks, writeTicks) :
 	s += generateGlobalConstants(processCount)
 	s += "\n"
 
-	s += generatePseudoGlobalVariables(processCount)
+	s += generatePseudoGlobalVariables(processCount, oneLoop)
 	s += "\n"
 
-	s += generateCache(processCount)
+	s += generateCache(processCount, oneLoop)
 	s += "\n"
 
 	for p in range(1, processCount+1) :
-		s += generateProcess(p, processCount, workTicks > 0)
+		s += generateProcess(p, processCount, workTicks > 0, oneLoop)
 		s += "\n"
 	s += "\n"
 
@@ -85,24 +85,28 @@ def generateGlobalConstants(processCount) :
 
 	return s
 
-def generatePseudoGlobalVariables(processCount) :
+def generatePseudoGlobalVariables(processCount, oneLoop) :
 
 	s = ""
 
 	empty = str(0)
 	full = str((2**processCount)-1)
 
-	s += generatePseudoGlobalVariable("left", "bool",  "false", ["false", "true"], processCount)
+	if oneLoop :
+		s += generatePseudoGlobalVariable("left", "bool",  "false", ["true"], processCount, oneLoop)
+	else :
+		s += generatePseudoGlobalVariable("left", "bool",  "false", ["false", "true"], processCount, oneLoop)
 	s += "\n"
-	s += generatePseudoGlobalVariable("exit", "[empty..full]",  "empty", [str(i) for i in range(int(empty), int(full)+1)], processCount)
-	s += "\n"
-	s += generatePseudoGlobalVariable("entry", "[empty..full]", "empty", [str(i) for i in range(int(empty), int(full)+1)], processCount)
+	if not oneLoop :
+		s += generatePseudoGlobalVariable("exit", "[empty..full]",  "empty", [str(i) for i in range(int(empty), int(full)+1)], processCount, oneLoop)
+		s += "\n"
+	s += generatePseudoGlobalVariable("entry", "[empty..full]", "empty", [str(i) for i in range(int(empty), int(full)+1)], processCount, oneLoop)
 	s += "\n"
 	s += "\n"
 
 	return s
 
-def generatePseudoGlobalVariable(name, typee, init, values, processCount) :
+def generatePseudoGlobalVariable(name, typee, init, values, processCount, oneLoop) :
 
 	s = ""
 
@@ -114,11 +118,14 @@ def generatePseudoGlobalVariable(name, typee, init, values, processCount) :
 			s += "\t[set_" + name + "_to_" + value + "_#] true -> (" + name + "'=" + value + ");\n"
 		s = s.replace('#', str(p))
 
+	if name == "left" and oneLoop:
+		s += "\t[set_left_to_false_and_sync_all] true -> (" + name + "'=" + value + ");\n"
+
 	s += "endmodule\n"
 
 	return s
 
-def generateProcess(p, processCount, useWorkPeriod) :
+def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 
 	s = ""
 
@@ -136,14 +143,8 @@ def generateProcess(p, processCount, useWorkPeriod) :
 	s += "\n"
 
 	if useWorkPeriod :
-		s += "\t[set_entry_to_0_#]     l_#=l_after_1  -> (l_#'=l_init);\n"
-		s += "\n"
-		s += "\n"
 		s += "\t[] l_#=l_init -> work : (l_#'=l_entry_0);\n"
 	else :
-		s += "\t[set_entry_to_0_#]     l_#=l_after_1  -> (l_#'=l_entry_0);\n"
-		s += "\n"
-		s += "\n"
 		s += "\t// work period\n"
 
 	s += "\n"
@@ -162,34 +163,53 @@ def generateProcess(p, processCount, useWorkPeriod) :
 
 	s += "\t[set_left_to_true_#] l_#=l_between_0 -> (l_#'=l_between_1);\n"
 
-	if useWorkPeriod :
-		s += "\t[set_exit_to_0_#]    l_#=l_between_1 -> (l_#'=l_between_2);\n"
+	if oneLoop :
+		s += "\t// syncs all processes\n"
+		if useWorkPeriod :
+			s += "\t[set_left_to_false_and_sync_all] l_#=l_between_1 -> (l_#'=l_init);\n"
+		else :
+			s += "\t[set_left_to_false_and_sync_all] l_#=l_between_1 -> (l_#'=l_entry_0);\n"
+
+		s += "\t[read_#] l_#=l_between_1 & !("
+		for q in everyProcessButMyself(p, processCount) :
+			s += "l_" + str(q) + "=l_between_1&"
+		s += "true) -> (l_#'=l_between_1);\n"
+
+	if not oneLoop :
+
+		if useWorkPeriod :
+			s += "\t[set_exit_to_0_#]    l_#=l_between_1 -> (l_#'=l_between_2);\n"
+			s += "\n"
+			s += "\n"
+			s += "\t[] l_#=l_between_2 -> work : (l_#'=l_exit_0);\n"
+		else :
+			s += "\t[set_exit_to_0_#]    l_#=l_between_1 -> (l_#'=l_exit_0);\n"
+			s += "\n"
+			s += "\n"
+			s += "\t// work period\n"
+
 		s += "\n"
 		s += "\n"
-		s += "\t[] l_#=l_between_2 -> work : (l_#'=l_exit_0);\n"
-	else :
-		s += "\t[set_exit_to_0_#]    l_#=l_between_1 -> (l_#'=l_exit_0);\n"
+
+		s += "\t[read_#] l_#=l_exit_0 -> (l_#'=l_exit_1) & (cp_#'=exit);\n"
+
 		s += "\n"
+
+		s += "\t[] l_#=l_exit_1 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=l_exit_2);\n"
+		for value in possibleValues:
+			s += "\t[set_exit_to_" + value + "_#] l_#=l_exit_1 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=l_exit_2) & (cp_#'=" + value + ");\n"
 		s += "\n"
-		s += "\t// work period\n"
 
-	s += "\n"
-	s += "\n"
+		s += "\t[read_#] l_#=l_exit_2 & (  cp_# != full & left = true ) -> (l_#'=l_exit_0);\n"
+		s += "\t[read_#] l_#=l_exit_2 & (!(cp_# != full & left = true)) -> (l_#'=l_after_0);\n"
+		s += "\n"
 
-	s += "\t[read_#] l_#=l_exit_0 -> (l_#'=l_exit_1) & (cp_#'=exit);\n"
+		s += "\t[set_left_to_false_#] l_#=l_after_0  -> (l_#'=l_after_1);\n"
 
-	s += "\n"
-
-	s += "\t[] l_#=l_exit_1 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=l_exit_2);\n"
-	for value in possibleValues:
-		s += "\t[set_exit_to_" + value + "_#] l_#=l_exit_1 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=l_exit_2) & (cp_#'=" + value + ");\n"
-	s += "\n"
-
-	s += "\t[read_#] l_#=l_exit_2 & (  cp_# != full & left = true ) -> (l_#'=l_exit_0);\n"
-	s += "\t[read_#] l_#=l_exit_2 & (!(cp_# != full & left = true)) -> (l_#'=l_after_0);\n"
-	s += "\n"
-
-	s += "\t[set_left_to_false_#] l_#=l_after_0  -> (l_#'=l_after_1);\n"
+		if useWorkPeriod :
+			s += "\t[set_entry_to_0_#]     l_#=l_after_1  -> (l_#'=l_init);\n"
+		else :
+			s += "\t[set_entry_to_0_#]     l_#=l_after_1  -> (l_#'=l_entry_0);\n"
 
 	s += "endmodule\n"
 
@@ -207,7 +227,7 @@ def generateLabels(processCount) :
 
 # ### cache ### ###############################################################
 
-def generateCache(processCount) :
+def generateCache(processCount, oneLoop) :
 	s = ""
 
 	empty = str(0)
@@ -228,12 +248,19 @@ def generateCache(processCount) :
 
 	for p in range(1,processCount+1) :
 
-		for variable in ["entry", "exit"] :
+		if oneLoop :
+			variables = ["entry"]
+			leftValues = ["true"]
+		else :
+			variables = ["entry", "exit"]
+			leftValues = ["false", "true"]
+
+		for variable in variables :
 			for value in possibleValues :
 				s += "\t[set_" + variable + "_to_" + value + "_#]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
 				s += "\t[set_" + variable + "_to_" + value + "_#] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
 
-		for value in ["false", "true"] :
+		for value in leftValues :
 			s += "\t[set_left_to_" + value + "_#]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
 			s += "\t[set_left_to_" + value + "_#] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
 
@@ -357,6 +384,7 @@ if __name__ == "__main__":
 	workTicks  = 1
 	readTicks  = 50
 	writeTicks = 100
+	oneLoop = False
 
 	i = 1
 	while i < len(sys.argv):
@@ -375,6 +403,8 @@ if __name__ == "__main__":
 		elif sys.argv[i] == "--write":
 			writeTicks = int(sys.argv[i+1])
 			i += 1
+		elif sys.argv[i] == "--one-loop":
+			oneLoop = True
 		else:
 			filePrefix = sys.argv[i]
 			modelFileName = filePrefix + ".pm"
@@ -390,7 +420,7 @@ if __name__ == "__main__":
 	assert readTicks    >= 1
 	assert writeTicks   >= 1
 
-	modelString = generateModel(processCount, workTicks, readTicks, writeTicks)
+	modelString = generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop)
 
 	correctnessPropertiesString = generateCorrectnessProperties(processCount)
 
