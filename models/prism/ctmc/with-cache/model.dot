@@ -19,7 +19,6 @@ digraph {
 	"3"  -> "1"  [label="copy != full & left = false (read)"]
 	"3"  -> "4"  [weight=10, label="else : / (read)"]
 	"4"  -> "5"  [weight=10, label="left := true (write)"]
-	"5"  -> "10" [label="(oneloop)"]
 	"5"  -> "6"  [weight=10, label="exit := 0 (write)"]
 
 	"6"  -> "7"  [weight=10, label="(work)"]
