@@ -339,11 +339,11 @@ helpMessage = \
 """
  gen.py [OPTIONS] [outfile-prefix]
 
-  -h, --help                    print help message
-  -p <nr>, --processes <nr>     set process count
-  --work      <ticks>           set tick count for a work period [default 1]
-  --read      <ticks>           set tick count for a cache read  [default 50]
-  --write     <ticks>           set tick count a cache write     [default 100]
+  -h, --help          print help message
+  -n <nr>             set process count
+  --work  <ticks>     set tick count for a work period [default 1]
+  --read  <ticks>     set tick count for a cache read  [default 50]
+  --write <ticks>     set tick count a cache write     [default 100]
 """
 
 if __name__ == "__main__":
@@ -361,7 +361,7 @@ if __name__ == "__main__":
 		if sys.argv[i] == "-h" or sys.argv[i] == "--help":
 			print (helpMessage)
 			exit(0)
-		elif sys.argv[i] == "-p" or sys.argv[i] == "--processes":
+		elif sys.argv[i] == "-n" or sys.argv[i] == "--processes":
 			processCount = int(sys.argv[i+1])
 			i += 1
 		elif sys.argv[i] == "--work":
