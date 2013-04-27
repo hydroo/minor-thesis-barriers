@@ -158,7 +158,7 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 	s += "\n"
 
 	s += "\t[read_#] l_#=l_entry_2 & (  cp_# != full & left = false ) -> (l_#'=l_entry_0);\n"
-	s += "\t[read_#] l_#=l_entry_2 & (!(cp_# != full & left = false)) -> (l_#'=l_between_0);\n"
+	s += "\t[read_#] l_#=l_entry_2 & (!(cp_# != full & left = false)) -> (l_#'=l_between_0) & (cp_#'=0);\n"
 	s += "\n"
 
 	s += "\t[set_left_to_true_#] l_#=l_between_0 -> (l_#'=l_between_1);\n"
@@ -201,7 +201,7 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 		s += "\n"
 
 		s += "\t[read_#] l_#=l_exit_2 & (  cp_# != full & left = true ) -> (l_#'=l_exit_0);\n"
-		s += "\t[read_#] l_#=l_exit_2 & (!(cp_# != full & left = true)) -> (l_#'=l_after_0);\n"
+		s += "\t[read_#] l_#=l_exit_2 & (!(cp_# != full & left = true)) -> (l_#'=l_after_0) & (cp_#'=0);\n"
 		s += "\n"
 
 		s += "\t[set_left_to_false_#] l_#=l_after_0  -> (l_#'=l_after_1);\n"

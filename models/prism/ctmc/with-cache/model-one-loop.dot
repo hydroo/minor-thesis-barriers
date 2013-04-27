@@ -17,7 +17,7 @@ digraph {
 	"2"  -> "3"  [weight=10, label="copy&me == 0 : entry := copy|me & cp := copy|me (write)"]
 
 	"3"  -> "1"  [label="copy != full & left = false (read)"]
-	"3"  -> "4"  [weight=10, label="else : / (read)"]
+	"3"  -> "4"  [weight=10, label="else : copy := 0 (read)"]
 	"4"  -> "5"  [weight=10, label="left := true (write)"]
 
 	"5"  -> "5"  [label="(read)"]
