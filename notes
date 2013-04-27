@@ -1,6 +1,28 @@
 --- 13-04-27 ---
 
- * new variant: remember whom you have seen: git/models/spin/remember-others
+ * implemented another simple model minimization (copy=0 as early as possible). semantically and quant. equivalent
+ * new variant: remember whom you have seen: in models/prism/ctmc/with-cache + git/models/spin/remember-others
+
+   n: 3, work: 0, read: 50, write: 100
+
+          |dont remember others         |remember others
+          |normal         one-loop      |normal         one-loop
+   -------+-----------------------------+-------------------------
+   states |259102         7789          |322957         10195
+   trans  |777306         23199         |968871         30384
+   matrix |336231         31085         |335075         33451
+
+   clraR 1|300    copied  326           |262            296
+   clraR 2|476    c       533           |441            496
+   clraR 3|407    c       177           |328            177
+   SS m   |0.076  c       0.291         |0.09           0.291
+   SS s   |0.617  c       0.100         |0.55           0.100
+   SS i   |0.307  c       0.609         |0.36           0.609
+
+
+ □ one loop's wrongness might get better with more processes
+   in order to make it better for small numbers of processes give the self loop
+   the shape of the second loop (red tick read repeat) and omit all the logic
 
 --- 13-04-26 ---
 
