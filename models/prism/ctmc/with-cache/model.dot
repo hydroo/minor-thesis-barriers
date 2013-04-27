@@ -12,7 +12,8 @@ digraph {
 
 	"0"  -> "1"  [weight 10, label="(work)"]
 
-	"1"  -> "2"  [weight=10, label="copy := entry (read)"]
+	//don't remember others: "1"  -> "2"  [weight=10, label="copy := entry (read)"]
+	"1"  -> "2"  [weight=10, label="copy := (copy&~me)|entry (read)"] // remember others
 	"2"  -> "3"  [label="else (tick)"]
 	"2"  -> "3"  [weight=10, label="copy&me == 0 : entry := copy|me & cp := copy|me (write)"]
 
@@ -23,7 +24,8 @@ digraph {
 
 	"6"  -> "7"  [weight=10, label="(work)"]
 
-	"7"  -> "8"  [weight=10, label="copy := exit (read)"]
+	//don't remember others: "7"  -> "8"  [weight=10, label="copy := exit (read)"]
+	"7"  -> "8"  [weight=10, label="copy := (copy&~me)|exit (read)"] // remember others
 	"8"  -> "9"  [label="else (tick)"]
 	"8"  -> "9"  [weight=10, label="copy&me == 0 : exit := copy|me & copy := copy|me (write)"]
 
