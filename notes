@@ -1,5 +1,8 @@
 --- 13-04-27 ---
 
+ □ next todo: model an atomic increment spin barrier
+   -> compare to ours
+
  * implemented another simple model minimization (copy=0 as early as possible). semantically and quant. equivalent
  * new variant: remember whom you have seen: in models/prism/ctmc/with-cache + git/models/spin/remember-others
 
@@ -23,6 +26,8 @@
  □ one loop's wrongness might get better with more processes
    in order to make it better for small numbers of processes give the self loop
    the shape of the second loop (red tick read repeat) and omit all the logic
+
+ □ add energy reward
 
 --- 13-04-26 ---
 
@@ -116,7 +121,7 @@ deutet auf fehler im normal-no-work, oder?
  
  □ go beyond 32 threads (i.e. use an array rather than one barrier variable)
 
- □ not only add yourself to the barrier, but everyone you have seen so far, too
+ ✓ not only add yourself to the barrier, but everyone you have seen so far, too
 
  □ implement/model simple atomic increment barrier and compare against our protocol
 
