@@ -1,3 +1,8 @@
+--- 13-05-03 ---
+
+ * implemented simple add-fetch-spin barrier ( implementation/remember-others-and-add-fetch/* )
+ * benchmarked ronny vs add-fetch
+
 --- 13-04-27 ---
 
  □ next todo: model an atomic increment spin barrier

@@ -1,0 +1,14 @@
+#atlas.hrsk.tu-dresden.de
+
+#not reliable since it is an interative node with some load on it
+
+#4 cores: 1M  repetitions / 200  / 200
+#8:       200k            / 200  / 200
+#16:      100k            / 200  / 200
+#32:      50k             / 200  / 200
+
+#cores  add-fetch ronny / 1us: add-fetch ronny / 0.1ms: add-fetch ronny
+ 4      2.2       2.85         2.0       2.0            2.3       2.3
+ 8      2.1       3.3          2.1       2.1            2.4       2.4
+ 16     2.3       5.4          2.1       2.1            2.4       2.4
+ 32     2.4       8.4          2.1       2.2            2.4       2.4
