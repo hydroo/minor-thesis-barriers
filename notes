@@ -4,6 +4,8 @@
  * add array implementation (with flexible element size choice)
  * did some benchmarks (seems to scale not much worse than atomic ops)
 
+ * add spin model for array version of the barrier
+
 --- 13-05-03 ---
 
  * implemented simple add-fetch-spin barrier ( implementation/remember-others-and-add-fetch/* )
