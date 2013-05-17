@@ -5,23 +5,46 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
+
+#define ARRAY_64
+
+#if defined(ARRAY_64)
+    #define ARRAY_BITS 64
+    typedef uint64_t arrayElement;
+#elif defined(ARRAY_32)
+    #define ARRAY_BITS 32
+    typedef uint32_t arrayElement;
+#elif defined(ARRAY_16)
+    #define ARRAY_BITS 16
+    typedef uint16_t arrayElement;
+#elif defined(ARRAY_8)
+    #define ARRAY_BITS 8
+    typedef uint8_t arrayElement;
+#endif
+
 
 void* Thread(void*);
 
 typedef struct {
     int threadCount;
+    int entryExitLength;
     int64_t repetitionCount;
-    volatile uint64_t entry;
+    volatile arrayElement *entry;
     volatile int left;
-    volatile uint64_t exit;
+    volatile arrayElement *exit;
     int sleepMicroSeconds;
     pthread_barrier_t pthreadBarrier;
     int barrier1;
     int barrier2;
     int barrier3;
     uint64_t *nanoSeconds;
+#ifdef DEBUG
+    volatile int64_t *successfulBarrierVisitsCount;
+    int outOfSyncCount;  /* imprecise */
+#endif
 } Context;
 
 typedef struct {
@@ -29,20 +52,28 @@ typedef struct {
     Context *c;
 } ThreadInfo;
 
+
 Context* newContext(int threadCount, int64_t repetitionCount, int sleepMicroSeconds) {
 
-    assert(threadCount <= 64);
-    assert(threadCount <= sysconf( _SC_NPROCESSORS_ONLN ));
+    long cpuCount = sysconf( _SC_NPROCESSORS_ONLN );
+
+    if (threadCount > cpuCount) {
+        printf("this implementation supports only as many threads as there are cpus (%li). %i\n", cpuCount, threadCount);
+        assert(0);
+    }
 
     Context *ret = (Context*) malloc(sizeof(Context));
     assert(ret != NULL);
 
     ret->threadCount = threadCount;
+    ret->entryExitLength = ((threadCount-1)/ARRAY_BITS)+1;
     ret->repetitionCount = repetitionCount;
 
-    ret->entry = 0x0000000000000000;
+    ret->entry = (arrayElement*) malloc(sizeof(arrayElement) * ret->entryExitLength);
+    memset((arrayElement*) ret->entry, 0, ret->entryExitLength);
     ret->left = 0;
-    ret->exit = 0x0000000000000000;
+    ret->exit = (arrayElement*) malloc(sizeof(arrayElement) * ret->entryExitLength);
+    memset((arrayElement*) ret->exit, 0, ret->entryExitLength);
 
     ret->sleepMicroSeconds = sleepMicroSeconds;
 
@@ -54,44 +85,87 @@ Context* newContext(int threadCount, int64_t repetitionCount, int sleepMicroSeco
 
     ret->nanoSeconds = (uint64_t*) malloc(sizeof(uint64_t) * threadCount);
 
+#ifdef DEBUG
+    ret->successfulBarrierVisitsCount = (int64_t*) malloc(sizeof(int64_t) * threadCount);
+    for (int i = 0; i < threadCount; ++i) {
+        ret->successfulBarrierVisitsCount[i] = 0;
+    }
+#endif
+
     return ret;
 }
 
 void freeContext(Context *c) {
+    free((int64_t*) c->entry);
+    free((int64_t*) c->exit);
     free(c->nanoSeconds);
+#ifdef DEBUG
+    free((int64_t*) c->successfulBarrierVisitsCount);
+#endif
     free(c);
 }
 
-void barrier(int me, int notMe, uint64_t full, Context *c) {
-    uint64_t copy = 0;
+void barrierRonny(int index, int arrayIndex, arrayElement me, arrayElement notMe, int entryExitLength, arrayElement *full, Context *c, arrayElement *copy) {
+
+    (void) index;
+
+
 
     if (c->left == 0) {
 
         do {
-            copy = (copy&notMe)|c->entry;
-            if ((copy & me) == 0) {
-                copy |= me;
-                c->entry = copy;
+
+            copy[arrayIndex] &= notMe;
+            for (int i = 0; i < entryExitLength; i += 1) {
+                copy[i] |= c->entry[i];
             }
-        }while (copy != full && c->left == 0);
+
+
+            if ((copy[arrayIndex] & me) == 0) {
+                copy[arrayIndex] |= me;
+                c->entry[arrayIndex] = copy[arrayIndex];
+            }
+        }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && c->left == 0);
 
         c->left = 1;
-        c->exit = 0x0000000000000000;
-        copy = 0;
+        memset((arrayElement*) c->exit, 0, sizeof(arrayElement) * entryExitLength);
+        memset((arrayElement*) copy, 0, sizeof(arrayElement) * entryExitLength);
 
     } else {
 
-        do {
-            copy = (copy&notMe)|c->exit;
-            if ((copy & me) == 0) {
-                copy |= me;
-                c->exit = copy;
+#ifdef DEBUG
+        for (int i = 0; i < c->threadCount - 1; ++i) {
+            if (c->successfulBarrierVisitsCount[i] != c->successfulBarrierVisitsCount[i+1]) {
+                printf("thread %i and %i are not equal at %lli %lli\n", i, i+1,
+                        (long long)c->successfulBarrierVisitsCount[i],
+                        (long long)c->successfulBarrierVisitsCount[i+1]);
+                ++c->outOfSyncCount;
+                assert(0);
             }
-        }while (copy != full && c->left == 1);
+        }
+#endif
+
+        do {
+
+            copy[arrayIndex] &= notMe;
+            for (int i = 0; i < entryExitLength; i += 1) {
+                copy[i] |= c->exit[i];
+            }
+
+            if ((copy[arrayIndex] & me) == 0) {
+                copy[arrayIndex] |= me;
+                c->exit[arrayIndex] = copy[arrayIndex];
+            }
+        }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && c->left == 1);
 
         c->left = 0;
-        c->entry = 0x0000000000000000;
-        copy = 0;
+        memset((arrayElement*) c->entry, 0, sizeof(arrayElement) * entryExitLength);
+        memset((arrayElement*) copy, 0, sizeof(arrayElement) * entryExitLength);
+
+#ifdef DEBUG
+        ++(c->successfulBarrierVisitsCount[index]);
+#endif
+
     }
 }
 
@@ -125,22 +199,26 @@ void* Thread(void *userData) {
     Context *c = info->c;
 
     int index = info->index;
+    int arrayIndex = index/ARRAY_BITS;
     int threadCount = c->threadCount;
     int64_t repetitionCount = c->repetitionCount / 3;
     int sleepMicroSeconds = c->sleepMicroSeconds;
 
-    uint64_t me = 0x1 << index;
-    uint64_t notMe = ~me;
-    uint64_t full = 0x0000000000000000;
+    arrayElement me = 0x1 << (index % ARRAY_BITS);
+    arrayElement notMe = ~me;
+    arrayElement *full = (arrayElement*) malloc(sizeof(arrayElement) * c->entryExitLength);
+    memset(full, 0, sizeof(arrayElement) * c->entryExitLength);
+    for (int i = 0; i < threadCount; i += 1) {
+        full[i/ARRAY_BITS] |= (0x1 << (i % ARRAY_BITS));
+    }
 
     struct timespec begin, end;
 
+    (void) arrayIndex;
     (void) me;
     (void) notMe;
 
-    for (int i = 0; i < threadCount; ++i) {
-        full |= 0x1 << i;
-    }
+    arrayElement *copy = (arrayElement*) malloc(sizeof(arrayElement) * c->entryExitLength);
 
     // set thread affinity
     cpu_set_t cpuset;
@@ -157,9 +235,9 @@ void* Thread(void *userData) {
         barrierAddFetch2(c, threadCount);
         barrierAddFetch3(c, threadCount);
 #elif defined(USE_RONNY)
-        barrier(me, notMe, full, c);
-        barrier(me, notMe, full, c);
-        barrier(me, notMe, full, c);
+        barrierRonny(index, arrayIndex, me, notMe, c->entryExitLength, full, c, copy);
+        barrierRonny(index, arrayIndex, me, notMe, c->entryExitLength, full, c, copy);
+        barrierRonny(index, arrayIndex, me, notMe, c->entryExitLength, full, c, copy);
 #endif
         if (sleepMicroSeconds > 0) {
             usleep(sleepMicroSeconds);
@@ -169,6 +247,8 @@ void* Thread(void *userData) {
     clock_gettime(CLOCK_REALTIME, &end);
 
     c->nanoSeconds[index] = (end.tv_sec * 1000000000 + end.tv_nsec) - (begin.tv_sec * 1000000000 + begin.tv_nsec);
+
+    free(copy);
 
     return NULL;
 }
@@ -188,7 +268,7 @@ void printResults(Context *c) {
     }
     meanSeconds /= c->threadCount;
 
-    printf("%s threadCount: %3d, repetitions: %7lli, sleepMicroSeconds: %3d, seconds: %lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds);
+    printf("%s threadCount: %3d, repetitions: %7lli, sleepMicroSeconds: %3d, seconds: %lf, nanoSecondsPerIteration: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, meanSeconds * 1000000000 / c->repetitionCount);
 }
 
 
