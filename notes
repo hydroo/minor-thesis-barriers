@@ -1,7 +1,11 @@
+--- 13-05-17 ---
+
+ * changed add-fetch benchmark to measure only the loop time, not the other uninteresting things
+
 --- 13-05-03 ---
 
  * implemented simple add-fetch-spin barrier ( implementation/remember-others-and-add-fetch/* )
- * benchmarked ronny vs add-fetch
+ * benchmarked ronny vs add-fetch (with $ time add-fetch ...)
 
 --- 13-04-27 ---
 

@@ -4,7 +4,7 @@ INCLUDE =
 CFLAGS = -Wall -Wextra -g -std=c99 -DDEBUG $(INCLUDE)
 LN = $(CC)
 #LIBS = -lpthread
-LIBS = -lpthread
+LIBS = -lpthread -lrt
 LFLAGS = $(LIBS)
 
 ADD_FETCH = add-fetch
