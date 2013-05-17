@@ -1,6 +1,8 @@
 --- 13-05-17 ---
 
  * changed add-fetch benchmark to measure only the loop time, not the other uninteresting things
+ * add array implementation (with flexible element size choice)
+ * did some benchmarks (seems to scale not much worse than atomic ops)
 
 --- 13-05-03 ---
 
@@ -130,7 +132,7 @@ deutet auf fehler im normal-no-work, oder?
 
  □ make it work in a distributed setting
  
- □ go beyond 32 threads (i.e. use an array rather than one barrier variable)
+ ✓ go beyond 32 threads (i.e. use an array rather than one barrier variable)
 
  ✓ not only add yourself to the barrier, but everyone you have seen so far, too
 
