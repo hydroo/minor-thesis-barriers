@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+# bsub -x -q short -n 64 -oo out -eo error -R "span[hosts=1]" ./benchmark.sh
+
 #set -x
 
 maxthreads=64
