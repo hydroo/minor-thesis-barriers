@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 
 void* Thread(void*);
@@ -20,6 +21,7 @@ typedef struct {
     int barrier1;
     int barrier2;
     int barrier3;
+    uint64_t *nanoSeconds;
 } Context;
 
 typedef struct {
@@ -50,7 +52,14 @@ Context* newContext(int threadCount, int64_t repetitionCount, int sleepMicroSeco
     ret->barrier2 = threadCount;
     ret->barrier3 = threadCount;
 
+    ret->nanoSeconds = (uint64_t*) malloc(sizeof(uint64_t) * threadCount);
+
     return ret;
+}
+
+void freeContext(Context *c) {
+    free(c->nanoSeconds);
+    free(c);
 }
 
 void barrier(int me, int notMe, uint64_t full, Context *c) {
@@ -117,12 +126,14 @@ void* Thread(void *userData) {
 
     int index = info->index;
     int threadCount = c->threadCount;
-    int64_t repetitionCount = c->repetitionCount;
+    int64_t repetitionCount = c->repetitionCount / 3;
     int sleepMicroSeconds = c->sleepMicroSeconds;
 
     uint64_t me = 0x1 << index;
     uint64_t notMe = ~me;
     uint64_t full = 0x0000000000000000;
+
+    struct timespec begin, end;
 
     (void) me;
     (void) notMe;
@@ -136,6 +147,8 @@ void* Thread(void *userData) {
     CPU_ZERO(&cpuset);
     CPU_SET(index, &cpuset);
     assert(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) == 0);
+
+    clock_gettime(CLOCK_REALTIME, &begin);
 
     for(int64_t repetition = 0; repetition < repetitionCount; repetition++){
 #if defined(USE_ADD_FETCH)
@@ -153,7 +166,29 @@ void* Thread(void *userData) {
         }
     }
 
+    clock_gettime(CLOCK_REALTIME, &end);
+
+    c->nanoSeconds[index] = (end.tv_sec * 1000000000 + end.tv_nsec) - (begin.tv_sec * 1000000000 + begin.tv_nsec);
+
     return NULL;
+}
+
+void printResults(Context *c) {
+
+    double meanSeconds = 0.0;
+
+#if defined(USE_ADD_FETCH)
+    const char *barrierType = "add-fetch";
+#elif defined(USE_RONNY)
+    const char *barrierType = "ronny    ";
+#endif
+
+    for (int i = 0; i < c->threadCount; i += 1) {
+        meanSeconds += c->nanoSeconds[i] / 1000000000.0;
+    }
+    meanSeconds /= c->threadCount;
+
+    printf("%s threadCount: %3d, repetitions: %7lli, sleepMicroSeconds: %3d, seconds: %lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds);
 }
 
 
@@ -195,7 +230,9 @@ int main(int argc, char **args) {
         }
     }
 
-    //free(context);
+    printResults(context);
+
+    freeContext(context);
 
     return 0;
 }
