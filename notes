@@ -6,6 +6,27 @@
 
  * add spin model for array version of the barrier
 
+ todo:
+  □ use aquire release mem model
+  □ benchmark up to 64 threads
+  □ model add-fetch barrier
+    □ add energy rewards to add-fetch
+    □ add energy rewards to ronny
+    -> □ compare both
+    -> □ line up measured data with both models
+
+  □ get a bigger SMP board, >64 threads, and benchmark there.
+
+  □ interpret benchmarks. Complexity for both barriers? why both exponential?
+
+ maybe todo:
+  □ papi enable both barriers and make additional measurements
+    cache stuff, wallclocktime/sleeptime, number of instructions
+ 
+  □ put ronny barrier into libgomp and benchmark WITH backoff ->
+    * argument that it is not considerably slower but doesnt need atomic ops foo
+    □ quantify energy consumption?
+
 --- 13-05-03 ---
 
  * implemented simple add-fetch-spin barrier ( implementation/remember-others-and-add-fetch/* )
@@ -13,7 +34,7 @@
 
 --- 13-04-27 ---
 
- □ next todo: model an atomic increment spin barrier
+ ✓ (duplicate) next todo: model an atomic increment spin barrier
    -> compare to ours
 
  * implemented another simple model minimization (copy=0 as early as possible). semantically and quant. equivalent
@@ -42,7 +63,7 @@
    in order to make it better for small numbers of processes give the self loop
    the shape of the second loop (red tick read repeat) and omit all the logic
 
- □ add energy reward
+ ✓ (duplicate) add energy reward
 
 --- 13-04-26 ---
 
@@ -146,9 +167,9 @@ deutet auf fehler im normal-no-work, oder?
  □ implement model minimizations
   -> □ scale model for more threads
   e.g.:
-   * remove second loop
-   * put cacheline state into a central object. e.g. in the case of modified, it is not needed to save the distinct state of the n-1 other threads because is implied.
-   * symmetry
+   ✓ remove second loop
+   ✓ put cacheline state into a central object. e.g. in the case of modified, it is not needed to save the distinct state of the n-1 other threads because is implied.
+   □ symmetry
    * partial order
 
  □ maybe model that during the work period the cacheline state might change
