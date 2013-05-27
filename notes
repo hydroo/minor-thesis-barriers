@@ -7,7 +7,7 @@
  * add spin model for array version of the barrier
 
  todo:
-  □ use aquire release mem model
+  ✓ use aquire release mem model
   □ benchmark up to 64 threads
   □ model add-fetch barrier
     □ add energy rewards to add-fetch

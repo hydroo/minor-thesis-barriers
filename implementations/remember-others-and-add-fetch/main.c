@@ -110,24 +110,24 @@ void barrierRonny(int index, int arrayIndex, arrayElement me, arrayElement notMe
     (void) index;
 
 
-
-    if (c->left == 0) {
+    if (__atomic_load_n(&(c->left), __ATOMIC_ACQUIRE) == 0) { //if (c->left == 0) {
 
         do {
 
             copy[arrayIndex] &= notMe;
             for (int i = 0; i < entryExitLength; i += 1) {
-                copy[i] |= c->entry[i];
+                copy[i] |= __atomic_load_n(&(c->entry[i]), __ATOMIC_ACQUIRE); //copy[i] |= c->entry[i];
             }
 
 
             if ((copy[arrayIndex] & me) == 0) {
                 copy[arrayIndex] |= me;
-                c->entry[arrayIndex] = copy[arrayIndex];
+                __atomic_store_n(&(c->entry[arrayIndex]), copy[arrayIndex], __ATOMIC_RELEASE); //c->entry[arrayIndex] = copy[arrayIndex];
             }
-        }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && c->left == 0);
+        //}while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && c->left == 0);
+        }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && __atomic_load_n(&(c->left), __ATOMIC_ACQUIRE) == 0);
 
-        c->left = 1;
+        __atomic_store_n(&(c->left), 1, __ATOMIC_RELEASE); //c->left = 1;
         memset((arrayElement*) c->exit, 0, sizeof(arrayElement) * entryExitLength);
         memset((arrayElement*) copy, 0, sizeof(arrayElement) * entryExitLength);
 
@@ -149,16 +149,17 @@ void barrierRonny(int index, int arrayIndex, arrayElement me, arrayElement notMe
 
             copy[arrayIndex] &= notMe;
             for (int i = 0; i < entryExitLength; i += 1) {
-                copy[i] |= c->exit[i];
+                copy[i] |= __atomic_load_n(&(c->exit[i]), __ATOMIC_ACQUIRE); //copy[i] |= c->exit[i];
             }
 
             if ((copy[arrayIndex] & me) == 0) {
                 copy[arrayIndex] |= me;
-                c->exit[arrayIndex] = copy[arrayIndex];
+                __atomic_store_n(&(c->exit[arrayIndex]), copy[arrayIndex], __ATOMIC_RELEASE); //c->exit[arrayIndex] = copy[arrayIndex];
             }
-        }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && c->left == 1);
+        //}while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && c->left == 1);
+        }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && __atomic_load_n(&(c->left), __ATOMIC_ACQUIRE) == 1);
 
-        c->left = 0;
+        __atomic_store_n(&(c->left), 0, __ATOMIC_RELEASE); //c->left = 0;
         memset((arrayElement*) c->entry, 0, sizeof(arrayElement) * entryExitLength);
         memset((arrayElement*) copy, 0, sizeof(arrayElement) * entryExitLength);
 
