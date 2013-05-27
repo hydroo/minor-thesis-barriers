@@ -32,9 +32,9 @@ typedef struct {
     int threadCount;
     int entryExitLength;
     int64_t repetitionCount;
-    volatile arrayElement *entry;
-    volatile int left;
-    volatile arrayElement *exit;
+    arrayElement *entry; //volatile arrayElement *entry;
+    int left; //volatile int left;
+    arrayElement *exit; //volatile arrayElement *exit;
     int sleepMicroSeconds;
     pthread_barrier_t pthreadBarrier;
     int barrier1;
