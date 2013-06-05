@@ -1,11 +1,23 @@
 #atlas.hrsk.tu-dresden.de
 
-#nano seconds per iteration
+#nano seconds per barrier
 
-#cores  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
- 2            118     210             20944    20972              54299    54000
- 4            763    1710             22755    23225              55821    56333
- 8           1670    4128             25394    26747              58341    63574
- 16          7159   13133             27397    31401              63543    76302
- 32         14687                     36223                       75306         
- 48         21998                     54866                       84273         
+#big spread in results ~ +-20%
+
+#threads  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
+ 2              118     210             20944    20972              54299    54000
+ 4              763    1710             22755    23225              55821    56333
+ 8             1670    4128             25394    26747              58341    63574
+ 16            7159   13133             27397    31401              63543    76302
+ 32           14687                     36223                       75306         
+ 48           21998                     54866                       84273         
+
+
+#div by thread count
+#threads  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
+ 2               59     105             10472    10486              27149    27000
+ 4              190     427              5688     5806              13955    14083
+ 8              208     516              3174     3343               7292     7946
+ 16             447     820              1712     1962               3971     4768
+ 32             458                      1131                        2353         
+ 48             458                      1143                        1755         

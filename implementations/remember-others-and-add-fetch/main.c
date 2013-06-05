@@ -178,19 +178,19 @@ void barrierAddFetch1(Context *c, int threadCount) {
     c->barrier3 = threadCount;
 }
 void barrierAddFetch2(Context *c, int threadCount) {
-        if (__atomic_add_fetch(&(c->barrier2), -1, __ATOMIC_ACQ_REL) != 0) {
-            while (__atomic_load_n (&c->barrier2, __ATOMIC_ACQUIRE) != 0) {
-            }
+    if (__atomic_add_fetch(&(c->barrier2), -1, __ATOMIC_ACQ_REL) != 0) {
+        while (__atomic_load_n (&c->barrier2, __ATOMIC_ACQUIRE) != 0) {
         }
-        c->barrier1 = threadCount;
+    }
+    c->barrier1 = threadCount;
 }
 void barrierAddFetch3(Context *c, int threadCount) {
-        c->barrier1 = threadCount;
-        if (__atomic_add_fetch(&(c->barrier3), -1, __ATOMIC_ACQ_REL) != 0) {
-            while (__atomic_load_n (&c->barrier3, __ATOMIC_ACQUIRE) != 0) {
-            }
+    c->barrier1 = threadCount;
+    if (__atomic_add_fetch(&(c->barrier3), -1, __ATOMIC_ACQ_REL) != 0) {
+        while (__atomic_load_n (&c->barrier3, __ATOMIC_ACQUIRE) != 0) {
         }
-        c->barrier2 = threadCount;
+    }
+    c->barrier2 = threadCount;
 }
 
 
@@ -269,7 +269,7 @@ void printResults(Context *c) {
     }
     meanSeconds /= c->threadCount;
 
-    printf("%s threadCount: %3d, repetitions: %7lli, sleepMicroSeconds: %3d, seconds: %lf, nanoSecondsPerIteration: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, meanSeconds * 1000000000 / c->repetitionCount);
+    printf("%s threads: %2d, reps: %7lli, sleepMySecs: %3d, wallSecs: %lf, nSecsPerBarrier: %8.0lf nSecsPerBarrierDivByThreads: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, meanSeconds * 1000000000 / c->repetitionCount, (meanSeconds * 1000000000 / c->repetitionCount) / c->threadCount);
 }
 
 
