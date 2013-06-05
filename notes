@@ -1,6 +1,7 @@
 --- 13-06-05 ---
 
  ✓ removed clraR 3, because (1) clr is not need for our purposes here (2) it is probably wrong (3) doesn't work for the one-loop variant because of the sync transition
+ ✓ benchmark now uses a fixed amount of time (and counts repetitions), rather than a fixed amount of repetitions and measuring time
 
 --- 13-05-17 ---
 

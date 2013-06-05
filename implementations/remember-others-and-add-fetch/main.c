@@ -31,6 +31,7 @@ void* Thread(void*);
 typedef struct {
     int threadCount;
     int entryExitLength;
+    int maxWallSeconds;
     int64_t repetitionCount;
     arrayElement *entry; //volatile arrayElement *entry;
     int left; //volatile int left;
@@ -53,13 +54,11 @@ typedef struct {
 } ThreadInfo;
 
 
-Context* newContext(int threadCount, int64_t repetitionCount, int sleepMicroSeconds) {
+Context* newContext(int threadCount, int maxWallSeconds, int sleepMicroSeconds) {
 
-    long cpuCount = sysconf( _SC_NPROCESSORS_ONLN );
-
+    long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
     if (threadCount > cpuCount) {
-        printf("this implementation supports only as many threads as there are cpus (%li). %i\n", cpuCount, threadCount);
-        assert(0);
+        printf("threadcount: %i > cpucount: %li. threads will be pinned round robin.\n", threadCount, cpuCount);
     }
 
     Context *ret = (Context*) malloc(sizeof(Context));
@@ -67,7 +66,7 @@ Context* newContext(int threadCount, int64_t repetitionCount, int sleepMicroSeco
 
     ret->threadCount = threadCount;
     ret->entryExitLength = ((threadCount-1)/ARRAY_BITS)+1;
-    ret->repetitionCount = repetitionCount;
+    ret->maxWallSeconds = maxWallSeconds;
 
     ret->entry = (arrayElement*) malloc(sizeof(arrayElement) * ret->entryExitLength);
     memset((arrayElement*) ret->entry, 0, ret->entryExitLength);
@@ -202,7 +201,7 @@ void* Thread(void *userData) {
     int index = info->index;
     int arrayIndex = index/ARRAY_BITS;
     int threadCount = c->threadCount;
-    int64_t repetitionCount = c->repetitionCount / 3;
+    int maxWallSeconds = c->maxWallSeconds;
     int sleepMicroSeconds = c->sleepMicroSeconds;
 
     arrayElement me = 0x1 << (index % ARRAY_BITS);
@@ -214,6 +213,7 @@ void* Thread(void *userData) {
     }
 
     struct timespec begin, end;
+    int64_t repetitions;
 
     (void) arrayIndex;
     (void) me;
@@ -224,12 +224,14 @@ void* Thread(void *userData) {
     // set thread affinity
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
-    CPU_SET(index, &cpuset);
+    CPU_SET(index % sysconf(_SC_NPROCESSORS_ONLN), &cpuset);
     assert(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) == 0);
 
     clock_gettime(CLOCK_REALTIME, &begin);
 
-    for(int64_t repetition = 0; repetition < repetitionCount; repetition++){
+    time_t supposedEnd = begin.tv_sec + maxWallSeconds;
+
+    for(repetitions = 0;; repetitions+=3){
 #if defined(USE_ADD_FETCH)
         /* tripple barrier makes the resetting safe */
         barrierAddFetch1(c, threadCount);
@@ -240,13 +242,20 @@ void* Thread(void *userData) {
         barrierRonny(index, arrayIndex, me, notMe, c->entryExitLength, full, c, copy);
         barrierRonny(index, arrayIndex, me, notMe, c->entryExitLength, full, c, copy);
 #endif
+
+        if (repetitions % 300 == 0) {
+            clock_gettime(CLOCK_REALTIME, &end);
+            if (end.tv_sec > supposedEnd) {
+                break;
+            }
+        }
+
         if (sleepMicroSeconds > 0) {
             usleep(sleepMicroSeconds);
         }
     }
 
-    clock_gettime(CLOCK_REALTIME, &end);
-
+    c->repetitionCount = repetitions;
     c->nanoSeconds[index] = (end.tv_sec * 1000000000 + end.tv_nsec) - (begin.tv_sec * 1000000000 + begin.tv_nsec);
 
     free(copy);
@@ -269,26 +278,26 @@ void printResults(Context *c) {
     }
     meanSeconds /= c->threadCount;
 
-    printf("%s threads: %2d, reps: %7lli, sleepMySecs: %3d, wallSecs: %lf, nSecsPerBarrier: %8.0lf nSecsPerBarrierDivByThreads: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, meanSeconds * 1000000000 / c->repetitionCount, (meanSeconds * 1000000000 / c->repetitionCount) / c->threadCount);
+    printf("%s threads: %2d, reps: %7lli, sleepMySecs: %3d, wallSecs: %.2lf, nSecsPerBarrier: %8.0lf nSecsPerBarrierDivByThreads: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, meanSeconds * 1000000000 / c->repetitionCount, (meanSeconds * 1000000000 / c->repetitionCount) / c->threadCount);
 }
 
 
 int main(int argc, char **args) {
 
     if (argc < 3) {
-        printf("  barrier <threadcount> <repetitions> <sleepmicroseconds>\n");
+        printf("  barrier <threadcount> <maxwallseconds> <sleepmicroseconds>\n");
         exit(0);
     }
 
     int threadCount = atoi(args[1]);
-    int repetitionCount = atoll(args[2]);
+    int maxWallSeconds = atoll(args[2]);
     int sleepMicroSeconds = argc > 3 ? atoll(args[3]) : 0;
 
     assert(threadCount > 0);
-    assert(repetitionCount > 0);
+    assert(maxWallSeconds > 0);
     assert(sleepMicroSeconds >= 0);
 
-    Context *context = newContext(threadCount, repetitionCount, sleepMicroSeconds);
+    Context *context = newContext(threadCount, maxWallSeconds, sleepMicroSeconds);
     ThreadInfo infos[threadCount];
 
     pthread_t t[threadCount];
