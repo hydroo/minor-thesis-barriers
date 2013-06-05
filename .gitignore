@@ -5,3 +5,7 @@
 *.s
 barrier
 
+/implementations/remember-others-and-add-fetch/add-fetch
+/implementations/remember-others-and-add-fetch/ronny
+
+model*.pdf
