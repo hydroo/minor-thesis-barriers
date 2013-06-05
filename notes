@@ -1,5 +1,7 @@
 --- 13-06-05 ---
 
+ ✓ removed clraR 3, because (1) clr is not need for our purposes here (2) it is probably wrong (3) doesn't work for the one-loop variant because of the sync transition
+
 --- 13-05-17 ---
 
  * changed add-fetch benchmark to measure only the loop time, not the other uninteresting things
