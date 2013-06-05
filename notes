@@ -7,6 +7,10 @@
 
  ✓ did nice benchmarks up to 64 threads
 
+ misc notes:
+  □ it is possible to reduce the 2loop ronny model for non-ss queries:
+   remove loc 10, 11 and set the while condition to 'true'
+  □ one might also combine some of the transitions that are not in loops because they are triggered rarely
 
 --- 13-05-17 ---
 
