@@ -357,7 +357,7 @@ def generateCorrectnessProperties(processCount) :
 	return s
 
 # ### quantitative props ### ##################################################
-def generateQuantitativeProperties(processCount) :
+def generateQuantitativeProperties(processCount, oneLoop) :
 
 	s = ""
 
@@ -386,15 +386,14 @@ def generateQuantitativeProperties(processCount) :
 	s += "base_rate * R{\"time\"}=? [F (" + q + "true)]\n"
 	s += "\n"
 
+	if not oneLoop:
+		s += "// in which state is the cache and how much of the time?\n"
+		s += "S=? [\"modified_1\"]\n"
+		s += "S=? [\"shared_1\"]\n"
+		s += "S=? [\"invalid_1\"]\n"
 
-	s += "\n"
+		s += "\n"
 
-	s += "// in which state is the cache and how much of the time?\n"
-	s += "S=? [\"modified_1\"]\n"
-	s += "S=? [\"shared_1\"]\n"
-	s += "S=? [\"invalid_1\"]\n"
-
-	s += "\n"
 	s += "\n"
 
 	s += "const double time=ticks/base_rate;\n"
@@ -495,7 +494,7 @@ if __name__ == "__main__":
 
 	correctnessPropertiesString = generateCorrectnessProperties(processCount)
 
-	quantitativePropertiesString = generateQuantitativeProperties(processCount)
+	quantitativePropertiesString = generateQuantitativeProperties(processCount, oneLoop)
 
 	f = open(modelFileName, 'w')
 	f.write(modelString)
