@@ -390,7 +390,7 @@ def generateQuantitativeProperties(processCount) :
 	q = ""
 	for i in range(1, processCount+1) :
 		q += "l_" + str(i) + ">=" + loc + "&" 
-	q += "true), ("
+	q += "true)], ("
 	for i in range(1, processCount+1) :
 		for j in range(1, processCount+1) :
 			if i == j :
@@ -400,10 +400,10 @@ def generateQuantitativeProperties(processCount) :
 			q += "l_" + str(j) + comp + loc + "&"
 		q += "true)|("
 
-	s += "clrP=? [F<=time (" + q + "false)]\n"
+	s += "filter(clr, P=? [F<=time (" + q + "false))\n"
 	s += "\n"
 	s += "// expected number of ticks\n"
-	s += "base_rate * clraR{\"time\"}=? [F (" + q + "false)]\n"
+	s += "base_rate * filter(clr, R{\"time\"}=? [F (" + q + "false))\n"
 
 	s += "\n"
 
