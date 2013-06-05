@@ -5,6 +5,8 @@
  ✓ added spin model of add-fetch barrier
  ✓ fixed two bugs in the ronny-barrier. both fail around 32+ threads. >>> one of them is probably the reason why the algorithm failed at 32 threads in the first report <<<
 
+ ✓ did nice benchmarks up to 64 threads
+
 
 --- 13-05-17 ---
 
@@ -16,7 +18,7 @@
 
  todo:
   ✓ use aquire release mem model
-  □ redo benchmarks (large deviations in runtime right now), and perhaps benchmark up to 64 threads
+  ✓ redo benchmarks (large deviations in runtime right now), and perhaps benchmark up to 64 threads
   □ model add-fetch barrier
     □ add energy rewards to add-fetch
     □ add energy rewards to ronny

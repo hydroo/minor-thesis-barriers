@@ -1,25 +1,29 @@
-#atlas.hrsk.tu-dresden.de
+# atlas.hrsk.tu-dresden.de AMD
+# Opteron(TM) Processor 6274
 
-#nano seconds per barrier
+# nano seconds per barrier
 
-#big spread in results ~ +-20%
+# at least 110k iterations. up to 10mio for every measurement point
+# with the slowest rounds / least iterations deviation can reach 20%
+# deviation was calculated by a rerun with 20seconds supposedWallTime
 
 #threads  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
- 2              108     210             20771    20972              53839    54000
- 4              685    1710             22587    23225              55751    56333
- 8             1569    4128             26327    26747              58389    63574
- 16            7211   13133             27086    31401              63471    76302
- 32           14894                     37336                       77884         
- 48           24080                     49536                       80756         
- 64           33514                     59785                       91041
+ 2              108     231             20771    20940              53839    54051
+ 4              685    1370             22587    23761              55751    56376
+ 8             1569    3790             26327    27511              58389    62136
+ 16            7211   17409             27086    32007              63471    76814
+ 32           14894   47020             37336    65004              77884    92806
+ 48           24080   78807             49536   100145              80756   129116
+ 64           33514  134744             59785   151421              91041   179435
+ deviation      <5%    <20%              <10%     <10%                <2%     <10%
 
 
 #div by thread count
 #threads  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
- 2               54      105            10386    10486              26920    27000
- 4              171      427             5647     5806              13938    14083
- 8              196      516             3291     3343               7299     7946
- 16             451      820             1693     1962               3967     4768
- 32             465                      1167                        2434          
- 48             502                      1032                        1682          
-                524                       934                        1423
+ 2               54      115            10386    10470              26920    27025
+ 4              171      474             5647     5940              13938    14094
+ 8              196      837             3291     3439               7299     7767
+ 16             451     1088             1693     2000               3967     4801
+ 32             465     1469             1167     2031               2434     2900 
+ 48             502     1642             1032     2086               1682     2690 
+                524     2105              934     2366               1423     2804
