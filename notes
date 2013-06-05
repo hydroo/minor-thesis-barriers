@@ -1,3 +1,5 @@
+--- 13-06-05 ---
+
 --- 13-05-17 ---
 
  * changed add-fetch benchmark to measure only the loop time, not the other uninteresting things
@@ -8,16 +10,14 @@
 
  todo:
   ✓ use aquire release mem model
-  □ benchmark up to 64 threads
+  □ redo benchmarks (large deviations in runtime right now), and perhaps benchmark up to 64 threads
   □ model add-fetch barrier
     □ add energy rewards to add-fetch
     □ add energy rewards to ronny
     -> □ compare both
     -> □ line up measured data with both models
 
-  □ get a bigger SMP board, >64 threads, and benchmark there.
-
-  □ interpret benchmarks. Complexity for both barriers? why both exponential?
+  □ interpret benchmarks. Complexity for both barriers?
 
  maybe todo:
   □ papi enable both barriers and make additional measurements
@@ -34,9 +34,6 @@
 
 --- 13-04-27 ---
 
- ✓ (duplicate) next todo: model an atomic increment spin barrier
-   -> compare to ours
-
  * implemented another simple model minimization (copy=0 as early as possible). semantically and quant. equivalent
  * new variant: remember whom you have seen: in models/prism/ctmc/with-cache + git/models/spin/remember-others
 
@@ -51,39 +48,10 @@
 
    clraR 1|300    copied  326           |262            296
    clraR 2|476    c       533           |441            496
-   clraR 3|407    c       177           |328            177
-   SS m   |0.076  c       0.291         |0.09           0.291
-   SS s   |0.617  c       0.100         |0.55           0.100
-   SS i   |0.307  c       0.609         |0.36           0.609
-
- □ clraR3 sollte etwa 2 - 1 sein. Formel falsch?
-
-
- □ one loop's wrongness might get better with more processes
-   in order to make it better for small numbers of processes give the self loop
-   the shape of the second loop (red tick read repeat) and omit all the logic
-
- ✓ (duplicate) add energy reward
 
 --- 13-04-26 ---
 
-n: 3, work: 0, read: 50, write: 100
-
-       |normal         one-loop
--------+-----------------------
-states |364701         10795
-trans  |1094103        31647
-matrix |438694         39024
-
-clraR 1|304            326
-clraR 2|487            533
-clraR 3|414            177
-SS m   |0.076          0.291
-SS s   |0.617          0.100
-SS i   |0.307          0.609
-
-deutet auf fehler im normal-no-work, oder?
-
+ [..]
 
 --- 13-04-15 ---
 
@@ -128,10 +96,7 @@ deutet auf fehler im normal-no-work, oder?
 
  energie effizienz!
    * Beleg soll (irgendwie) in HAEC rein
-   * RAPL
-     ✗ leider, keine Moeglichkeit nachzuahmen (ausser memory/dram: paper "RAPL: Memory ...")
-       □  aber es gibt projekte wie zB mummi die Modelle erstellen (paper "Power-Aware Predictive ...")
-   * messen am board mit ~100ns moeglich
+   * RAPL-Zahlen nutzen
 
  algorithmus:
    * verteilte variante machen
@@ -149,7 +114,7 @@ deutet auf fehler im normal-no-work, oder?
    * (system-/arbeits-)last nur sehr einfach modellieren. keine arbeit in gute last-modellierung stecken
  
  sonstiges:
-  * die one-loop variante nicht untersuchen
+  * die "kaputte" one-loop variante nicht untersuchen
 
 --- before 13-04-01 ---
 
