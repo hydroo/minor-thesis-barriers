@@ -1,0 +1,24 @@
+#steady states are wrong for the one-loop version because of the sync transition
+
+n: 2, work: 0, read: 50, write: 100 remember others
+
+                 |normal   one-loop
+-----------------+-----------------
+states           |552      115
+trans            |1104     228
+rmatrix          |3914     1223
+
+expected clraR 1 |141      161
+expected clraR 2 |268      310
+
+
+n: 3, work: 0, read: 50, write: 100 remember others
+
+                 |normal   one-loop
+-----------------+-----------------
+states           |322957   10195
+trans            |968871   30384
+rmatrix          |335075   33451
+
+expected clraR 1 |262      296
+expected clraR 2 |441      496
