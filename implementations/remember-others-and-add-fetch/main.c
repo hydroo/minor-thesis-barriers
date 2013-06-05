@@ -95,8 +95,8 @@ Context* newContext(int threadCount, int maxWallSeconds, int sleepMicroSeconds) 
 }
 
 void freeContext(Context *c) {
-    free((int64_t*) c->entry);
-    free((int64_t*) c->exit);
+    free((arrayElement*) c->entry);
+    free((arrayElement*) c->exit);
     free(c->nanoSeconds);
 #ifdef DEBUG
     free((int64_t*) c->successfulBarrierVisitsCount);
@@ -204,12 +204,12 @@ void* Thread(void *userData) {
     int maxWallSeconds = c->maxWallSeconds;
     int sleepMicroSeconds = c->sleepMicroSeconds;
 
-    arrayElement me = 0x1 << (index % ARRAY_BITS);
+    arrayElement me = ((arrayElement)0x1) << (index % ARRAY_BITS);
     arrayElement notMe = ~me;
     arrayElement *full = (arrayElement*) malloc(sizeof(arrayElement) * c->entryExitLength);
     memset(full, 0, sizeof(arrayElement) * c->entryExitLength);
     for (int i = 0; i < threadCount; i += 1) {
-        full[i/ARRAY_BITS] |= (0x1 << (i % ARRAY_BITS));
+        full[i/ARRAY_BITS] |= (((arrayElement)0x1) << (i % ARRAY_BITS));
     }
 
     struct timespec begin, end;

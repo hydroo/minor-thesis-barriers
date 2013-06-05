@@ -3,6 +3,7 @@
  ✓ removed clraR 3, because (1) clr is not need for our purposes here (2) it is probably wrong (3) doesn't work for the one-loop variant because of the sync transition
  ✓ benchmark now uses a fixed amount of time (and counts repetitions), rather than a fixed amount of repetitions and measuring time
  ✓ added spin model of add-fetch barrier
+ ✓ fixed two bugs in the ronny-barrier. both fail around 32+ threads. >>> one of them is probably the reason why the algorithm failed at 32 threads in the first report <<<
 
 
 --- 13-05-17 ---
