@@ -386,24 +386,6 @@ def generateQuantitativeProperties(processCount) :
 	s += "base_rate * R{\"time\"}=? [F (" + q + "true)]\n"
 	s += "\n"
 
-	s += "// how long does it take from one process being behind the entry barrier to all processes being behind it\n"
-	q = ""
-	for i in range(1, processCount+1) :
-		q += "l_" + str(i) + ">=" + loc + "&" 
-	q += "true)], ("
-	for i in range(1, processCount+1) :
-		for j in range(1, processCount+1) :
-			if i == j :
-				comp = ">="
-			else :
-				comp = "<"
-			q += "l_" + str(j) + comp + loc + "&"
-		q += "true)|("
-
-	s += "filter(clr, P=? [F<=time (" + q + "false))\n"
-	s += "\n"
-	s += "// expected number of ticks\n"
-	s += "base_rate * filter(clr, R{\"time\"}=? [F (" + q + "false))\n"
 
 	s += "\n"
 
