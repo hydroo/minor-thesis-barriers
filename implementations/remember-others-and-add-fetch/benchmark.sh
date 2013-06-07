@@ -4,6 +4,8 @@
 
 #set -x
 
+clockTicksPerNanoSecond=2.2 #atlas
+#clockTicksPerNanoSecond=2.5 #vt
 secondsPerBenchmark=2
 scale=1024 #aids calculating since no floating point
 
@@ -13,7 +15,7 @@ do
 	do
 		for threadCount in 2 4 8 16 24 32 48 64
 		do
-			$barrier $threadCount $secondsPerBenchmark $sleepMicroSeconds
+			$barrier $threadCount $secondsPerBenchmark $clockTicksPerNanoSecond $sleepMicroSeconds
 		done
 
 		echo ""

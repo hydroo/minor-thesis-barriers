@@ -1,0 +1,48 @@
+add-fetch threads:  2, reps: 928752300, sleepMySecs:   0, wallSecs: 100.56, nSecsPerBarrier:      108 nSecsPerBarrierDivByThreads:       54
+add-fetch threads:  4, reps: 113866200, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:      887 nSecsPerBarrierDivByThreads:      222
+add-fetch threads:  8, reps: 29660400, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:     3405 nSecsPerBarrierDivByThreads:      426
+add-fetch threads: 16, reps: 15154800, sleepMySecs:   0, wallSecs: 101.00, nSecsPerBarrier:     6664 nSecsPerBarrierDivByThreads:      417
+add-fetch threads: 32, reps: 6487800, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:    15567 nSecsPerBarrierDivByThreads:      486
+add-fetch threads: 48, reps: 4331700, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:    23315 nSecsPerBarrierDivByThreads:      486
+add-fetch threads: 64, reps: 3157500, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:    31984 nSecsPerBarrierDivByThreads:      500
+
+add-fetch threads:  2, reps: 4838100, sleepMySecs:   1, wallSecs: 100.99, nSecsPerBarrier:    20875 nSecsPerBarrierDivByThreads:    10437
+add-fetch threads:  4, reps: 4466100, sleepMySecs:   1, wallSecs: 100.99, nSecsPerBarrier:    22613 nSecsPerBarrierDivByThreads:     5653
+add-fetch threads:  8, reps: 3844200, sleepMySecs:   1, wallSecs: 101.00, nSecsPerBarrier:    26272 nSecsPerBarrierDivByThreads:     3284
+add-fetch threads: 16, reps: 3663600, sleepMySecs:   1, wallSecs: 100.99, nSecsPerBarrier:    27565 nSecsPerBarrierDivByThreads:     1723
+add-fetch threads: 32, reps: 2638500, sleepMySecs:   1, wallSecs: 101.00, nSecsPerBarrier:    38279 nSecsPerBarrierDivByThreads:     1196
+add-fetch threads: 48, reps: 2094000, sleepMySecs:   1, wallSecs: 100.99, nSecsPerBarrier:    48228 nSecsPerBarrierDivByThreads:     1005
+add-fetch threads: 64, reps: 1678800, sleepMySecs:   1, wallSecs: 100.98, nSecsPerBarrier:    60150 nSecsPerBarrierDivByThreads:      940
+
+add-fetch threads:  2, reps: 1877100, sleepMySecs: 100, wallSecs: 101.00, nSecsPerBarrier:    53805 nSecsPerBarrierDivByThreads:    26902
+add-fetch threads:  4, reps: 1815600, sleepMySecs: 100, wallSecs: 100.98, nSecsPerBarrier:    55620 nSecsPerBarrierDivByThreads:    13905
+add-fetch threads:  8, reps: 1690200, sleepMySecs: 100, wallSecs: 101.00, nSecsPerBarrier:    59758 nSecsPerBarrierDivByThreads:     7470
+add-fetch threads: 16, reps: 1512000, sleepMySecs: 100, wallSecs: 101.00, nSecsPerBarrier:    66797 nSecsPerBarrierDivByThreads:     4175
+add-fetch threads: 32, reps: 1302300, sleepMySecs: 100, wallSecs: 100.99, nSecsPerBarrier:    77545 nSecsPerBarrierDivByThreads:     2423
+add-fetch threads: 48, reps: 1232400, sleepMySecs: 100, wallSecs: 100.98, nSecsPerBarrier:    81941 nSecsPerBarrierDivByThreads:     1707
+add-fetch threads: 64, reps: 1095300, sleepMySecs: 100, wallSecs: 101.00, nSecsPerBarrier:    92211 nSecsPerBarrierDivByThreads:     1441
+
+ronny     threads:  2, reps: 434373600, sleepMySecs:   0, wallSecs: 100.98, nSecsPerBarrier:      232 nSecsPerBarrierDivByThreads:      116
+ronny     threads:  4, reps: 58865100, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:     1716 nSecsPerBarrierDivByThreads:      429
+ronny     threads:  8, reps: 15315000, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:     6594 nSecsPerBarrierDivByThreads:      824
+ronny     threads: 16, reps: 5794800, sleepMySecs:   0, wallSecs: 101.00, nSecsPerBarrier:    17429 nSecsPerBarrierDivByThreads:     1089
+ronny     threads: 32, reps: 2226600, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:    45354 nSecsPerBarrierDivByThreads:     1417
+ronny     threads: 48, reps: 1287000, sleepMySecs:   0, wallSecs: 101.01, nSecsPerBarrier:    78482 nSecsPerBarrierDivByThreads:     1635
+ronny     threads: 64, reps:  809100, sleepMySecs:   0, wallSecs: 100.99, nSecsPerBarrier:   124817 nSecsPerBarrierDivByThreads:     1950
+
+ronny     threads:  2, reps: 4804800, sleepMySecs:   1, wallSecs: 100.97, nSecsPerBarrier:    21015 nSecsPerBarrierDivByThreads:    10507
+ronny     threads:  4, reps: 4294200, sleepMySecs:   1, wallSecs: 100.99, nSecsPerBarrier:    23517 nSecsPerBarrierDivByThreads:     5879
+ronny     threads:  8, reps: 3780300, sleepMySecs:   1, wallSecs: 100.99, nSecsPerBarrier:    26716 nSecsPerBarrierDivByThreads:     3339
+ronny     threads: 16, reps: 2840100, sleepMySecs:   1, wallSecs: 101.00, nSecsPerBarrier:    35561 nSecsPerBarrierDivByThreads:     2223
+ronny     threads: 32, reps: 1534500, sleepMySecs:   1, wallSecs: 101.00, nSecsPerBarrier:    65819 nSecsPerBarrierDivByThreads:     2057
+ronny     threads: 48, reps:  955500, sleepMySecs:   1, wallSecs: 100.89, nSecsPerBarrier:   105589 nSecsPerBarrierDivByThreads:     2200
+ronny     threads: 64, reps:  745500, sleepMySecs:   1, wallSecs: 100.97, nSecsPerBarrier:   135443 nSecsPerBarrierDivByThreads:     2116
+
+ronny     threads:  2, reps: 1862400, sleepMySecs: 100, wallSecs: 100.89, nSecsPerBarrier:    54172 nSecsPerBarrierDivByThreads:    27086
+ronny     threads:  4, reps: 1783500, sleepMySecs: 100, wallSecs: 100.90, nSecsPerBarrier:    56573 nSecsPerBarrierDivByThreads:    14143
+ronny     threads:  8, reps: 1599600, sleepMySecs: 100, wallSecs: 101.01, nSecsPerBarrier:    63144 nSecsPerBarrierDivByThreads:     7893
+ronny     threads: 16, reps: 1312800, sleepMySecs: 100, wallSecs: 100.98, nSecsPerBarrier:    76920 nSecsPerBarrierDivByThreads:     4807
+ronny     threads: 32, reps:  994800, sleepMySecs: 100, wallSecs: 100.91, nSecsPerBarrier:   101440 nSecsPerBarrierDivByThreads:     3170
+ronny     threads: 48, reps:  769200, sleepMySecs: 100, wallSecs: 100.99, nSecsPerBarrier:   131298 nSecsPerBarrierDivByThreads:     2735
+ronny     threads: 64, reps:  597000, sleepMySecs: 100, wallSecs: 100.98, nSecsPerBarrier:   169149 nSecsPerBarrierDivByThreads:     2643
+
