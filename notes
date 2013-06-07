@@ -1,7 +1,11 @@
 --- 13-06-07 ---
 
- * redid benchmarks again with 100secs per datapoint instead of 20secs.
- * added plot for benchmarks
+ * changed benchmark to measure nanoseconds instead of cycles
+ * redid benchmarks
+   * 100secs per measurement instead of 20
+   * more datapoints
+   * added plots
+   * added topology picture of the measurement machine 'atlas'
 
 --- 13-06-05 ---
 
