@@ -29,10 +29,7 @@ digraph {
 	"8"  -> "9"  [label="else (tick)"]
 	"8"  -> "9"  [weight=10, label="copy&me == 0 : exit := copy|me & copy := copy|me (write)"]
 
-	"9"  -> "7"  [label="copy != full & left = true (read)"]
-	"9"  -> "10" [weight=10, label="else : copy := 0 (read)"]
-	"10" -> "11" [weight=10, label="left := false (write)"]
-	"11" -> "0"  [label="entry := 0 (write)"]
+	"9"  -> "7"  [label="(read)"]
 
 
 	// cacheline

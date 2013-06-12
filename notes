@@ -1,3 +1,9 @@
+--- 13-06-12 ---
+
+ * new model minimization: remove backloop
+   * steady state queries don't work anymore
+   * use only from-initial-state queries
+
 --- 13-06-07 ---
 
  * changed benchmark to measure nanoseconds instead of cycles
