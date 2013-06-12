@@ -232,14 +232,35 @@ void* Thread(void *userData) {
     time_t supposedEnd = begin.tv_sec + maxWallSeconds;
 
     for(repetitions = 0;; repetitions+=3){
+
+        if (sleepMicroSeconds > 0) {
+            usleep(sleepMicroSeconds); //work
+        }
+
 #if defined(USE_ADD_FETCH)
         /* tripple barrier makes the resetting safe */
         barrierAddFetch1(c, threadCount);
-        barrierAddFetch2(c, threadCount);
-        barrierAddFetch3(c, threadCount);
 #elif defined(USE_RONNY)
         barrierRonny(index, arrayIndex, me, notMe, c->entryExitLength, full, c, copy);
+#endif
+
+        if (sleepMicroSeconds > 0) {
+            usleep(sleepMicroSeconds);
+        }
+
+#if defined(USE_ADD_FETCH)
+        barrierAddFetch2(c, threadCount);
+#elif defined(USE_RONNY)
         barrierRonny(index, arrayIndex, me, notMe, c->entryExitLength, full, c, copy);
+#endif
+
+        if (sleepMicroSeconds > 0) {
+            usleep(sleepMicroSeconds);
+        }
+
+#if defined(USE_ADD_FETCH)
+        barrierAddFetch3(c, threadCount);
+#elif defined(USE_RONNY)
         barrierRonny(index, arrayIndex, me, notMe, c->entryExitLength, full, c, copy);
 #endif
 
@@ -250,9 +271,6 @@ void* Thread(void *userData) {
             }
         }
 
-        if (sleepMicroSeconds > 0) {
-            usleep(sleepMicroSeconds);
-        }
     }
 
     c->repetitionCount = repetitions;
