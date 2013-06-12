@@ -428,7 +428,7 @@ helpMessage = \
 
   -h, --help              print help message
   -n <nr>                 set process count
-  --work  <ticks>         set tick count for a work period [default 1]
+  --work  <ticks>         set tick count for a work period [default 0]
   --read  <ticks>         set tick count for a cache read  [default 50]
   --write <ticks>         set tick count a cache write     [default 100]
 
@@ -441,7 +441,7 @@ if __name__ == "__main__":
 	processCount = 0
 	filePrefix = modelFileName = correctnessPropertiesFileName = ""
 
-	workTicks  = 1
+	workTicks  = 0
 	readTicks  = 50
 	writeTicks = 100
 	oneLoop = False
