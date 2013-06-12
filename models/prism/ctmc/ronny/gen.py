@@ -79,9 +79,6 @@ def generateGlobalConstants(processCount) :
 	s += "const int l_exit_0     = 7;\n"
 	s += "const int l_exit_1     = 8;\n"
 	s += "const int l_exit_2     = 9;\n"
-	s += "const int l_after_0    = 10;\n"
-	s += "const int l_after_1    = 11;\n"
-	s += "const int l_after_2    = l_init;\n"
 
 	return s
 
@@ -95,7 +92,7 @@ def generatePseudoGlobalVariables(processCount, oneLoop) :
 	if oneLoop :
 		s += generatePseudoGlobalVariable("left", "bool",  "false", ["true"], processCount, oneLoop)
 	else :
-		s += generatePseudoGlobalVariable("left", "bool",  "false", ["false", "true"], processCount, oneLoop)
+		s += generatePseudoGlobalVariable("left", "bool",  "false", ["true"], processCount, oneLoop)
 	s += "\n"
 	if not oneLoop :
 		s += generatePseudoGlobalVariable("exit", "[empty..full]",  "empty", [str(i) for i in range(int(empty), int(full)+1)], processCount, oneLoop)
@@ -118,9 +115,6 @@ def generatePseudoGlobalVariable(name, typee, init, values, processCount, oneLoo
 			s += "\t[set_" + name + "_to_" + value + "_#] true -> (" + name + "'=" + value + ");\n"
 		s = s.replace('#', str(p))
 
-	if name == "left" and oneLoop:
-		s += "\t[set_left_to_false_and_sync_all] true -> (" + name + "'=" + value + ");\n"
-
 	s += "endmodule\n"
 
 	return s
@@ -138,9 +132,9 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 	meBit = 2**(p-1)
 
 	if useWorkPeriod :
-		s += "\tl_# : [l_init..l_after_1] init l_init;\n"
+		s += "\tl_# : [l_init..l_exit_2] init l_init;\n"
 	else :
-		s += "\tl_# : [l_init..l_after_1] init l_entry_0;\n"
+		s += "\tl_# : [l_init..l_exit_2] init l_entry_0;\n"
 	s += "\tcp_# : [empty..full] init empty;\n"
 	s += "\n"
 
@@ -168,16 +162,7 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 	s += "\t[set_left_to_true_#] l_#=l_between_0 -> (l_#'=l_between_1);\n"
 
 	if oneLoop :
-		s += "\t// syncs all processes\n"
-		if useWorkPeriod :
-			s += "\t[set_left_to_false_and_sync_all] l_#=l_between_1 -> (l_#'=l_init);\n"
-		else :
-			s += "\t[set_left_to_false_and_sync_all] l_#=l_between_1 -> (l_#'=l_entry_0);\n"
-
-		s += "\t[read_#] l_#=l_between_1 & !("
-		for q in everyProcessButMyself(p, processCount) :
-			s += "l_" + str(q) + "=l_between_1&"
-		s += "true) -> (l_#'=l_between_1);\n"
+		s += "\t[read_#] l_#=l_between_1 -> (l_#'=l_between_1);\n"
 
 	if not oneLoop :
 
@@ -206,16 +191,8 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 			s += "\t[set_exit_to_" + value + "_#] l_#=l_exit_1 & mod(floor(cp_#/me_bit_#),2)=0 & cp_#=" + value + "-me_bit_# -> (l_#'=l_exit_2) & (cp_#'=" + value + ");\n"
 		s += "\n"
 
-		s += "\t[read_#] l_#=l_exit_2 & (  cp_# != full & left = true ) -> (l_#'=l_exit_0);\n"
-		s += "\t[read_#] l_#=l_exit_2 & (!(cp_# != full & left = true)) -> (l_#'=l_after_0) & (cp_#'=0);\n"
+		s += "\t[read_#] l_#=l_exit_2 -> (l_#'=l_exit_0);\n"
 		s += "\n"
-
-		s += "\t[set_left_to_false_#] l_#=l_after_0  -> (l_#'=l_after_1);\n"
-
-		if useWorkPeriod :
-			s += "\t[set_entry_to_0_#]     l_#=l_after_1  -> (l_#'=l_init);\n"
-		else :
-			s += "\t[set_entry_to_0_#]     l_#=l_after_1  -> (l_#'=l_entry_0);\n"
 
 	s += "endmodule\n"
 
@@ -266,10 +243,10 @@ def generateCache(processCount, oneLoop) :
 				s += "\t[set_" + variable + "_to_" + value + "_#]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
 				s += "\t[set_" + variable + "_to_" + value + "_#] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
 
-		for value in leftValues :
-			s += "\t[set_left_to_" + value + "_#]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
-			s += "\t[set_left_to_" + value + "_#] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
+		s += "\t[set_left_to_true_#]  (state_c=someoneIsModified & who_c=me_bit_#) -> tick : true;\n"
+		s += "\t[set_left_to_true_#] !(state_c=someoneIsModified & who_c=me_bit_#) -> write : (state_c'=someoneIsModified) & (who_c'=me_bit_#);\n"
 
+		for value in leftValues :
 			s += "\t[read_#] state_c=someoneIsModified & who_c=me_bit_# -> tick : true;\n"
 			s += "\t[read_#] state_c=someoneIsModified & who_c!=me_bit_# -> read : (state_c'=someoneIsShared) & (who_c'=min(full,max(who_c+me_bit_#, empty)));\n"
 			s += "\t[read_#] state_c=someoneIsShared & mod(floor(who_c/me_bit_#),2)=1 -> tick : true;\n"
@@ -303,19 +280,6 @@ def generateCorrectnessProperties(processCount) :
 	s += "const double error=1.0E-6;\n"
 	s += "\n"
 
-	s += "// deadlock-freedom\n"
-	for i in range(1, processCount+1) :
-		s += "P>=1 [G F l_" + str(i) +"=l_between_0]\n"
-	s += "\n"
-
-	s += "// consistency of the barrier\n"
-	for p in range(1, processCount+1) :
-		s += "P<=0 [F (l_" + str(p) + "=l_between_0 & ("
-		for q in everyProcessButMyself(p, processCount) :
-			s += "l_" + str(q) + "=l_after_0|"
-		s += "false))]\n"
-	s += "\n"
-
 	s += "// ### cache properties ###\n"
 	s += "\n"
 
@@ -339,13 +303,6 @@ def generateCorrectnessProperties(processCount) :
 		s += "P>=1 [F (\"modified_" + str(p) + "\")]\n"
 		s += "P>=1 [F (\"shared_" + str(p) + "\")]\n"
 		s += "P>=1 [F (\"invalid_" + str(p) + "\")]\n"
-	s += "\n"
-
-	s += "// steady state probs for cache states are equal for all processes\n"
-	for state in ["modified_", "shared_"]:
-		#invalid_ is implicitely correct if the others are
-		for p in range(1, processCount) :
-				s += "((S=? [\""+ state + str(p) + "\"] - S=? [\"" + state + str(p+1) + "\"]) <= error) | (error*-1 <= (S=? [\"" + state + str(p) + "\"] - S=? [\"" + state + str(p+1) + "\"]))\n"
 	s += "\n"
 
 	return s
@@ -378,16 +335,6 @@ def generateQuantitativeProperties(processCount, oneLoop) :
 	s += "\n"
 	s += "//excpected number of ticks\n"
 	s += "base_rate * R{\"time\"}=? [F (" + q + "true)]\n"
-	s += "\n"
-
-	if not oneLoop:
-		s += "// in which state is the cache and how much of the time?\n"
-		s += "S=? [\"modified_1\"]\n"
-		s += "S=? [\"shared_1\"]\n"
-		s += "S=? [\"invalid_1\"]\n"
-
-		s += "\n"
-
 	s += "\n"
 
 	s += "const double time=ticks/base_rate;\n"
