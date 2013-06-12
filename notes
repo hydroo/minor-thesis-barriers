@@ -1,5 +1,7 @@
 --- 13-06-12 ---
 
+ * fixed benchmark error for usleep > 0
+   □ redo them
  * new model minimization: remove backloop
    * steady state queries don't work anymore
    * use only from-initial-state queries
