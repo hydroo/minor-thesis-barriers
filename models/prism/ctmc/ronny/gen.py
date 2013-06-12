@@ -2,7 +2,7 @@
 
 import sys
 
-def generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop, rememberOthers) :
+def generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop) :
 
 	s = ""
 
@@ -19,7 +19,7 @@ def generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop, remem
 	s += "\n"
 
 	for p in range(1, processCount+1) :
-		s += generateProcess(p, processCount, workTicks > 0, oneLoop, rememberOthers)
+		s += generateProcess(p, processCount, workTicks > 0, oneLoop)
 		s += "\n"
 	s += "\n"
 
@@ -125,7 +125,7 @@ def generatePseudoGlobalVariable(name, typee, init, values, processCount, oneLoo
 
 	return s
 
-def generateProcess(p, processCount, useWorkPeriod, oneLoop, rememberOthers) :
+def generateProcess(p, processCount, useWorkPeriod, oneLoop) :
 
 	s = ""
 
@@ -151,12 +151,9 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop, rememberOthers) :
 
 	s += "\n"
 
-	if rememberOthers :
-		for entryValue in possibleValuesInt :
-			for copyValue in possibleValuesInt :
-				s += "\t[read_#] l_#=l_entry_0 & entry=" + str(entryValue) + " & cp_#=" + str(copyValue) + "-> (l_#'=l_entry_1) & (cp_#'=" + str(copyValue&(~meBit)|entryValue) + ");\n"
-	else :
-		s += "\t[read_#] l_#=l_entry_0 -> (l_#'=l_entry_1) & (cp_#'=entry);\n"
+	for entryValue in possibleValuesInt :
+		for copyValue in possibleValuesInt :
+			s += "\t[read_#] l_#=l_entry_0 & entry=" + str(entryValue) + " & cp_#=" + str(copyValue) + "-> (l_#'=l_entry_1) & (cp_#'=" + str(copyValue&(~meBit)|entryValue) + ");\n"
 	s += "\n"
 
 	s += "\t[] l_#=l_entry_1 & mod(floor(cp_#/me_bit_#),2)=1 -> tick : (l_#'=l_entry_2);\n"
@@ -198,12 +195,9 @@ def generateProcess(p, processCount, useWorkPeriod, oneLoop, rememberOthers) :
 		s += "\n"
 		s += "\n"
 
-		if rememberOthers :
-			for exitValue in possibleValuesInt :
-				for copyValue in possibleValuesInt :
-					s += "\t[read_#] l_#=l_exit_0 & exit=" + str(exitValue) + " & cp_#=" + str(copyValue) + "-> (l_#'=l_exit_1) & (cp_#'=" + str(copyValue&(~meBit)|exitValue) + ");\n"
-		else :
-			s += "\t[read_#] l_#=l_exit_0 -> (l_#'=l_exit_1) & (cp_#'=exit);\n"
+		for exitValue in possibleValuesInt :
+			for copyValue in possibleValuesInt :
+				s += "\t[read_#] l_#=l_exit_0 & exit=" + str(exitValue) + " & cp_#=" + str(copyValue) + "-> (l_#'=l_exit_1) & (cp_#'=" + str(copyValue&(~meBit)|exitValue) + ");\n"
 
 		s += "\n"
 
@@ -433,7 +427,6 @@ helpMessage = \
   --write <ticks>         set tick count a cache write     [default 100]
 
   --one-loop              shorter one-loop variant
-  --dont-remember-others  quicker variant
 """
 
 if __name__ == "__main__":
@@ -445,7 +438,6 @@ if __name__ == "__main__":
 	readTicks  = 50
 	writeTicks = 100
 	oneLoop = False
-	rememberOthers = True
 
 	i = 1
 	while i < len(sys.argv):
@@ -466,8 +458,6 @@ if __name__ == "__main__":
 			i += 1
 		elif sys.argv[i] == "--one-loop":
 			oneLoop = True
-		elif sys.argv[i] == "--dont-remember-others":
-			rememberOthers = False
 		elif sys.argv[i].startswith("--") :
 			print ("unknown parameter: " + sys.argv[i])
 			exit(-1)
@@ -490,7 +480,7 @@ if __name__ == "__main__":
 	assert readTicks    >= 1
 	assert writeTicks   >= 1
 
-	modelString = generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop, rememberOthers)
+	modelString = generateModel(processCount, workTicks, readTicks, writeTicks, oneLoop)
 
 	correctnessPropertiesString = generateCorrectnessProperties(processCount)
 
