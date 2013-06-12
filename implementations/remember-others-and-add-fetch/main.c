@@ -285,7 +285,7 @@ void printResults(Context *c, float clockTicksPerNanoSecond) {
 int main(int argc, char **args) {
 
     if (argc < 3) {
-        printf("  barrier <threadcount> <maxwallseconds> <clockTicksPerNanoSecond (default: 1)> <sleepmicroseconds>\n");
+        printf("  barrier <threadcount> <maxwallseconds> <clockTicksPerNanoSecond (Ghz) (default: 1)> <sleepmicroseconds>\n");
         exit(0);
     }
 
