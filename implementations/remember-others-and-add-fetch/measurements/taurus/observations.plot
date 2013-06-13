@@ -1,12 +1,12 @@
 set terminal pdf color
 set style data linespoints
 
-set xtics (2,4,8,16,32,48,64)
+set xtics (2,4,8,16,24,32)
 
 set xlabel "Threads"
 set ylabel "Cycles"
 
-set title "Absolute Cycles per Barrier"
+set title "Taurus: Absolute Cycles per Barrier"
 set output "observations.plot.absolute.pdf"
 
 plot "observations.plot.data" using 1:2 title "Add-Fetch", \
