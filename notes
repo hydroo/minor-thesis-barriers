@@ -1,3 +1,29 @@
+--- 13-06-13 ---
+
+ * prepared and started taurus benchmarks
+ * added taurus topology and beautified atlas topology
+
+ * meeting with marcus haehnel
+
+  * switching off powersaving
+   * probably not possible on taurus
+   * use "cpufreq-info" to observe current clock frequency
+   * if powersaving is off on linux the wrong powersaving governor still does powersaving
+     if /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver = "pstate" it is the wrong governor
+
+  * measurement using RAPL
+   * per package, choice between with or without "uncore" - not clear what it means (e.g. with or without L3 Cache) - measuring the whole package probably the best choice
+   * 10ms (bestaetigung noetig) period with deviation (how much?) around measurement points
+     -> use large intervals and use median of many repetitions
+   * it is very hard to measure energy about cache state transitions, because you cannot redo benchmarks
+     without 'preparing' the next run. You would need to measure the 'preparing' as well.
+     preparing many cachelines and then start running is bad as well, because new cache effects might appear.
+     generally every measurement that needs preparation and where a run is very short is impossible/hard/bad.
+   * measuring the whole barrier is doable
+
+  □ measure no-array- and array-ronny-barrier to see if there are large differences
+    -> model arcordingly (not sure yet what this exactly means)
+
 --- 13-06-12 ---
 
  * fixed benchmark error for usleep > 0
