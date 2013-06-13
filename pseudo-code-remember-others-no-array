@@ -1,0 +1,29 @@
+shared: entry:=0, exit:=0, left:=false
+local: copy, me:=$2^{threadIndex}$, full:=$\sum_{i=0}^{numThreads-1}2^i$
+
+if left = false {
+
+	do {
+		copy := (copy&~me)|entry
+		if copy & me = 0 {
+			copy  := copy | me
+			entry := copy
+		}
+	} while copy != full and left = false
+
+	left := true
+	exit := 0
+
+} else if left = true {
+
+	do {
+		copy := (copy&~me)|exit
+		if copy & me = 0 {
+			copy := copy | me
+			exit := copy
+		}
+	} while copy != full and left = true
+
+	left  := false
+	entry := 0
+}
