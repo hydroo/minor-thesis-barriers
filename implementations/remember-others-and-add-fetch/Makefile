@@ -1,7 +1,7 @@
 CC = gcc
 INCLUDE =
-CFLAGS = -Wall -Wextra -g -std=c99 -DDEBUG $(INCLUDE)
-#CFLAGS = -Wall -Wextra -g -std=c99 $(INCLUDE)
+#CFLAGS = -Wall -Wextra -g -std=c99 -DDEBUG $(INCLUDE)
+CFLAGS = -Wall -Wextra -g -std=c99 $(INCLUDE)
 LN = $(CC)
 LIBS = -lpthread -lrt
 LFLAGS = $(LIBS)
