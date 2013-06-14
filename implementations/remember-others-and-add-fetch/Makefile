@@ -14,11 +14,11 @@ SOURCES = main.c
 all: $(ADD_FETCH) $(RONNY)
 
 $(ADD_FETCH): $(SOURCES)
-	$(CC) -o $(ADD_FETCH) main.c -DUSE_ADD_FETCH $(CFLAGS) $(LFLAGS)
+	$(CC) -o $(ADD_FETCH) $< -DUSE_ADD_FETCH $(CFLAGS) $(LFLAGS)
 	@echo ""
 
 $(RONNY): $(SOURCES)
-	$(CC) -o $(RONNY) main.c -DUSE_RONNY $(CFLAGS) $(LFLAGS)
+	$(CC) -o $(RONNY) $< -DUSE_RONNY $(CFLAGS) $(LFLAGS)
 	@echo ""
 
 .PHONY: clean
