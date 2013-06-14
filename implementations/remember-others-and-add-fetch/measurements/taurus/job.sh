@@ -6,6 +6,6 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --mail-type=end
 #SBATCH --mail-user=ronny.brendel@tu-dresden.de
-#SBATCH --time=01:30:00
+#SBATCH --time=04:00:00
 
 srun --cpu-freq 2600000 ./benchmark.sh
