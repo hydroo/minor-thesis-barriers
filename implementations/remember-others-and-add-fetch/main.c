@@ -296,7 +296,7 @@ void printResults(Context *c, float clockTicksPerNanoSecond) {
     }
     meanSeconds /= c->threadCount;
 
-    printf("%s threads: %2d, reps: %7lli, sleepMySecs: %3d, wallSecs: %.2lf, ticksPerBarrier: %8.0lf ticksPerBarrierDivByThreads: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, (meanSeconds * 1000000000 * clockTicksPerNanoSecond) / c->repetitionCount, ((meanSeconds * 1000000000 * clockTicksPerNanoSecond) / c->repetitionCount) / c->threadCount);
+    printf("%s threads: %2d, reps: %9lli, sleepMySecs: %3d, wallSecs: %.2lf, ticksPerBarrier: %8.0lf ticksPerBarrierDivByThreads: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, (meanSeconds * 1000000000 * clockTicksPerNanoSecond) / c->repetitionCount, ((meanSeconds * 1000000000 * clockTicksPerNanoSecond) / c->repetitionCount) / c->threadCount);
 }
 
 
@@ -309,11 +309,12 @@ int main(int argc, char **args) {
 
     int threadCount = atoi(args[1]);
     int maxWallSeconds = atoll(args[2]);
-    float clockTicksPerNanoSecond = argc > 3 ? (float )atof(args[3]) : 1.0f;
+    float clockTicksPerNanoSecond = argc > 3 ? (float)atof(args[3]) : 1.0f;
     int sleepMicroSeconds = argc > 4 ? atoll(args[4]) : 0;
 
     assert(threadCount > 0);
     assert(maxWallSeconds > 0);
+    assert(clockTicksPerNanoSecond > 0.0);
     assert(sleepMicroSeconds >= 0);
 
     Context *context = newContext(threadCount, maxWallSeconds, sleepMicroSeconds);
