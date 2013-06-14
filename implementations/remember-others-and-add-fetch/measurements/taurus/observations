@@ -3,37 +3,43 @@
 
 # cycles per barrier
 
-# 100seconds benchmark time (at least 600k iterations and up to 1bil) for every measurement point
+# 100seconds benchmark time (at least 2mio iterations and up to 1bil) for every measurement point
 
-# no info on reliability, yet
+# numbers directly from raw-data-1
+
+# usleep numbers look odd. usleep does a minimum of sleeping 10milliseconds it seems
+
+# deviation between run 1 and 2:
+#   add-fetch <1%
+#   ronny     <10%
 
 #threads  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
- 2 
- 3 
- 4 
- 5 
- 6 
- 7 
- 8 
- 12
- 16
- 20
- 24
- 28
- 32
+ 2              274      706
+ 3              451     1074
+ 4              649     1742
+ 5              802     2266
+ 6             1028     2948
+ 7             1172     3652
+ 8             1385     4436
+ 12           10562    34038
+ 16           12249    44830
+ 20           19780    91543
+ 24           21808   106520
+ 28           21360   107980
+ 32           23234   119743
 
 #div by thread count
 #threads  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
- 2 
- 3 
- 4 
- 5 
- 6 
- 7 
- 8 
- 12
- 16
- 20
- 24
- 28
- 32
+ 2              137      353
+ 3              150      358
+ 4              162      435
+ 5              160      453
+ 6              171      491
+ 7              167      522
+ 8              173      554
+ 12             880     2837
+ 16             766     2802
+ 20             989     4577
+ 24             909     4438
+ 28             763     3856
+ 32             726     3742
