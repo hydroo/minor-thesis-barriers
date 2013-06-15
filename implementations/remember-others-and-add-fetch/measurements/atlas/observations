@@ -3,57 +3,7 @@
 
 # cycles per barrier
 
-# 100seconds benchmark time (at least 600k iterations and up to 1bil) for every measurement point
+# 100seconds benchmark time (at least 300k iterations and up to 1bil) for every measurement point
 
-# in comparison to the previous (20sec per data point) run the deviation is significant.
-# up to 20% sometimes. at one point even 1700 vs 3400 (add-fetch 8threads 0mysecs).
-# But most of the time it is less than 3%.
+# deviation <10% between the two measurements
 
-
-#threads  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
- 2 
- 3 
- 4 
- 5 
- 6 
- 7 
- 8 
- 12
- 16
- 20
- 24
- 28
- 32
- 36
- 40
- 44
- 48
- 52
- 56
- 60
- 64
-
-
-#div by thread count
-#threads  add-fetch    ronny / 1us: add-fetch    ronny / 100us: add-fetch    ronny
- 2 
- 3 
- 4 
- 5 
- 6 
- 7 
- 8 
- 12
- 16
- 20
- 24
- 28
- 32
- 36
- 40
- 44
- 48
- 52
- 56
- 60
- 64
