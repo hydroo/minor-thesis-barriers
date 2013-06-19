@@ -302,7 +302,7 @@ int main(int argc, char **args) {
 
     if (argc < 3) {
         printf(
-            "  energy-benchmark <threadcount> <minWallSecondsPerMeasurement> <clockTicksPerNanoSecond (Ghz) (default: 1)>\n"
+            "  rapl-benchmark <threadcount> <minWallSecondsPerMeasurement> <clockTicksPerNanoSecond (Ghz) (default: 1)>\n"
             );
 
         exit(0);
