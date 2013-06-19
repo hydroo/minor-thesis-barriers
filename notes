@@ -4,6 +4,7 @@
  * added add-fetch-barrier rapl measurement code
  * added progress of ronny-array-barrier rapl measurement code
  * small improvements to the implementation/remember-others/... code
+
 --- 13-06-18 ---
 
  * add new taurus benchmark with more measurement points
