@@ -12,7 +12,7 @@ SOURCES = main.c
 
 all: $(BINARY)
 
-$(BINARY): $(SOURCES)
+$(BINARY): $(SOURCES) Makefile
 	$(CC) -o $(BINARY) $< $(CFLAGS) $(LFLAGS)
 	@echo ""
 
