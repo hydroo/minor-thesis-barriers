@@ -174,21 +174,21 @@ static inline void barrierRonny(int index, int arrayIndex, arrayElement me, arra
 #ifdef USE_ADD_FETCH
 static inline void barrierAddFetch1(Context *c, int threadCount) {
     if (__atomic_add_fetch(&(c->barrier1), -1, __ATOMIC_ACQ_REL) != 0) {
-        while (__atomic_load_n (&c->barrier1, __ATOMIC_ACQUIRE) != 0) {
+        while (__atomic_load_n(&(c->barrier1), __ATOMIC_ACQUIRE) != 0) {
         }
     }
     c->barrier3 = threadCount;
 }
 static inline void barrierAddFetch2(Context *c, int threadCount) {
     if (__atomic_add_fetch(&(c->barrier2), -1, __ATOMIC_ACQ_REL) != 0) {
-        while (__atomic_load_n (&c->barrier2, __ATOMIC_ACQUIRE) != 0) {
+        while (__atomic_load_n(&(c->barrier2), __ATOMIC_ACQUIRE) != 0) {
         }
     }
     c->barrier1 = threadCount;
 }
 static inline void barrierAddFetch3(Context *c, int threadCount) {
     if (__atomic_add_fetch(&(c->barrier3), -1, __ATOMIC_ACQ_REL) != 0) {
-        while (__atomic_load_n (&c->barrier3, __ATOMIC_ACQUIRE) != 0) {
+        while (__atomic_load_n(&(c->barrier3), __ATOMIC_ACQUIRE) != 0) {
         }
     }
     c->barrier2 = threadCount;
