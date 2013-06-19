@@ -6,7 +6,7 @@ LN = $(CC)
 LIBS = -lpthread -lrt -lm
 LFLAGS = $(LIBS)
 
-BINARY = energy-benchmark
+BINARY = rapl-benchmark
 
 SOURCES = main.c
 
