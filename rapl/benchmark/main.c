@@ -396,8 +396,179 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
 
 
 /* *** ronny array barrier { *********************************************** */
+#define ARRAY_64
+
+#if defined(ARRAY_64)
+    #define ARRAY_BITS 64
+    typedef uint64_t arrayElement;
+#elif defined(ARRAY_32)
+    #define ARRAY_BITS 32
+    typedef uint32_t arrayElement;
+#elif defined(ARRAY_16)
+    #define ARRAY_BITS 16
+    typedef uint16_t arrayElement;
+#elif defined(ARRAY_8)
+    #define ARRAY_BITS 8
+    typedef uint8_t arrayElement;
+#endif
+
+#ifdef DEBUG
+static inline void barrierRonnyArray(int index, int arrayIndex, arrayElement me, arrayElement notMe, const arrayElement *full, int *left, arrayElement *entry, arrayElement *exit, arrayElement *copy, int entryExitLength, volatile int64_t *successfulBarrierVisitsCount, int threadCount) {
+#else
+static inline void barrierRonnyArray(int index, int arrayIndex, arrayElement me, arrayElement notMe, const arrayElement *full, int *left, arrayElement *entry, arrayElement *exit, arrayElement *copy, int entryExitLength) {
+#endif
+
+    (void) index;
+
+    if (__atomic_load_n(left, __ATOMIC_ACQUIRE) == 0) {
+
+        do {
+            copy[arrayIndex] &= notMe;
+            for (int i = 0; i < entryExitLength; i += 1) {
+                copy[i] |= __atomic_load_n(&(entry[i]), __ATOMIC_ACQUIRE);
+            }
+
+            if ((copy[arrayIndex] & me) == 0) {
+                copy[arrayIndex] |= me;
+                __atomic_store_n(&(entry[arrayIndex]), copy[arrayIndex], __ATOMIC_RELEASE);
+            }
+        }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && __atomic_load_n(left, __ATOMIC_ACQUIRE) == 0);
+
+        __atomic_store_n(left, 1, __ATOMIC_RELEASE);
+        memset(exit, 0, sizeof(arrayElement) * entryExitLength);
+        memset(copy, 0, sizeof(arrayElement) * entryExitLength);
+
+    } else {
+
+#ifdef DEBUG
+        for (int i = 0; i < threadCount - 1; ++i) {
+            if (successfulBarrierVisitsCount[i] != successfulBarrierVisitsCount[i+1]) {
+                printf("thread %i and %i are not equal at %lli %lli\n", i, i+1, (long long)successfulBarrierVisitsCount[i], (long long)successfulBarrierVisitsCount[i+1]);
+                assert(0);
+            }
+        }
+#endif
+
+        do {
+            copy[arrayIndex] &= notMe;
+            for (int i = 0; i < entryExitLength; i += 1) {
+                copy[i] |= __atomic_load_n(&(exit[i]), __ATOMIC_ACQUIRE);
+            }
+
+            if ((copy[arrayIndex] & me) == 0) {
+                copy[arrayIndex] |= me;
+                __atomic_store_n(&(exit[arrayIndex]), copy[arrayIndex], __ATOMIC_RELEASE);
+            }
+        }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && __atomic_load_n(left, __ATOMIC_ACQUIRE) == 1);
+
+        __atomic_store_n(left, 0, __ATOMIC_RELEASE);
+        memset(entry, 0, sizeof(arrayElement) * entryExitLength);
+        memset(copy, 0, sizeof(arrayElement) * entryExitLength);
+
+#ifdef DEBUG
+        successfulBarrierVisitsCount[index] += 1;
+#endif
+    }
+}
+
 static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCountsLen) {
     printf("# %s:\n",__func__);
+
+    int *left;
+    arrayElement *entry;
+    arrayElement *exit;
+    arrayElement **copies = NULL;
+
+    int64_t repetitions_;
+
+#ifdef DEBUG
+    volatile int64_t *successfulBarrierVisitsCount;
+#endif
+
+    void prepare(int threadIndex, int threadCount) {
+        const int entryExitLength = ((threadCount - 1)/ARRAY_BITS) + 1;
+
+        if (threadIndex == 0) {
+            left = (int*) malloc(sizeof(int));
+            entry = (arrayElement*) malloc(sizeof(arrayElement) * entryExitLength);
+            exit = (arrayElement*) malloc(sizeof(arrayElement) * entryExitLength);
+            *left = 0;
+            memset(entry, 0, entryExitLength);
+            memset(exit, 0, entryExitLength);
+
+#ifdef DEBUG
+            successfulBarrierVisitsCount = (int64_t*) malloc(sizeof(int64_t) * threadCount);
+            for (int i = 0; i < threadCount; ++i) {
+                successfulBarrierVisitsCount[i] = 0;
+            }
+#endif
+            copies = (arrayElement **) malloc(sizeof(arrayElement*) * threadCount);
+        }
+
+        while (copies == NULL) {} // wait for thread 0 to create the array
+
+        copies[threadIndex] = (arrayElement*) malloc(sizeof(arrayElement) * entryExitLength);
+        memset(copies[threadIndex], 0, entryExitLength);
+    }
+    void finalize(int threadIndex, int threadCount) {
+        if (threadIndex == 0) {
+            free(left); left = NULL;
+            free(entry); entry = NULL;
+            free(exit); exit = NULL;
+#ifdef DEBUG
+            free((int64_t*) successfulBarrierVisitsCount);
+#endif
+            for (int i = 0; i < threadCount; i += 1) {
+                free(copies[i]); copies[i] = NULL;
+            }
+            free(copies); copies = NULL;
+        }
+    }
+    void f(int threadIndex, int threadCount) {
+        const int arrayIndex = threadIndex/ARRAY_BITS;
+        const int entryExitLength = ((threadCount - 1)/ARRAY_BITS) + 1;
+
+        const arrayElement me = ((arrayElement)0x1) << (threadIndex % ARRAY_BITS);
+        const arrayElement notMe = ~me;
+        arrayElement *full = (arrayElement*) malloc(sizeof(arrayElement) * entryExitLength);
+        memset(full, 0, sizeof(arrayElement) * entryExitLength);
+        for (int i = 0; i < threadCount; i += 1) {
+            full[i/ARRAY_BITS] |= (((arrayElement)0x1) << (i % ARRAY_BITS));
+        }
+
+        struct timespec begin, end;
+        int64_t repetitions = 0;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(repetitions = 0;; repetitions += 3) {
+
+#ifdef DEBUG
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength, successfulBarrierVisitsCount, threadCount);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength, successfulBarrierVisitsCount, threadCount);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength, successfulBarrierVisitsCount, threadCount);
+#else
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength);
+#endif
+
+            if (repetitions % 300 == 0) {
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+        printf("ronny-array %2d threads, reps: %9lli, wallSecs %lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+    }
 }
 /* *** } ronny array barrier *********************************************** */
 
