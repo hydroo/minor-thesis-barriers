@@ -395,6 +395,13 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
 /* *** } add fetch barrier ************************************************* */
 
 
+/* *** ronny array barrier { *********************************************** */
+static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCountsLen) {
+    printf("# %s:\n",__func__);
+}
+/* *** } ronny array barrier *********************************************** */
+
+
 int main(int argc, char **args) {
 
     if (argc < 3) {
@@ -406,6 +413,7 @@ int main(int argc, char **args) {
             "    --sleep-power <watt>                  set sleep power and don't measure anew\n"
             "    --uncore-power <watt>                 set uncore power and don't measure anew\n"
             "    --add-fetch <thread-count-list>       measure add-fetch barrier with threads according to the space delimited list\n"
+            "    --ronny-array <thread-count-list>     same as add-fetch, but with ronny-barrier\n"
             );
 
         exit(0);
@@ -420,6 +428,10 @@ int main(int argc, char **args) {
     Bool MeasureAddFetchBarrier = False;
     int *addFetchThreadCountList = NULL;
     int addFetchThreadCountListLen = 0;
+
+    Bool MeasureRonnyArrayBarrier = False;
+    int *ronnyArrayThreadCountList = NULL;
+    int ronnyArrayThreadCountListLen = 0;
 
     for (int i = 3; i < argc; i += 1) {
         if (strcmp("--add-fetch", args[i]) == 0) {
@@ -445,6 +457,29 @@ int main(int argc, char **args) {
 
             i += addFetchThreadCountListLen;
 
+        } else if (strcmp("--ronny", args[i]) == 0) {
+            MeasureRonnyArrayBarrier = True;
+
+            for (int j = i+1; j < argc; j += 1) {
+                if (args[j][0] >= '0' && args[j][0] <= '9') {ronnyArrayThreadCountListLen += 1;}
+                else {break;}
+            }
+
+            ronnyArrayThreadCountList = (int*) malloc(sizeof(int) * ronnyArrayThreadCountListLen);
+            for (int j = 0; j < ronnyArrayThreadCountListLen; j += 1) {
+                ronnyArrayThreadCountList[j] = (int) atol(args[i+1+j]);
+                if (ronnyArrayThreadCountList[j] <= 1) {
+                    fprintf(stderr, "2 minimum for add-fetch. (you tried %i)\n", ronnyArrayThreadCountList[j]);
+                    exit(-1);
+                }
+                if (ronnyArrayThreadCountList[j] > threadCount) {
+                    fprintf(stderr, "no more than threadCount (%i) threads allowed for ronny-barrier. (you tried %i)\n", threadCount, ronnyArrayThreadCountList[j]);
+                    exit(-1);
+                }
+            }
+
+            i += ronnyArrayThreadCountListLen;
+
         } else if (strcmp("--sleep-power", args[i]) == 0) {
             i += 1;
             sleepPowerConsumption = atof(args[i]);
@@ -468,7 +503,7 @@ int main(int argc, char **args) {
 
     if (MeasureAddFetchBarrier == True) measureAddFetchBarrier(context, addFetchThreadCountList, addFetchThreadCountListLen);
 
-    //TODO real work
+    if (MeasureRonnyArrayBarrier == True) measureRonnyArrayBarrier(context, ronnyArrayThreadCountList, ronnyArrayThreadCountListLen);
 
     printContext(context);
 
