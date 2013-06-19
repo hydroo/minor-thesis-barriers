@@ -1,5 +1,6 @@
 # taurus.hrsk.tu-dresden.de Intel
 # Intel(R) Xeon(R) CPU E5-2670 0 @ 2.60GHz
+# hyperthreading off!
 
 # cycles per barrier
 
