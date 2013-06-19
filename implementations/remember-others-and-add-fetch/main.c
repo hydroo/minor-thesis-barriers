@@ -69,10 +69,10 @@ static Context* newContext(int threadCount, int maxWallSeconds, int sleepMicroSe
     ret->maxWallSeconds = maxWallSeconds;
 
     ret->entry = (arrayElement*) malloc(sizeof(arrayElement) * ret->entryExitLength);
-    memset((arrayElement*) ret->entry, 0, ret->entryExitLength);
+    memset(ret->entry, 0, ret->entryExitLength);
     ret->left = 0;
     ret->exit = (arrayElement*) malloc(sizeof(arrayElement) * ret->entryExitLength);
-    memset((arrayElement*) ret->exit, 0, ret->entryExitLength);
+    memset(ret->exit, 0, ret->entryExitLength);
 
     ret->sleepMicroSeconds = sleepMicroSeconds;
 
@@ -128,8 +128,8 @@ static inline void barrierRonny(int index, int arrayIndex, arrayElement me, arra
         }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && __atomic_load_n(&(c->left), __ATOMIC_ACQUIRE) == 0);
 
         __atomic_store_n(&(c->left), 1, __ATOMIC_RELEASE); //c->left = 1;
-        memset((arrayElement*) c->exit, 0, sizeof(arrayElement) * entryExitLength);
-        memset((arrayElement*) copy, 0, sizeof(arrayElement) * entryExitLength);
+        memset(c->exit, 0, sizeof(arrayElement) * entryExitLength);
+        memset(copy, 0, sizeof(arrayElement) * entryExitLength);
 
     } else {
 
@@ -160,8 +160,8 @@ static inline void barrierRonny(int index, int arrayIndex, arrayElement me, arra
         }while (memcmp(copy, full, sizeof(arrayElement) * entryExitLength) != 0 && __atomic_load_n(&(c->left), __ATOMIC_ACQUIRE) == 1);
 
         __atomic_store_n(&(c->left), 0, __ATOMIC_RELEASE); //c->left = 0;
-        memset((arrayElement*) c->entry, 0, sizeof(arrayElement) * entryExitLength);
-        memset((arrayElement*) copy, 0, sizeof(arrayElement) * entryExitLength);
+        memset(c->entry, 0, sizeof(arrayElement) * entryExitLength);
+        memset(copy, 0, sizeof(arrayElement) * entryExitLength);
 
 #ifdef DEBUG
         ++(c->successfulBarrierVisitsCount[index]);
