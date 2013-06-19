@@ -30,6 +30,17 @@ typedef struct {
     double usedJoule;
 } ThreadInfo;
 
+typedef struct {
+    double elapsedSeconds;
+    double powerConsumption; // watt
+} MeasurementResult;
+
+
+typedef enum {
+    False = 0,
+    True = 1
+} Bool;
+
 
 static int openMsrFile() {
     int fd = open("/dev/cpu/0/msr",O_RDONLY);
@@ -119,7 +130,8 @@ static inline uint64_t cycles(struct timespec t, double clockTicksPerNanoSecond)
 //}
 
 
-static inline double measurePowerConsumptionOfFunction(void prepare(), void f(), void finalize(), int threads, Context *c) {
+// if the rapl register (detectably) overflows the measurement will be repeated
+static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(int threadIndex, int threadCount), void f(int threadIndex, int threadCount), void finalize(int threadIndex, int threadCount), int threadCount, Context *c, Bool autoPrint) {
 
     int startBarrier;
     int stopBarrier;
@@ -139,19 +151,19 @@ static inline double measurePowerConsumptionOfFunction(void prepare(), void f(),
 
         setThreadAffinity(index);
 
-        prepare();
+        prepare(index, threadCount);
 
         beginEnergy = energy(msrFile);
         clock_gettime(CLOCK_REALTIME, &beginTime);
 
         waitBarrier(&startBarrier);
-        f();
+        f(index, threadCount);
         waitBarrier(&stopBarrier);
 
         endEnergy = energy(msrFile);
         clock_gettime(CLOCK_REALTIME, &endTime);
 
-        finalize();
+        finalize(index, threadCount);
 
         info->elapsedSeconds = seconds(endTime) - seconds(beginTime);
         info->usedJoule = energyToJoule(endEnergy - beginEnergy, c->raplEnergyMultiplier);
@@ -159,19 +171,18 @@ static inline double measurePowerConsumptionOfFunction(void prepare(), void f(),
         return NULL;
     }
 
-
     do {
-        initBarrier(&startBarrier, threads);
-        initBarrier(&stopBarrier, threads);
+        initBarrier(&startBarrier, threadCount);
+        initBarrier(&stopBarrier, threadCount);
 
         free(infos);
         free(t);
 
-        infos = (ThreadInfo*) malloc(sizeof(ThreadInfo) * threads);
-        t = (pthread_t*) malloc(sizeof(pthread_t) * threads);
+        infos = (ThreadInfo*) malloc(sizeof(ThreadInfo) * threadCount);
+        t = (pthread_t*) malloc(sizeof(pthread_t) * threadCount);
 
-        /* start all threads */
-        for (int i = 0; i < threads; i += 1) {
+        /* start all threadCount */
+        for (int i = 0; i < threadCount; i += 1) {
             infos[i].index = i;
             infos[i].c = c;
             infos[i].elapsedSeconds = 0.0;
@@ -183,7 +194,7 @@ static inline double measurePowerConsumptionOfFunction(void prepare(), void f(),
         }
 
         /* join all threads */
-        for (int i = 0; i < threads; i += 1) {
+        for (int i = 0; i < threadCount; i += 1) {
             if(pthread_join(t[i], NULL)){
                 perror("pthread_join");
                 exit(-1);
@@ -198,19 +209,22 @@ static inline double measurePowerConsumptionOfFunction(void prepare(), void f(),
     // we still keep the data/code on all threads since we have only one struct ThreadInfo,
     // and would need an extra if (index == 0) {}
 
-    double elapsedSeconds = infos[0].elapsedSeconds;
-    double powerConsumption = infos[0].usedJoule / elapsedSeconds;
+    MeasurementResult m;
+    m.elapsedSeconds = infos[0].elapsedSeconds;
+    m.powerConsumption = infos[0].usedJoule / m.elapsedSeconds;
 
-    printf("# measurement: %2d threads, time %lf sec, power %lf W\n", threads, elapsedSeconds, powerConsumption);
-
-    if (elapsedSeconds < c->minWallSecondsPerMeasurement) {
-        printf("#    %lf s < %.0lf s : less benchmarking time than desired\n", elapsedSeconds, c->minWallSecondsPerMeasurement);
+    if (autoPrint == True) {
+        printf("# measurement: %2d threads, time %lf sec, power %lf W\n", threadCount, m.elapsedSeconds, m.powerConsumption);
     }
 
-    return powerConsumption;
+    if (m.elapsedSeconds < c->minWallSecondsPerMeasurement) {
+        printf("#    %lf s < %.0lf s : less benchmarking time than desired\n", m.elapsedSeconds, c->minWallSecondsPerMeasurement);
+    }
+
+    return m;
 }
 
-Context* newContext(int threadCount, int minWallSecondsPerMeasurement) {
+static Context* newContext(int threadCount, int minWallSecondsPerMeasurement, double sleepPowerConsumption, double uncorePowerConsumption) {
 
     long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
     if (threadCount > cpuCount) {
@@ -227,8 +241,8 @@ Context* newContext(int threadCount, int minWallSecondsPerMeasurement) {
 
     ret->raplEnergyMultiplier = pow(0.5,(msr(ret->msrFile, 0x606)>>8) & 0x1F);
 
-    ret->sleepPowerConsumption = 0.0;
-    ret->uncorePowerConsumption = 0.0;
+    ret->sleepPowerConsumption = sleepPowerConsumption;
+    ret->uncorePowerConsumption = uncorePowerConsumption;
 
     return ret;
 }
@@ -243,20 +257,27 @@ static void printContext(Context *c) {
 }
 
 
-void measureSleepPowerConsumption(Context *c) {
-    void prepare() {}
-    void finalize() {}
-    void f() {
+static void measureSleepPowerConsumption(Context *c, Bool autoPrint) {
+    if (autoPrint == True) printf("# %s:\n",__func__);
+
+    void prepare(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void f(int threadIndex, int threadCount) {
+        (void) threadIndex;
+        (void) threadCount;
         sleep(c->minWallSecondsPerMeasurement);
     }
-    c->sleepPowerConsumption = measurePowerConsumptionOfFunction(prepare, f, finalize, 1, c);
+    MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, 1, c, autoPrint);
+    c->sleepPowerConsumption = m.powerConsumption;
 }
 
 
 // does not include sleep power consumption
 #define repetitionsPerLoop "40 * 1000"
 #define loopCount "500 * 1000"
-void measureUncorePowerConsumption(Context *c) {
+static void measureUncorePowerConsumption(Context *c, Bool autoPrint) {
+    if (autoPrint == True) printf("# %s:\n",__func__);
+
     assert(c->sleepPowerConsumption > 0.0);
 
     double powerConsumption;
@@ -265,9 +286,11 @@ void measureUncorePowerConsumption(Context *c) {
     double firstCorePowerConsumption;
     double addedDifferences = 0.0;
 
-    void prepare() {}
-    void finalize() {}
-    void f() {
+    void prepare(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void f(int threadIndex, int threadCount) {
+        (void) threadIndex;
+        (void) threadCount;
         __asm__ __volatile__ (
             "\t"    "mov $" loopCount ",%%rcx;\n"
             "\t"    "1:\n"
@@ -281,7 +304,8 @@ void measureUncorePowerConsumption(Context *c) {
 
     for (int threads = 1; threads <= c->threadCount; threads += 1, previousPowerConsumption = powerConsumption) {
 
-        powerConsumption = measurePowerConsumptionOfFunction(prepare, f, finalize, threads, c);
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threads, c, autoPrint);
+        powerConsumption = m.powerConsumption;
 
         if (threads == 1) {
             firstCorePowerConsumption = powerConsumption - c->sleepPowerConsumption;
@@ -296,11 +320,92 @@ void measureUncorePowerConsumption(Context *c) {
 #undef loopCount
 
 
+/* *** add fetch barrier { ************************************************* */
+void barrierAddFetch1(int *barrier1, int *barrier2, int *barrier3, int threadCount) {
+    (void) barrier2;
+    if (__atomic_add_fetch(barrier1, -1, __ATOMIC_ACQ_REL) != 0) {
+        while (__atomic_load_n(barrier1, __ATOMIC_ACQUIRE) != 0) {
+        }
+    }
+    *barrier3 = threadCount;
+}
+void barrierAddFetch2(int *barrier1, int *barrier2, int *barrier3, int threadCount) {
+    (void) barrier3;
+    if (__atomic_add_fetch(barrier2, -1, __ATOMIC_ACQ_REL) != 0) {
+        while (__atomic_load_n(barrier2, __ATOMIC_ACQUIRE) != 0) {
+        }
+    }
+    *barrier1 = threadCount;
+}
+void barrierAddFetch3(int *barrier1, int *barrier2, int *barrier3, int threadCount) {
+    (void) barrier1;
+    if (__atomic_add_fetch(barrier3, -1, __ATOMIC_ACQ_REL) != 0) {
+        while (__atomic_load_n(barrier3, __ATOMIC_ACQUIRE) != 0) {
+        }
+    }
+    *barrier2 = threadCount;
+}
+
+static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCountsLen) {
+    printf("# %s:\n",__func__);
+
+    volatile int barrier1; // volatile necessary for prepare() to not screw up
+    volatile int barrier2;
+    volatile int barrier3;
+    int64_t repetitions_;
+
+    void prepare(int threadIndex, int threadCount) {
+        if (threadIndex == 0) {
+            barrier1 = threadCount;
+            barrier2 = threadCount;
+            barrier3 = threadCount;
+        }
+    }
+    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void f(int threadIndex, int threadCount) {
+        (void) threadIndex;
+        struct timespec begin, end;
+        int64_t repetitions = 0;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+
+        time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(repetitions = 0;; repetitions += 3){
+
+            barrierAddFetch1((int*)&barrier1, (int*)&barrier2, (int*)&barrier3, threadCount);
+            barrierAddFetch2((int*)&barrier1, (int*)&barrier2, (int*)&barrier3, threadCount);
+            barrierAddFetch3((int*)&barrier1, (int*)&barrier2, (int*)&barrier3, threadCount);
+
+            if (repetitions % 300 == 0) {
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+        printf("add-fetch %2d threads, reps: %9lli, wallSecs %lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+    }
+}
+/* *** } add fetch barrier ************************************************* */
+
+
 int main(int argc, char **args) {
 
     if (argc < 3) {
         printf(
-            "  rapl-benchmark <threadcount> <minWallSecondsPerMeasurement> <clockTicksPerNanoSecond (Ghz) (default: 1)>\n"
+            "  rapl-benchmark <thread-count> <min-wall-seconds-per-measurement> [options]>\n"
+            "\n"
+            "    --clock-ticks-per-nano-second <Ghz>   set processor clock, for correct cycle times in measurements (default: 1.0)\n"
+            "\n"
+            "    --sleep-power <watt>                  set sleep power and don't measure anew\n"
+            "    --uncore-power <watt>                 set uncore power and don't measure anew\n"
+            "    --add-fetch <thread-count-list>       measure add-fetch barrier with threads according to the space delimited list\n"
             );
 
         exit(0);
@@ -308,16 +413,60 @@ int main(int argc, char **args) {
 
     int threadCount = atoi(args[1]);
     int minWallSecondsPerMeasurement = atoll(args[2]);
-    float clockTicksPerNanoSecond = argc > 3 ? (float)atof(args[3]) : 1.0f;
+    double clockTicksPerNanoSecond = 1.0;
+    double sleepPowerConsumption = 0.0;
+    double uncorePowerConsumption = 0.0;
+
+    Bool MeasureAddFetchBarrier = False;
+    int *addFetchThreadCountList = NULL;
+    int addFetchThreadCountListLen = 0;
+
+    for (int i = 3; i < argc; i += 1) {
+        if (strcmp("--add-fetch", args[i]) == 0) {
+            MeasureAddFetchBarrier = True;
+
+            for (int j = i+1; j < argc; j += 1) {
+                if (args[j][0] >= '0' && args[j][0] <= '9') {addFetchThreadCountListLen += 1;}
+                else {break;}
+            }
+
+            addFetchThreadCountList = (int*) malloc(sizeof(int) * addFetchThreadCountListLen);
+            for (int j = 0; j < addFetchThreadCountListLen; j += 1) {
+                addFetchThreadCountList[j] = (int) atol(args[i+1+j]);
+                if (addFetchThreadCountList[j] <= 1) {
+                    fprintf(stderr, "2 minimum for add-fetch. (you tried %i)\n", addFetchThreadCountList[j]);
+                    exit(-1);
+                }
+                if (addFetchThreadCountList[j] > threadCount) {
+                    fprintf(stderr, "no more than threadCount (%i) threads allowed for add-fetch-barrier. (you tried %i)\n", threadCount, addFetchThreadCountList[j]);
+                    exit(-1);
+                }
+            }
+
+            i += addFetchThreadCountListLen;
+
+        } else if (strcmp("--sleep-power", args[i]) == 0) {
+            i += 1;
+            sleepPowerConsumption = atof(args[i]);
+        } else if (strcmp("--uncore-power", args[i]) == 0) {
+            i += 1;
+            uncorePowerConsumption = atof(args[i]);
+        } else {
+            printf("unknown argument: \"%s\"\n", args[i]);
+            exit(-1);
+        }
+    }
 
     assert(threadCount > 0);
     assert(minWallSecondsPerMeasurement > 0);
     assert(clockTicksPerNanoSecond > 0.0);
 
-    Context *context = newContext(threadCount, minWallSecondsPerMeasurement);
+    Context *context = newContext(threadCount, minWallSecondsPerMeasurement, sleepPowerConsumption, uncorePowerConsumption);
 
-    measureSleepPowerConsumption(context);
-    measureUncorePowerConsumption(context);
+    if (context->sleepPowerConsumption == 0.0) measureSleepPowerConsumption(context, True);
+    if (context->uncorePowerConsumption == 0.0) measureUncorePowerConsumption(context, True);
+
+    if (MeasureAddFetchBarrier == True) measureAddFetchBarrier(context, addFetchThreadCountList, addFetchThreadCountListLen);
 
     //TODO real work
 
