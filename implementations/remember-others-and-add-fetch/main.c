@@ -187,7 +187,6 @@ static inline void barrierAddFetch2(Context *c, int threadCount) {
     c->barrier1 = threadCount;
 }
 static inline void barrierAddFetch3(Context *c, int threadCount) {
-    c->barrier1 = threadCount;
     if (__atomic_add_fetch(&(c->barrier3), -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n (&c->barrier3, __ATOMIC_ACQUIRE) != 0) {
         }
