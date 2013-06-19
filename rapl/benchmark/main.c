@@ -134,21 +134,21 @@ static inline double measurePowerConsumptionOfFunction(void prepare(), void f(),
 
         ThreadInfo *info = (ThreadInfo*) userData;
         const Context *c = info->c;
-
+        int msrFile = c->msrFile;
         const int index = info->index;
 
         setThreadAffinity(index);
 
         prepare();
 
-        beginEnergy = energy(c->msrFile);
+        beginEnergy = energy(msrFile);
         clock_gettime(CLOCK_REALTIME, &beginTime);
 
         waitBarrier(&startBarrier);
         f();
         waitBarrier(&stopBarrier);
 
-        endEnergy = energy(c->msrFile);
+        endEnergy = energy(msrFile);
         clock_gettime(CLOCK_REALTIME, &endTime);
 
         finalize();
@@ -232,13 +232,13 @@ Context* newContext(int threadCount, int minWallSecondsPerMeasurement) {
 
     return ret;
 }
-void freeContext(Context *c) {
+static void freeContext(Context *c) {
     closeMsrFile(c->msrFile);
     free(c);
 }
 
 
-void printContext(Context *c) {
+static void printContext(Context *c) {
     printf("threads %2d, sleepPower %lf W, uncorePower %lf W\n", c->threadCount, c->sleepPowerConsumption, c->uncorePowerConsumption);
 }
 
@@ -254,8 +254,8 @@ void measureSleepPowerConsumption(Context *c) {
 
 
 // does not include sleep power consumption
-#define repetitionsPerLoop "20 * 1000"
-#define loopCount "1000 * 1000"
+#define repetitionsPerLoop "40 * 1000"
+#define loopCount "500 * 1000"
 void measureUncorePowerConsumption(Context *c) {
     assert(c->sleepPowerConsumption > 0.0);
 
@@ -288,8 +288,6 @@ void measureUncorePowerConsumption(Context *c) {
         } else {
             addedDifferences += powerConsumption - previousPowerConsumption;
         }
-
-        //printf("%d: %lf W, added diffs: %lf W\n", threads, powerConsumption, addedDifferences);
     }
 
     c->uncorePowerConsumption = firstCorePowerConsumption - (addedDifferences / (c->threadCount-1));
