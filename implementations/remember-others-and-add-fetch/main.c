@@ -26,7 +26,7 @@
 #endif
 
 
-void* Thread(void*);
+static void* Thread(void*);
 
 typedef struct {
     int threadCount;
@@ -54,7 +54,7 @@ typedef struct {
 } ThreadInfo;
 
 
-Context* newContext(int threadCount, int maxWallSeconds, int sleepMicroSeconds) {
+static Context* newContext(int threadCount, int maxWallSeconds, int sleepMicroSeconds) {
 
     long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
     if (threadCount > cpuCount) {
@@ -94,7 +94,7 @@ Context* newContext(int threadCount, int maxWallSeconds, int sleepMicroSeconds) 
     return ret;
 }
 
-void freeContext(Context *c) {
+static void freeContext(Context *c) {
     free((arrayElement*) c->entry);
     free((arrayElement*) c->exit);
     free(c->nanoSeconds);
@@ -104,7 +104,8 @@ void freeContext(Context *c) {
     free(c);
 }
 
-void barrierRonny(int index, int arrayIndex, arrayElement me, arrayElement notMe, int entryExitLength, arrayElement *full, Context *c, arrayElement *copy) {
+#ifdef USE_RONNY
+static inline void barrierRonny(int index, int arrayIndex, arrayElement me, arrayElement notMe, int entryExitLength, const arrayElement *full, Context *c, arrayElement *copy) {
 
     (void) index;
 
@@ -168,22 +169,24 @@ void barrierRonny(int index, int arrayIndex, arrayElement me, arrayElement notMe
 
     }
 }
+#endif /* USE_RONNY */
 
-void barrierAddFetch1(Context *c, int threadCount) {
+#ifdef USE_ADD_FETCH
+static inline void barrierAddFetch1(Context *c, int threadCount) {
     if (__atomic_add_fetch(&(c->barrier1), -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n (&c->barrier1, __ATOMIC_ACQUIRE) != 0) {
         }
     }
     c->barrier3 = threadCount;
 }
-void barrierAddFetch2(Context *c, int threadCount) {
+static inline void barrierAddFetch2(Context *c, int threadCount) {
     if (__atomic_add_fetch(&(c->barrier2), -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n (&c->barrier2, __ATOMIC_ACQUIRE) != 0) {
         }
     }
     c->barrier1 = threadCount;
 }
-void barrierAddFetch3(Context *c, int threadCount) {
+static inline void barrierAddFetch3(Context *c, int threadCount) {
     c->barrier1 = threadCount;
     if (__atomic_add_fetch(&(c->barrier3), -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n (&c->barrier3, __ATOMIC_ACQUIRE) != 0) {
@@ -191,21 +194,22 @@ void barrierAddFetch3(Context *c, int threadCount) {
     }
     c->barrier2 = threadCount;
 }
+#endif /* USE_ADD_FETCH */
 
 
-void* Thread(void *userData) {
+static void* Thread(void *userData) {
 
     ThreadInfo *info = (ThreadInfo*) userData;
     Context *c = info->c;
 
-    int index = info->index;
-    int arrayIndex = index/ARRAY_BITS;
-    int threadCount = c->threadCount;
-    int maxWallSeconds = c->maxWallSeconds;
-    int sleepMicroSeconds = c->sleepMicroSeconds;
+    const int index = info->index;
+    const int arrayIndex = index/ARRAY_BITS;
+    const int threadCount = c->threadCount;
+    const int maxWallSeconds = c->maxWallSeconds;
+    const int sleepMicroSeconds = c->sleepMicroSeconds;
 
-    arrayElement me = ((arrayElement)0x1) << (index % ARRAY_BITS);
-    arrayElement notMe = ~me;
+    const arrayElement me = ((arrayElement)0x1) << (index % ARRAY_BITS);
+    const arrayElement notMe = ~me;
     arrayElement *full = (arrayElement*) malloc(sizeof(arrayElement) * c->entryExitLength);
     memset(full, 0, sizeof(arrayElement) * c->entryExitLength);
     for (int i = 0; i < threadCount; i += 1) {
@@ -229,7 +233,7 @@ void* Thread(void *userData) {
 
     clock_gettime(CLOCK_REALTIME, &begin);
 
-    time_t supposedEnd = begin.tv_sec + maxWallSeconds;
+    const time_t supposedEnd = begin.tv_sec + maxWallSeconds;
 
     for(repetitions = 0;; repetitions+=3){
 
