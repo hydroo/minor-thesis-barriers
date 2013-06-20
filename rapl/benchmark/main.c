@@ -628,7 +628,7 @@ int main(int argc, char **args) {
 
             i += addFetchThreadCountListLen;
 
-        } else if (strcmp("--ronny", args[i]) == 0) {
+        } else if (strcmp("--ronny-array", args[i]) == 0) {
             MeasureRonnyArrayBarrier = True;
 
             for (int j = i+1; j < argc; j += 1) {
