@@ -503,7 +503,6 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
     int *left;
     arrayElement *entry;
     arrayElement *exit;
-    arrayElement **copies = NULL;
 
     int64_t repetitions_;
 
@@ -528,15 +527,10 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
                 successfulBarrierVisitsCount[i] = 0;
             }
 #endif
-            copies = (arrayElement **) malloc(sizeof(arrayElement*) * threadCount);
         }
-
-        while (copies == NULL) {} // wait for thread 0 to create the array
-
-        copies[threadIndex] = (arrayElement*) malloc(sizeof(arrayElement) * entryExitLength);
-        memset(copies[threadIndex], 0, sizeof(arrayElement) * entryExitLength);
     }
     void finalize(int threadIndex, int threadCount) {
+        (void) threadCount;
         if (threadIndex == 0) {
             free(left); left = NULL;
             free(entry); entry = NULL;
@@ -544,10 +538,6 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
 #ifdef DEBUG
             free((int64_t*) successfulBarrierVisitsCount);
 #endif
-            for (int i = 0; i < threadCount; i += 1) {
-                free(copies[i]); copies[i] = NULL;
-            }
-            free(copies); copies = NULL;
         }
     }
     void f(int threadIndex, int threadCount) {
@@ -562,6 +552,9 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
             full[i/ARRAY_BITS] |= (((arrayElement)0x1) << (i % ARRAY_BITS));
         }
 
+        arrayElement *copy = (arrayElement *) malloc(sizeof(arrayElement) * entryExitLength);
+        memset(copy, 0, sizeof(arrayElement) * entryExitLength);
+
         struct timespec begin, end;
         int64_t repetitions = 0;
 
@@ -572,13 +565,13 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
         for(repetitions = 0;; repetitions += 3) {
 
 #ifdef DEBUG
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength, successfulBarrierVisitsCount, threadCount);
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength, successfulBarrierVisitsCount, threadCount);
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength, successfulBarrierVisitsCount, threadCount);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength, successfulBarrierVisitsCount, threadCount);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength, successfulBarrierVisitsCount, threadCount);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength, successfulBarrierVisitsCount, threadCount);
 #else
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength);
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength);
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copies[threadIndex], entryExitLength);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
+            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
 #endif
 
             if (repetitions % 300 == 0) {
@@ -591,6 +584,7 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
         }
 
         free(full);
+        free(copy);
     }
 
     for (int i = 0; i < threadCountsLen; i += 1) {
@@ -636,14 +630,12 @@ int main(int argc, char **args) {
     for (int i = 3; i < argc; i += 1) {
         if (strcmp("--add-fetch", args[i]) == 0) {
             MeasureAddFetchBarrier = True;
-
             threadListFromArguments(args, argc, i+1, &addFetchThreadCountList, &addFetchThreadCountListLen, 2, threadCount);
             i += addFetchThreadCountListLen;
         } else if (strcmp("--ronny-array", args[i]) == 0) {
             MeasureRonnyArrayBarrier = True;
             threadListFromArguments(args, argc, i+1, &ronnyArrayThreadCountList, &ronnyArrayThreadCountListLen, 2, threadCount);
             i += ronnyArrayThreadCountListLen;
-
         } else if (strcmp("--sleep-power", args[i]) == 0) {
             i += 1;
             sleepPowerConsumption = atof(args[i]);
