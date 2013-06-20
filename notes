@@ -6,6 +6,9 @@
 
  * ronny-array-barrier now works
  * added ronny-no-array-barrier
+ * add micro optimizations (more const)
+ □ add them to implementation/... as well
+ □ add no-array to implementation/ as well and benchmark it on taurus and atlas
 
 --- 13-06-19 ---
 
