@@ -441,10 +441,8 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
 #ifdef DEBUG
 static inline void barrierRonnyArray(int index, int arrayIndex, arrayElement me, arrayElement notMe, const arrayElement *full, int *left, arrayElement *entry, arrayElement *exit, arrayElement *copy, int entryExitLength, volatile int64_t *successfulBarrierVisitsCount, int threadCount) {
 #else
-static inline void barrierRonnyArray(int index, int arrayIndex, arrayElement me, arrayElement notMe, const arrayElement *full, int *left, arrayElement *entry, arrayElement *exit, arrayElement *copy, int entryExitLength) {
+static inline void barrierRonnyArray(int arrayIndex, arrayElement me, arrayElement notMe, const arrayElement *full, int *left, arrayElement *entry, arrayElement *exit, arrayElement *copy, int entryExitLength) {
 #endif
-
-    (void) index;
 
     if (__atomic_load_n(left, __ATOMIC_ACQUIRE) == 0) {
 
@@ -569,9 +567,9 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
             barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength, successfulBarrierVisitsCount, threadCount);
             barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength, successfulBarrierVisitsCount, threadCount);
 #else
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
-            barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
+            barrierRonnyArray(arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
+            barrierRonnyArray(arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
+            barrierRonnyArray(arrayIndex, me, notMe, full, left, entry, exit, copy, entryExitLength);
 #endif
 
             if (repetitions % 300 == 0) {
