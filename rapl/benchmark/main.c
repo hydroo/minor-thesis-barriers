@@ -592,6 +592,148 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
 }
 /* *** } ronny array barrier *********************************************** */
 
+/* *** ronny no array barrier { ******************************************** */
+#ifdef DEBUG
+static inline void barrierNoArrayRonny(int index, uint64_t me, uint64_t notMe, const uint64_t *full, int *left, uint64_t *entry, uint64_t *exit, uint64_t *copy, volatile int64_t *successfulBarrierVisitsCount, int threadCount) {
+#else
+static inline void barrierNoArrayRonny(uint64_t me, uint64_t notMe, const uint64_t *full, int *left, uint64_t *entry, uint64_t *exit, uint64_t *copy) {
+#endif
+
+    if (__atomic_load_n(left, __ATOMIC_ACQUIRE) == 0) {
+
+        do {
+            *copy = ((*copy)&notMe)|__atomic_load_n(entry, __ATOMIC_ACQUIRE);
+
+            if (((*copy) & me) == 0) {
+                *copy |= me;
+                __atomic_store_n(entry, *copy, __ATOMIC_RELEASE);
+            }
+        }while ((*copy) != (*full) && __atomic_load_n(left, __ATOMIC_ACQUIRE) == 0);
+
+        __atomic_store_n(left, 1, __ATOMIC_RELEASE);
+        __atomic_store_n(exit, 0, __ATOMIC_RELEASE);
+        __atomic_store_n(copy, 0, __ATOMIC_RELEASE);
+
+    } else {
+
+#ifdef DEBUG
+        for (int i = 0; i < threadCount - 1; ++i) {
+            if (successfulBarrierVisitsCount[i] != successfulBarrierVisitsCount[i+1]) {
+                printf("thread %i and %i are not equal at %lli %lli\n", i, i+1, (long long)successfulBarrierVisitsCount[i], (long long)successfulBarrierVisitsCount[i+1]);
+                assert(0);
+            }
+        }
+#endif
+
+        do {
+            *copy = ((*copy)&notMe)|__atomic_load_n(exit, __ATOMIC_ACQUIRE);
+
+            if (((*copy) & me) == 0) {
+                (*copy) |= me;
+                __atomic_store_n(exit, *copy, __ATOMIC_RELEASE);
+            }
+        }while ((*copy) != (*full) && __atomic_load_n(left, __ATOMIC_ACQUIRE) == 1);
+
+        __atomic_store_n(left, 0, __ATOMIC_RELEASE);
+        __atomic_store_n(entry, 0, __ATOMIC_RELEASE);
+        __atomic_store_n(copy, 0, __ATOMIC_RELEASE);
+
+#ifdef DEBUG
+        successfulBarrierVisitsCount[index] += 1;
+#endif
+    }
+}
+
+static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int threadCountsLen) {
+    printf("# %s:\n",__func__);
+
+    int *left;
+    uint64_t *entry;
+    uint64_t *exit;
+
+    int64_t repetitions_;
+
+#ifdef DEBUG
+    volatile int64_t *successfulBarrierVisitsCount;
+#endif
+
+    void prepare(int threadIndex, int threadCount) {
+        (void) threadCount;
+        if (threadIndex == 0) {
+            left = (int*) malloc(sizeof(int));
+            entry = (uint64_t*) malloc(sizeof(uint64_t));
+            exit = (uint64_t*) malloc(sizeof(uint64_t));
+            *left = 0;
+            *entry = 0;
+            *exit = 0;
+#ifdef DEBUG
+            successfulBarrierVisitsCount = (int64_t*) malloc(sizeof(int64_t) * threadCount);
+            for (int i = 0; i < threadCount; ++i) {
+                successfulBarrierVisitsCount[i] = 0;
+            }
+#endif
+        }
+    }
+    void finalize(int threadIndex, int threadCount) {
+        (void) threadCount;
+        if (threadIndex == 0) {
+            free(left); left = NULL;
+            free(entry); entry = NULL;
+            free(exit); exit = NULL;
+#ifdef DEBUG
+            free((int64_t*) successfulBarrierVisitsCount);
+#endif
+        }
+    }
+    void f(int threadIndex, int threadCount) {
+        const uint64_t me = ((uint64_t)0x1) << threadIndex;
+        const uint64_t notMe = ~me;
+        uint64_t *full = (uint64_t*) malloc(sizeof(uint64_t));
+        *full = 0;
+        for (int i = 0; i < threadCount; i += 1) {
+            *full |= (((uint64_t)0x1) << i);
+        }
+        uint64_t *copy = (uint64_t*) malloc(sizeof(uint64_t));
+        *copy = 0;
+
+        struct timespec begin, end;
+        int64_t repetitions = 0;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(repetitions = 0;; repetitions += 3) {
+
+#ifdef DEBUG
+            barrierNoArrayRonny(threadIndex, me, notMe, full, left, entry, exit, copy, successfulBarrierVisitsCount, threadCount);
+            barrierNoArrayRonny(threadIndex, me, notMe, full, left, entry, exit, copy, successfulBarrierVisitsCount, threadCount);
+            barrierNoArrayRonny(threadIndex, me, notMe, full, left, entry, exit, copy, successfulBarrierVisitsCount, threadCount);
+#else
+            barrierNoArrayRonny(me, notMe, full, left, entry, exit, copy);
+            barrierNoArrayRonny(me, notMe, full, left, entry, exit, copy);
+            barrierNoArrayRonny(me, notMe, full, left, entry, exit, copy);
+#endif
+
+            if (repetitions % 300 == 0) {
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
+                }
+            }
+        }
+
+        free(full);
+        free(copy);
+    }
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+        printf("ronny-no-array %2d threads, reps: %9lli, wallSecs %lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+    }
+}
+/* *** } ronny no array barrier ******************************************** */
 
 
 int main(int argc, char **args) {
@@ -605,7 +747,8 @@ int main(int argc, char **args) {
             "    --sleep-power <watt>                  set sleep power and don't measure anew\n"
             "    --uncore-power <watt>                 set uncore power and don't measure anew\n"
             "    --add-fetch <thread-count-list>       measure add-fetch barrier with threads according to the space delimited list\n"
-            "    --ronny-array <thread-count-list>     same as add-fetch, but with ronny-barrier\n"
+            "    --ronny-array <thread-count-list>     same as add-fetch, but with ronny-array-barrier\n"
+            "    --ronny-no-array <thread-count-list>  same as add-fetch, but with ronny-no-array-barrier\n"
             );
 
         exit(0);
@@ -625,6 +768,10 @@ int main(int argc, char **args) {
     int *ronnyArrayThreadCountList = NULL;
     int ronnyArrayThreadCountListLen = 0;
 
+    Bool MeasureRonnyNoArrayBarrier = False;
+    int *ronnyNoArrayThreadCountList = NULL;
+    int ronnyNoArrayThreadCountListLen = 0;
+
     for (int i = 3; i < argc; i += 1) {
         if (strcmp("--add-fetch", args[i]) == 0) {
             MeasureAddFetchBarrier = True;
@@ -634,6 +781,10 @@ int main(int argc, char **args) {
             MeasureRonnyArrayBarrier = True;
             threadListFromArguments(args, argc, i+1, &ronnyArrayThreadCountList, &ronnyArrayThreadCountListLen, 2, threadCount);
             i += ronnyArrayThreadCountListLen;
+        } else if (strcmp("--ronny-no-array", args[i]) == 0) {
+            MeasureRonnyNoArrayBarrier = True;
+            threadListFromArguments(args, argc, i+1, &ronnyNoArrayThreadCountList, &ronnyNoArrayThreadCountListLen, 2, threadCount);
+            i += ronnyNoArrayThreadCountListLen;
         } else if (strcmp("--sleep-power", args[i]) == 0) {
             i += 1;
             sleepPowerConsumption = atof(args[i]);
@@ -663,6 +814,11 @@ int main(int argc, char **args) {
     if (MeasureRonnyArrayBarrier == True) {
         measureRonnyArrayBarrier(context, ronnyArrayThreadCountList, ronnyArrayThreadCountListLen);
         free(ronnyArrayThreadCountList);
+    }
+
+    if (MeasureRonnyNoArrayBarrier == True) {
+        measureRonnyNoArrayBarrier(context, ronnyNoArrayThreadCountList, ronnyNoArrayThreadCountListLen);
+        free(ronnyNoArrayThreadCountList);
     }
 
     printContext(context);
