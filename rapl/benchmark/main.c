@@ -137,6 +137,8 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
     int stopBarrier;
     ThreadInfo *infos = NULL;
     pthread_t *t = NULL;
+    double usedJoule;
+    MeasurementResult m;
 
     void* threadFunction(void *userData) {
         uint64_t beginEnergy;
@@ -175,9 +177,6 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
         initBarrier(&startBarrier, threadCount);
         initBarrier(&stopBarrier, threadCount);
 
-        free(infos);
-        free(t);
-
         infos = (ThreadInfo*) malloc(sizeof(ThreadInfo) * threadCount);
         t = (pthread_t*) malloc(sizeof(pthread_t) * threadCount);
 
@@ -201,17 +200,20 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
             }
         }
 
-    } while(infos[0].usedJoule < 0.0); // repeat incase of wrap around in the energy counter register
+        // use results of thread zero only, deviation due to the barriers is ~10^-6 seconds
+        // and since rapl has a 10*-3 seconds resolution no difference can be seen.
+        //
+        // we still keep the data/code on all threads since we have only one struct ThreadInfo,
+        // and would need an extra if (index == 0) {}
+        usedJoule = infos[0].usedJoule;
+        m.elapsedSeconds = infos[0].elapsedSeconds;
+        m.powerConsumption = usedJoule / m.elapsedSeconds;
 
-    // use results of thread zero only, deviation due to the barriers is ~10^-6 seconds
-    // and since rapl has a 10*-3 seconds resolution no difference can be seen.
-    //
-    // we still keep the data/code on all threads since we have only one struct ThreadInfo,
-    // and would need an extra if (index == 0) {}
+        free(infos);
+        free(t);
 
-    MeasurementResult m;
-    m.elapsedSeconds = infos[0].elapsedSeconds;
-    m.powerConsumption = infos[0].usedJoule / m.elapsedSeconds;
+    } while(usedJoule < 0.0); // repeat incase of wrap around in the energy counter register
+
 
     if (autoPrint == True) {
         printf("# measurement: %2d threads, time %lf sec, power %lf W\n", threadCount, m.elapsedSeconds, m.powerConsumption);
@@ -563,6 +565,8 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
                 }
             }
         }
+
+        free(full);
     }
 
     for (int i = 0; i < threadCountsLen; i += 1) {
@@ -672,9 +676,15 @@ int main(int argc, char **args) {
     if (context->sleepPowerConsumption == 0.0) measureSleepPowerConsumption(context, True);
     if (context->uncorePowerConsumption == 0.0) measureUncorePowerConsumption(context, True);
 
-    if (MeasureAddFetchBarrier == True) measureAddFetchBarrier(context, addFetchThreadCountList, addFetchThreadCountListLen);
+    if (MeasureAddFetchBarrier == True) {
+        measureAddFetchBarrier(context, addFetchThreadCountList, addFetchThreadCountListLen);
+        free(addFetchThreadCountList);
+    }
 
-    if (MeasureRonnyArrayBarrier == True) measureRonnyArrayBarrier(context, ronnyArrayThreadCountList, ronnyArrayThreadCountListLen);
+    if (MeasureRonnyArrayBarrier == True) {
+        measureRonnyArrayBarrier(context, ronnyArrayThreadCountList, ronnyArrayThreadCountListLen);
+        free(ronnyArrayThreadCountList);
+    }
 
     printContext(context);
 
