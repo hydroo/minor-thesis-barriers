@@ -1,3 +1,12 @@
+--- 13-06-20 ---
+
+ * as soon as you got access to a bigger system
+  □ test rapl benchmark ronny-array with #define ARRAY_8
+  □ make rapl benchmark measure multiple chips, not just cpu0
+
+ * ronny-array-barrier now works
+ * added ronny-no-array-barrier
+
 --- 13-06-19 ---
 
  * iterated on rapl measurement code
