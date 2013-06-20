@@ -105,6 +105,30 @@ static inline uint64_t cycles(struct timespec t, double clockTicksPerNanoSecond)
 }
 
 
+static void threadListFromArguments(char **args, int argc, int startIndex, int **threadList, int *threadListLen, int minimum, int maximum) {
+
+    *threadListLen = 0;
+
+    for (int i = startIndex; i < argc; i += 1) {
+        if (args[i][0] >= '0' && args[i][0] <= '9') *threadListLen += 1;
+        else break;
+    }
+
+    *threadList = (int*) malloc(sizeof(int) * (*threadListLen));
+    for (int i = 0; i < *threadListLen; i += 1) {
+        (*threadList)[i] = (int) atol(args[startIndex+i]);
+        if ((*threadList)[i] < minimum) {
+            fprintf(stderr, "no less than %i threads allowed for benchmarking. (you tried %i)\n", minimum, (*threadList)[i]);
+            exit(-1);
+        }
+        if ((*threadList)[i] > maximum) {
+            fprintf(stderr, "no more than %i threads allowed for benchmarking. (you tried %i)\n", maximum, (*threadList) [i]);
+            exit(-1);
+        }
+    }
+}
+
+
 //static double mean(double *s, int l) {
 //    double sum = 0.0;
 //    for (int i = 0; i < l; i += 1) {
@@ -577,6 +601,7 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
 /* *** } ronny array barrier *********************************************** */
 
 
+
 int main(int argc, char **args) {
 
     if (argc < 3) {
@@ -612,47 +637,11 @@ int main(int argc, char **args) {
         if (strcmp("--add-fetch", args[i]) == 0) {
             MeasureAddFetchBarrier = True;
 
-            for (int j = i+1; j < argc; j += 1) {
-                if (args[j][0] >= '0' && args[j][0] <= '9') {addFetchThreadCountListLen += 1;}
-                else {break;}
-            }
-
-            addFetchThreadCountList = (int*) malloc(sizeof(int) * addFetchThreadCountListLen);
-            for (int j = 0; j < addFetchThreadCountListLen; j += 1) {
-                addFetchThreadCountList[j] = (int) atol(args[i+1+j]);
-                if (addFetchThreadCountList[j] <= 1) {
-                    fprintf(stderr, "2 minimum for add-fetch. (you tried %i)\n", addFetchThreadCountList[j]);
-                    exit(-1);
-                }
-                if (addFetchThreadCountList[j] > threadCount) {
-                    fprintf(stderr, "no more than threadCount (%i) threads allowed for add-fetch-barrier. (you tried %i)\n", threadCount, addFetchThreadCountList[j]);
-                    exit(-1);
-                }
-            }
-
+            threadListFromArguments(args, argc, i+1, &addFetchThreadCountList, &addFetchThreadCountListLen, 2, threadCount);
             i += addFetchThreadCountListLen;
-
         } else if (strcmp("--ronny-array", args[i]) == 0) {
             MeasureRonnyArrayBarrier = True;
-
-            for (int j = i+1; j < argc; j += 1) {
-                if (args[j][0] >= '0' && args[j][0] <= '9') {ronnyArrayThreadCountListLen += 1;}
-                else {break;}
-            }
-
-            ronnyArrayThreadCountList = (int*) malloc(sizeof(int) * ronnyArrayThreadCountListLen);
-            for (int j = 0; j < ronnyArrayThreadCountListLen; j += 1) {
-                ronnyArrayThreadCountList[j] = (int) atol(args[i+1+j]);
-                if (ronnyArrayThreadCountList[j] <= 1) {
-                    fprintf(stderr, "2 minimum for add-fetch. (you tried %i)\n", ronnyArrayThreadCountList[j]);
-                    exit(-1);
-                }
-                if (ronnyArrayThreadCountList[j] > threadCount) {
-                    fprintf(stderr, "no more than threadCount (%i) threads allowed for ronny-barrier. (you tried %i)\n", threadCount, ronnyArrayThreadCountList[j]);
-                    exit(-1);
-                }
-            }
-
+            threadListFromArguments(args, argc, i+1, &ronnyArrayThreadCountList, &ronnyArrayThreadCountListLen, 2, threadCount);
             i += ronnyArrayThreadCountListLen;
 
         } else if (strcmp("--sleep-power", args[i]) == 0) {
