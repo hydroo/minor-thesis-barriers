@@ -495,8 +495,8 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
             entry = (arrayElement*) malloc(sizeof(arrayElement) * entryExitLength);
             exit = (arrayElement*) malloc(sizeof(arrayElement) * entryExitLength);
             *left = 0;
-            memset(entry, 0, entryExitLength);
-            memset(exit, 0, entryExitLength);
+            memset(entry, 0, sizeof(arrayElement) * entryExitLength);
+            memset(exit, 0, sizeof(arrayElement) * entryExitLength);
 
 #ifdef DEBUG
             successfulBarrierVisitsCount = (int64_t*) malloc(sizeof(int64_t) * threadCount);
@@ -510,7 +510,7 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
         while (copies == NULL) {} // wait for thread 0 to create the array
 
         copies[threadIndex] = (arrayElement*) malloc(sizeof(arrayElement) * entryExitLength);
-        memset(copies[threadIndex], 0, entryExitLength);
+        memset(copies[threadIndex], 0, sizeof(arrayElement) * entryExitLength);
     }
     void finalize(int threadIndex, int threadCount) {
         if (threadIndex == 0) {
