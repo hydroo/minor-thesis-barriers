@@ -216,7 +216,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
 
 
     if (autoPrint == True) {
-        printf("# measurement: %2d threads, time %lf sec, power %lf W\n", threadCount, m.elapsedSeconds, m.powerConsumption);
+        printf("# measurement: %2d threads, time %3.3lf sec, power %3.3lf W\n", threadCount, m.elapsedSeconds, m.powerConsumption);
     }
 
     if (m.elapsedSeconds < c->minWallSecondsPerMeasurement) {
