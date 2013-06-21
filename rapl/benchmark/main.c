@@ -776,29 +776,29 @@ int main(int argc, char **args) {
     double sleepPowerConsumption = 0.0;
     double uncorePowerConsumption = 0.0;
 
-    Bool MeasureAddFetchBarrier = False;
+    Bool measureAddFetchBarrier_ = False;
     int *addFetchThreadCountList = NULL;
     int addFetchThreadCountListLen = 0;
 
-    Bool MeasureRonnyArrayBarrier = False;
+    Bool MeasureRonnyArrayBarrier_ = False;
     int *ronnyArrayThreadCountList = NULL;
     int ronnyArrayThreadCountListLen = 0;
 
-    Bool MeasureRonnyNoArrayBarrier = False;
+    Bool measureRonnyNoArrayBarrier_ = False;
     int *ronnyNoArrayThreadCountList = NULL;
     int ronnyNoArrayThreadCountListLen = 0;
 
     for (int i = 3; i < argc; i += 1) {
         if (strcmp("--add-fetch", args[i]) == 0) {
-            MeasureAddFetchBarrier = True;
+            measureAddFetchBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &addFetchThreadCountList, &addFetchThreadCountListLen, 2, threadCount);
             i += addFetchThreadCountListLen;
         } else if (strcmp("--ronny-array", args[i]) == 0) {
-            MeasureRonnyArrayBarrier = True;
+            MeasureRonnyArrayBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ronnyArrayThreadCountList, &ronnyArrayThreadCountListLen, 2, threadCount);
             i += ronnyArrayThreadCountListLen;
         } else if (strcmp("--ronny-no-array", args[i]) == 0) {
-            MeasureRonnyNoArrayBarrier = True;
+            measureRonnyNoArrayBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ronnyNoArrayThreadCountList, &ronnyNoArrayThreadCountListLen, 2, threadCount);
             i += ronnyNoArrayThreadCountListLen;
         } else if (strcmp("--sleep-power", args[i]) == 0) {
@@ -822,17 +822,17 @@ int main(int argc, char **args) {
     if (context->sleepPowerConsumption == 0.0) measureSleepPowerConsumption(context, True);
     if (context->uncorePowerConsumption == 0.0) measureUncorePowerConsumption(context, True);
 
-    if (MeasureAddFetchBarrier == True) {
+    if (measureAddFetchBarrier_ == True) {
         measureAddFetchBarrier(context, addFetchThreadCountList, addFetchThreadCountListLen);
         free(addFetchThreadCountList);
     }
 
-    if (MeasureRonnyArrayBarrier == True) {
+    if (MeasureRonnyArrayBarrier_ == True) {
         measureRonnyArrayBarrier(context, ronnyArrayThreadCountList, ronnyArrayThreadCountListLen);
         free(ronnyArrayThreadCountList);
     }
 
-    if (MeasureRonnyNoArrayBarrier == True) {
+    if (measureRonnyNoArrayBarrier_ == True) {
         measureRonnyNoArrayBarrier(context, ronnyNoArrayThreadCountList, ronnyNoArrayThreadCountListLen);
         free(ronnyNoArrayThreadCountList);
     }
