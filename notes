@@ -1,3 +1,10 @@
+--- 13-06-21 ---
+
+ * made usleep measurement: to be sure how many cycles will be used
+ □ wait until clock_get_time issue on taurus has been fixed and redo the benchmarks
+ □ measure on venus with as much cores as possible
+  * beware of tasksets. save it along the measurements
+
 --- 13-06-20 ---
 
  * as soon as you got access to a bigger system
@@ -7,8 +14,8 @@
  * ronny-array-barrier now works
  * added ronny-no-array-barrier
  * add micro optimizations (more const)
- □ add them to implementation/... as well
- □ add no-array to implementation/ as well and benchmark it on taurus and atlas
+ ✗ add them to implementation/... as well
+ ✗ add no-array to implementation/ as well and benchmark it on taurus and atlas
 
 --- 13-06-19 ---
 
@@ -56,8 +63,6 @@
 
 --- 13-06-12 ---
 
- * fixed benchmark error for usleep > 0
-   □ redo them
  * new model minimization: remove backloop
    * steady state queries don't work anymore
    * use only from-initial-state queries
