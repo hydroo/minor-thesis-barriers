@@ -25,23 +25,13 @@
  * small improvements to the implementation/remember-others/... code
 
 --- 13-06-18 ---
-
- * add new taurus benchmark with more measurement points
- * progress on rapl benchmark
-
 --- 13-06-14 + 15 ---
-
- * in the process of creating a rapl benchmark tool
- * add better atlas benchmark
- * add an new detail to taurus' topology
-
 --- 13-06-13 ---
 
  * prepared and started taurus benchmarks
  * added taurus topology and beautified atlas topology
 
  * meeting with marcus haehnel
-
   * switching off powersaving
    * probably not possible on taurus
    * use "cpufreq-info" to observe current clock frequency
@@ -50,16 +40,15 @@
 
   * measurement using RAPL
    * per package, choice between with or without "uncore" - not clear what it means (e.g. with or without L3 Cache) - measuring the whole package probably the best choice
-   * 10ms (bestaetigung noetig) period with deviation (how much?) around measurement points
+   * 1ms period with some deviation around measurement points
      -> use large intervals and use median of many repetitions
    * it is very hard to measure energy about cache state transitions, because you cannot redo benchmarks
      without 'preparing' the next run. You would need to measure the 'preparing' as well.
      preparing many cachelines and then start running is bad as well, because new cache effects might appear.
      generally every measurement that needs preparation and where a run is very short is impossible/hard/bad.
    * measuring the whole barrier is doable
-
   □ measure no-array- and array-ronny-barrier to see if there are large differences
-    -> model arcordingly (not sure yet what this exactly means)
+    -> model arcordingly
 
 --- 13-06-12 ---
 
@@ -86,7 +75,7 @@
  ✓ did nice benchmarks up to 64 threads
 
  misc notes:
-  □ it is possible to reduce the 2loop ronny model for non-ss queries:
+  ✓ it is possible to reduce the 2loop ronny model for non-ss queries:
    remove loc 10, 11 and set the while condition to 'true'
   □ one might also combine some of the transitions that are not in loops because they are triggered rarely
 
@@ -119,7 +108,7 @@
 
 --- 13-05-03 ---
 
- * implemented simple add-fetch-spin barrier ( implementation/remember-others-and-add-fetch/* )
+ * implemented simple add-fetch-spin-wait barrier ( implementation/remember-others-and-add-fetch/* )
  * benchmarked ronny vs add-fetch (with $ time add-fetch ...)
 
 --- 13-04-27 ---
@@ -127,59 +116,8 @@
  * implemented another simple model minimization (copy=0 as early as possible). semantically and quant. equivalent
  * new variant: remember whom you have seen: in models/prism/ctmc/with-cache + git/models/spin/remember-others
 
-   n: 3, work: 0, read: 50, write: 100
-
-          |dont remember others         |remember others
-          |normal         one-loop      |normal         one-loop
-   -------+-----------------------------+-------------------------
-   states |259102         7789          |322957         10195
-   trans  |777306         23199         |968871         30384
-   matrix |336231         31085         |335075         33451
-
-   clraR 1|300    copied  326           |262            296
-   clraR 2|476    c       533           |441            496
-
 --- 13-04-26 ---
-
- [..]
-
 --- 13-04-15 ---
-
- paper meeting (baier,klueppel,tews,mc guire,mvoelp):
-
-                 | las vegas  | monte carlo
- ----------------+------------+-----------------
- bounded runtime | variant y? | current barrier
- ----------------+------------+-----------------
- prob runtime    | pwcs       | variant x?
- ----------------+------------+-----------------
- energy effic    | ?          | ?
-
-
- possible topics
-  * barrier construction (story?)
-   * variants
-  * model
-  * analysis
-   * garantierter fortschritt
-
-  * energie
-   * mwait/backoff
-   * ???
-   * ???
- 
- schedule
-  * 4-15 today
-  ???
-  * 4-22 small meeting
-   * discuss variants
-  ???
-  * 4-29 bigger meeting
-  ???
-  * 5-13 to 5-30 writing
-
-  * konferenz aussuchen
-
 --- 13-04-13 ---
 
  grosser beleg meeting (baier, klueppel, tews):
@@ -202,16 +140,12 @@
      * skalierung/performance mit mehr prozessen als messbar vorhersehen
      * argumentieren, dass der algorithmus gut ist
    * (system-/arbeits-)last nur sehr einfach modellieren. keine arbeit in gute last-modellierung stecken
- 
- sonstiges:
-  * die "kaputte" one-loop variante nicht untersuchen
 
 --- before 13-04-01 ---
 
- □ make it work in a distributed setting
+ □ make a distributed variant of the barrier
  
  ✓ go beyond 32 threads (i.e. use an array rather than one barrier variable)
-
  ✓ not only add yourself to the barrier, but everyone you have seen so far, too
 
  □ implement/model simple atomic increment barrier and compare against our protocol
