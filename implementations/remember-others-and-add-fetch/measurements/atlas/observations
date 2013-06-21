@@ -7,3 +7,5 @@
 
 # deviation <10% between the two measurements
 
+# usleep 1 sleeps for ~68 micro seconds
+# usleep 100 sleeps for ~157 micro seconds
