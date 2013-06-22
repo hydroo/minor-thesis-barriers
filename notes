@@ -1,3 +1,11 @@
+--- 13-06-22 ---
+
+ * thread pinning is now affinity aware (needed for venus)
+ * add rapl benchmarks for:
+  * uncontested __atomic_add_fetch
+  * add-fetch wait spinning
+ □ analyze venus results
+
 --- 13-06-21 ---
 
  * made usleep measurement: to be sure how many cycles will be used
