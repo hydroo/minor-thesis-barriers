@@ -260,7 +260,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
 
 
     if (autoPrint == True) {
-        printf("# measurement: %2d threads, time %3.3lf sec, power %3.3lf W\n", threadCount, m.elapsedSeconds, m.powerConsumption);
+        printf("# measurement: %3d, threads, time %3.3lf sec, power %3.3lf W\n", threadCount, m.elapsedSeconds, m.powerConsumption);
     }
 
     if (m.elapsedSeconds < c->minWallSecondsPerMeasurement) {
@@ -305,7 +305,7 @@ static void freeContext(Context *c) {
 
 
 static void printContext(Context *c) {
-    printf("threads %2d, sleepPower %lf W, uncorePower %lf W\n", c->threadCount, c->sleepPowerConsumption, c->uncorePowerConsumption);
+    printf("threads %3d,, sleepPower %lf W, uncorePower %lf W\n", c->threadCount, c->sleepPowerConsumption, c->uncorePowerConsumption);
 }
 
 
@@ -447,7 +447,7 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("add-fetch %2d threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+        printf("add-fetch %3d, threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
     }
 }
 /* *** } add fetch barrier ************************************************* */
@@ -624,7 +624,7 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("ronny-array %2d threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+        printf("ronny-array %3d, threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
     }
 }
 /* *** } ronny array barrier *********************************************** */
@@ -772,7 +772,7 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("ronny-no-array %2d threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+        printf("ronny-no-array %3d, threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
     }
 }
 /* *** } ronny no array barrier ******************************************** */
@@ -810,7 +810,7 @@ static void measureAddFetchWaitSpinning(Context *c, int *threadCounts, int threa
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("add-fetch-wait-spin %2d threads, wallSecs %.3lf sec, power %lf W\n", threadCounts[i]-1, m.elapsedSeconds, m.powerConsumption);
+        printf("add-fetch-wait-spin %3d, threads, wallSecs %.3lf sec, power %lf W\n", threadCounts[i]-1, m.elapsedSeconds, m.powerConsumption);
     }
 }
 /* *** } add fetch wait spinning ******************************************* */
@@ -852,7 +852,7 @@ int main(int argc, char **args) {
     int *addFetchWaitSpinningThreadCountList = NULL;
     int addFetchWaitSpinningThreadCountListLen = 0;
 
-    Bool MeasureRonnyArrayBarrier_ = False;
+    Bool measureRonnyArrayBarrier_ = False;
     int *ronnyArrayThreadCountList = NULL;
     int ronnyArrayThreadCountListLen = 0;
 
@@ -872,7 +872,7 @@ int main(int argc, char **args) {
             threadListFromArguments(args, argc, i+1, &addFetchWaitSpinningThreadCountList, &addFetchWaitSpinningThreadCountListLen, 2, threadCount);
             i += addFetchWaitSpinningThreadCountListLen;
         } else if (strcmp("--ronny-array", args[i]) == 0) {
-            MeasureRonnyArrayBarrier_ = True;
+            measureRonnyArrayBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ronnyArrayThreadCountList, &ronnyArrayThreadCountListLen, 2, threadCount);
             i += ronnyArrayThreadCountListLen;
         } else if (strcmp("--ronny-no-array", args[i]) == 0) {
@@ -910,7 +910,7 @@ int main(int argc, char **args) {
         free(addFetchWaitSpinningThreadCountList);
     }
 
-    if (MeasureRonnyArrayBarrier_ == True) {
+    if (measureRonnyArrayBarrier_ == True) {
         measureRonnyArrayBarrier(context, ronnyArrayThreadCountList, ronnyArrayThreadCountListLen);
         free(ronnyArrayThreadCountList);
     }
