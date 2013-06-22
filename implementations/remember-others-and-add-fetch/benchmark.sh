@@ -5,6 +5,7 @@
 #set -x
 
 clockTicksPerNanoSecond=2.2 #atlas
+#clockTicksPerNanoSecond=2.6 #venus
 #clockTicksPerNanoSecond=2.6 #taurus
 #clockTicksPerNanoSecond=2.5 #vt
 secondsPerBenchmark=2
