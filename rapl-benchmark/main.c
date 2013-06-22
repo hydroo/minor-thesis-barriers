@@ -100,9 +100,9 @@ static inline double seconds(struct timespec t) {
 static inline uint64_t nanoSeconds(struct timespec t) {
     return ((uint64_t)t.tv_sec * 1000000000 + (uint64_t)t.tv_nsec);
 }
-static inline uint64_t cycles(struct timespec t, double clockTicksPerNanoSecond) {
-    return (uint64_t)(nanoSeconds(t) * clockTicksPerNanoSecond);
-}
+//static inline uint64_t cycles(struct timespec t, double clockTicksPerNanoSecond) {
+//    return (uint64_t)(nanoSeconds(t) * clockTicksPerNanoSecond);
+//}
 
 
 static void threadListFromArguments(char **args, int argc, int startIndex, int **threadList, int *threadListLen, int minimum, int maximum) {
@@ -772,7 +772,7 @@ int main(int argc, char **args) {
 
     int threadCount = atoi(args[1]);
     int minWallSecondsPerMeasurement = atoll(args[2]);
-    double clockTicksPerNanoSecond = 1.0;
+    //double clockTicksPerNanoSecond = 1.0;
     double sleepPowerConsumption = 0.0;
     double uncorePowerConsumption = 0.0;
 
@@ -815,7 +815,7 @@ int main(int argc, char **args) {
 
     assert(threadCount > 0);
     assert(minWallSecondsPerMeasurement > 0);
-    assert(clockTicksPerNanoSecond > 0.0);
+    //assert(clockTicksPerNanoSecond > 0.0);
 
     Context *context = newContext(threadCount, minWallSecondsPerMeasurement, sleepPowerConsumption, uncorePowerConsumption);
 
