@@ -28,9 +28,15 @@
 
 static void* Thread(void*);
 
+typedef enum {
+    False = 0,
+    True = 1
+} Bool;
+
 typedef struct {
     int threadCount;
     int entryExitLength;
+    Bool avoidHt;
     int maxWallSeconds;
     int64_t repetitionCount;
     arrayElement *entry; //volatile arrayElement *entry;
@@ -54,11 +60,14 @@ typedef struct {
 } ThreadInfo;
 
 
-static Context* newContext(int threadCount, int maxWallSeconds, int sleepMicroSeconds) {
+static Context* newContext(int threadCount, int maxWallSeconds, Bool avoidHt, int sleepMicroSeconds) {
 
     long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
     if (threadCount > cpuCount) {
         printf("threadcount: %i > cpucount: %li. threads will be pinned round robin.\n", threadCount, cpuCount);
+    }
+    if (avoidHt == True && threadCount*2 > cpuCount) {
+        printf("threadcount: %i > cpucount: %li (avoid-ht). threads will be pinned round robin.\n", threadCount, cpuCount/2);
     }
 
     Context *ret = (Context*) malloc(sizeof(Context));
@@ -67,6 +76,7 @@ static Context* newContext(int threadCount, int maxWallSeconds, int sleepMicroSe
     ret->threadCount = threadCount;
     ret->entryExitLength = ((threadCount-1)/ARRAY_BITS)+1;
     ret->maxWallSeconds = maxWallSeconds;
+    ret->avoidHt = avoidHt;
 
     ret->entry = (arrayElement*) malloc(sizeof(arrayElement) * ret->entryExitLength);
     memset(ret->entry, 0, ret->entryExitLength);
@@ -225,9 +235,10 @@ static void* Thread(void *userData) {
     arrayElement *copy = (arrayElement*) malloc(sizeof(arrayElement) * c->entryExitLength);
 
     // set thread affinity
+    int cpuSetIndex = c->avoidHt == True ? index*2 : index;
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
-    CPU_SET(index % sysconf(_SC_NPROCESSORS_ONLN), &cpuset);
+    CPU_SET(cpuSetIndex % sysconf(_SC_NPROCESSORS_ONLN), &cpuset);
     assert(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) == 0);
 
     clock_gettime(CLOCK_REALTIME, &begin);
@@ -306,21 +317,35 @@ void printResults(Context *c, float clockTicksPerNanoSecond) {
 int main(int argc, char **args) {
 
     if (argc < 3) {
-        printf("  barrier <threadcount> <maxwallseconds> <clockTicksPerNanoSecond (Ghz) (default: 1)> <sleepmicroseconds (default: 0)>\n");
+        printf(
+                "  barrier <threadcount> <maxwallseconds> <clockTicksPerNanoSecond (Ghz) (default: 1)> <sleepmicroseconds (default: 0) [options]>\n"
+                "\n"
+                "    --avoid-ht   pins each threads to cores 0,2,4... instead of 0,1,2,...\n");
         exit(0);
     }
 
     int threadCount = atoi(args[1]);
     int maxWallSeconds = atoll(args[2]);
+    Bool avoidHt = False;
     float clockTicksPerNanoSecond = argc > 3 ? (float)atof(args[3]) : 1.0f;
     int sleepMicroSeconds = argc > 4 ? atoll(args[4]) : 0;
+
+    for (int i = 5; i < argc; i += 1) {
+        if (strcmp("--avoid-ht", args[i]) == 0) {
+            avoidHt = True;
+        } else {
+            printf("unknown argument: \"%s\"\n", args[i]);
+            exit(-1);
+        }
+    }
+
 
     assert(threadCount > 0);
     assert(maxWallSeconds > 0);
     assert(clockTicksPerNanoSecond > 0.0);
     assert(sleepMicroSeconds >= 0);
 
-    Context *context = newContext(threadCount, maxWallSeconds, sleepMicroSeconds);
+    Context *context = newContext(threadCount, maxWallSeconds, avoidHt, sleepMicroSeconds);
     ThreadInfo infos[threadCount];
 
     pthread_t t[threadCount];
