@@ -335,7 +335,7 @@ void printResults(Context *c, float clockTicksPerNanoSecond) {
     }
     meanSeconds /= c->threadCount;
 
-    printf("%s threads: %2d, reps: %9lli, sleepMySecs: %3d, wallSecs: %.2lf, ticksPerBarrier: %8.0lf ticksPerBarrierDivByThreads: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, (meanSeconds * 1000000000 * clockTicksPerNanoSecond) / c->repetitionCount, ((meanSeconds * 1000000000 * clockTicksPerNanoSecond) / c->repetitionCount) / c->threadCount);
+    printf("%s threads: %3d, reps: %9lli, sleepMySecs: %3d, wallSecs: %.2lf, ticksPerBarrier: %8.0lf ticksPerBarrierDivByThreads: %8.0lf\n", barrierType, c->threadCount, (long long int) c->repetitionCount, c->sleepMicroSeconds, meanSeconds, (meanSeconds * 1000000000 * clockTicksPerNanoSecond) / c->repetitionCount, ((meanSeconds * 1000000000 * clockTicksPerNanoSecond) / c->repetitionCount) / c->threadCount);
 }
 
 

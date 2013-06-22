@@ -384,7 +384,7 @@ static void measureUncorePowerConsumption(Context *c, Bool autoPrint) {
 
 
 /* *** add fetch barrier { ************************************************* */
-void barrierAddFetch1(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
+void addFetchBarrier1(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
     (void) barrier2;
     if (__atomic_add_fetch(barrier1, -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n(barrier1, __ATOMIC_ACQUIRE) != 0) {
@@ -392,7 +392,7 @@ void barrierAddFetch1(int * const barrier1, int * const barrier2, int * const ba
     }
     *barrier3 = threadCount;
 }
-void barrierAddFetch2(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
+void addFetchBarrier2(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
     (void) barrier3;
     if (__atomic_add_fetch(barrier2, -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n(barrier2, __ATOMIC_ACQUIRE) != 0) {
@@ -400,7 +400,7 @@ void barrierAddFetch2(int * const barrier1, int * const barrier2, int * const ba
     }
     *barrier1 = threadCount;
 }
-void barrierAddFetch3(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
+void addFetchBarrier3(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
     (void) barrier1;
     if (__atomic_add_fetch(barrier3, -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n(barrier3, __ATOMIC_ACQUIRE) != 0) {
@@ -441,9 +441,9 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
 
         for(repetitions = 0;; repetitions += 3){
 
-            barrierAddFetch1(barrier1_, barrier2_, barrier3_, threadCount);
-            barrierAddFetch2(barrier1_, barrier2_, barrier3_, threadCount);
-            barrierAddFetch3(barrier1_, barrier2_, barrier3_, threadCount);
+            addFetchBarrier1(barrier1_, barrier2_, barrier3_, threadCount);
+            addFetchBarrier2(barrier1_, barrier2_, barrier3_, threadCount);
+            addFetchBarrier3(barrier1_, barrier2_, barrier3_, threadCount);
 
             if (repetitions % 300 == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -458,7 +458,7 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("add-fetch %3d, threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+        printf("add-fetch-barrier %3d, threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
     }
 }
 /* *** } add fetch barrier ************************************************* */
@@ -880,7 +880,7 @@ int main(int argc, char **args) {
             "    --sleep-power <watt>                            set sleep power and don't measure anew\n"
             "    --uncore-power <watt>                           set uncore power and don't measure anew\n"
             "\n"
-            "    --add-fetch <thread-count-list>                 measure add-fetch barrier with threads according to the space delimited list\n"
+            "    --add-fetch-barrier <thread-count-list>         measure add-fetch barrier with threads according to the space delimited list\n"
             "    --add-fetch-wait-spinning <thread-count-list>\n"
             "    --add-fetch-uncontested <thread-count-list>\n"
             "    --ronny-array <thread-count-list>\n"
@@ -920,7 +920,7 @@ int main(int argc, char **args) {
     for (int i = 3; i < argc; i += 1) {
         if (strcmp("--avoid-ht", args[i]) == 0) {
             avoidHt = True;
-        } else if (strcmp("--add-fetch", args[i]) == 0) {
+        } else if (strcmp("--add-fetch-barrier", args[i]) == 0) {
             measureAddFetchBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &addFetchThreadCountList, &addFetchThreadCountListLen, 2, threadCount);
             i += addFetchThreadCountListLen;
