@@ -87,12 +87,31 @@ static inline void waitBarrier(int *barrier) {
     }
 }
 
-void setThreadAffinity(int threadIndex, Bool avoidHt) {
-    if (avoidHt == True) threadIndex *= 2;
-    cpu_set_t cpuset;
-    CPU_ZERO(&cpuset);
-    CPU_SET(threadIndex % sysconf(_SC_NPROCESSORS_ONLN), &cpuset);
-    assert(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) == 0);
+void setThreadAffinity(int threadIndex_, Bool avoidHt) {
+    if (avoidHt == True) threadIndex_ *= 2;
+
+    cpu_set_t get;
+    assert(pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &get) == 0);
+
+    int cpuCount = CPU_COUNT(&get);
+    int threadIndex = threadIndex_ % cpuCount;
+    int setIndex = -1;
+    for (int i = 0; i < (int)sizeof(cpu_set_t)*8; i += 1) {
+        if (CPU_ISSET(i, &get)) {
+            if (threadIndex == 0) {
+                setIndex = i;
+                break;
+            } else if (threadIndex > 0) {
+                threadIndex -= 1;
+            }
+        }
+    }
+    assert(setIndex >= 0);
+
+    cpu_set_t set;
+    CPU_ZERO(&set);
+    CPU_SET(setIndex, &set);
+    assert(pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &set) == 0);
 }
 
 static inline double seconds(struct timespec t) {
@@ -253,12 +272,14 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
 
 static Context* newContext(int threadCount, int minWallSecondsPerMeasurement, Bool avoidHt, double sleepPowerConsumption, double uncorePowerConsumption) {
 
-    long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
+    cpu_set_t get;
+    assert(pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &get) == 0);
+    int cpuCount = CPU_COUNT(&get);
     if (threadCount > cpuCount) {
-        printf("threadcount: %i > cpucount: %li. threads will be pinned round robin.\n", threadCount, cpuCount);
+        printf("threadcount: %i > cpucount: %i. threads will be pinned round robin.\n", threadCount, cpuCount);
     }
     if (avoidHt == True && threadCount*2 > cpuCount) {
-        printf("threadcount: %i > cpucount: %li (avoid-ht). threads will be pinned round robin.\n", threadCount, cpuCount/2);
+        printf("threadcount: %i > cpucount: %i (avoid-ht). threads will be pinned round robin.\n", threadCount, cpuCount/2);
     }
 
     Context *ret = (Context*) malloc(sizeof(Context));
