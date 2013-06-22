@@ -447,7 +447,7 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("add-fetch %2d threads, reps: %9lli, wallSecs %lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+        printf("add-fetch %2d threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
     }
 }
 /* *** } add fetch barrier ************************************************* */
@@ -624,7 +624,7 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("ronny-array %2d threads, reps: %9lli, wallSecs %lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+        printf("ronny-array %2d threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
     }
 }
 /* *** } ronny array barrier *********************************************** */
@@ -772,7 +772,7 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("ronny-no-array %2d threads, reps: %9lli, wallSecs %lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+        printf("ronny-no-array %2d threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
     }
 }
 /* *** } ronny no array barrier ******************************************** */
