@@ -777,6 +777,43 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
 }
 /* *** } ronny no array barrier ******************************************** */
 
+/* *** add fetch wait spinning { ******************************************* */
+void barrierAddFetch(int * const bar) {
+    if (__atomic_add_fetch(bar, -1, __ATOMIC_ACQ_REL) != 0) {
+        while (__atomic_load_n(bar, __ATOMIC_ACQUIRE) != 0) {
+        }
+    }
+}
+
+static void measureAddFetchWaitSpinning(Context *c, int *threadCounts, int threadCountsLen) {
+    printf("# %s:\n",__func__);
+
+    volatile int barrier; // volatile necessary for prepare() to not screw up
+
+    void prepare(int threadIndex, int threadCount) {
+        if (threadIndex == 0) {
+            barrier = threadCount;
+        }
+    }
+    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void f(int threadIndex, int threadCount) {
+        (void) threadIndex;
+        (void) threadCount;
+        int * const barrier_ = (int*) &barrier;
+
+        if (threadIndex == 0) {
+            sleep(c->minWallSecondsPerMeasurement);
+        }
+
+        barrierAddFetch(barrier_);
+    }
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+        printf("add-fetch-wait-spin %2d threads, wallSecs %.3lf sec, power %lf W\n", threadCounts[i]-1, m.elapsedSeconds, m.powerConsumption);
+    }
+}
+/* *** } add fetch wait spinning ******************************************* */
 
 int main(int argc, char **args) {
 
@@ -784,15 +821,17 @@ int main(int argc, char **args) {
         printf(
             "  rapl-benchmark <thread-count> <min-wall-seconds-per-measurement> [options]>\n"
             "\n"
-            "    --clock-ticks-per-nano-second <Ghz>   set processor clock, for correct cycle times in measurements (default: 1.0)\n"
+            "    --clock-ticks-per-nano-second <Ghz>             set processor clock, for correct cycle times in measurements (default: 1.0)\n"
             "\n"
-            "    --avoid-ht                            pins each threads to cores 0,2,4... instead of 0,1,2,...\n"
+            "    --avoid-ht                                      pins each threads to cores 0,2,4... instead of 0,1,2,...\n"
             "\n"
-            "    --sleep-power <watt>                  set sleep power and don't measure anew\n"
-            "    --uncore-power <watt>                 set uncore power and don't measure anew\n"
-            "    --add-fetch <thread-count-list>       measure add-fetch barrier with threads according to the space delimited list\n"
-            "    --ronny-array <thread-count-list>     same as add-fetch, but with ronny-array-barrier\n"
-            "    --ronny-no-array <thread-count-list>  same as add-fetch, but with ronny-no-array-barrier\n"
+            "    --sleep-power <watt>                            set sleep power and don't measure anew\n"
+            "    --uncore-power <watt>                           set uncore power and don't measure anew\n"
+            "\n"
+            "    --add-fetch <thread-count-list>                 measure add-fetch barrier with threads according to the space delimited list\n"
+            "    --add-fetch-wait-spinning <thread-count-list>   measure add-fetch barrier with threads according to the space delimited list\n"
+            "    --ronny-array <thread-count-list>               same as add-fetch, but with ronny-array-barrier\n"
+            "    --ronny-no-array <thread-count-list>            same as add-fetch, but with ronny-no-array-barrier\n"
             );
 
         exit(0);
@@ -809,6 +848,10 @@ int main(int argc, char **args) {
     int *addFetchThreadCountList = NULL;
     int addFetchThreadCountListLen = 0;
 
+    Bool measureAddFetchWaitSpinning_ = False;
+    int *addFetchWaitSpinningThreadCountList = NULL;
+    int addFetchWaitSpinningThreadCountListLen = 0;
+
     Bool MeasureRonnyArrayBarrier_ = False;
     int *ronnyArrayThreadCountList = NULL;
     int ronnyArrayThreadCountListLen = 0;
@@ -824,6 +867,10 @@ int main(int argc, char **args) {
             measureAddFetchBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &addFetchThreadCountList, &addFetchThreadCountListLen, 2, threadCount);
             i += addFetchThreadCountListLen;
+        } else if (strcmp("--add-fetch-wait-spinning", args[i]) == 0) {
+            measureAddFetchWaitSpinning_ = True;
+            threadListFromArguments(args, argc, i+1, &addFetchWaitSpinningThreadCountList, &addFetchWaitSpinningThreadCountListLen, 2, threadCount);
+            i += addFetchWaitSpinningThreadCountListLen;
         } else if (strcmp("--ronny-array", args[i]) == 0) {
             MeasureRonnyArrayBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ronnyArrayThreadCountList, &ronnyArrayThreadCountListLen, 2, threadCount);
@@ -856,6 +903,11 @@ int main(int argc, char **args) {
     if (measureAddFetchBarrier_ == True) {
         measureAddFetchBarrier(context, addFetchThreadCountList, addFetchThreadCountListLen);
         free(addFetchThreadCountList);
+    }
+
+    if (measureAddFetchWaitSpinning_ == True) {
+        measureAddFetchWaitSpinning(context, addFetchWaitSpinningThreadCountList, addFetchWaitSpinningThreadCountListLen);
+        free(addFetchWaitSpinningThreadCountList);
     }
 
     if (MeasureRonnyArrayBarrier_ == True) {
