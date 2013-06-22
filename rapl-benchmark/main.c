@@ -149,6 +149,17 @@ static void threadListFromArguments(char **args, int argc, int startIndex, int *
 }
 
 
+#define REPEAT01(x) x;x;
+#define REPEAT02(x) REPEAT01(x)REPEAT01(x)
+#define REPEAT04(x) REPEAT02(x)REPEAT02(x)REPEAT02(x)REPEAT02(x)
+#define REPEAT06(x) REPEAT04(x)REPEAT04(x)REPEAT04(x)REPEAT04(x)
+#define REPEAT08(x) REPEAT06(x)REPEAT06(x)REPEAT06(x)REPEAT06(x)
+#define REPEAT10(x) REPEAT08(x)REPEAT08(x)REPEAT08(x)REPEAT08(x)
+#define REPEAT12(x) REPEAT10(x)REPEAT10(x)REPEAT10(x)REPEAT10(x)
+#define REPEAT14(x) REPEAT12(x)REPEAT12(x)REPEAT12(x)REPEAT12(x)
+#define REPEAT(n, x) REPEAT##n(x)
+
+
 //static double mean(double *s, int l) {
 //    double sum = 0.0;
 //    for (int i = 0; i < l; i += 1) {
@@ -815,6 +826,47 @@ static void measureAddFetchWaitSpinning(Context *c, int *threadCounts, int threa
 }
 /* *** } add fetch wait spinning ******************************************* */
 
+/* *** add fetch uncontested { ******************************************* */
+static void measureAddFetchUncontested(Context *c, int *threadCounts, int threadCountsLen) {
+    printf("# %s:\n",__func__);
+
+    int repetitions_;
+
+    void prepare(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void f(int threadIndex, int threadCount) {
+        (void) threadIndex;
+        (void) threadCount;
+        int64_t repetitions = 0;
+        struct timespec begin, end;
+        volatile int * const barrier = (volatile int*) malloc(sizeof(int));
+        *barrier = threadCount;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(repetitions = 0;; repetitions += 3) {
+
+            REPEAT(14, __atomic_add_fetch(barrier, -1, __ATOMIC_ACQ_REL)); //copies 2**18 times this command
+
+            if (repetitions % 300 == 0) {
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    break;
+                }
+            }
+        }
+
+        repetitions_ = repetitions;
+    }
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+        printf("add-fetch-uncontested %3d, threads, reps: %10lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)(repetitions_*pow(2, 14)), m.elapsedSeconds, m.powerConsumption);
+    }
+}
+/* *** } add fetch uncontested ******************************************* */
+
 int main(int argc, char **args) {
 
     if (argc < 3) {
@@ -829,9 +881,10 @@ int main(int argc, char **args) {
             "    --uncore-power <watt>                           set uncore power and don't measure anew\n"
             "\n"
             "    --add-fetch <thread-count-list>                 measure add-fetch barrier with threads according to the space delimited list\n"
-            "    --add-fetch-wait-spinning <thread-count-list>   measure add-fetch barrier with threads according to the space delimited list\n"
-            "    --ronny-array <thread-count-list>               same as add-fetch, but with ronny-array-barrier\n"
-            "    --ronny-no-array <thread-count-list>            same as add-fetch, but with ronny-no-array-barrier\n"
+            "    --add-fetch-wait-spinning <thread-count-list>\n"
+            "    --add-fetch-uncontested <thread-count-list>\n"
+            "    --ronny-array <thread-count-list>\n"
+            "    --ronny-no-array <thread-count-list>\n"
             );
 
         exit(0);
@@ -852,6 +905,10 @@ int main(int argc, char **args) {
     int *addFetchWaitSpinningThreadCountList = NULL;
     int addFetchWaitSpinningThreadCountListLen = 0;
 
+    Bool measureAddFetchUncontested_ = False;
+    int *addFetchUncontestedThreadCountList = NULL;
+    int addFetchUncontestedThreadCountListLen = 0;
+
     Bool measureRonnyArrayBarrier_ = False;
     int *ronnyArrayThreadCountList = NULL;
     int ronnyArrayThreadCountListLen = 0;
@@ -871,6 +928,10 @@ int main(int argc, char **args) {
             measureAddFetchWaitSpinning_ = True;
             threadListFromArguments(args, argc, i+1, &addFetchWaitSpinningThreadCountList, &addFetchWaitSpinningThreadCountListLen, 2, threadCount);
             i += addFetchWaitSpinningThreadCountListLen;
+        } else if (strcmp("--add-fetch-uncontested", args[i]) == 0) {
+            measureAddFetchUncontested_ = True;
+            threadListFromArguments(args, argc, i+1, &addFetchUncontestedThreadCountList, &addFetchUncontestedThreadCountListLen, 1, threadCount);
+            i += addFetchUncontestedThreadCountListLen;
         } else if (strcmp("--ronny-array", args[i]) == 0) {
             measureRonnyArrayBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ronnyArrayThreadCountList, &ronnyArrayThreadCountListLen, 2, threadCount);
@@ -908,6 +969,11 @@ int main(int argc, char **args) {
     if (measureAddFetchWaitSpinning_ == True) {
         measureAddFetchWaitSpinning(context, addFetchWaitSpinningThreadCountList, addFetchWaitSpinningThreadCountListLen);
         free(addFetchWaitSpinningThreadCountList);
+    }
+
+    if (measureAddFetchUncontested_ == True) {
+        measureAddFetchUncontested(context, addFetchUncontestedThreadCountList, addFetchUncontestedThreadCountListLen);
+        free(addFetchUncontestedThreadCountList);
     }
 
     if (measureRonnyArrayBarrier_ == True) {
