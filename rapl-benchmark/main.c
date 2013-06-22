@@ -14,9 +14,15 @@
 #include <pthread.h>
 
 
+typedef enum {
+    False = 0,
+    True = 1
+} Bool;
+
 typedef struct {
     int threadCount;
     double minWallSecondsPerMeasurement;
+    Bool avoidHt;
     int msrFile;
     double raplEnergyMultiplier;
     double sleepPowerConsumption; //Watt
@@ -34,12 +40,6 @@ typedef struct {
     double elapsedSeconds;
     double powerConsumption; // watt
 } MeasurementResult;
-
-
-typedef enum {
-    False = 0,
-    True = 1
-} Bool;
 
 
 static int openMsrFile() {
@@ -87,7 +87,8 @@ static inline void waitBarrier(int *barrier) {
     }
 }
 
-void setThreadAffinity(int threadIndex) {
+void setThreadAffinity(int threadIndex, Bool avoidHt) {
+    if (avoidHt == True) threadIndex *= 2;
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(threadIndex % sysconf(_SC_NPROCESSORS_ONLN), &cpuset);
@@ -175,7 +176,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
         int msrFile = c->msrFile;
         const int index = info->index;
 
-        setThreadAffinity(index);
+        setThreadAffinity(index, c->avoidHt);
 
         prepare(index, threadCount);
 
@@ -250,11 +251,14 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
     return m;
 }
 
-static Context* newContext(int threadCount, int minWallSecondsPerMeasurement, double sleepPowerConsumption, double uncorePowerConsumption) {
+static Context* newContext(int threadCount, int minWallSecondsPerMeasurement, Bool avoidHt, double sleepPowerConsumption, double uncorePowerConsumption) {
 
     long cpuCount = sysconf(_SC_NPROCESSORS_ONLN);
     if (threadCount > cpuCount) {
         printf("threadcount: %i > cpucount: %li. threads will be pinned round robin.\n", threadCount, cpuCount);
+    }
+    if (avoidHt == True && threadCount*2 > cpuCount) {
+        printf("threadcount: %i > cpucount: %li (avoid-ht). threads will be pinned round robin.\n", threadCount, cpuCount/2);
     }
 
     Context *ret = (Context*) malloc(sizeof(Context));
@@ -262,6 +266,7 @@ static Context* newContext(int threadCount, int minWallSecondsPerMeasurement, do
 
     ret->threadCount = threadCount;
     ret->minWallSecondsPerMeasurement = minWallSecondsPerMeasurement;
+    ret->avoidHt = avoidHt;
 
     ret->msrFile = openMsrFile();
 
@@ -760,6 +765,8 @@ int main(int argc, char **args) {
             "\n"
             "    --clock-ticks-per-nano-second <Ghz>   set processor clock, for correct cycle times in measurements (default: 1.0)\n"
             "\n"
+            "    --avoid-ht                            pins each threads to cores 0,2,4... instead of 0,1,2,...\n"
+            "\n"
             "    --sleep-power <watt>                  set sleep power and don't measure anew\n"
             "    --uncore-power <watt>                 set uncore power and don't measure anew\n"
             "    --add-fetch <thread-count-list>       measure add-fetch barrier with threads according to the space delimited list\n"
@@ -772,6 +779,7 @@ int main(int argc, char **args) {
 
     int threadCount = atoi(args[1]);
     int minWallSecondsPerMeasurement = atoll(args[2]);
+    Bool avoidHt = False;
     //double clockTicksPerNanoSecond = 1.0;
     double sleepPowerConsumption = 0.0;
     double uncorePowerConsumption = 0.0;
@@ -789,7 +797,9 @@ int main(int argc, char **args) {
     int ronnyNoArrayThreadCountListLen = 0;
 
     for (int i = 3; i < argc; i += 1) {
-        if (strcmp("--add-fetch", args[i]) == 0) {
+        if (strcmp("--avoid-ht", args[i]) == 0) {
+            avoidHt = True;
+        } else if (strcmp("--add-fetch", args[i]) == 0) {
             measureAddFetchBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &addFetchThreadCountList, &addFetchThreadCountListLen, 2, threadCount);
             i += addFetchThreadCountListLen;
@@ -817,7 +827,7 @@ int main(int argc, char **args) {
     assert(minWallSecondsPerMeasurement > 0);
     //assert(clockTicksPerNanoSecond > 0.0);
 
-    Context *context = newContext(threadCount, minWallSecondsPerMeasurement, sleepPowerConsumption, uncorePowerConsumption);
+    Context *context = newContext(threadCount, minWallSecondsPerMeasurement, avoidHt, sleepPowerConsumption, uncorePowerConsumption);
 
     if (context->sleepPowerConsumption == 0.0) measureSleepPowerConsumption(context, True);
     if (context->uncorePowerConsumption == 0.0) measureUncorePowerConsumption(context, True);
