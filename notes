@@ -1,3 +1,11 @@
+--- 13-06-24 ---
+
+ * iterated on rapl benchmark
+ * meeting with MV, SK
+  * make it paperable is now priority 1 (beleg faellt schon ab, kein problem)
+  * we don't need an add-fetch model right now
+  * we want the distributed algorithm and a classical representative
+
 --- 13-06-22 ---
 
  * thread pinning is now affinity aware (needed for venus)
@@ -8,10 +16,7 @@
 
 --- 13-06-21 ---
 
- * made usleep measurement: to be sure how many cycles will be used
  □ wait until clock_get_time issue on taurus has been fixed and redo the benchmarks
- □ measure on venus with as much cores as possible
-  * beware of tasksets. save it along the measurements
 
 --- 13-06-20 ---
 
@@ -19,19 +24,7 @@
   □ test rapl benchmark ronny-array with #define ARRAY_8
   □ make rapl benchmark measure multiple chips, not just cpu0
 
- * ronny-array-barrier now works
- * added ronny-no-array-barrier
- * add micro optimizations (more const)
- ✗ add them to implementation/... as well
- ✗ add no-array to implementation/ as well and benchmark it on taurus and atlas
-
 --- 13-06-19 ---
-
- * iterated on rapl measurement code
- * added add-fetch-barrier rapl measurement code
- * added progress of ronny-array-barrier rapl measurement code
- * small improvements to the implementation/remember-others/... code
-
 --- 13-06-18 ---
 --- 13-06-14 + 15 ---
 --- 13-06-13 ---
@@ -66,12 +59,9 @@
 
 --- 13-06-07 ---
 
- * changed benchmark to measure nanoseconds instead of cycles
+ * changed benchmark to measure cycles instead of nanoseconds
  * redid benchmarks
-   * 100secs per measurement instead of 20
-   * more datapoints
-   * added plots
-   * added topology picture of the measurement machine 'atlas'
+   * 100secs per measurement instead of 20, more datapoints, added plots, added topology picture of the measurement machine 'atlas'
 
 --- 13-06-05 ---
 
