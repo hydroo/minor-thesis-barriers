@@ -22,6 +22,7 @@ typedef enum {
 typedef struct {
     int threadCount;
     double minWallSecondsPerMeasurement;
+    double clockTicksPerNanoSecond;
     Bool avoidHt;
     int msrFile;
     double raplEnergyMultiplier;
@@ -271,7 +272,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
 
 
     if (autoPrint == True) {
-        printf("# measurement: %3d, threads, time %3.3lf sec, power %3.3lf W\n", threadCount, m.elapsedSeconds, m.powerConsumption);
+        printf("# measurement t %3d wallSecs %.3lf, totalPower %3.3lf W\n", threadCount, m.elapsedSeconds, m.powerConsumption);
     }
 
     if (m.elapsedSeconds < c->minWallSecondsPerMeasurement) {
@@ -281,7 +282,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
     return m;
 }
 
-static Context* newContext(int threadCount, int minWallSecondsPerMeasurement, Bool avoidHt, double sleepPowerConsumption, double uncorePowerConsumption) {
+static Context* newContext(int threadCount, int minWallSecondsPerMeasurement, double clockTicksPerNanoSecond, Bool avoidHt, double sleepPowerConsumption, double uncorePowerConsumption) {
 
     cpu_set_t get;
     assert(pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &get) == 0);
@@ -298,6 +299,7 @@ static Context* newContext(int threadCount, int minWallSecondsPerMeasurement, Bo
 
     ret->threadCount = threadCount;
     ret->minWallSecondsPerMeasurement = minWallSecondsPerMeasurement;
+    ret->clockTicksPerNanoSecond = clockTicksPerNanoSecond;
     ret->avoidHt = avoidHt;
 
     ret->msrFile = openMsrFile();
@@ -316,7 +318,7 @@ static void freeContext(Context *c) {
 
 
 static void printContext(Context *c) {
-    printf("threads %3d,, sleepPower %lf W, uncorePower %lf W\n", c->threadCount, c->sleepPowerConsumption, c->uncorePowerConsumption);
+    printf("# context t %3d, sleepPower %lf W, uncorePower %lf W\n", c->threadCount, c->sleepPowerConsumption, c->uncorePowerConsumption);
 }
 
 
@@ -410,7 +412,7 @@ void addFetchBarrier3(int * const barrier1, int * const barrier2, int * const ba
 }
 
 static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCountsLen) {
-    printf("# %s:\n",__func__);
+    //printf("# %s:\n",__func__);
 
     volatile int barrier1; // volatile necessary for prepare() to not screw up
     volatile int barrier2;
@@ -458,11 +460,104 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("add-fetch-barrier %3d, threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+
+        double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
+        double cyclesPerRepetition = totalCycles / repetitions_;
+        double joule = m.powerConsumption * m.elapsedSeconds;
+        double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
+
+        printf("add-fetch-barrier     t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
     }
 }
 /* *** } add fetch barrier ************************************************* */
 
+/* *** add fetch wait spinning { ******************************************* */
+void barrierAddFetch(int * const bar) {
+    if (__atomic_add_fetch(bar, -1, __ATOMIC_ACQ_REL) != 0) {
+        while (__atomic_load_n(bar, __ATOMIC_ACQUIRE) != 0) {
+        }
+    }
+}
+
+static void measureAddFetchWaitSpinning(Context *c, int *threadCounts, int threadCountsLen) {
+    //printf("# %s:\n",__func__);
+
+    volatile int barrier; // volatile necessary for prepare() to not screw up
+
+    void prepare(int threadIndex, int threadCount) {
+        if (threadIndex == 0) {
+            barrier = threadCount;
+        }
+    }
+    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void f(int threadIndex, int threadCount) {
+        (void) threadIndex;
+        (void) threadCount;
+        int * const barrier_ = (int*) &barrier;
+
+        if (threadIndex == 0) {
+            sleep(c->minWallSecondsPerMeasurement);
+        }
+
+        barrierAddFetch(barrier_);
+    }
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+        printf("add-fetch-wait-spin   t %3d, wallSecs %.3lf sec, totalPower %3.3lf W\n", threadCounts[i]-1, m.elapsedSeconds, m.powerConsumption);
+    }
+}
+/* *** } add fetch wait spinning ******************************************* */
+
+/* *** add fetch uncontested { ******************************************* */
+static void measureAddFetchUncontested(Context *c, int *threadCounts, int threadCountsLen) {
+    //printf("# %s:\n",__func__);
+
+    int repetitions_;
+
+    void prepare(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void f(int threadIndex, int threadCount) {
+        (void) threadIndex;
+        (void) threadCount;
+        int64_t repetitions = 0;
+        struct timespec begin, end;
+        volatile int * const barrier = (volatile int*) malloc(sizeof(int));
+        *barrier = threadCount;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(repetitions = 0;; repetitions += 3) {
+
+            REPEAT(14, __atomic_add_fetch(barrier, -1, __ATOMIC_ACQ_REL)); //copies 2**18 times this command
+
+            if (repetitions % 300 == 0) {
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    break;
+                }
+            }
+        }
+
+        repetitions_ = repetitions;
+    }
+
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+
+        repetitions_ *= pow(2, 14);
+
+        double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
+        double cyclesPerRepetition = totalCycles / repetitions_;
+        double joule = m.powerConsumption * m.elapsedSeconds;
+        double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
+
+        printf("add-fetch-uncontested t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
+    }
+}
+/* *** } add fetch uncontested ******************************************* */
 
 /* *** ronny array barrier { *********************************************** */
 #define ARRAY_64
@@ -539,7 +634,7 @@ static inline void barrierRonnyArray(int arrayIndex, arrayElement me, arrayEleme
 }
 
 static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCountsLen) {
-    printf("# %s:\n",__func__);
+    //printf("# %s:\n",__func__);
 
     int *left;
     arrayElement *entry;
@@ -635,7 +730,13 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("ronny-array %3d, threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+
+        double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
+        double cyclesPerRepetition = totalCycles / repetitions_;
+        double joule = m.powerConsumption * m.elapsedSeconds;
+        double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
+
+        printf("ronny-array           t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
     }
 }
 /* *** } ronny array barrier *********************************************** */
@@ -693,7 +794,7 @@ static inline void barrierNoArrayRonny(uint64_t me, uint64_t notMe, const uint64
 }
 
 static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int threadCountsLen) {
-    printf("# %s:\n",__func__);
+    //printf("# %s:\n",__func__);
 
     int *left;
     uint64_t *entry;
@@ -783,89 +884,17 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("ronny-no-array %3d, threads, reps: %9lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption);
+
+        double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
+        double cyclesPerRepetition = totalCycles / repetitions_;
+        double joule = m.powerConsumption * m.elapsedSeconds;
+        double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
+
+        printf("ronny-no-array        t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption,  cyclesPerRepetition, nanoJoulePerRepetition);
     }
 }
 /* *** } ronny no array barrier ******************************************** */
 
-/* *** add fetch wait spinning { ******************************************* */
-void barrierAddFetch(int * const bar) {
-    if (__atomic_add_fetch(bar, -1, __ATOMIC_ACQ_REL) != 0) {
-        while (__atomic_load_n(bar, __ATOMIC_ACQUIRE) != 0) {
-        }
-    }
-}
-
-static void measureAddFetchWaitSpinning(Context *c, int *threadCounts, int threadCountsLen) {
-    printf("# %s:\n",__func__);
-
-    volatile int barrier; // volatile necessary for prepare() to not screw up
-
-    void prepare(int threadIndex, int threadCount) {
-        if (threadIndex == 0) {
-            barrier = threadCount;
-        }
-    }
-    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
-    void f(int threadIndex, int threadCount) {
-        (void) threadIndex;
-        (void) threadCount;
-        int * const barrier_ = (int*) &barrier;
-
-        if (threadIndex == 0) {
-            sleep(c->minWallSecondsPerMeasurement);
-        }
-
-        barrierAddFetch(barrier_);
-    }
-
-    for (int i = 0; i < threadCountsLen; i += 1) {
-        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("add-fetch-wait-spin %3d, threads, wallSecs %.3lf sec, power %lf W\n", threadCounts[i]-1, m.elapsedSeconds, m.powerConsumption);
-    }
-}
-/* *** } add fetch wait spinning ******************************************* */
-
-/* *** add fetch uncontested { ******************************************* */
-static void measureAddFetchUncontested(Context *c, int *threadCounts, int threadCountsLen) {
-    printf("# %s:\n",__func__);
-
-    int repetitions_;
-
-    void prepare(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
-    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
-    void f(int threadIndex, int threadCount) {
-        (void) threadIndex;
-        (void) threadCount;
-        int64_t repetitions = 0;
-        struct timespec begin, end;
-        volatile int * const barrier = (volatile int*) malloc(sizeof(int));
-        *barrier = threadCount;
-
-        clock_gettime(CLOCK_REALTIME, &begin);
-        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
-
-        for(repetitions = 0;; repetitions += 3) {
-
-            REPEAT(14, __atomic_add_fetch(barrier, -1, __ATOMIC_ACQ_REL)); //copies 2**18 times this command
-
-            if (repetitions % 300 == 0) {
-                clock_gettime(CLOCK_REALTIME, &end);
-                if (end.tv_sec > supposedEnd) {
-                    break;
-                }
-            }
-        }
-
-        repetitions_ = repetitions;
-    }
-
-    for (int i = 0; i < threadCountsLen; i += 1) {
-        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-        printf("add-fetch-uncontested %3d, threads, reps: %10lli, wallSecs %.3lf sec, power %lf W\n", threadCounts[i], (long long int)(repetitions_*pow(2, 14)), m.elapsedSeconds, m.powerConsumption);
-    }
-}
-/* *** } add fetch uncontested ******************************************* */
 
 int main(int argc, char **args) {
 
@@ -893,7 +922,7 @@ int main(int argc, char **args) {
     int threadCount = atoi(args[1]);
     int minWallSecondsPerMeasurement = atoll(args[2]);
     Bool avoidHt = False;
-    //double clockTicksPerNanoSecond = 1.0;
+    double clockTicksPerNanoSecond = 1.0;
     double sleepPowerConsumption = 0.0;
     double uncorePowerConsumption = 0.0;
 
@@ -954,9 +983,9 @@ int main(int argc, char **args) {
 
     assert(threadCount > 0);
     assert(minWallSecondsPerMeasurement > 0);
-    //assert(clockTicksPerNanoSecond > 0.0);
+    assert(clockTicksPerNanoSecond > 0.0);
 
-    Context *context = newContext(threadCount, minWallSecondsPerMeasurement, avoidHt, sleepPowerConsumption, uncorePowerConsumption);
+    Context *context = newContext(threadCount, minWallSecondsPerMeasurement, clockTicksPerNanoSecond, avoidHt, sleepPowerConsumption, uncorePowerConsumption);
 
     if (context->sleepPowerConsumption == 0.0) measureSleepPowerConsumption(context, True);
     if (context->uncorePowerConsumption == 0.0) measureUncorePowerConsumption(context, True);
