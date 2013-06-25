@@ -338,8 +338,8 @@ static void measureSleepPowerConsumption(Context *c, Bool autoPrint) {
 
 
 // does not include sleep power consumption
-#define repetitionsPerLoop "40 * 1000"
-#define loopCount "500 * 1000"
+#define repetitionsPerLoop "10 * 1000" // has to fit into the l1 instruction cache
+#define loopCount "1000 * 1000"
 static void measureUncorePowerConsumption(Context *c, Bool autoPrint) {
     if (autoPrint == True) printf("# %s:\n",__func__);
 
@@ -348,7 +348,7 @@ static void measureUncorePowerConsumption(Context *c, Bool autoPrint) {
     double powerConsumption;
     double previousPowerConsumption = c->sleepPowerConsumption;
 
-    double firstCorePowerConsumption;
+    double firstCorePowerConsumption = 0.0;
     double addedDifferences = 0.0;
 
     void prepare(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
@@ -356,15 +356,30 @@ static void measureUncorePowerConsumption(Context *c, Bool autoPrint) {
     void f(int threadIndex, int threadCount) {
         (void) threadIndex;
         (void) threadCount;
-        __asm__ __volatile__ (
-            "\t"    "mov $" loopCount ",%%rcx;\n"
-            "\t"    "1:\n"
-            "\t"    ".rept (" repetitionsPerLoop ");\n"
-            "\t\t"      "xor %%rax,%%rax;\n"
-            "\t"    ".endr;\n"
-            "\t"    "sub $1,%%rcx;\n"
-            "\t"    "jnc 1b\n"
-            : : : "rcx", "rax");
+
+        struct timespec begin, end;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(int64_t repetitions = 0;; repetitions += 1) {
+
+            __asm__ __volatile__ (
+                "\t"    "mov $" loopCount ",%%rcx;\n"
+                "\t"    "sub $1, %%rcx;\n"
+                "\t"    "1:\n"
+                "\t"    ".rept (" repetitionsPerLoop ");\n"
+                "\t\t"      "xor %%rax,%%rax;\n"
+                "\t"    ".endr;\n"
+                "\t"    "sub $1,%%rcx;\n"
+                "\t"    "jnc 1b\n"
+                : : : "rcx", "rax");
+
+            clock_gettime(CLOCK_REALTIME, &end);
+            if (end.tv_sec > supposedEnd) {
+                break;
+            }
+        }
     }
 
     for (int threads = 1; threads <= c->threadCount; threads += 1, previousPowerConsumption = powerConsumption) {
@@ -386,7 +401,7 @@ static void measureUncorePowerConsumption(Context *c, Bool autoPrint) {
 
 
 /* *** add fetch barrier { ************************************************* */
-void addFetchBarrier1(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
+static inline void addFetchBarrier1(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
     (void) barrier2;
     if (__atomic_add_fetch(barrier1, -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n(barrier1, __ATOMIC_ACQUIRE) != 0) {
@@ -394,7 +409,7 @@ void addFetchBarrier1(int * const barrier1, int * const barrier2, int * const ba
     }
     *barrier3 = threadCount;
 }
-void addFetchBarrier2(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
+static inline void addFetchBarrier2(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
     (void) barrier3;
     if (__atomic_add_fetch(barrier2, -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n(barrier2, __ATOMIC_ACQUIRE) != 0) {
@@ -402,7 +417,7 @@ void addFetchBarrier2(int * const barrier1, int * const barrier2, int * const ba
     }
     *barrier1 = threadCount;
 }
-void addFetchBarrier3(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
+static inline void addFetchBarrier3(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
     (void) barrier1;
     if (__atomic_add_fetch(barrier3, -1, __ATOMIC_ACQ_REL) != 0) {
         while (__atomic_load_n(barrier3, __ATOMIC_ACQUIRE) != 0) {
@@ -447,15 +462,14 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
             addFetchBarrier2(barrier1_, barrier2_, barrier3_, threadCount);
             addFetchBarrier3(barrier1_, barrier2_, barrier3_, threadCount);
 
-            if (repetitions % 300 == 0) {
+            if (repetitions % (3 * 1000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
                     break;
                 }
             }
         }
-
-        repetitions_ = repetitions;
     }
 
     for (int i = 0; i < threadCountsLen; i += 1) {
@@ -520,34 +534,32 @@ static void measureAddFetchUncontested(Context *c, int *threadCounts, int thread
     void f(int threadIndex, int threadCount) {
         (void) threadIndex;
         (void) threadCount;
-        int64_t repetitions = 0;
         struct timespec begin, end;
-        volatile int * const barrier = (volatile int*) malloc(sizeof(int));
+        int * const barrier = (int*) malloc(sizeof(int));
         *barrier = threadCount;
 
         clock_gettime(CLOCK_REALTIME, &begin);
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
-        for(repetitions = 0;; repetitions += 3) {
+        for(int64_t repetitions = 0;; repetitions += 1) {
 
-            REPEAT(14, __atomic_add_fetch(barrier, -1, __ATOMIC_ACQ_REL)); //copies 2**18 times this command
+            REPEAT12(__atomic_add_fetch(barrier, -1, __ATOMIC_ACQ_REL);)
 
-            if (repetitions % 300 == 0) {
+            if (repetitions % 3 * 1000 == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
                     break;
                 }
             }
         }
-
-        repetitions_ = repetitions;
     }
 
 
     for (int i = 0; i < threadCountsLen; i += 1) {
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
 
-        repetitions_ *= pow(2, 14);
+        repetitions_ *= pow(2,12);
 
         double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
         double cyclesPerRepetition = totalCycles / repetitions_;
@@ -696,13 +708,12 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
         memset(copy, 0, sizeof(arrayElement) * entryExitLength);
 
         struct timespec begin, end;
-        int64_t repetitions = 0;
 
         clock_gettime(CLOCK_REALTIME, &begin);
 
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
-        for(repetitions = 0;; repetitions += 3) {
+        for(int64_t repetitions = 0;; repetitions += 3) {
 
 #ifdef DEBUG
             barrierRonnyArray(threadIndex, arrayIndex, me, notMe, full, left_, entry_, exit_, copy, entryExitLength, successfulBarrierVisitsCount, threadCount);
@@ -714,15 +725,15 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
             barrierRonnyArray(arrayIndex, me, notMe, full, left_, entry_, exit_, copy, entryExitLength);
 #endif
 
-            if (repetitions % 300 == 0) {
+            if (repetitions % (3 * 1000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
                     break;
                 }
             }
         }
 
-        repetitions_ = repetitions;
 
         free(full);
         free(copy);
@@ -850,13 +861,12 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
         *copy = 0;
 
         struct timespec begin, end;
-        int64_t repetitions = 0;
 
         clock_gettime(CLOCK_REALTIME, &begin);
 
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
-        for(repetitions = 0;; repetitions += 3) {
+        for(int64_t repetitions = 0;; repetitions += 3) {
 
 #ifdef DEBUG
             barrierNoArrayRonny(threadIndex, me, notMe, full, left_, entry_, exit_, copy, successfulBarrierVisitsCount, threadCount);
@@ -868,15 +878,14 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
             barrierNoArrayRonny(me, notMe, full, left_, entry_, exit_, copy);
 #endif
 
-            if (repetitions % 300 == 0) {
+            if (repetitions % (3 *1000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
                     break;
                 }
             }
         }
-
-        repetitions_ = repetitions;
 
         free(full);
         free(copy);
