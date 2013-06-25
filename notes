@@ -2,6 +2,8 @@
 
  * installed rapl measurement system (4 core sandbridge)
 
+ □ forgot to -O3 on all previous benchmarks. redo all of them. (taurus, atlas)
+
 --- 13-06-24 ---
 
  * iterated on rapl benchmark
