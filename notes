@@ -2,7 +2,8 @@
 
  * installed rapl measurement system (4 core sandbridge)
 
- □ forgot to -O3 on all previous benchmarks. redo all of them. (taurus, atlas)
+ ✗ forgot to -O3 on all previous benchmarks. redo all of them. (taurus, atlas)
+   lost all my HPC accounts
 
 --- 13-06-24 ---
 
