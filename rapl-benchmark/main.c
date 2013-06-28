@@ -32,7 +32,7 @@ typedef struct {
 
 typedef struct {
     int index;
-    Context *c;
+    const Context * c;
     double elapsedSeconds;
     double usedJoule;
 } ThreadInfo;
@@ -192,7 +192,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
     int startBarrier;
     int stopBarrier;
     ThreadInfo *infos = NULL;
-    pthread_t *t = NULL;
+    pthread_t *threads = NULL;
     double usedJoule;
     MeasurementResult m;
 
@@ -203,8 +203,8 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
         struct timespec endTime;
 
         ThreadInfo *info = (ThreadInfo*) userData;
-        const Context *c = info->c;
-        int msrFile = c->msrFile;
+        const Context * const c = info->c;
+        const int msrFile = c->msrFile;
         const int index = info->index;
 
         setThreadAffinity(index, c->avoidHt);
@@ -234,7 +234,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
         initBarrier(&stopBarrier, threadCount);
 
         infos = (ThreadInfo*) malloc(sizeof(ThreadInfo) * threadCount);
-        t = (pthread_t*) malloc(sizeof(pthread_t) * threadCount);
+        threads = (pthread_t*) malloc(sizeof(pthread_t) * threadCount);
 
         /* start all threadCount */
         for (int i = 0; i < threadCount; i += 1) {
@@ -242,7 +242,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
             infos[i].c = c;
             infos[i].elapsedSeconds = 0.0;
             infos[i].usedJoule = 0.0;
-            if(pthread_create(&t[i], NULL, threadFunction, (void *)&(infos[i]))){
+            if(pthread_create(&threads[i], NULL, threadFunction, (void *)&(infos[i]))){
                 perror("pthread_create");
                 exit(-1);
             }
@@ -250,7 +250,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
 
         /* join all threads */
         for (int i = 0; i < threadCount; i += 1) {
-            if(pthread_join(t[i], NULL)){
+            if(pthread_join(threads[i], NULL)){
                 perror("pthread_join");
                 exit(-1);
             }
@@ -266,7 +266,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
         m.powerConsumption = usedJoule / m.elapsedSeconds;
 
         free(infos);
-        free(t);
+        free(threads);
 
     } while(usedJoule < 0.0); // repeat incase of wrap around in the energy counter register
 
@@ -453,7 +453,6 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
         int64_t repetitions = 0;
 
         clock_gettime(CLOCK_REALTIME, &begin);
-
         time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
         for(repetitions = 0;; repetitions += 3){
@@ -535,15 +534,15 @@ static void measureAddFetchUncontested(Context *c, int *threadCounts, int thread
         (void) threadIndex;
         (void) threadCount;
         struct timespec begin, end;
-        int * const barrier = (int*) malloc(sizeof(int));
-        *barrier = threadCount;
+        int barrier = threadCount;
+        int * const barrierPointer = &barrier;
 
         clock_gettime(CLOCK_REALTIME, &begin);
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            REPEAT12(__atomic_add_fetch(barrier, -1, __ATOMIC_ACQ_REL);)
+            REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_ACQ_REL);)
 
             if (repetitions % 3 * 1000 == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -710,7 +709,6 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
         struct timespec begin, end;
 
         clock_gettime(CLOCK_REALTIME, &begin);
-
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
         for(int64_t repetitions = 0;; repetitions += 3) {
@@ -863,7 +861,6 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
         struct timespec begin, end;
 
         clock_gettime(CLOCK_REALTIME, &begin);
-
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
         for(int64_t repetitions = 0;; repetitions += 3) {
