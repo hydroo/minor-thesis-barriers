@@ -1,9 +1,25 @@
+--- 13-06-28 ---
+
+ * MPICH Barrier 3.0.4 implementation :
+  * src/mpi/coll/barrier.c
+  * log2 Dissemination (k steps, 0<=k<=(ceil(log p)-1), proc i sends to proc (i + 2^k) % p and receives from proc (i - 2^k) % p)
+   * "Two Algorithms for Barrier Synchronization," International Journal of Parallel Programming, 17(1):1-17, 1988
+
+ * OpenMPI 1.7 Barrier implementation :
+  * ompi/mca/coll/tuned/coll_tuned_barrier.c
+  * n  = 2^k -> recursive doubling
+  * n != 2^k -> bruck = dissemination with swapped receiver / sender procs
+   * "Two Algorithms for Barrier Synchronization," International Journal of Parallel Programming, 17(1):1-17, 1988
+ 
+ * -> we will use to the 2 way dissemination barrier to compare ours to
+
+ * began rewriting the rapl-benchmark for mpi
+  □ insert dissemination barrier instead of dummy
+
+
 --- 13-06-25 ---
 
  * installed rapl measurement system (4 core sandbridge)
-
- ✗ forgot to -O3 on all previous benchmarks. redo all of them. (taurus, atlas)
-   lost all my HPC accounts
 
 --- 13-06-24 ---
 
@@ -19,12 +35,8 @@
  * add rapl benchmarks for:
   * uncontested __atomic_add_fetch
   * add-fetch wait spinning
- □ analyze venus results
 
 --- 13-06-21 ---
-
- □ wait until clock_get_time issue on taurus has been fixed and redo the benchmarks
-
 --- 13-06-20 ---
 
  * as soon as you got access to a bigger system
