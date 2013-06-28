@@ -5,6 +5,7 @@
 *.s
 barrier
 
+/implementations/distributed/distributed
 /implementations/remember-others-and-add-fetch/add-fetch
 /implementations/remember-others-and-add-fetch/ronny
 
