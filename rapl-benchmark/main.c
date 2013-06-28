@@ -50,7 +50,6 @@ static int openMsrFile() {
         assert(0);
     }
     return fd;
-    return 0;
 }
 static inline uint64_t msr(int msrFile, uint32_t offset) {
     uint64_t value;
@@ -88,7 +87,7 @@ static inline void waitBarrier(int *barrier) {
     }
 }
 
-void setThreadAffinity(int threadIndex_, Bool avoidHt) {
+static void setThreadAffinity(int threadIndex_, Bool avoidHt) {
     if (avoidHt == True) threadIndex_ *= 2;
 
     cpu_set_t get;
@@ -908,14 +907,14 @@ int main(int argc, char **args) {
         printf(
             "  rapl-benchmark <thread-count> <min-wall-seconds-per-measurement> [options]>\n"
             "\n"
-            "    --clock-ticks-per-nano-second <Ghz>             set processor clock, for correct cycle times in measurements (default: 1.0)\n"
+            "    --ghz <Ghz>                                 set processor clock, for correct cycle times in measurements (default: 1.0)\n"
             "\n"
-            "    --avoid-ht                                      pins each threads to cores 0,2,4... instead of 0,1,2,...\n"
+            "    --avoid-ht                                  pins each threads to cores 0,2,4... instead of 0,1,2,...\n"
             "\n"
-            "    --sleep-power <watt>                            set sleep power and don't measure anew\n"
-            "    --uncore-power <watt>                           set uncore power and don't measure anew\n"
+            "    --sleep-power <watt>                        set sleep power and don't measure anew\n"
+            "    --uncore-power <watt>                       set uncore power and don't measure anew\n"
             "\n"
-            "    --add-fetch-barrier <thread-count-list>         measure add-fetch barrier with threads according to the space delimited list\n"
+            "    --add-fetch-barrier <thread-count-list>     measure add-fetch barrier with threads according to the space delimited list\n"
             "    --add-fetch-wait-spinning <thread-count-list>\n"
             "    --add-fetch-uncontested <thread-count-list>\n"
             "    --ronny-array <thread-count-list>\n"
@@ -955,6 +954,10 @@ int main(int argc, char **args) {
     for (int i = 3; i < argc; i += 1) {
         if (strcmp("--avoid-ht", args[i]) == 0) {
             avoidHt = True;
+        } else if (strcmp("--ghz", args[i]) == 0) {
+            assert(i + 1 < argc);
+            clockTicksPerNanoSecond = atof(args[i+1]);
+            i += 1;
         } else if (strcmp("--add-fetch-barrier", args[i]) == 0) {
             measureAddFetchBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &addFetchThreadCountList, &addFetchThreadCountListLen, 2, threadCount);
