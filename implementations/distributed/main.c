@@ -238,6 +238,12 @@ int main(int argc, char **args) {
             "    --ghz <Ghz>           set processor clock, for correct cycle times in measurements (default: 1.0)\n"
             "\n"
             "    --dissemination       measure dissemination barrier using <n> processes\n"
+            "\n"
+            "    note:\n"
+            "      * --bind-to-core, --byslot, byslot do pin to hyperthreads on the same core\n"
+            "      * --slot-list 0:0,1 works on my notebook and sets the affinity mask to proc 0,2 for all processes.\n"
+            "        not awesome, but the best I could find.\n"
+            "      * specifying --bind-to* and --slot-list at the same time doesn't work. --slot-list overrides --bind-to* "
             );
 
         exit(0);
