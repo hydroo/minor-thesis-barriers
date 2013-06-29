@@ -35,19 +35,28 @@ typedef struct {
 } MeasurementResult;
 
 /* *** helper { ************************************************************ */
+// print only on process 0
+static inline void printf0(const char* fmt, ...) {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        va_list args;
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
+    }
+}
 static int openMsrFile() {
     int fd = open("/dev/cpu/0/msr",O_RDONLY);
     if (fd == -1) {
-        fprintf(stderr, "failed opening msr file: \"%s\"\n", strerror(errno));
-        assert(0);
+        printf0("failed opening msr file: \"%s\". no rapl measurements will be done.\n", strerror(errno));
     }
     return fd;
 }
 static inline uint64_t msr(int msrFile, uint32_t offset) {
     uint64_t value;
     if (pread(msrFile, &value, sizeof(uint64_t), offset) != sizeof(uint64_t)) {
-        fprintf(stderr, "failed seeking %lu bytes from offset %x in msr\n", sizeof(uint64_t), offset);
-        assert(0);
+        return 0.0;
     }
     return value;
 }
@@ -72,18 +81,6 @@ static inline double seconds(struct timespec t) {
 }
 static inline uint64_t nanoSeconds(struct timespec t) {
     return ((uint64_t)t.tv_sec * 1000000000 + (uint64_t)t.tv_nsec);
-}
-
-// print only on process 0
-static inline void printf0(const char* fmt, ...) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (rank == 0) {
-        va_list args;
-        va_start(args, fmt);
-        vprintf(fmt, args);
-        va_end(args);
-    }
 }
 /* *** } helper ************************************************************ */
 static Context* newContext(int minWallSecondsPerMeasurement, double clockTicksPerNanoSecond) {
