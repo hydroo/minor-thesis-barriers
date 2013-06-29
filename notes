@@ -1,3 +1,13 @@
+--- 13-06-29 ---
+
+ * began playing around with MPI RMA
+
+ □ can I assume MPI 3.0 (published sept 2012) or only 2.2? (3.0 has new RMA directives)
+  □ how widely has MPI 3.0 been adopted. Check intel, sgi, hp, ibm, more... implementations.
+  □ why did openmpi not adopt it yet
+  □ continue using openmpi or switch to mpich?
+ □ read one-sided for MPI 2.2
+
 --- 13-06-28 ---
 
  * MPICH Barrier 3.0.4 implementation :
@@ -11,12 +21,13 @@
   * n != 2^k -> bruck = dissemination with swapped receiver / sender procs
    * "Two Algorithms for Barrier Synchronization," International Journal of Parallel Programming, 17(1):1-17, 1988
   □ oddly, ompi-bruck = dissemination. bruck should communicate in the reverse direction. to be confirmed.
+
+ * note: intra communicators are very different from inter communicators. we want intra!
  
  * -> we will use to the 2 way dissemination barrier to compare ours to
 
  * began rewriting the rapl-benchmark for mpi
   ✓ insert dissemination barrier instead of dummy
-
 
 --- 13-06-25 ---
 
