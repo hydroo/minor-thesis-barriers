@@ -108,7 +108,7 @@ static void printContext(Context *c) {
 }
 
 
-static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(int processIndex, int processCount), void f(int processIndex, int processCount), void finalize(int processIndex, int processCount), Context *c, Bool autoPrint) {
+static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(MPI_Comm comm), void f(MPI_Comm comm), void finalize(MPI_Comm comm), Context *c, Bool autoPrint) {
 
     uint64_t beginEnergy;
     uint64_t endEnergy;
@@ -122,19 +122,19 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
     int raplOverflowReceive;
 
     do {
-        prepare(processIndex, processCount);
+        prepare(MPI_COMM_WORLD);
 
         beginEnergy = energy(msrFile);
         clock_gettime(CLOCK_REALTIME, &beginTime);
 
         MPI_Barrier(MPI_COMM_WORLD);
-        f(processIndex, processCount);
+        f(MPI_COMM_WORLD);
         MPI_Barrier(MPI_COMM_WORLD);
 
         endEnergy = energy(msrFile);
         clock_gettime(CLOCK_REALTIME, &endTime);
 
-        finalize(processIndex, processCount);
+        finalize(MPI_COMM_WORLD);
 
 
         raplOverflowSend = (int64_t)endEnergy - (int64_t)beginEnergy < 0 ? 1 : 0;
@@ -200,11 +200,10 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
 
     int repetitions_;
 
-    void prepare(int processIndex, int processCount) {(void) processIndex; (void) processCount;}
-    void finalize(int processIndex, int processCount) {(void) processIndex; (void) processCount;}
-    void f(int processIndex, int processCount) {
-        (void) processIndex;
-        (void) processCount;
+    void prepare(MPI_Comm comm) {(void) comm;}
+    void finalize(MPI_Comm comm) {(void) comm;}
+    void f(MPI_Comm comm) {
+        int processIndex; MPI_Comm_rank(comm, &processIndex);
 
         struct timespec begin, end;
 
@@ -213,7 +212,7 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            Mpich_Barrier(MPI_COMM_WORLD);
+            Mpich_Barrier(comm);
 
             if (repetitions % 10000 == 0) {
 
@@ -222,16 +221,16 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
                     clock_gettime(CLOCK_REALTIME, &end);
                     if (end.tv_sec > supposedEnd) {
                         Bool b = False;
-                        MPI_Bcast(&b, 1, MPI_INT, 0, MPI_COMM_WORLD);
+                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
                         repetitions_ = repetitions;
                         break;
                     } else {
                         Bool b = True;
-                        MPI_Bcast(&b, 1, MPI_INT, 0, MPI_COMM_WORLD);
+                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
                     }
                 } else {
                     Bool b;
-                    MPI_Bcast(&b, 1, MPI_INT, 0, MPI_COMM_WORLD);
+                    MPI_Bcast(&b, 1, MPI_INT, 0, comm);
                     if (b == False) {
                         repetitions_ = repetitions;
                         break;
