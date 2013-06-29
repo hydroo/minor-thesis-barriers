@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -73,6 +74,17 @@ static inline uint64_t nanoSeconds(struct timespec t) {
     return ((uint64_t)t.tv_sec * 1000000000 + (uint64_t)t.tv_nsec);
 }
 
+// print only on process 0
+static inline void printf0(const char* fmt, ...) {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if (rank == 0) {
+        va_list args;
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
+    }
+}
 /* *** } helper ************************************************************ */
 static Context* newContext(int minWallSecondsPerMeasurement, double clockTicksPerNanoSecond) {
 
@@ -96,9 +108,7 @@ static void freeContext(Context *c) {
     free(c);
 }
 static void printContext(Context *c) {
-    if (c->processIndex == 0) {
-        printf("# context p %3d, \n", c->processCount);
-    }
+    printf0("# context p %3d, \n", c->processCount);
 }
 
 
@@ -212,9 +222,7 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
     double joule = m.powerConsumption * m.elapsedSeconds;
     double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
 
-    if (c->processIndex == 0) {
-        printf("%i dissemination t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
-    }
+    printf0("%i dissemination t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
 }
 /* *** } dissemination barrier ********************************************* */
 
@@ -224,7 +232,7 @@ int main(int argc, char **args) {
     MPI_Init(&argc, &args);
 
     if (argc < 2) {
-        printf(
+        printf0(
             "  mpirun -np <n> ./distributed <min-wall-seconds-per-measurement> [options]>\n"
             "\n"
             "    --ghz <Ghz>           set processor clock, for correct cycle times in measurements (default: 1.0)\n"
@@ -249,7 +257,7 @@ int main(int argc, char **args) {
         } else if (strcmp("--dissemination", args[i]) == 0) {
             measureDisseminationBarrier_ = True;
         } else {
-            printf("unknown argument: \"%s\"\n", args[i]);
+            printf0("unknown argument: \"%s\"\n", args[i]);
             exit(-1);
         }
     }
