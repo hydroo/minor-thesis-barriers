@@ -1,20 +1,21 @@
 --- 13-06-28 ---
 
  * MPICH Barrier 3.0.4 implementation :
-  * src/mpi/coll/barrier.c
+  * src/mpi/coll/barrier.c : MPIR_Barrier_intra
   * log2 Dissemination (k steps, 0<=k<=(ceil(log p)-1), proc i sends to proc (i + 2^k) % p and receives from proc (i - 2^k) % p)
    * "Two Algorithms for Barrier Synchronization," International Journal of Parallel Programming, 17(1):1-17, 1988
 
  * OpenMPI 1.7 Barrier implementation :
-  * ompi/mca/coll/tuned/coll_tuned_barrier.c
+  * ompi/mca/coll/tuned/coll_tuned_barrier.c : ompi_coll_tuned_barrier_intra_recursivedoubling, ompi_coll_tuned_barrier_intra_bruck
   * n  = 2^k -> recursive doubling
   * n != 2^k -> bruck = dissemination with swapped receiver / sender procs
    * "Two Algorithms for Barrier Synchronization," International Journal of Parallel Programming, 17(1):1-17, 1988
+  □ oddly, ompi-bruck = dissemination. bruck should communicate in the reverse direction. to be confirmed.
  
  * -> we will use to the 2 way dissemination barrier to compare ours to
 
  * began rewriting the rapl-benchmark for mpi
-  □ insert dissemination barrier instead of dummy
+  ✓ insert dissemination barrier instead of dummy
 
 
 --- 13-06-25 ---
