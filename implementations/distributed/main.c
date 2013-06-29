@@ -88,7 +88,6 @@ static inline void printf0(const char* fmt, ...) {
 /* *** } helper ************************************************************ */
 static Context* newContext(int minWallSecondsPerMeasurement, double clockTicksPerNanoSecond) {
 
-
     Context *ret = (Context*) malloc(sizeof(Context));
     assert(ret != NULL);
 
@@ -168,6 +167,37 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(i
 }
 
 /* *** dissemination barrier { ********************************************* */
+///* adapted from ompi/mca/coll/tuned/coll_tuned_barrier.c
+//   bruck algorithm . funny. it does the exact same thing as dissemination. perhaps dev error */
+//static inline int OMPI_Barrier(MPI_Comm comm) {
+//    int from, to, rank, size, error;
+//    MPI_Comm_rank(comm, &rank);
+//    MPI_Comm_size(comm, &size);
+//
+//    for (int distance = 1; distance < size; distance *= 2) {
+//        from = (rank + size - distance) % size; /* because modulo can return negative numbers iirc */
+//        to = (rank + distance) % size;
+//        error = MPI_Sendrecv(NULL, 0, MPI_BYTE, to, 0, NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
+//        assert(error == MPI_SUCCESS);
+//    }
+//    return MPI_SUCCESS;
+//}
+
+/* adapted from mpich-git/src/mpi/coll/barrier.c
+   dissemination algorithm */
+static inline void Mpich_Barrier(MPI_Comm comm) {
+    int from, to, rank, size, error;
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &size);
+
+    for (int distance = 1; distance < size; distance *= 2) {
+        from = (rank - distance + size) % size; /* because modulo can return negative numbers iirc */
+        to = (rank + distance) % size;
+        error = MPI_Sendrecv(NULL, 0, MPI_BYTE, to, 0, NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
+        assert(error == MPI_SUCCESS);
+    }
+}
+
 static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
     if (autoPrint == True) printf("# %i %s:\n", c->processIndex, __func__);
 
@@ -186,7 +216,7 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            MPI_Barrier(MPI_COMM_WORLD);
+            Mpich_Barrier(MPI_COMM_WORLD);
 
             if (repetitions % 10000 == 0) {
 
