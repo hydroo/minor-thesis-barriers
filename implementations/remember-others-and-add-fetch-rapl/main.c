@@ -46,16 +46,14 @@ typedef struct {
 static int openMsrFile() {
     int fd = open("/dev/cpu/0/msr",O_RDONLY);
     if (fd == -1) {
-        fprintf(stderr, "failed opening msr file: \"%s\"\n", strerror(errno));
-        assert(0);
+        printf("failed opening msr file: \"%s\". no rapl measurements will be done.\n", strerror(errno));
     }
     return fd;
 }
 static inline uint64_t msr(int msrFile, uint32_t offset) {
     uint64_t value;
     if (pread(msrFile, &value, sizeof(uint64_t), offset) != sizeof(uint64_t)) {
-        fprintf(stderr, "failed seeking %lu bytes from offset %x in msr\n", sizeof(uint64_t), offset);
-        assert(0);
+        return 0;
     }
     return value;
 }
