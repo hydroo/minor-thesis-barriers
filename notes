@@ -1,5 +1,7 @@
 --- 13-07-05 ---
 
+ * implemented a new idea for a shared memory barrier called "super wasteful barrier"
+
   MPI 2.2 is bad for our purpose because:
    * put/get data may be not visible in main memory until a window is syncronized with fence/complete/wait
     * fence implies a barrier on the group

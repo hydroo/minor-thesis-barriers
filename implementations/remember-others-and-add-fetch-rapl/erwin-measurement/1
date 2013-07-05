@@ -1,0 +1,40 @@
+# 2 socket, 16 threads, 32 cores, opteron 6276
+
+
+# without ht
+add-fetch-barrier     t   2, reps   42105000, wallSecs 3.105 sec, cycles/reps 169.590
+add-fetch-barrier     t   4, reps    5961000, wallSecs 4.001 sec, cycles/reps 1543.799
+add-fetch-barrier     t   8, reps    2136000, wallSecs 4.000 sec, cycles/reps 4307.520
+add-fetch-barrier     t  12, reps    1053000, wallSecs 4.001 sec, cycles/reps 8739.859
+add-fetch-barrier     t  16, reps     675000, wallSecs 4.004 sec, cycles/reps 13642.117
+ronny-no-array        t   2, reps   38382000, wallSecs 3.991 sec, cycles/reps 239.152
+ronny-no-array        t   4, reps    4548000, wallSecs 4.001 sec, cycles/reps 2023.149
+ronny-no-array        t   8, reps    1167000, wallSecs 4.000 sec, cycles/reps 7883.234
+ronny-no-array        t  12, reps     381000, wallSecs 4.027 sec, cycles/reps 24312.865
+ronny-no-array        t  16, reps     249000, wallSecs 4.004 sec, cycles/reps 36982.576
+super-wasteful        t   2, reps   81630000, wallSecs 3.966 sec, cycles/reps 111.747
+super-wasteful        t   4, reps    8910000, wallSecs 4.011 sec, cycles/reps 1035.417
+super-wasteful        t   8, reps    4350000, wallSecs 4.008 sec, cycles/reps 2119.097
+super-wasteful        t  12, reps    2910000, wallSecs 4.010 sec, cycles/reps 3169.518
+super-wasteful        t  16, reps    2190000, wallSecs 3.982 sec, cycles/reps 4181.949
+
+
+# with ht
+add-fetch-barrier     t   2, reps    9363000, wallSecs 2.990 sec, cycles/reps 734.483
+add-fetch-barrier     t   4, reps    3396000, wallSecs 3.000 sec, cycles/reps 2032.045
+add-fetch-barrier     t   8, reps    1344000, wallSecs 3.004 sec, cycles/reps 5139.971
+add-fetch-barrier     t  16, reps     513000, wallSecs 3.006 sec, cycles/reps 13478.249
+add-fetch-barrier     t  24, reps     315000, wallSecs 3.008 sec, cycles/reps 21960.390
+add-fetch-barrier     t  32, reps     228000, wallSecs 2.999 sec, cycles/reps 30252.229
+ronny-no-array        t   2, reps    3066000, wallSecs 2.980 sec, cycles/reps 2235.837
+ronny-no-array        t   4, reps    2358000, wallSecs 3.003 sec, cycles/reps 2929.137
+ronny-no-array        t   8, reps     681000, wallSecs 3.004 sec, cycles/reps 10144.848
+ronny-no-array        t  16, reps     186000, wallSecs 3.021 sec, cycles/reps 37351.132
+ronny-no-array        t  24, reps     102000, wallSecs 3.033 sec, cycles/reps 68386.553
+ronny-no-array        t  32, reps      69000, wallSecs 3.011 sec, cycles/reps 100350.396
+super-wasteful        t   2, reps    8850000, wallSecs 2.929 sec, cycles/reps 761.097
+super-wasteful        t   4, reps    5820000, wallSecs 3.004 sec, cycles/reps 1186.981
+super-wasteful        t   8, reps    2940000, wallSecs 3.023 sec, cycles/reps 2364.934
+super-wasteful        t  16, reps    1500000, wallSecs 3.004 sec, cycles/reps 4605.907
+super-wasteful        t  24, reps     960000, wallSecs 3.011 sec, cycles/reps 7214.903
+super-wasteful        t  32, reps     660000, wallSecs 2.979 sec, cycles/reps 10382.437
