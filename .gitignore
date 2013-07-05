@@ -8,11 +8,11 @@ barrier
 /implementations/distributed/distributed
 /implementations/remember-others-and-add-fetch/add-fetch
 /implementations/remember-others-and-add-fetch/ronny
+/implementations/remember-others-and-add-fetch-rapl/rapl-benchmark
 
 /misc/measure-sleeping/measure-sleeping
 /misc/mpi-barrier-test/mpi-barrier-test
 
-/rapl-benchmark/rapl-benchmark
 
 model*.pdf
 
