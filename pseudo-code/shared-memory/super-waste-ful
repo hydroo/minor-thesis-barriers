@@ -1,0 +1,13 @@
+shared: barrier[numThreads] (one array element per cache line)
+
+barrier[threadIndex] := 1
+
+for i := 0; i < threadCount; i += 1 {
+	if barrier[i] = 0 {
+		i := - 1
+		continue
+	}
+}
+
+
+// reset is problematic
