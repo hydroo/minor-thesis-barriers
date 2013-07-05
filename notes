@@ -1,13 +1,81 @@
+--- 13-07-05 ---
+
+  MPI 2.2 is bad for our purpose because:
+   * put/get data may be not visible in main memory until a window is syncronized with fence/complete/wait
+    * fence implies a barrier on the group
+    * complete/wait is a local sync between fewer processes, but ultimately as bad as fence for our purpose
+
+                       | 3.0 | 2.2
+ ----------------------+-----+-----
+  published            |sep12|sep09
+                       |     |
+  WinCreate            |  x  |  x
+  WinAllocate          |  x  |  -
+  WinAllocateShared    |  x  |  -
+  WinSharedQuery       |  x  |  -
+  WinCreateDynamic     |  x  |  -
+  WinAttach            |  x  |  -
+  WinDetach            |  x  |  -
+  WinFree              |  x  |  x
+                       |     |
+  Put                  |  x  |  x
+  Get                  |  x  |  x
+  Accumulate           |  x  |  x
+  GetAccumulate        |  x  |  -
+  FetchAndOp           |  x  |  -
+  CompareAndSwap       |  x  |  -
+                       |     |
+  RequestBasedRMA      |  x  |  -
+                       |     |
+  WinFence             |  x  |  x
+  WinStart             |  x  |  x
+  WinComplete          |  x  |  x
+  WinPost              |  x  |  x
+  WinWait              |  x  |  x
+  WinTest              |  x  |  x
+  WinLock              |  x  |  x
+  WinLockAll           |  x  |  -
+  WinUnlock            |  x  |  x
+  WinUnlockAll         |  x  |  -
+  WinFlush             |  x  |  -
+  WinFlushAll          |  x  |  -
+  WinFlushLocal        |  x  |  -
+  WinFlushLocalAll     |  x  |  -
+  WinSync              |  x  |  -
+                       |     |
+  OpenMPI       1.7    |  -  |  x
+  MPICH         3.0.4  |  x  |  x
+  MVAPICH2      1.9    |  x  |  x  (release may13, based on MPICH 3.0.3)
+  Intel MPI     4.1    |  -  |  x  (release sep12, update june13, based on MPICH and MVAPICH, ref[1])
+  Cray MPT      6.0.0  |  x  |  x  (release jun13, based on MPICH 3.0.3, ref[2], ref[3])
+  IBM PE        v1.3   |  -  |  x  (source may13, ref[4]
+  HP MPI               |     |     (couldn't find it. seems to have been sold.)
+  SGI MPI              |     |     (couldn't find it)
+  Bullx MPI            |  -  |  x  (based on OpenMPI, ref[6], ref[7])
+
+  HPC Vendors of the current top500 (share of computers and performance in the june2013) :
+   * 37.6% HP                * 32.7% IBM
+   * 32.0% IBM               * 15.3% Cray
+   * 09.8% Cray              * 14.0% HP
+   * 03.6% SGI               * 03.8% SGI
+   * 03.4% Bull              * 02.8% Bull
+
+  ref claiming that OpenMPI powers big machines: http://blogs.cisco.com/performance/more-details-open-mpi-at-large-scale/
+
+  refs:
+   [1] http://software.intel.com/en-us/articles/intel-mpi-library-41-release-notes
+   [2] http://docs.cray.com/books/S-9407-1306/
+   [3] http://docs.cray.com/relnotes/
+   [4] http://publib.boulder.ibm.com/infocenter/clresctr/vxrx/index.jsp?topic=%2Fcom.ibm.cluster.pe.doc%2Fpebooks.html
+   [5] https://www.google.de/search?q=bullx+mpi+3.0
+   [6] http://www.google.de/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&cad=rja&ved=0CDYQFjAB&url=http%3A%2F%2Fwww.cenapad.ufmg.br%2Findex.php%2Fdocumentosemanuais%3Fdownload%3D2%3Abullx-cluster-suite-userguide-ingles&ei=n5TWUeSVLY2LswaJ8YHIBQ&usg=AFQjCNHhLOBJ7S2-Cix-iwoS3l-4peMDDQ&sig2=izW7DZA_VsHNHKPfnqRLoA&bvm=bv.48705608,d.Yms
+   [7] http://www.google.de/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&ved=0CC4QFjAA&url=http%3A%2F%2Fsupport.bull.com%2Fdocumentation%2Fbyproduct%2Finfra%2Fsw-extremcomp%2Fsw-extremcomp-bas5xeon%2Fg%2F86Y222FA03%2F86A222FA03.pdf&ei=n5TWUeSVLY2LswaJ8YHIBQ&usg=AFQjCNFsuvPPxO_tuO-4is9fZ1qaTvKz6w&sig2=S6WDmcskMVwQq_UWgymBYA&bvm=bv.48705608,d.Yms
+
+  * hardware specific implementations:
+   * couldn't find anything special
+   □ pending mail to torsten hoefler
+
 --- 13-06-29 ---
-
- * began playing around with MPI RMA
-
- □ can I assume MPI 3.0 (published sept 2012) or only 2.2? (3.0 has new RMA directives)
-  □ how widely has MPI 3.0 been adopted. Check intel, sgi, hp, ibm, more... implementations.
-  □ why did openmpi not adopt it yet
-  □ continue using openmpi or switch to mpich?
- □ read one-sided for MPI 2.2
-
 --- 13-06-28 ---
 
  * MPICH Barrier 3.0.4 implementation :
