@@ -1,6 +1,45 @@
 --- 13-07-06 ---
 
+ □ read MPI 3.0 one-sided and get familiar
+  -> develop barriers using it
+
+ □ async rma accumulate barrier
+ □ asnyc send/recv barrier
+
  * added shared memory barriere using add-fetch and each thread has its own counter (is slower than normal add-fetch)
+
+ * realization
+  * dissemination barrier sends n*log n messages to achieve a barrier completion in log n rounds.
+  * a gather+broadcast barrier (assuming both are implemented as tree-esque sends) would send a total of 2*(n-1) messages
+
+    gather e.g.:  +--------+        +--------+             round (2)
+                  v        |        v        |
+                  0 <- 1   2 <- 3   4 <- 5   6 <- 7        round (1)
+                  ^                 |
+                  +-----------------+                      round (3)
+
+  * i.e. dissemination is not optimal wrt the number of sent messages
+
+ * interesting MPI non-blocking calls:
+
+  I(-,b,s,r)send
+  Irecv
+
+  Wait(-, Any, Some, All)
+  Test(-, Any, Some, All)
+
+  Cancel
+
+  Notes:
+   * blocking and non-blocking p2p comminication can be mixed (e.g. isend + matching recv)
+   * non-blocking collectives are not interesting
+
+ □ interesting MPI RMA calls:
+  TBD
+
+ □ familiarize yourself with MPI 3.0 RMA operations
+
+ -> □ invent non-blocking-p2p and RMA barriers
 
 --- 13-07-05 ---
 
@@ -79,7 +118,8 @@
 
   * hardware specific implementations:
    * couldn't find anything special
-   □ pending mail to torsten hoefler
+   * infiniband uses an RDMA based n-way dissemination barrier http://htor.inf.ethz.ch/publications/index.php?pub=22
+   * other than that everyone uses usual (and RDMA based) dissemination or recursive doubling barriers, which are all slower than or as-fast-as the RDMA n-way dissemination described in the paper
 
 --- 13-06-29 ---
 --- 13-06-28 ---
