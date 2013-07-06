@@ -898,14 +898,13 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
 }
 /* *** } ronny no array barrier ******************************************** */
 
-
 /* *** super wasteful barrier { ******************************************** */
 typedef union {
     uint8_t v;
     uint8_t dontAccess[64];
-} uint512_t __attribute__ ((aligned (64)));
+} SwElement __attribute__ ((aligned (64)));
 
-static inline void barrierSuperWasteful(int threadIndex, int threadCount, uint512_t * barrier, uint512_t * barrierDel) {
+static inline void barrierSuperWasteful(int threadIndex, int threadCount, SwElement *barrier, SwElement *barrierDel) {
     __atomic_store_n(&(barrier[threadIndex].v), 1, __ATOMIC_RELEASE);
 
     // it is possible to invest logic into avoiding some loads.
@@ -929,18 +928,18 @@ static inline void barrierSuperWasteful(int threadIndex, int threadCount, uint51
 static void measureSuperWastefulBarrier(Context *c, int *threadCounts, int threadCountsLen) {
     //printf("# %s:\n",__func__);
 
-    uint512_t *barrier1;
-    uint512_t *barrier2;
-    uint512_t *barrier3;
+    SwElement *barrier1;
+    SwElement *barrier2;
+    SwElement *barrier3;
 
     int64_t repetitions_;
 
     void prepare(int threadIndex, int threadCount) {
         (void) threadCount;
         if (threadIndex == 0) {
-            barrier1 = (uint512_t*) malloc(sizeof(uint512_t) * threadCount);
-            barrier2 = (uint512_t*) malloc(sizeof(uint512_t) * threadCount);
-            barrier3 = (uint512_t*) malloc(sizeof(uint512_t) * threadCount);
+            barrier1 = (SwElement*) malloc(sizeof(SwElement) * threadCount);
+            barrier2 = (SwElement*) malloc(sizeof(SwElement) * threadCount);
+            barrier3 = (SwElement*) malloc(sizeof(SwElement) * threadCount);
 
             for (int i = 0; i < threadCount; i += 1) {
                 barrier1[i].v = 0;
@@ -1044,7 +1043,7 @@ int main(int argc, char **args) {
     int ronnyNoArrayThreadCountListLen = 0;
 
     Bool measureSuperWastefulBarrier_ = False;
-    int *SuperWastefulThreadCountList = NULL;
+    int *superWastefulThreadCountList = NULL;
     int superWastefulThreadCountListLen = 0;
 
     for (int i = 3; i < argc; i += 1) {
@@ -1076,7 +1075,7 @@ int main(int argc, char **args) {
             i += ronnyNoArrayThreadCountListLen;
         } else if (strcmp("--super-wasteful", args[i]) == 0) {
             measureSuperWastefulBarrier_ = True;
-            threadListFromArguments(args, argc, i+1, &SuperWastefulThreadCountList, &superWastefulThreadCountListLen, 2, threadCount);
+            threadListFromArguments(args, argc, i+1, &superWastefulThreadCountList, &superWastefulThreadCountListLen, 2, threadCount);
             i += superWastefulThreadCountListLen;
         } else if (strcmp("--sleep-power", args[i]) == 0) {
             i += 1;
@@ -1125,8 +1124,9 @@ int main(int argc, char **args) {
     }
 
     if (measureSuperWastefulBarrier_ == True) {
-        measureSuperWastefulBarrier(context, SuperWastefulThreadCountList, superWastefulThreadCountListLen);
-        free(SuperWastefulThreadCountList);
+        measureSuperWastefulBarrier(context, superWastefulThreadCountList, superWastefulThreadCountListLen);
+        free(superWastefulThreadCountList);
+    }
     }
 
     printContext(context);
