@@ -991,6 +991,87 @@ static void measureSuperWastefulBarrier(Context *c, int *threadCounts, int threa
 }
 /* *** } super wasteful barrier ******************************************** */
 
+/* *** n times add fetch barrier { ***************************************** */
+/* same as add-fetch barrier but every thread maintains its own counter */
+typedef union {
+    int c;
+    uint8_t dontAccess[64];
+} NtafElement __attribute__ ((aligned (64)));
+
+static inline void barrierNtimesAddFetch(int threadIndex, int threadCount, NtafElement *barrier, NtafElement *barrierDel) {
+    for (int i = 0; i < threadCount; i += 1) {
+        __atomic_add_fetch(&(barrier[i].c), 1, __ATOMIC_RELEASE);
+    }
+
+    while (__atomic_load_n(&(barrier[threadIndex].c), __ATOMIC_ACQUIRE) < threadCount) {}
+
+    __atomic_store_n(&(barrierDel[threadIndex].c), 0, __ATOMIC_RELEASE);
+}
+
+static void measureNtimesAddFetchBarrier(Context *c, int *threadCounts, int threadCountsLen) {
+    //printf("# %s:\n",__func__);
+
+    NtafElement *barrier1;
+    NtafElement *barrier2;
+    NtafElement *barrier3;
+
+    int64_t repetitions_;
+
+    void prepare(int threadIndex, int threadCount) {
+        (void) threadCount;
+        if (threadIndex == 0) {
+            barrier1 = (NtafElement*) malloc(sizeof(NtafElement) * threadCount);
+            barrier2 = (NtafElement*) malloc(sizeof(NtafElement) * threadCount);
+            barrier3 = (NtafElement*) malloc(sizeof(NtafElement) * threadCount);
+            for (int i = 0; i < threadCount; i += 1) {
+                barrier1[i].c = 0;
+                barrier2[i].c = 0;
+                barrier3[i].c = 0;
+            }
+        }
+    }
+    void finalize(int threadIndex, int threadCount) {
+        (void) threadCount;
+        if (threadIndex == 0) {
+            free((void*)barrier1); barrier1 = NULL;
+            free((void*)barrier2); barrier2 = NULL;
+            free((void*)barrier3); barrier3 = NULL;
+        }
+    }
+    void f(int threadIndex, int threadCount) {
+        struct timespec begin, end;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(int64_t repetitions = 0;; repetitions += 3) {
+
+            barrierNtimesAddFetch(threadIndex, threadCount, barrier1, barrier3);
+            barrierNtimesAddFetch(threadIndex, threadCount, barrier2, barrier1);
+            barrierNtimesAddFetch(threadIndex, threadCount, barrier3, barrier2);
+
+            if (repetitions % (3 * 1000) == 0) {
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+
+        double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
+        double cyclesPerRepetition = totalCycles / repetitions_;
+        double joule = m.powerConsumption * m.elapsedSeconds;
+        double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
+
+        printf("n-times-add-fetch     t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption,  cyclesPerRepetition, nanoJoulePerRepetition);
+    }
+}
+/* *** } n times add fetch barrier ***************************************** */
 int main(int argc, char **args) {
 
     if (argc < 3) {
@@ -1010,6 +1091,7 @@ int main(int argc, char **args) {
             "    --ronny-array <thread-count-list>\n"
             "    --ronny-no-array <thread-count-list>\n"
             "    --super-wasteful <thread-count-list>\n"
+            "    --local-counter <thread-count-list>\n"
             );
 
         exit(0);
@@ -1046,6 +1128,10 @@ int main(int argc, char **args) {
     int *superWastefulThreadCountList = NULL;
     int superWastefulThreadCountListLen = 0;
 
+    Bool measureNtimesAddFetchBarrier_ = False;
+    int *ntimesAddFetchThreadCountList = NULL;
+    int ntimesAddFetchThreadCountListLen = 0;
+
     for (int i = 3; i < argc; i += 1) {
         if (strcmp("--avoid-ht", args[i]) == 0) {
             avoidHt = True;
@@ -1077,6 +1163,10 @@ int main(int argc, char **args) {
             measureSuperWastefulBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &superWastefulThreadCountList, &superWastefulThreadCountListLen, 2, threadCount);
             i += superWastefulThreadCountListLen;
+        } else if (strcmp("--n-times-add-fetch", args[i]) == 0) {
+            measureNtimesAddFetchBarrier_ = True;
+            threadListFromArguments(args, argc, i+1, &ntimesAddFetchThreadCountList, &ntimesAddFetchThreadCountListLen, 2, threadCount);
+            i += ntimesAddFetchThreadCountListLen;
         } else if (strcmp("--sleep-power", args[i]) == 0) {
             i += 1;
             sleepPowerConsumption = atof(args[i]);
@@ -1127,6 +1217,10 @@ int main(int argc, char **args) {
         measureSuperWastefulBarrier(context, superWastefulThreadCountList, superWastefulThreadCountListLen);
         free(superWastefulThreadCountList);
     }
+
+    if (measureNtimesAddFetchBarrier_ == True) {
+        measureNtimesAddFetchBarrier(context, ntimesAddFetchThreadCountList, ntimesAddFetchThreadCountListLen);
+        free(ntimesAddFetchThreadCountList);
     }
 
     printContext(context);

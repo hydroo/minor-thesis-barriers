@@ -1,3 +1,7 @@
+--- 13-07-06 ---
+
+ * added shared memory barriere using add-fetch and each thread has its own counter (is slower than normal add-fetch)
+
 --- 13-07-05 ---
 
  * implemented a new idea for a shared memory barrier called "super wasteful barrier"
