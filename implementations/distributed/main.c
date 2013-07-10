@@ -252,6 +252,79 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
 }
 /* *** } dissemination barrier ********************************************* */
 
+/* *** isend dissemination barrier { *************************************** */
+static inline void isendDisseminationBarrer(MPI_Comm comm) {
+    int from, to, rank, size, error;
+    MPI_Comm_rank(comm, &rank);
+    MPI_Comm_size(comm, &size);
+
+    for (int distance = 1; distance < size; distance *= 2) {
+        from = (rank - distance + size) % size; /* because modulo can return negative in c */
+        to = (rank + distance) % size;
+        error = MPI_Isend(NULL, 0, MPI_BYTE, to, 0, comm, NULL);
+        assert(error == MPI_SUCCESS);
+        error = MPI_Recv(NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
+        assert(error == MPI_SUCCESS);
+    }
+}
+
+static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
+    if (autoPrint == True) printf("# %i %s:\n", c->processIndex, __func__);
+
+    int repetitions_;
+
+    void prepare(MPI_Comm comm) {(void) comm;}
+    void finalize(MPI_Comm comm) {(void) comm;}
+    void f(MPI_Comm comm) {
+        int processIndex; MPI_Comm_rank(comm, &processIndex);
+
+        struct timespec begin, end;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(int64_t repetitions = 0;; repetitions += 1) {
+
+            Mpich_Barrier(comm);
+
+            if (repetitions % 10000 == 0) {
+
+                // if supposedEnd is not reached , continue measurements
+                if (processIndex == 0) {
+                    clock_gettime(CLOCK_REALTIME, &end);
+                    if (end.tv_sec > supposedEnd) {
+                        Bool b = False;
+                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
+                        repetitions_ = repetitions;
+                        break;
+                    } else {
+                        Bool b = True;
+                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
+                    }
+                } else {
+                    Bool b;
+                    MPI_Bcast(&b, 1, MPI_INT, 0, comm);
+                    if (b == False) {
+                        repetitions_ = repetitions;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+
+    MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, c, autoPrint);
+
+    double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
+    double cyclesPerRepetition = totalCycles / repetitions_;
+    double joule = m.powerConsumption * m.elapsedSeconds;
+    double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
+
+    printf0("%i isend-dissemination t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
+}
+/* *** } isend dissemination barrier *************************************** */
+
 
 /* *** ronny barrier unified 1 { ******************************************* */
 /* unified rma/local memory with coherence (no management by use needed) */
@@ -356,6 +429,7 @@ int main(int argc, char **args) {
             "    --ghz <Ghz>             set processor clock, for correct cycle times in measurements (default: 1.0)\n"
             "\n"
             "    --dissemination         measure dissemination barrier using <n> processes\n"
+            "    --isend-dissemination   measure dissemination barrier using <n> processes\n"
             "    --ronny-unified-1\n"
             "\n"
             "    note:\n"
@@ -373,6 +447,7 @@ int main(int argc, char **args) {
     double clockTicksPerNanoSecond = 1.0;
 
     Bool measureDisseminationBarrier_ = False;
+    Bool measureIsendDisseminationBarrier_ = False;
     Bool measureRonnyUnified1Barrier_ = False;
 
     for (int i = 2; i < argc; i += 1) {
@@ -382,6 +457,8 @@ int main(int argc, char **args) {
             i += 1;
         } else if (strcmp("--dissemination", args[i]) == 0) {
             measureDisseminationBarrier_ = True;
+        } else if (strcmp("--isend-dissemination", args[i]) == 0) {
+            measureIsendDisseminationBarrier_ = True;
         } else if (strcmp("--ronny-unified-1", args[i]) == 0) {
             measureRonnyUnified1Barrier_ = True;
         } else {
@@ -398,6 +475,10 @@ int main(int argc, char **args) {
 
     if (measureDisseminationBarrier_ == True) {
         measureDisseminationBarrier(context, True);
+    }
+
+    if (measureIsendDisseminationBarrier_ == True) {
+        measureIsendDisseminationBarrier(context, True);
     }
 
     if (measureRonnyUnified1Barrier_ == True) {
