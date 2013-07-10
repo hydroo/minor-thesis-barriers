@@ -172,7 +172,7 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(M
 //    MPI_Comm_size(comm, &size);
 //
 //    for (int distance = 1; distance < size; distance *= 2) {
-//        from = (rank + size - distance) % size; /* because modulo can return negative numbers iirc */
+//        from = (rank - distance + size) % size; /* because modulo can return negative in c */
 //        to = (rank + distance) % size;
 //        error = MPI_Sendrecv(NULL, 0, MPI_BYTE, to, 0, NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
 //        assert(error == MPI_SUCCESS);
@@ -188,7 +188,7 @@ static inline void Mpich_Barrier(MPI_Comm comm) {
     MPI_Comm_size(comm, &size);
 
     for (int distance = 1; distance < size; distance *= 2) {
-        from = (rank - distance + size) % size; /* because modulo can return negative numbers iirc */
+        from = (rank - distance + size) % size; /* because modulo can return negative in c */
         to = (rank + distance) % size;
         error = MPI_Sendrecv(NULL, 0, MPI_BYTE, to, 0, NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
         assert(error == MPI_SUCCESS);
@@ -248,7 +248,7 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
     double joule = m.powerConsumption * m.elapsedSeconds;
     double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
 
-    printf0("%i dissemination t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
+    printf0("%i dissemination       t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
 }
 /* *** } dissemination barrier ********************************************* */
 
@@ -332,14 +332,16 @@ static void measureRonnyUnified1Barrier(Context *c, Bool autoPrint) {
         }
     }
 
-    MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, c, autoPrint);
+    printf0("ronny-unified-1 not implemented / not working");
+    //MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, c, autoPrint);
+    MeasurementResult m = {0.0, 0.0};
 
     double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
     double cyclesPerRepetition = totalCycles / repetitions_;
     double joule = m.powerConsumption * m.elapsedSeconds;
     double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
 
-    printf0("%i ronny-unified-1 t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
+    printf0("%i ronny-unified-1     t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
 }
 /* *** } ronny barrier unified 1 ******************************************* */
 
@@ -349,11 +351,11 @@ int main(int argc, char **args) {
 
     if (argc < 2) {
         printf0(
-            "  mpirun -np <n> ./distributed <min-wall-seconds-per-measurement> [options]>\n"
+            "  mpirun -n <n> ./distributed <min-wall-seconds-per-measurement> [options]>\n"
             "\n"
-            "    --ghz <Ghz>           set processor clock, for correct cycle times in measurements (default: 1.0)\n"
+            "    --ghz <Ghz>             set processor clock, for correct cycle times in measurements (default: 1.0)\n"
             "\n"
-            "    --dissemination       measure dissemination barrier using <n> processes\n"
+            "    --dissemination         measure dissemination barrier using <n> processes\n"
             "    --ronny-unified-1\n"
             "\n"
             "    note:\n"
