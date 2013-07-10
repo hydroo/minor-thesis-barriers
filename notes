@@ -1,16 +1,84 @@
+--- 13-07-10 ---
+
+ * We can propose a number of barriers for different software/hardware configurations. The possible configs are:
+  * send/recv                 (blocking com)
+  * isend/irecv + recv/send   (non-blocking com)
+  * coherent RMA (main memory is 'eventually' updated by the network card)
+  * separated RMA (main memory is only updated upon action)
+  * lossy communication (e.g. UDP)
+
+  For modelling and algorithm design irecv/isend might be equivalent or very similar to coherent RMA
+
+ * write something about reinitialization(problems/advantages) of the barriers REPORT
+ * write something about process counts that are not a power of two REPORT
+
+ * dissemination barrier implementation oddity: REPORT
+  * sendrecv in openmpi 1.7 /mpich 3.0.4 is blocking. i.e. the send is blocking.
+    Better would be to use an isend + recv and not wait send to complete.
+    Torsten Hoefler's RDMA dissemination barrier (http://htor.inf.ethz.ch/publications/index.php?pub=22) and
+    the original 1988 dissemination barrier (http://m1.archiveorange.com/m/att/jgLs0/ArchiveOrange_quY2vZm8S65M1KcPpGIe9XOlXCYa.pdf)
+    both do it 'correctly'.
+
+    ✓ implemented it myself. It is not faster on my dualcore+HT notebook
+    □ benchmark isend dissemination vs dissemination properly
+
+ * idea what is bad about (isend) dissemination REPORT:
+
+  phase 1:  0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 0
+  phase 2:  0 ------> 2 ------> 4 ------> 6 ------> 0
+                 1 ------> 3 ------> 5 ------> 7 ------> 1
+  phase 3:  0 ----------------> 4 ----------------> 0
+                 1 ----------------> 5 ----------------> 1
+                      2 ----------------> 6 ----------------> 2
+                           3 ----------------> 7 ----------------> 3
+
+  now suppose one process (e.g. 4) has not yet arrived
+
+  phase 1:  0 --> 1 ---> 2 ---> 3 --> (4) -x> 5 ---> 6 ---> 7 ---> 0
+  phase 2:  0 ---------> 2  --------> (4) -----x---> 6 ----------> 0
+                  1  ---------> 3 ---------> (5) ----x----> 7 --------> 1
+  phase 3:  0 ----------------------> (4) -----------x-----------> 0
+                 1 ------------------------> (5) -----------x----------> 1
+                        2 ------------------------> (6) ----------x----------> 2
+                               3 ------------------------> (7) ---------x---------> 3
+
+  who knows whom while process 4 is missing:
+   =phase 1=             =phase 2=             =phase 3=             =the ideal=
+   7 know themselves     + 4 new               + 0 new               maximum would be 49
+   + 6 new                                     total is 17
+   0: 0           7    0: 0         6 7    0: 0         6 7    0: 0 1 2 3 5 6 7
+   1: 0 1              1: 0 1         7    1: 0 1         7    1: 0 1 2 3 5 6 7
+   2:   1 2            2: 0 1 2            2: 0 1 2            2: 0 1 2 3 5 6 7
+   3:     2 3          3:   1 2 3          3:     2 3          3: 0 1 2 3 5 6 7
+   5:         5        5:         5        5:         5        5: 0 1 2 3 5 6 7
+   6:         5 6      6:         5 6      6:         5 6      6: 0 1 2 3 5 6 7
+   7:           6 7    7:           6 7    7:           6 7    7: 0 1 2 3 5 6 7
+
+  -> If one process is missing, the number of blocked processes doubles every phase.
+     maximum progress is ~2*(n) of a maximum of (n-1)*(n-1). (Perhaps find out the exact formulas)
+
+     note that the sent but not recved isends are waiting for the missing process to arrive. so the progression as
+     soon as the missing process arrives should be quick.
+
+     maybe we can build an argument about worst/avg/best cases for barrier algorithms.
+     Consider different times of process arrival for this.
+
+     □ suggest improved algorithms that mitigate this problem. (Is it really a problem? I would say so.)
+
+ * Torsten Hoefler makes heavy use of the logP model. And claims the normal algorithms to be optimal wrt logP.
+   It seems though, that logP is far from a proper model for distributed barrier algorithms (and worse for shared mem (pub=162 below).
+   Maybe investigate further and write up that we deliberately ignore this model and the "optimality claims",
+   and try to improve existing barrier algorithms.
+   (claims are e.g. in TH's diploma thesis or http://spcl.inf.ethz.ch/Publications/index.php?pub=162). REPORT
+
 --- 13-07-06 ---
-
- □ read MPI 3.0 one-sided and get familiar
-  -> develop barriers using it
-
- □ async rma accumulate barrier
- □ asnyc send/recv barrier
 
  * added shared memory barriere using add-fetch and each thread has its own counter (is slower than normal add-fetch)
 
  * realization
   * dissemination barrier sends n*log n messages to achieve a barrier completion in log n rounds.
   * a gather+broadcast barrier (assuming both are implemented as tree-esque sends) would send a total of 2*(n-1) messages
+    and completes in 2*log n rounds
 
     gather e.g.:  +--------+        +--------+             round (2)
                   v        |        v        |
@@ -32,7 +100,8 @@
 
   Notes:
    * blocking and non-blocking p2p comminication can be mixed (e.g. isend + matching recv)
-   * non-blocking collectives are not interesting
+   * non-blocking collectives are not interesting, because everyone has to take part and no cancelation of anything is possible.
+     they are generelly restrictive (evaluate on this in the REPORT)
 
  □ interesting MPI RMA calls:
   TBD
@@ -49,6 +118,7 @@
    * put/get data may be not visible in main memory until a window is syncronized with fence/complete/wait
     * fence implies a barrier on the group
     * complete/wait is a local sync between fewer processes, but ultimately as bad as fence for our purpose
+   -> motivate the consideration of 'MPI 3.0 only' in the REPORT
 
                        | 3.0 | 2.2
  ----------------------+-----+-----
@@ -117,9 +187,10 @@
    [7] http://www.google.de/url?sa=t&rct=j&q=&esrc=s&source=web&cd=1&cad=rja&ved=0CC4QFjAA&url=http%3A%2F%2Fsupport.bull.com%2Fdocumentation%2Fbyproduct%2Finfra%2Fsw-extremcomp%2Fsw-extremcomp-bas5xeon%2Fg%2F86Y222FA03%2F86A222FA03.pdf&ei=n5TWUeSVLY2LswaJ8YHIBQ&usg=AFQjCNFsuvPPxO_tuO-4is9fZ1qaTvKz6w&sig2=S6WDmcskMVwQq_UWgymBYA&bvm=bv.48705608,d.Yms
 
   * hardware specific implementations:
-   * couldn't find anything special
+   * couldn't find anything special in MPICH, MVAPICH and OpenMPI
    * infiniband uses an RDMA based n-way dissemination barrier http://htor.inf.ethz.ch/publications/index.php?pub=22
    * other than that everyone uses usual (and RDMA based) dissemination or recursive doubling barriers, which are all slower than or as-fast-as the RDMA n-way dissemination described in the paper
+   * A paper about dissemination barrier for shared memory (http://spcl.inf.ethz.ch/Publications/index.php?pub=162)
 
 --- 13-06-29 ---
 --- 13-06-28 ---
@@ -137,8 +208,9 @@
   □ oddly, ompi-bruck = dissemination. bruck should communicate in the reverse direction. to be confirmed.
 
  * note: intra communicators are very different from inter communicators. we want intra!
+  (□ maybe have a look at inter communicator barriers)
  
- * -> we will use to the 2 way dissemination barrier to compare ours to
+ -> we will use to the 2 way dissemination barrier to compare ours to
 
  * began rewriting the rapl-benchmark for mpi
   ✓ insert dissemination barrier instead of dummy
