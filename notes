@@ -1,3 +1,13 @@
+--- 13-07-11 ---
+
+ * add two super wasteful variations
+  * super-wasteful-2 avoids resetting
+  * super-wasteful-3 avoids resetting and memorizes the first couple of threads and sets i to this instead of -1
+
+ * if we want to eveluate on the super-wasteful / shared memory barrier in general we have to:
+  □ implement n-way dissemination
+  □ have a close look at http://spcl.inf.ethz.ch/Publications/index.php?pub=162 and compare
+
 --- 13-07-10 ---
 
  * We can propose a number of barriers for different software/hardware configurations. The possible configs are:
