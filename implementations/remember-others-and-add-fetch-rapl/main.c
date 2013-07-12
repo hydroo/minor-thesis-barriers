@@ -519,6 +519,65 @@ static void measureAddFetchWaitSpinning(Context *c, int *threadCounts, int threa
 }
 /* *** } add fetch wait spinning ******************************************* */
 
+/* *** add fetch contested { ********************************************* */
+static void measureAddFetchContested(Context *c, int *threadCounts, int threadCountsLen) {
+    //printf("# %s:\n",__func__);
+
+    int barrier;
+    int64_t repetitions_;
+
+    void prepare(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
+    void f(int threadIndex, int threadCount) {
+        (void) threadIndex;
+        (void) threadCount;
+        struct timespec begin, end;
+        volatile int * const barrierPointer = &barrier;
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(int64_t repetitions = 0;; repetitions += 1) {
+
+            REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_RELEASE);)
+            //REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_ACQ_REL);)
+            //REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_SEQ_CST);)
+            //REPEAT12(__atomic_store_n(barrierPointer, -1, __ATOMIC_RELEASE);)
+            //REPEAT12(__atomic_store_n(barrierPointer, -1, __ATOMIC_SEQ_CST);)
+            //REPEAT12(__atomic_load_n(barrierPointer, __ATOMIC_ACQUIRE);)
+            //REPEAT12(__atomic_load_n(barrierPointer, __ATOMIC_SEQ_CST);)
+            //REPEAT10(__atomic_store_n(barrierPointer, -1, __ATOMIC_RELEASE); __atomic_load_n(barrierPointer, __ATOMIC_ACQUIRE);)
+            //REPEAT10(__atomic_store_n(barrierPointer, -1, __ATOMIC_SEQ_CST); __atomic_load_n(barrierPointer, __ATOMIC_SEQ_CST);)
+            //REPEAT10(__atomic_load_n(barrierPointer, __ATOMIC_ACQUIRE); __atomic_store_n(barrierPointer, -1, __ATOMIC_RELEASE);)
+            //REPEAT10(__atomic_load_n(barrierPointer, __ATOMIC_SEQ_CST); __atomic_store_n(barrierPointer, -1, __ATOMIC_SEQ_CST);)
+
+            if (repetitions % (1 * 3000) == 0) {
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
+                }
+            }
+        }
+    }
+
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+
+        repetitions_ *= pow(2,12);
+        //repetitions_ *= pow(2,10);
+
+        double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
+        double cyclesPerRepetition = totalCycles / repetitions_;
+        double joule = m.powerConsumption * m.elapsedSeconds;
+        double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
+
+        printf("add-fetch-contested   t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
+    }
+}
+/* *** } add fetch contested ********************************************* */
+
 /* *** add fetch uncontested { ******************************************* */
 static void measureAddFetchUncontested(Context *c, int *threadCounts, int threadCountsLen) {
     //printf("# %s:\n",__func__);
@@ -539,7 +598,17 @@ static void measureAddFetchUncontested(Context *c, int *threadCounts, int thread
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_ACQ_REL);)
+            REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_RELEASE);)
+            //REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_ACQ_REL);)
+            //REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_SEQ_CST);)
+            //REPEAT12(__atomic_store_n(barrierPointer, -1, __ATOMIC_RELEASE);)
+            //REPEAT12(__atomic_store_n(barrierPointer, -1, __ATOMIC_SEQ_CST);)
+            //REPEAT12(__atomic_load_n(barrierPointer, __ATOMIC_ACQUIRE);)
+            //REPEAT12(__atomic_load_n(barrierPointer, __ATOMIC_SEQ_CST);)
+            //REPEAT10(__atomic_store_n(barrierPointer, -1, __ATOMIC_RELEASE); __atomic_load_n(barrierPointer, __ATOMIC_ACQUIRE);)
+            //REPEAT10(__atomic_store_n(barrierPointer, -1, __ATOMIC_SEQ_CST); __atomic_load_n(barrierPointer, __ATOMIC_SEQ_CST);)
+            //REPEAT10(__atomic_load_n(barrierPointer, __ATOMIC_ACQUIRE); __atomic_store_n(barrierPointer, -1, __ATOMIC_RELEASE);)
+            //REPEAT10(__atomic_load_n(barrierPointer, __ATOMIC_SEQ_CST); __atomic_store_n(barrierPointer, -1, __ATOMIC_SEQ_CST);)
 
             if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -556,6 +625,7 @@ static void measureAddFetchUncontested(Context *c, int *threadCounts, int thread
         MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
 
         repetitions_ *= pow(2,12);
+        //repetitions_ *= pow(2,10);
 
         double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
         double cyclesPerRepetition = totalCycles / repetitions_;
@@ -1451,6 +1521,7 @@ int main(int argc, char **args) {
             "\n"
             "    --add-fetch-barrier <thread-count-list>     measure add-fetch barrier with threads according to the space delimited list\n"
             "    --add-fetch-wait-spinning <thread-count-list>\n"
+            "    --add-fetch-contested <thread-count-list>\n"
             "    --add-fetch-uncontested <thread-count-list>\n"
             "    --ronny-array <thread-count-list>\n"
             "    --ronny-no-array <thread-count-list>\n"
@@ -1479,6 +1550,10 @@ int main(int argc, char **args) {
     Bool measureAddFetchWaitSpinning_ = False;
     int *addFetchWaitSpinningThreadCountList = NULL;
     int addFetchWaitSpinningThreadCountListLen = 0;
+
+    Bool measureAddFetchContested_ = False;
+    int *addFetchContestedThreadCountList = NULL;
+    int addFetchContestedThreadCountListLen = 0;
 
     Bool measureAddFetchUncontested_ = False;
     int *addFetchUncontestedThreadCountList = NULL;
@@ -1531,6 +1606,10 @@ int main(int argc, char **args) {
             measureAddFetchWaitSpinning_ = True;
             threadListFromArguments(args, argc, i+1, &addFetchWaitSpinningThreadCountList, &addFetchWaitSpinningThreadCountListLen, 2, threadCount);
             i += addFetchWaitSpinningThreadCountListLen;
+        } else if (strcmp("--add-fetch-contested", args[i]) == 0) {
+            measureAddFetchContested_ = True;
+            threadListFromArguments(args, argc, i+1, &addFetchContestedThreadCountList, &addFetchContestedThreadCountListLen, 1, threadCount);
+            i += addFetchContestedThreadCountListLen;
         } else if (strcmp("--add-fetch-uncontested", args[i]) == 0) {
             measureAddFetchUncontested_ = True;
             threadListFromArguments(args, argc, i+1, &addFetchUncontestedThreadCountList, &addFetchUncontestedThreadCountListLen, 1, threadCount);
@@ -1596,6 +1675,11 @@ int main(int argc, char **args) {
     if (measureAddFetchWaitSpinning_ == True) {
         measureAddFetchWaitSpinning(context, addFetchWaitSpinningThreadCountList, addFetchWaitSpinningThreadCountListLen);
         free(addFetchWaitSpinningThreadCountList);
+    }
+
+    if (measureAddFetchContested_ == True) {
+        measureAddFetchContested(context, addFetchContestedThreadCountList, addFetchContestedThreadCountListLen);
+        free(addFetchContestedThreadCountList);
     }
 
     if (measureAddFetchUncontested_ == True) {

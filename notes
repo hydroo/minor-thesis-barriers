@@ -8,6 +8,21 @@
   □ implement n-way dissemination
   □ have a close look at http://spcl.inf.ethz.ch/Publications/index.php?pub=162 and compare
 
+ * numbers(cycles) from my notebook (2 cores no HT) (remember-others-and-add-fetch-rapl add-fetch-(un)contested code has been used)
+
+                                 uncontested    contested
+    add-fetch        rel         18             130
+    add-fetch        acq-rel     18             130
+    add-fetch        seq-con     18             130
+    store            rel         1              1.1
+    store            seq-con     35             120
+    load             acq         0.5            0.5
+    load             seq-con     0.5            0.5
+    store+load       acq-rel     1              2
+    store+load       sec-con     35             165
+
+  i am very unsure how to interprete them
+
 --- 13-07-10 ---
 
  * We can propose a number of barriers for different software/hardware configurations. The possible configs are:
