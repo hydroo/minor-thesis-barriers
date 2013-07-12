@@ -139,6 +139,18 @@
      they are generelly restrictive (evaluate on this in the REPORT)
 
  □ interesting MPI RMA calls:
+  InfoCreate
+  InfoSet
+
+  WinAllocate/WinCreate + no_locks + accumulate_ordering + accumulate_ops
+  WinFree
+
+  Put
+  Get, RGet
+  Accumulate
+  GetAccumulate
+  FetchAndOp
+  CompareAndSwap
   TBD
 
  □ familiarize yourself with MPI 3.0 RMA operations
