@@ -523,7 +523,7 @@ static void measureAddFetchWaitSpinning(Context *c, int *threadCounts, int threa
 static void measureAddFetchUncontested(Context *c, int *threadCounts, int threadCountsLen) {
     //printf("# %s:\n",__func__);
 
-    int repetitions_;
+    int64_t repetitions_;
 
     void prepare(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
     void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
@@ -531,7 +531,7 @@ static void measureAddFetchUncontested(Context *c, int *threadCounts, int thread
         (void) threadIndex;
         (void) threadCount;
         struct timespec begin, end;
-        int barrier = threadCount;
+        int barrier = 0;
         int * const barrierPointer = &barrier;
 
         clock_gettime(CLOCK_REALTIME, &begin);
@@ -541,7 +541,7 @@ static void measureAddFetchUncontested(Context *c, int *threadCounts, int thread
 
             REPEAT12(__atomic_add_fetch(barrierPointer, -1, __ATOMIC_ACQ_REL);)
 
-            if (repetitions % 3 * 1000 == 0) {
+            if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
