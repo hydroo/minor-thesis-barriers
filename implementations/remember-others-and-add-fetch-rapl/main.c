@@ -914,11 +914,7 @@ static inline void barrierSuperWasteful1(int threadIndex, int threadCount, Sw1El
         }
     }
 
-    if (threadIndex == 0) {
-        for (int i = 0; i < threadCount; i += 1) {
-            __atomic_store_n(&(barrierDel[i].v), 0, __ATOMIC_RELEASE);
-        }
-    }
+    __atomic_store_n(&(barrierDel[threadIndex].v), 0, __ATOMIC_RELEASE);
 }
 
 static void measureSuperWastefulBarrier1(Context *c, int *threadCounts, int threadCountsLen) {

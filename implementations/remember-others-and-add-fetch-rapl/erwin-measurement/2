@@ -8,10 +8,10 @@ ronny-no-array        t   4, reps    3294000, wallSecs 3.001 sec, cycles/reps 20
 ronny-no-array        t   8, reps     702000, wallSecs 3.010 sec, cycles/reps 9862
 ronny-no-array        t  16, reps     207000, wallSecs 3.018 sec, cycles/reps 33535
 
-super-wasteful-1      t   2, reps   60114000, wallSecs 2.969 sec, cycles/reps  113
-super-wasteful-1      t   4, reps    6654000, wallSecs 3.000 sec, cycles/reps 1036
-super-wasteful-1      t   8, reps    3474000, wallSecs 3.001 sec, cycles/reps 1986
-super-wasteful-1      t  16, reps    1677000, wallSecs 3.001 sec, cycles/reps 4116
+super-wasteful-1      t   2, reps   60855000, wallSecs 2.670 sec, cycles/reps  100
+super-wasteful-1      t   4, reps    5991000, wallSecs 3.000 sec, cycles/reps 1151
+super-wasteful-1      t   8, reps    3306000, wallSecs 2.999 sec, cycles/reps 2086
+super-wasteful-1      t  16, reps    1542000, wallSecs 2.999 sec, cycles/reps 4473
 
 super-wasteful-2      t   2, reps  159933000, wallSecs 2.996 sec, cycles/reps   43
 super-wasteful-2      t   4, reps   21009000, wallSecs 3.000 sec, cycles/reps  328
