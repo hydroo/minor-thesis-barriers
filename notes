@@ -1,8 +1,18 @@
 --- 13-07-11 ---
 
  * add two super wasteful variations
-  * super-wasteful-2 avoids resetting
+  * super-wasteful-2 avoids resetting using a counter with add_fetch instead of a bit with store
+    is faster than bit with store
   * super-wasteful-3 avoids resetting and memorizes the first couple of threads and sets i to this instead of -1
+
+  * why is super wasteful so quick? REPORT
+
+   All stores/add-fetchs can be done concurrently.
+   Load spinning is unexpensive because each bit will only change once,
+   thus the load is spinning on local cash except when at first load and when the bit gets flipped to one.
+   In the classical add fetch barrier, the load spin gets disrupted by up to n-1 invalidates as well.
+   So the sole reason seems to be the concurrently executing store/add-fetch.
+   I also tried using RELEASE instead of ACQ_REL for the add-fetch instruction in the classical add-fetch barrier. Doesn't matter.
 
  * if we want to eveluate on the super-wasteful / shared memory barrier in general we have to:
   □ implement n-way dissemination
