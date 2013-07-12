@@ -898,19 +898,15 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
 }
 /* *** } ronny no array barrier ******************************************** */
 
-/* *** super wasteful barrier { ******************************************** */
+/* *** super wasteful 1 barrier { ****************************************** */
 typedef union {
     uint8_t v;
     uint8_t dontAccess[64];
-} SwElement __attribute__ ((aligned (64)));
+} Sw1Element __attribute__ ((aligned (64)));
 
-static inline void barrierSuperWasteful(int threadIndex, int threadCount, SwElement *barrier, SwElement *barrierDel) {
+static inline void barrierSuperWasteful1(int threadIndex, int threadCount, Sw1Element *barrier, Sw1Element *barrierDel) {
     __atomic_store_n(&(barrier[threadIndex].v), 1, __ATOMIC_RELEASE);
 
-    // it is possible to invest logic into avoiding some loads.
-    // But assume you already read a "1". Reading "1" the next time will take
-    // almost no time because it is still cached and the state of the line does not change during this time.
-    // Therefore I think extra logic wouldn't add to the algorithm. (not confirmed)
     for(int i = 0; i < threadCount; i += 1) {
         if (__atomic_load_n(&(barrier[i].v), __ATOMIC_ACQUIRE) == 0) {
             i = - 1;
@@ -925,21 +921,21 @@ static inline void barrierSuperWasteful(int threadIndex, int threadCount, SwElem
     }
 }
 
-static void measureSuperWastefulBarrier(Context *c, int *threadCounts, int threadCountsLen) {
+static void measureSuperWastefulBarrier1(Context *c, int *threadCounts, int threadCountsLen) {
     //printf("# %s:\n",__func__);
 
-    SwElement *barrier1;
-    SwElement *barrier2;
-    SwElement *barrier3;
+    Sw1Element *barrier1;
+    Sw1Element *barrier2;
+    Sw1Element *barrier3;
 
     int64_t repetitions_;
 
     void prepare(int threadIndex, int threadCount) {
         (void) threadCount;
         if (threadIndex == 0) {
-            barrier1 = (SwElement*) malloc(sizeof(SwElement) * threadCount);
-            barrier2 = (SwElement*) malloc(sizeof(SwElement) * threadCount);
-            barrier3 = (SwElement*) malloc(sizeof(SwElement) * threadCount);
+            barrier1 = (Sw1Element*) malloc(sizeof(Sw1Element) * threadCount);
+            barrier2 = (Sw1Element*) malloc(sizeof(Sw1Element) * threadCount);
+            barrier3 = (Sw1Element*) malloc(sizeof(Sw1Element) * threadCount);
 
             for (int i = 0; i < threadCount; i += 1) {
                 barrier1[i].v = 0;
@@ -964,9 +960,9 @@ static void measureSuperWastefulBarrier(Context *c, int *threadCounts, int threa
 
         for(int64_t repetitions = 0;; repetitions += 3) {
 
-            barrierSuperWasteful(threadIndex, threadCount, barrier1, barrier3);
-            barrierSuperWasteful(threadIndex, threadCount, barrier2, barrier1);
-            barrierSuperWasteful(threadIndex, threadCount, barrier3, barrier2);
+            barrierSuperWasteful1(threadIndex, threadCount, barrier1, barrier3);
+            barrierSuperWasteful1(threadIndex, threadCount, barrier2, barrier1);
+            barrierSuperWasteful1(threadIndex, threadCount, barrier3, barrier2);
 
             if (repetitions % (3 * 1000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
@@ -986,10 +982,10 @@ static void measureSuperWastefulBarrier(Context *c, int *threadCounts, int threa
         double joule = m.powerConsumption * m.elapsedSeconds;
         double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
 
-        printf("super-wasteful        t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption,  cyclesPerRepetition, nanoJoulePerRepetition);
+        printf("super-wasteful-1      t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption,  cyclesPerRepetition, nanoJoulePerRepetition);
     }
 }
-/* *** } super wasteful barrier ******************************************** */
+/* *** } super wasteful 1 barrier ****************************************** */
 
 /* *** n times add fetch barrier { ***************************************** */
 /* same as add-fetch barrier but every thread maintains its own counter */
@@ -1316,7 +1312,7 @@ int main(int argc, char **args) {
             "    --add-fetch-uncontested <thread-count-list>\n"
             "    --ronny-array <thread-count-list>\n"
             "    --ronny-no-array <thread-count-list>\n"
-            "    --super-wasteful <thread-count-list>\n"
+            "    --super-wasteful-1 <thread-count-list>\n"
             "    --local-counter <thread-count-list>\n"
             "    --dissemination-1 <thread-count-list>\n"
             "    --dissemination-2 <thread-count-list>\n"
@@ -1352,9 +1348,9 @@ int main(int argc, char **args) {
     int *ronnyNoArrayThreadCountList = NULL;
     int ronnyNoArrayThreadCountListLen = 0;
 
-    Bool measureSuperWastefulBarrier_ = False;
-    int *superWastefulThreadCountList = NULL;
-    int superWastefulThreadCountListLen = 0;
+    Bool measureSuperWastefulBarrier1_ = False;
+    int *superWasteful1ThreadCountList = NULL;
+    int superWasteful1ThreadCountListLen = 0;
 
     Bool measureNtimesAddFetchBarrier_ = False;
     int *ntimesAddFetchThreadCountList = NULL;
@@ -1395,10 +1391,10 @@ int main(int argc, char **args) {
             measureRonnyNoArrayBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ronnyNoArrayThreadCountList, &ronnyNoArrayThreadCountListLen, 2, threadCount);
             i += ronnyNoArrayThreadCountListLen;
-        } else if (strcmp("--super-wasteful", args[i]) == 0) {
-            measureSuperWastefulBarrier_ = True;
-            threadListFromArguments(args, argc, i+1, &superWastefulThreadCountList, &superWastefulThreadCountListLen, 2, threadCount);
-            i += superWastefulThreadCountListLen;
+        } else if (strcmp("--super-wasteful-1", args[i]) == 0) {
+            measureSuperWastefulBarrier1_ = True;
+            threadListFromArguments(args, argc, i+1, &superWasteful1ThreadCountList, &superWasteful1ThreadCountListLen, 2, threadCount);
+            i += superWasteful1ThreadCountListLen;
         } else if (strcmp("--n-times-add-fetch", args[i]) == 0) {
             measureNtimesAddFetchBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ntimesAddFetchThreadCountList, &ntimesAddFetchThreadCountListLen, 2, threadCount);
@@ -1457,9 +1453,9 @@ int main(int argc, char **args) {
         free(ronnyNoArrayThreadCountList);
     }
 
-    if (measureSuperWastefulBarrier_ == True) {
-        measureSuperWastefulBarrier(context, superWastefulThreadCountList, superWastefulThreadCountListLen);
-        free(superWastefulThreadCountList);
+    if (measureSuperWastefulBarrier1_ == True) {
+        measureSuperWastefulBarrier1(context, superWasteful1ThreadCountList, superWasteful1ThreadCountListLen);
+        free(superWasteful1ThreadCountList);
     }
 
     if (measureNtimesAddFetchBarrier_ == True) {
