@@ -223,18 +223,23 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
 /* *** } dissemination barrier ********************************************* */
 
 /* *** isend dissemination barrier { *************************************** */
-static inline void isendDisseminationBarrier(MPI_Comm comm, int processIndex, int processCount) {
+static inline void isendDisseminationBarrier(MPI_Comm comm, int processIndex, int processCount, int log2ProcessCount, MPI_Request *requests) {
     int from, to, error;
-    MPI_Request request; //4 byte
 
-    for (int distance = 1; distance < processCount; distance *= 2) {
+    for (int distance = 1, i = 0; distance < processCount; distance *= 2, i += 1) {
         from = (processIndex - distance + processCount) % processCount; /* because modulo can return negative in c */
         to = (processIndex + distance) % processCount;
-        error = MPI_Isend(NULL, 0, MPI_BYTE, to, 0, comm, &request);
+        error = MPI_Isend(NULL, 0, MPI_BYTE, to, 0, comm, &(requests[i]));
         assert(error == MPI_SUCCESS);
         error = MPI_Recv(NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
         assert(error == MPI_SUCCESS);
     }
+
+    // MPI must use request objects and can only mark them for removal through MPI_Request_free()
+    // e.g.: request r; for(;;) { isend(...,&r); free(&r) }
+    // however this appears to be slower than the request array + waitall version. so we go with that.
+    // theoretically, no checking at all is required, because the receives handle it
+    MPI_Waitall(log2ProcessCount, requests, MPI_STATUSES_IGNORE);
 }
 
 static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
@@ -242,8 +247,12 @@ static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
 
     int64_t repetitions_;
 
-    void prepare(MPI_Comm comm) {(void) comm;}
-    void finalize(MPI_Comm comm) {(void) comm;}
+    int log2ProcessCount = (int) ceil(log2(c->processCount));
+
+    MPI_Request *requests = (MPI_Request*) malloc(sizeof(MPI_Request) * log2ProcessCount);
+
+    void prepare(MPI_Comm comm) { (void) comm; }
+    void finalize(MPI_Comm comm) { (void) comm; }
     void f(MPI_Comm comm) {
         int processIndex; MPI_Comm_rank(comm, &processIndex);
         int processCount; MPI_Comm_size(comm, &processCount);
@@ -255,7 +264,7 @@ static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            isendDisseminationBarrier(comm, processIndex, processCount);
+            isendDisseminationBarrier(comm, processIndex, processCount, log2ProcessCount, requests);
 
             if (repetitions % (3 * 3000) == 0) {
                 // incorrect but works since we are constantly syncronizing threads
@@ -272,6 +281,8 @@ static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
 
 
     MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, c, autoPrint);
+
+    free(requests);
 
     double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
     double cyclesPerRepetition = totalCycles / repetitions_;
