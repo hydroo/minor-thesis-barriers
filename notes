@@ -148,14 +148,19 @@
   WinFree
 
   Put
-  Get, RGet
-  Accumulate
+  Get(, RGet)
+  Accumulate + ordering restrictions (rar, war, waw, raw)
   GetAccumulate
   FetchAndOp
   CompareAndSwap
-  TBD
 
- □ familiarize yourself with MPI 3.0 RMA operations
+  WinFence
+  WinFlush(Local)(All)
+  WinSync
+
+  Assertions: NoPrecede, NoSucceed, NoStore, NoPut
+
+ ✓ familiarize yourself with MPI 3.0 RMA operations
 
  -> □ invent non-blocking-p2p and RMA barriers
 
