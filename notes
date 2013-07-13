@@ -1,3 +1,5 @@
+--- 13-07-13 ---
+--- 13-07-12 ---
 --- 13-07-11 ---
 
  * add two super wasteful variations
@@ -8,14 +10,14 @@
   * why is super wasteful so quick? REPORT
 
    All stores/add-fetchs can be done concurrently.
-   Load spinning is unexpensive because each bit will only change once,
-   thus the load is spinning on local cash except when at first load and when the bit gets flipped to one.
+   Load spinning is inexpensive because each bit will only change once,
+   thus the load is spinning on local cache except when at first load and when the bit gets flipped to one.
    In the classical add fetch barrier, the load spin gets disrupted by up to n-1 invalidates as well.
    So the sole reason seems to be the concurrently executing store/add-fetch.
    I also tried using RELEASE instead of ACQ_REL for the add-fetch instruction in the classical add-fetch barrier. Doesn't matter.
 
  * if we want to eveluate on the super-wasteful / shared memory barrier in general we have to:
-  □ implement n-way dissemination
+  □ implement n-way dissemination and
   □ have a close look at http://spcl.inf.ethz.ch/Publications/index.php?pub=162 and compare
 
  * numbers(cycles) from my notebook (2 cores no HT) (remember-others-and-add-fetch-rapl add-fetch-(un)contested code has been used)
