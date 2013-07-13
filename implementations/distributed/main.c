@@ -198,7 +198,7 @@ static inline void Mpich_Barrier(MPI_Comm comm) {
 static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
     if (autoPrint == True) printf("# %i %s:\n", c->processIndex, __func__);
 
-    int repetitions_;
+    int64_t repetitions_;
 
     void prepare(MPI_Comm comm) {(void) comm;}
     void finalize(MPI_Comm comm) {(void) comm;}
@@ -271,7 +271,7 @@ static inline void isendDisseminationBarrer(MPI_Comm comm) {
 static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
     if (autoPrint == True) printf("# %i %s:\n", c->processIndex, __func__);
 
-    int repetitions_;
+    int64_t repetitions_;
 
     void prepare(MPI_Comm comm) {(void) comm;}
     void finalize(MPI_Comm comm) {(void) comm;}
@@ -337,7 +337,7 @@ static void measureRonnyUnified1Barrier(Context *c, Bool autoPrint) {
     int one = 1;
     int counter = 1;
 
-    int repetitions_;
+    int64_t repetitions_;
 
     void barrier(MPI_Comm comm) {
         int me, size;
