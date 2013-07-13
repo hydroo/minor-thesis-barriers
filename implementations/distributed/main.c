@@ -294,15 +294,15 @@ static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
 /* *** } isend dissemination barrier *************************************** */
 
 
-/* *** ronny super wasteful 1 { ******************************************** */
-static inline void superWastefulBarrier1(MPI_Win window, int *counter, int processIndex, int processCount, int one) {
-    for (int to = processIndex + 1; to != processIndex; to = (to + 1 + processCount) % processCount) {
-        MPI_Accumulate(&one, to, MPI_INT, 1, 0, 1, MPI_INT, MPI_SUM, window);
+/* *** super wasteful 1 { ************************************************** */
+// broken
+static inline void superWastefulBarrier1(MPI_Win window, int processIndex, int processCount) {
+    uint8_t d;
+    for (int to = (processIndex + 1) % processCount; to != processIndex; to = (to + 1 + processCount) % processCount) {
+        MPI_Get(&d, 1, MPI_BYTE, to, 0, 1, MPI_BYTE, window);
     }
 
-    while (*counter < processCount) {
-        //MPI_Win_fence(0, window);
-    }
+    MPI_Win_flush_all(window);
 }
 
 static void measureSuperWastefulBarrier1(Context *c, Bool autoPrint) {
@@ -310,22 +310,41 @@ static void measureSuperWastefulBarrier1(Context *c, Bool autoPrint) {
 
     MPI_Win window;
     MPI_Info windowInfo;
-    int one = 1;
-    int counter = 1;
+    uint8_t *one;
 
     int64_t repetitions_;
 
     void prepare(MPI_Comm comm) {
-        MPI_Info_create(&windowInfo);
-        MPI_Info_set(windowInfo, "no_locks", "true");
-        MPI_Win_create(&counter, (MPI_Aint) sizeof(int), sizeof(int), windowInfo, comm, &window);
-        MPI_Win_fence(0, window);
-    }
-    void finalize(MPI_Comm comm) {
         int processIndex; MPI_Comm_rank(comm, &processIndex);
 
-        MPI_Win_fence(0, window);
-        printf("# %i, counter: %i\n", processIndex, counter);
+        MPI_Info_create(&windowInfo);
+        MPI_Info_set(windowInfo, "no_locks", "true");
+        MPI_Win_allocate((MPI_Aint) sizeof(uint8_t), sizeof(uint8_t), windowInfo, comm, &one, &window);
+
+        *one = 1;
+
+        if (processIndex == 0) {
+            int *model, flag;
+            MPI_Win_get_attr(window, MPI_WIN_MODEL, &model, &flag);
+
+            // apparently one cannot set the MPI_WIN_MODEL explicitely :(
+            //MPI_Win_set_attr(window, MPI_WIN_MODEL, (void*) MPI_WIN_UNIFIED);
+            //MPI_Win_set_attr(window, MPI_WIN_MODEL, (void*) MPI_WIN_SEPARATE);
+
+            if (flag == 0) {
+                printf("MPI_WIN_MODEL not set\n");
+            } else {
+                if (*model == MPI_WIN_UNIFIED) { printf("MPI_WIN_MODEL = MPI_WIN_UNIFIED\n"); }
+                else if (*model == MPI_WIN_SEPARATE) { printf("MPI_WIN_MODEL = MPI_WIN_SEPARATE\n"); }
+                else { printf("MPI_WIN_MODEL = unknown (%i) (not MPI_WIN_UNIFIED and not MPI_WIN_SEPARATE)\n", *model); }
+            }
+        }
+
+        MPI_Win_fence(MPI_MODE_NOPRECEDE, window);
+    }
+    void finalize(MPI_Comm comm) {
+        (void) comm;
+        MPI_Win_fence(MPI_MODE_NOSUCCEED , window);
         MPI_Win_free(&window);
     }
 
@@ -340,7 +359,7 @@ static void measureSuperWastefulBarrier1(Context *c, Bool autoPrint) {
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            superWastefulBarrier1(window, &counter, processIndex, processCount, one);
+            superWastefulBarrier1(window, processIndex, processCount);
 
             if (repetitions % (3 * 3000) == 0) {
                 // incorrect but works since we are constantly syncronizing threads
@@ -364,7 +383,7 @@ static void measureSuperWastefulBarrier1(Context *c, Bool autoPrint) {
 
     printf0("%i super-wasteful-1    t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
 }
-/* *** } ronny super wasteful 1 ******************************************** */
+/* *** } super wasteful 1 ************************************************** */
 
 int main(int argc, char **args) {
 
