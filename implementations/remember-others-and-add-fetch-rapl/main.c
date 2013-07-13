@@ -458,7 +458,7 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
             addFetchBarrier2(barrier1_, barrier2_, barrier3_, threadCount);
             addFetchBarrier3(barrier1_, barrier2_, barrier3_, threadCount);
 
-            if (repetitions % (3 * 1000) == 0) {
+            if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -551,7 +551,7 @@ static void measureAddFetchContested(Context *c, int *threadCounts, int threadCo
             //REPEAT10(__atomic_load_n(barrierPointer, __ATOMIC_ACQUIRE); __atomic_store_n(barrierPointer, -1, __ATOMIC_RELEASE);)
             //REPEAT10(__atomic_load_n(barrierPointer, __ATOMIC_SEQ_CST); __atomic_store_n(barrierPointer, -1, __ATOMIC_SEQ_CST);)
 
-            if (repetitions % (1 * 3000) == 0) {
+            if (repetitions % (3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -610,7 +610,7 @@ static void measureAddFetchUncontested(Context *c, int *threadCounts, int thread
             //REPEAT10(__atomic_load_n(barrierPointer, __ATOMIC_ACQUIRE); __atomic_store_n(barrierPointer, -1, __ATOMIC_RELEASE);)
             //REPEAT10(__atomic_load_n(barrierPointer, __ATOMIC_SEQ_CST); __atomic_store_n(barrierPointer, -1, __ATOMIC_SEQ_CST);)
 
-            if (repetitions % (1 * 3000) == 0) {
+            if (repetitions % (3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -790,7 +790,7 @@ static void measureRonnyArrayBarrier(Context *c, int *threadCounts, int threadCo
             barrierRonnyArray(arrayIndex, me, notMe, full, left_, entry_, exit_, copy, entryExitLength);
 #endif
 
-            if (repetitions % (3 * 1000) == 0) {
+            if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -942,7 +942,7 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
             barrierNoArrayRonny(me, notMe, full, left_, entry_, exit_, copy);
 #endif
 
-            if (repetitions % (3 *1000) == 0) {
+            if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -1030,7 +1030,7 @@ static void measureSuperWastefulBarrier1(Context *c, int *threadCounts, int thre
             barrierSuperWasteful1(threadIndex, threadCount, barrier2, barrier1);
             barrierSuperWasteful1(threadIndex, threadCount, barrier3, barrier2);
 
-            if (repetitions % (3 * 1000) == 0) {
+            if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -1102,7 +1102,7 @@ static void measureSuperWastefulBarrier2(Context *c, int *threadCounts, int thre
 
             barrierSuperWasteful2(threadIndex, threadCount, barrier, repetitions);
 
-            if (repetitions % (3 * 1000) == 0) {
+            if (repetitions % (3 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -1176,7 +1176,7 @@ static void measureSuperWastefulBarrier3(Context *c, int *threadCounts, int thre
 
             barrierSuperWasteful3(threadIndex, threadCount, barrier, repetitions);
 
-            if (repetitions % (3 * 1000) == 0) {
+            if (repetitions % (3 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -1258,7 +1258,7 @@ static void measureNtimesAddFetchBarrier(Context *c, int *threadCounts, int thre
             barrierNtimesAddFetch(threadIndex, threadCount, barrier2, barrier1);
             barrierNtimesAddFetch(threadIndex, threadCount, barrier3, barrier2);
 
-            if (repetitions % (3 * 1000) == 0) {
+            if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -1358,7 +1358,7 @@ static void measureDisseminationBarrier1(Context *c, int *threadCounts, int thre
             barrierDissemination1(threadIndex, threadCount, barrier4, barrier4);
 
 
-            if (repetitions % (4 * 1000) == 0) {
+            if (repetitions % (1 * 3000) == 0) {
 
                 // incorrect but works since we are constantly syncronizing threads
                 // normally some kind of communication between threads needs to happen
@@ -1467,7 +1467,7 @@ static void measureDisseminationBarrier2(Context *c, int *threadCounts, int thre
 
             barrierDissemination2(threadIndex, threadCount, barrier, repetitions);
 
-            if (repetitions % (1 * 3000) == 0) {
+            if (repetitions % (3 * 3000) == 0) {
 
                 // incorrect but works since we are constantly syncronizing threads
                 // normally some kind of communication between threads needs to happen
