@@ -37,9 +37,9 @@ typedef struct {
 /* *** helper { ************************************************************ */
 // print only on process 0
 static inline void printf0(const char* fmt, ...) {
-    int rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    if (rank == 0) {
+    int processIndex;
+    MPI_Comm_rank(MPI_COMM_WORLD, &processIndex);
+    if (processIndex == 0) {
         va_list args;
         va_start(args, fmt);
         vprintf(fmt, args);
@@ -166,14 +166,12 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(M
 /* *** dissemination barrier { ********************************************* */
 /* adapted from mpich-git/src/mpi/coll/barrier.c
    dissemination algorithm */
-static inline void Mpich_Barrier(MPI_Comm comm) {
-    int from, to, rank, size, error;
-    MPI_Comm_rank(comm, &rank);
-    MPI_Comm_size(comm, &size);
+static inline void disseminationBarrier(MPI_Comm comm, int processIndex, int processCount) {
+    int from, to, error;
 
-    for (int distance = 1; distance < size; distance *= 2) {
-        from = (rank - distance + size) % size; /* because modulo can return negative in c */
-        to = (rank + distance) % size;
+    for (int distance = 1; distance < processCount; distance *= 2) {
+        from = (processIndex - distance + processCount) % processCount; /* because modulo can return negative in c */
+        to = (processIndex + distance) % processCount;
         error = MPI_Sendrecv(NULL, 0, MPI_BYTE, to, 0, NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
         assert(error == MPI_SUCCESS);
     }
@@ -188,6 +186,7 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
     void finalize(MPI_Comm comm) {(void) comm;}
     void f(MPI_Comm comm) {
         int processIndex; MPI_Comm_rank(comm, &processIndex);
+        int processCount; MPI_Comm_size(comm, &processCount);
 
         struct timespec begin, end;
 
@@ -196,7 +195,7 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            Mpich_Barrier(comm);
+            disseminationBarrier(comm, processIndex, processCount);
 
             if (repetitions % (3 * 3000) == 0) {
                 // incorrect but works since we are constantly syncronizing threads
@@ -224,15 +223,14 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
 /* *** } dissemination barrier ********************************************* */
 
 /* *** isend dissemination barrier { *************************************** */
-static inline void isendDisseminationBarrer(MPI_Comm comm) {
-    int from, to, rank, size, error;
-    MPI_Comm_rank(comm, &rank);
-    MPI_Comm_size(comm, &size);
+static inline void isendDisseminationBarrier(MPI_Comm comm, int processIndex, int processCount) {
+    int from, to, error;
+    MPI_Request request; //4 byte
 
-    for (int distance = 1; distance < size; distance *= 2) {
-        from = (rank - distance + size) % size; /* because modulo can return negative in c */
-        to = (rank + distance) % size;
-        error = MPI_Isend(NULL, 0, MPI_BYTE, to, 0, comm, NULL);
+    for (int distance = 1; distance < processCount; distance *= 2) {
+        from = (processIndex - distance + processCount) % processCount; /* because modulo can return negative in c */
+        to = (processIndex + distance) % processCount;
+        error = MPI_Isend(NULL, 0, MPI_BYTE, to, 0, comm, &request);
         assert(error == MPI_SUCCESS);
         error = MPI_Recv(NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
         assert(error == MPI_SUCCESS);
@@ -248,6 +246,7 @@ static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
     void finalize(MPI_Comm comm) {(void) comm;}
     void f(MPI_Comm comm) {
         int processIndex; MPI_Comm_rank(comm, &processIndex);
+        int processCount; MPI_Comm_size(comm, &processCount);
 
         struct timespec begin, end;
 
@@ -256,7 +255,7 @@ static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            Mpich_Barrier(comm);
+            isendDisseminationBarrier(comm, processIndex, processCount);
 
             if (repetitions % (3 * 3000) == 0) {
                 // incorrect but works since we are constantly syncronizing threads
@@ -284,10 +283,18 @@ static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
 /* *** } isend dissemination barrier *************************************** */
 
 
-/* *** ronny barrier unified 1 { ******************************************* */
-/* unified rma/local memory with coherence (no management by use needed) */
-/* (separated would be without coherence and self managed) */
-static void measureRonnyUnified1Barrier(Context *c, Bool autoPrint) {
+/* *** ronny super wasteful 1 { ******************************************** */
+static inline void superWastefulBarrier1(MPI_Win window, int *counter, int processIndex, int processCount, int one) {
+    for (int to = processIndex + 1; to != processIndex; to = (to + 1 + processCount) % processCount) {
+        MPI_Accumulate(&one, to, MPI_INT, 1, 0, 1, MPI_INT, MPI_SUM, window);
+    }
+
+    while (*counter < processCount) {
+        //MPI_Win_fence(0, window);
+    }
+}
+
+static void measureSuperWastefulBarrier1(Context *c, Bool autoPrint) {
     if (autoPrint == True) printf("# %i %s:\n", c->processIndex, __func__);
 
     MPI_Win window;
@@ -296,20 +303,6 @@ static void measureRonnyUnified1Barrier(Context *c, Bool autoPrint) {
     int counter = 1;
 
     int64_t repetitions_;
-
-    void barrier(MPI_Comm comm) {
-        int me, size;
-        MPI_Comm_rank(comm, &me);
-        MPI_Comm_size(comm, &size);
-
-        for (int to = me + 1; to != me; to = (to + 1 + size) % size) {
-            MPI_Accumulate(&one, to, MPI_INT, 1, 0, 1, MPI_INT, MPI_SUM, window);
-        }
-
-        while (counter < size) {
-            //MPI_Win_fence(0, window);
-        }
-    }
 
     void prepare(MPI_Comm comm) {
         MPI_Info_create(&windowInfo);
@@ -327,6 +320,7 @@ static void measureRonnyUnified1Barrier(Context *c, Bool autoPrint) {
 
     void f(MPI_Comm comm) {
         int processIndex; MPI_Comm_rank(comm, &processIndex);
+        int processCount; MPI_Comm_size(comm, &processCount);
 
         struct timespec begin, end;
 
@@ -335,7 +329,7 @@ static void measureRonnyUnified1Barrier(Context *c, Bool autoPrint) {
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            barrier(comm);
+            superWastefulBarrier1(window, &counter, processIndex, processCount, one);
 
             if (repetitions % (3 * 3000) == 0) {
                 // incorrect but works since we are constantly syncronizing threads
@@ -350,18 +344,16 @@ static void measureRonnyUnified1Barrier(Context *c, Bool autoPrint) {
         }
     }
 
-    printf0("ronny-unified-1 not implemented / not working");
-    //MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, c, autoPrint);
-    MeasurementResult m = {0.0, 0.0};
+    MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, c, autoPrint);
 
     double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
     double cyclesPerRepetition = totalCycles / repetitions_;
     double joule = m.powerConsumption * m.elapsedSeconds;
     double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
 
-    printf0("%i ronny-unified-1     t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
+    printf0("%i super-wasteful-1    t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", c->processIndex, c->processCount, (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption, cyclesPerRepetition, nanoJoulePerRepetition);
 }
-/* *** } ronny barrier unified 1 ******************************************* */
+/* *** } ronny super wasteful 1 ******************************************** */
 
 int main(int argc, char **args) {
 
@@ -393,7 +385,7 @@ int main(int argc, char **args) {
 
     Bool measureDisseminationBarrier_ = False;
     Bool measureIsendDisseminationBarrier_ = False;
-    Bool measureRonnyUnified1Barrier_ = False;
+    Bool measureSuperWastefulBarrier1_ = False;
 
     for (int i = 2; i < argc; i += 1) {
         if (strcmp("--ghz", args[i]) == 0) {
@@ -404,8 +396,8 @@ int main(int argc, char **args) {
             measureDisseminationBarrier_ = True;
         } else if (strcmp("--isend-dissemination", args[i]) == 0) {
             measureIsendDisseminationBarrier_ = True;
-        } else if (strcmp("--ronny-unified-1", args[i]) == 0) {
-            measureRonnyUnified1Barrier_ = True;
+        } else if (strcmp("--super-wasteful-1", args[i]) == 0) {
+            measureSuperWastefulBarrier1_ = True;
         } else {
             printf0("unknown argument: \"%s\"\n", args[i]);
             exit(-1);
@@ -426,8 +418,8 @@ int main(int argc, char **args) {
         measureIsendDisseminationBarrier(context, False);
     }
 
-    if (measureRonnyUnified1Barrier_ == True) {
-        measureRonnyUnified1Barrier(context, False);
+    if (measureSuperWastefulBarrier1_ == True) {
+        measureSuperWastefulBarrier1(context, False);
     }
 
     printContext(context);
