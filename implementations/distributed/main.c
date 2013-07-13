@@ -326,11 +326,6 @@ static void measureSuperWastefulBarrier1(Context *c, Bool autoPrint) {
         if (processIndex == 0) {
             int *model, flag;
             MPI_Win_get_attr(window, MPI_WIN_MODEL, &model, &flag);
-
-            // apparently one cannot set the MPI_WIN_MODEL explicitely :(
-            //MPI_Win_set_attr(window, MPI_WIN_MODEL, (void*) MPI_WIN_UNIFIED);
-            //MPI_Win_set_attr(window, MPI_WIN_MODEL, (void*) MPI_WIN_SEPARATE);
-
             if (flag == 0) {
                 printf("MPI_WIN_MODEL not set\n");
             } else {
