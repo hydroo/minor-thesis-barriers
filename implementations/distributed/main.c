@@ -164,22 +164,6 @@ static inline MeasurementResult measurePowerConsumptionOfFunction(void prepare(M
 }
 
 /* *** dissemination barrier { ********************************************* */
-///* adapted from ompi/mca/coll/tuned/coll_tuned_barrier.c
-//   bruck algorithm . funny. it does the exact same thing as dissemination. perhaps dev error */
-//static inline int OMPI_Barrier(MPI_Comm comm) {
-//    int from, to, rank, size, error;
-//    MPI_Comm_rank(comm, &rank);
-//    MPI_Comm_size(comm, &size);
-//
-//    for (int distance = 1; distance < size; distance *= 2) {
-//        from = (rank - distance + size) % size; /* because modulo can return negative in c */
-//        to = (rank + distance) % size;
-//        error = MPI_Sendrecv(NULL, 0, MPI_BYTE, to, 0, NULL, 0, MPI_BYTE, from, 0, comm, MPI_STATUS_IGNORE);
-//        assert(error == MPI_SUCCESS);
-//    }
-//    return MPI_SUCCESS;
-//}
-
 /* adapted from mpich-git/src/mpi/coll/barrier.c
    dissemination algorithm */
 static inline void Mpich_Barrier(MPI_Comm comm) {
@@ -214,27 +198,14 @@ static void measureDisseminationBarrier(Context *c, Bool autoPrint) {
 
             Mpich_Barrier(comm);
 
-            if (repetitions % 10000 == 0) {
-
-                // if supposedEnd is not reached , continue measurements
-                if (processIndex == 0) {
-                    clock_gettime(CLOCK_REALTIME, &end);
-                    if (end.tv_sec > supposedEnd) {
-                        Bool b = False;
-                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                        repetitions_ = repetitions;
-                        break;
-                    } else {
-                        Bool b = True;
-                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                    }
-                } else {
-                    Bool b;
-                    MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                    if (b == False) {
-                        repetitions_ = repetitions;
-                        break;
-                    }
+            if (repetitions % (3 * 3000) == 0) {
+                // incorrect but works since we are constantly syncronizing threads
+                // normally some kind of communication between threads needs to happen
+                // to consistently exit this loop together
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
                 }
             }
         }
@@ -287,27 +258,14 @@ static void measureIsendDisseminationBarrier(Context *c, Bool autoPrint) {
 
             Mpich_Barrier(comm);
 
-            if (repetitions % 10000 == 0) {
-
-                // if supposedEnd is not reached , continue measurements
-                if (processIndex == 0) {
-                    clock_gettime(CLOCK_REALTIME, &end);
-                    if (end.tv_sec > supposedEnd) {
-                        Bool b = False;
-                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                        repetitions_ = repetitions;
-                        break;
-                    } else {
-                        Bool b = True;
-                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                    }
-                } else {
-                    Bool b;
-                    MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                    if (b == False) {
-                        repetitions_ = repetitions;
-                        break;
-                    }
+            if (repetitions % (3 * 3000) == 0) {
+                // incorrect but works since we are constantly syncronizing threads
+                // normally some kind of communication between threads needs to happen
+                // to consistently exit this loop together
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
                 }
             }
         }
@@ -379,27 +337,14 @@ static void measureRonnyUnified1Barrier(Context *c, Bool autoPrint) {
 
             barrier(comm);
 
-            if (repetitions % 10000 == 0) {
-
-                // if supposedEnd is not reached , continue measurements
-                if (processIndex == 0) {
-                    clock_gettime(CLOCK_REALTIME, &end);
-                    if (end.tv_sec > supposedEnd) {
-                        Bool b = False;
-                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                        repetitions_ = repetitions;
-                        break;
-                    } else {
-                        Bool b = True;
-                        MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                    }
-                } else {
-                    Bool b;
-                    MPI_Bcast(&b, 1, MPI_INT, 0, comm);
-                    if (b == False) {
-                        repetitions_ = repetitions;
-                        break;
-                    }
+            if (repetitions % (3 * 3000) == 0) {
+                // incorrect but works since we are constantly syncronizing threads
+                // normally some kind of communication between threads needs to happen
+                // to consistently exit this loop together
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
                 }
             }
         }
@@ -474,15 +419,15 @@ int main(int argc, char **args) {
     Context *context = newContext(minWallSecondsPerMeasurement, clockTicksPerNanoSecond);
 
     if (measureDisseminationBarrier_ == True) {
-        measureDisseminationBarrier(context, True);
+        measureDisseminationBarrier(context, False);
     }
 
     if (measureIsendDisseminationBarrier_ == True) {
-        measureIsendDisseminationBarrier(context, True);
+        measureIsendDisseminationBarrier(context, False);
     }
 
     if (measureRonnyUnified1Barrier_ == True) {
-        measureRonnyUnified1Barrier(context, True);
+        measureRonnyUnified1Barrier(context, False);
     }
 
     printContext(context);
