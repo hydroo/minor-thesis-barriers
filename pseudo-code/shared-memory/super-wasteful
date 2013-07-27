@@ -1,4 +1,5 @@
-shared: barrier[numThreads] (one array element per cache line)
+shared: barrier[threadCount] (one array element per cache line)
+init: barrier[*] := 0
 
 barrier[threadIndex] := 1
 
