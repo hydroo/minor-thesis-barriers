@@ -2,7 +2,7 @@ shared: barrier[threadCount] // each process has its element locally
 init: barrier[*] := 0
 
 for round := 0; round < ceil(log2(numThreads)); round += 1 {
-	distance := 2**round
+	distance := 2^round
 	to   := threadIndex + distance % threadCount
 	from := threadIndex - distance % threadCount
 
