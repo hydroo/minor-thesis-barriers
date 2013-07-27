@@ -1098,7 +1098,7 @@ static void measureSuperWastefulBarrier2(Context *c, int *threadCounts, int thre
         clock_gettime(CLOCK_REALTIME, &begin);
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
-        for(int64_t repetitions = 0;; repetitions += 3) {
+        for(int64_t repetitions = 0;; repetitions += 1) {
 
             barrierSuperWasteful2(threadIndex, threadCount, barrier, repetitions);
 
@@ -1172,7 +1172,7 @@ static void measureSuperWastefulBarrier3(Context *c, int *threadCounts, int thre
         clock_gettime(CLOCK_REALTIME, &begin);
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
-        for(int64_t repetitions = 0;; repetitions += 3) {
+        for(int64_t repetitions = 0;; repetitions += 1) {
 
             barrierSuperWasteful3(threadIndex, threadCount, barrier, repetitions);
 
