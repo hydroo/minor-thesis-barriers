@@ -1,0 +1,14 @@
+shared: barrier[threadCount] // each process has its element locally
+init: barrier[*] := 0
+
+for round := 0; round < ceil(log2(numThreads)); round += 1 {
+	distance := 2**round
+	to   := threadIndex + distance % threadCount
+	from := threadIndex - distance % threadCount
+
+	barrier[to] := barrier[to] + 1 //atomic, right now unsure wether it really has to be atomic
+
+	while barrier[from] <= round {}
+}
+
+// reset not considered here
