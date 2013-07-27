@@ -1214,7 +1214,7 @@ static inline void barrierSuperWasteful4(int threadIndex, int threadCount, Sw4El
     int i = 0;
     uint64_t b = 1;
     while (mask != 0x0) {
-        if ((mask&b) != 0) {
+        if ((mask&b) != 0x0 ){
             if (__atomic_load_n(&(barrier[i].c), __ATOMIC_ACQUIRE) > counter) {
                 mask &= ~b;
             }
@@ -1232,27 +1232,25 @@ static void measureSuperWastefulBarrier4(Context *c, int *threadCounts, int thre
 
     int64_t repetitions_;
 
-    uint64_t fullMask;
-
     void prepare(int threadIndex, int threadCount) {
         if (threadIndex == 0) {
             barrier = (Sw4Element*) malloc(sizeof(Sw4Element) * threadCount);
             for (int i = 0; i < threadCount; i += 1) { barrier[i].c = 0; }
 
-            for (int i = 0; i < threadCount; i += 1) { fullMask |= 1<<i; }
         }
     }
     void finalize(int threadIndex, int threadCount) {
         (void) threadCount;
         if (threadIndex == 0) {
             free((void*)barrier); barrier = NULL;
-            fullMask = 0;
         }
     }
     void f(int threadIndex, int threadCount) {
         struct timespec begin, end;
 
         uint64_t notMe = ~(1<<threadIndex);
+        uint64_t fullMask = 0x0;
+        for (int i = 0; i < threadCount; i += 1) { fullMask |= 1<<i; }
 
         clock_gettime(CLOCK_REALTIME, &begin);
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
