@@ -144,7 +144,7 @@
    * non-blocking collectives are not interesting, because everyone has to take part and no cancelation of anything is possible.
      they are generelly restrictive (evaluate on this in the REPORT)
 
- □ interesting MPI RMA calls:
+ ✓ interesting MPI RMA calls:
   InfoCreate
   InfoSet
 
