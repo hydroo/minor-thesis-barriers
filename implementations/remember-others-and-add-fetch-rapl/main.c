@@ -1213,16 +1213,16 @@ static inline void barrierSuperWasteful4(int threadIndex, int threadCount, Sw4El
 
     int i = 0;
     uint64_t b = 1;
-    while (mask != 0x0) {
-        if ((mask&b) != 0x0 ){
-            if (__atomic_load_n(&(barrier[i].c), __ATOMIC_ACQUIRE) > counter) {
-                mask &= ~b;
-            }
+    do {
+
+        while ((mask&b) == 0 && i < threadCount) { ++i; b<<=1; }
+        if (i == threadCount) { i = 0; b = 1; continue; }
+
+        if (__atomic_load_n(&(barrier[i].c), __ATOMIC_ACQUIRE) > counter) {
+            mask &= ~b;
         }
 
-        i = ((i + 1) % threadCount);
-        b = 1<<i;
-    }
+    } while (mask != 0x0);
 }
 
 static void measureSuperWastefulBarrier4(Context *c, int *threadCounts, int threadCountsLen) {
