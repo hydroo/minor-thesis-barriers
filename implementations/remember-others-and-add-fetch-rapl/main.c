@@ -1284,6 +1284,99 @@ static void measureSuperWastefulBarrier4(Context *c, int *threadCounts, int thre
 }
 /* *** } super wasteful 4 barrier ****************************************** */
 
+/* *** super wasteful 5 barrier { ****************************************** */
+/* like super wasteful 4, but transmits other threads seen as well */
+typedef union {
+    uint64_t m;
+    uint8_t dontAccess[64];
+} Sw5Element __attribute__ ((aligned (64)));
+
+static inline void barrierSuperWasteful5(int threadIndex, int threadCount, Sw5Element *barrier, Sw5Element *delBarrier, uint64_t notMe, uint64_t fullMask) {
+
+    barrier[threadIndex].m = fullMask&notMe;
+
+    int i = 0;
+    uint64_t b = 1;
+    do {
+        while ((barrier[threadIndex].m&b) == 0x0 && i < threadCount) { b<<=1; ++i; }
+        if (i == threadCount) { i = 0; b = 1; continue; }
+
+        barrier[threadIndex].m &= __atomic_load_n(&(barrier[i].m), __ATOMIC_ACQUIRE);
+
+    } while (barrier[threadIndex].m != 0x0);
+
+    delBarrier[threadIndex].m = fullMask;
+}
+
+static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int threadCountsLen) {
+    //printf("# %s:\n",__func__);
+
+    Sw5Element *barrier1;
+    Sw5Element *barrier2;
+    Sw5Element *barrier3;
+
+    int64_t repetitions_;
+
+
+    void prepare(int threadIndex, int threadCount) {
+        if (threadIndex == 0) {
+            uint64_t fullMask = 0x0;
+            for (int i = 0; i < threadCount; i += 1) { fullMask |= 1<<i; }
+
+            barrier1 = (Sw5Element*) malloc(sizeof(Sw5Element) * threadCount);
+            barrier2 = (Sw5Element*) malloc(sizeof(Sw5Element) * threadCount);
+            barrier3 = (Sw5Element*) malloc(sizeof(Sw5Element) * threadCount);
+            for (int i = 0; i < threadCount; i += 1) { barrier1[i].m = fullMask; barrier2[i].m = fullMask; barrier3[i].m = fullMask; }
+
+        }
+    }
+    void finalize(int threadIndex, int threadCount) {
+        (void) threadCount;
+        if (threadIndex == 0) {
+            free(barrier1); barrier1 = NULL;
+            free(barrier2); barrier2 = NULL;
+            free(barrier3); barrier3 = NULL;
+        }
+    }
+    void f(int threadIndex, int threadCount) {
+        struct timespec begin, end;
+
+        uint64_t notMe = ~(1<<threadIndex);
+        uint64_t fullMask = 0x0;
+        for (int i = 0; i < threadCount; i += 1) { fullMask |= 1<<i; }
+
+        clock_gettime(CLOCK_REALTIME, &begin);
+        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
+
+        for(int64_t repetitions = 0;; repetitions += 3) {
+
+            barrierSuperWasteful5(threadIndex, threadCount, barrier1, barrier3, notMe, fullMask);
+            barrierSuperWasteful5(threadIndex, threadCount, barrier2, barrier1, notMe, fullMask);
+            barrierSuperWasteful5(threadIndex, threadCount, barrier3, barrier2, notMe, fullMask);
+
+            if (repetitions % (1 * 3000) == 0) {
+                clock_gettime(CLOCK_REALTIME, &end);
+                if (end.tv_sec > supposedEnd) {
+                    repetitions_ = repetitions;
+                    break;
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < threadCountsLen; i += 1) {
+        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
+
+        double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
+        double cyclesPerRepetition = totalCycles / repetitions_;
+        double joule = m.powerConsumption * m.elapsedSeconds;
+        double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
+
+        printf("super-wasteful-5      t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption,  cyclesPerRepetition, nanoJoulePerRepetition);
+    }
+}
+/* *** } super wasteful 5 barrier ****************************************** */
+
 /* *** n times add fetch barrier { ***************************************** */
 /* same as add-fetch barrier but every thread maintains its own counter */
 typedef union {
@@ -1614,6 +1707,7 @@ int main(int argc, char **args) {
             "    --super-wasteful-2 <thread-count-list>\n"
             "    --super-wasteful-3 <thread-count-list>\n"
             "    --super-wasteful-4 <thread-count-list>\n"
+            "    --super-wasteful-5 <thread-count-list>\n"
             "    --local-counter <thread-count-list>\n"
             "    --dissemination-1 <thread-count-list>\n"
             "    --dissemination-2 <thread-count-list>\n"
@@ -1668,6 +1762,10 @@ int main(int argc, char **args) {
     Bool measureSuperWastefulBarrier4_ = False;
     int *superWasteful4ThreadCountList = NULL;
     int superWasteful4ThreadCountListLen = 0;
+
+    Bool measureSuperWastefulBarrier5_ = False;
+    int *superWasteful5ThreadCountList = NULL;
+    int superWasteful5ThreadCountListLen = 0;
 
     Bool measureNtimesAddFetchBarrier_ = False;
     int *ntimesAddFetchThreadCountList = NULL;
@@ -1728,6 +1826,10 @@ int main(int argc, char **args) {
             measureSuperWastefulBarrier4_ = True;
             threadListFromArguments(args, argc, i+1, &superWasteful4ThreadCountList, &superWasteful4ThreadCountListLen, 2, threadCount);
             i += superWasteful4ThreadCountListLen;
+        } else if (strcmp("--super-wasteful-5", args[i]) == 0) {
+            measureSuperWastefulBarrier5_ = True;
+            threadListFromArguments(args, argc, i+1, &superWasteful5ThreadCountList, &superWasteful5ThreadCountListLen, 2, threadCount);
+            i += superWasteful5ThreadCountListLen;
         } else if (strcmp("--n-times-add-fetch", args[i]) == 0) {
             measureNtimesAddFetchBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ntimesAddFetchThreadCountList, &ntimesAddFetchThreadCountListLen, 2, threadCount);
@@ -1809,6 +1911,11 @@ int main(int argc, char **args) {
     if (measureSuperWastefulBarrier4_ == True) {
         measureSuperWastefulBarrier4(context, superWasteful4ThreadCountList, superWasteful4ThreadCountListLen);
         free(superWasteful4ThreadCountList);
+    }
+
+    if (measureSuperWastefulBarrier5_ == True) {
+        measureSuperWastefulBarrier5(context, superWasteful5ThreadCountList, superWasteful5ThreadCountListLen);
+        free(superWasteful5ThreadCountList);
     }
 
     if (measureNtimesAddFetchBarrier_ == True) {
