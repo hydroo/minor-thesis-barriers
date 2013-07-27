@@ -1,3 +1,12 @@
+--- 13-07-27 ---
+
+ * added super wasteful variant 4, which reduces polling other thread by keeping track of each thread that has successfully arrived
+ * added super wasteful variant 5, which minimizes polling by giving info about already seen threads to others as well
+
+ □ true something write remotely only. perhaps adapt variant 5.
+   (on the surface remote writing sounds quicker than remote reading)
+   (atomic add or no atomic add?)
+
 --- 13-07-13 ---
 
  * I cannot set the MPI_WIN_MODEL to MPI_WIN_SEPARATE and MPI_WIN_UNIFIED myself.
