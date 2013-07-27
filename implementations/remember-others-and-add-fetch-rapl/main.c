@@ -969,6 +969,7 @@ static void measureRonnyNoArrayBarrier(Context *c, int *threadCounts, int thread
 /* *** } ronny no array barrier ******************************************** */
 
 /* *** super wasteful 1 barrier { ****************************************** */
+/* simple */
 typedef union {
     uint8_t v;
     uint8_t dontAccess[64];
@@ -1126,6 +1127,7 @@ static void measureSuperWastefulBarrier2(Context *c, int *threadCounts, int thre
 /* *** } super wasteful 2 barrier ****************************************** */
 
 /* *** super wasteful 3 barrier { ****************************************** */
+/* keep track of first */
 /* if this int64_t counter overflows the algorithm breaks
    it is just a quick and dirty way to avoid a proper reset implementation */
 typedef union {
