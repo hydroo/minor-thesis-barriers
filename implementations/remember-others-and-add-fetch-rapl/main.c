@@ -398,29 +398,12 @@ static void measureUncorePowerConsumption(Context *c, Bool autoPrint) {
 
 
 /* *** add fetch barrier { ************************************************* */
-static inline void addFetchBarrier1(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
-    (void) barrier2;
-    if (__atomic_add_fetch(barrier1, -1, __ATOMIC_ACQ_REL) != 0) {
-        while (__atomic_load_n(barrier1, __ATOMIC_ACQUIRE) != 0) {
+static inline void addFetchBarrier(int * const barrier, int * const delBarrier, int threadCount) {
+    if (__atomic_add_fetch(barrier, -1, __ATOMIC_ACQ_REL) != 0) {
+        while (__atomic_load_n(barrier, __ATOMIC_ACQUIRE) != 0) {
         }
     }
-    *barrier3 = threadCount;
-}
-static inline void addFetchBarrier2(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
-    (void) barrier3;
-    if (__atomic_add_fetch(barrier2, -1, __ATOMIC_ACQ_REL) != 0) {
-        while (__atomic_load_n(barrier2, __ATOMIC_ACQUIRE) != 0) {
-        }
-    }
-    *barrier1 = threadCount;
-}
-static inline void addFetchBarrier3(int * const barrier1, int * const barrier2, int * const barrier3, int threadCount) {
-    (void) barrier1;
-    if (__atomic_add_fetch(barrier3, -1, __ATOMIC_ACQ_REL) != 0) {
-        while (__atomic_load_n(barrier3, __ATOMIC_ACQUIRE) != 0) {
-        }
-    }
-    *barrier2 = threadCount;
+    *delBarrier = threadCount;
 }
 
 static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCountsLen) {
@@ -435,7 +418,7 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
         if (threadIndex == 0) {
             barrier1 = threadCount;
             barrier2 = threadCount;
-            barrier3 = threadCount;
+            barrier3 = 0;
         }
     }
     void finalize(int threadIndex, int threadCount) {(void) threadIndex; (void) threadCount;}
@@ -452,11 +435,18 @@ static void measureAddFetchBarrier(Context *c, int *threadCounts, int threadCoun
         clock_gettime(CLOCK_REALTIME, &begin);
         time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
-        for(repetitions = 0;; repetitions += 3){
+        for(repetitions = 0;; repetitions += 1){
 
-            addFetchBarrier1(barrier1_, barrier2_, barrier3_, threadCount);
-            addFetchBarrier2(barrier1_, barrier2_, barrier3_, threadCount);
-            addFetchBarrier3(barrier1_, barrier2_, barrier3_, threadCount);
+            if (*barrier3_ == 0) {
+                addFetchBarrier(barrier1_, barrier3_, threadCount);
+            } else if (*barrier1_ == 0) {
+                addFetchBarrier(barrier2_, barrier1_, threadCount);
+            } else if (*barrier2_ == 0) {
+                addFetchBarrier(barrier3_, barrier2_, threadCount);
+            } else {
+                assert(0);
+            }
+
 
             if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
