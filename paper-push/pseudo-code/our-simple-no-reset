@@ -1,0 +1,16 @@
+variables:
+
+  shared: barrier[threadCount] (one array element per cache line)
+  init: barrier[*] := 0
+
+code per thread:
+
+  barrier[threadIndex] := 1                    // I arrived
+
+  for i := 0; i < threadCount; i += 1 {        // for each thread
+    if barrier[i] = 0 {                        // if one did not arrive
+      i := -1
+      continue                                 // repeat from start
+    }
+  }
+

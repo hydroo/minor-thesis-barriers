@@ -1,0 +1,23 @@
+variables:
+
+  shared: barrier[numThreads] (each process owns its own array element)
+  local: me := $2^{threadIndex}$, full := $\sum_{i=0}^{numThreads-1}2^i$
+  init: barrier[*] := full
+
+code per thread/process:
+
+ barrier[threadIndex] := full & ~me;                             // every thread but me has not yet arrived
+
+ i := 0
+
+ while barrier[threadIndex] != 0 {                               // as long as not everyone arrived
+
+   if barrier[threadIndex] & (2^i) != 0 {                        // pick one thread that has not yet arrived
+     barrier[threadIndex] = barrier[threadIndex] & barrier[i];   // pull his 'data' and connect it with ours by logical AND
+   }
+
+   i := (i + 1) % numThreads
+ }
+
+
+// 2^i is 2 to the power of i
