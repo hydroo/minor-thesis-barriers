@@ -7,3 +7,4 @@ code per thread/process:
   atomic{barrier := barrier - 1};
   while barrier != 0 {}
 
+// implementations/remember-others-and-add-fetch-rapl/main.c search for "add fetch barrier { "

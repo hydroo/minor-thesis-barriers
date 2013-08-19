@@ -30,3 +30,4 @@ code per thread/process:
 
   }
 
+// implementations/remember-others-and-add-fetch-rapl/main.c search for "add fetch barrier { "
