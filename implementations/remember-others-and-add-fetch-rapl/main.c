@@ -1448,6 +1448,8 @@ static void measureNtimesAddFetchBarrier(Context *c, int *threadCounts, int thre
 /* *** } n times add fetch barrier ***************************************** */
 
 /* *** dissemination barrier 1 { ******************************************* */
+/* TODO: SURELY WRONG */
+/* TODO: Once it works, if, if else the single barriers instead of calling them in a row */
 typedef union {
     int c;
     uint8_t dontAccess[64];
@@ -1630,6 +1632,7 @@ static void measureDisseminationBarrier1(Context *c, int *threadCounts, int thre
 /* *** } dissemination barrier 1 ******************************************* */
 
 /* *** dissemination barrier 2 { ******************************************* */
+/* TODO: PROBABLY WRONG */
 /* if this int64_t counter overflows the algorithm breaks
    it is just a quick and dirty way to avoid a proper reset implementation */
 typedef union {
