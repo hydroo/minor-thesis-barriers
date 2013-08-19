@@ -1559,246 +1559,49 @@ static void measureNtimesAddFetchBarrier(Context *c, int *threadCounts, int thre
 }
 /* *** } n times add fetch barrier ***************************************** */
 
-/* *** dissemination barrier 1 { ******************************************* */
-/* TODO: SURELY WRONG */
-/* TODO: Once it works, if, if else the single barriers instead of calling them in a row */
-typedef union {
-    int c;
-    uint8_t dontAccess[64];
-} D1Element __attribute__ ((aligned (64)));
-
-static inline void barrierDissemination1(int threadIndex, int threadCount, D1Element *barrier, D1Element *delBarrier) {
-    for (int distance = 1, round = 0; distance < threadCount; distance <<= 1, round += 1) {
-        __atomic_add_fetch(&(barrier[(threadIndex + distance) % threadCount].c), 1, __ATOMIC_ACQ_REL);
-
-        while(__atomic_load_n(&(barrier[threadIndex].c), __ATOMIC_ACQUIRE) <= round) {}
-    }
-    __atomic_store_n(&(delBarrier[threadIndex].c), 0, __ATOMIC_RELEASE);
-}
-
-static void measureDisseminationBarrier1(Context *c, int *threadCounts, int threadCountsLen) {
-    //printf("# %s:\n",__func__);
-
-    D1Element *barrier1;
-    D1Element *barrier2;
-    D1Element *barrier3;
-    D1Element *barrier4;
-
-    int64_t repetitions_;
-
-#ifdef DEBUG
-    typedef enum {
-        One = 0,
-        BetweenOneAndTwo = 1,
-        Two = 2,
-        BetweenTwoAndThree = 3,
-        Three = 4,
-        BetweenThreeAndFour = 5,
-        Four = 6,
-        BetweenFourAndOne = 7,
-        BetweenThreeAndOne = 8
-    } WhichWorkPeriod;
-
-    volatile WhichWorkPeriod * volatile which;
-
-    volatile int64_t * volatile repetitions2_;
-#endif
-
-    void prepare(int threadIndex, int threadCount) {
-        (void) threadCount;
-        if (threadIndex == 0) {
-            barrier1 = (D1Element*) malloc(sizeof(D1Element) * threadCount);
-            barrier2 = (D1Element*) malloc(sizeof(D1Element) * threadCount);
-            barrier3 = (D1Element*) malloc(sizeof(D1Element) * threadCount);
-            barrier4 = (D1Element*) malloc(sizeof(D1Element) * threadCount);
-#ifdef DEBUG
-            which = (WhichWorkPeriod*) malloc(sizeof(WhichWorkPeriod) * threadCount);
-#endif
-            for (int i = 0; i < threadCount; i += 1) {
-                barrier1[i].c = 0;
-                barrier2[i].c = 0;
-                barrier3[i].c = 0;
-                barrier4[i].c = 0;
-#ifdef DEBUG
-                which[i] = One;
-#endif
-            }
-#ifdef DEBUG
-            repetitions2_ = (int64_t*) malloc(sizeof(int64_t) * threadCount);
-            for (int i = 0; i < threadCount; i += 1) { repetitions2_[i] = 0; }
-#endif
-        }
-    }
-    void finalize(int threadIndex, int threadCount) {
-        (void) threadCount;
-        if (threadIndex == 0) {
-            free(barrier1); barrier1 = NULL;
-            free(barrier2); barrier2 = NULL;
-            free(barrier3); barrier3 = NULL;
-            free(barrier4); barrier4 = NULL;
-#ifdef DEBUG
-            free((WhichWorkPeriod*)which); which = NULL;
-            free((int64_t*)repetitions2_); repetitions2_ = NULL;
-#endif
-        }
-    }
-    void f(int threadIndex, int threadCount) {
-        struct timespec begin, end;
-
-        clock_gettime(CLOCK_REALTIME, &begin);
-        const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
-
-        for(int64_t repetitions = 0;; repetitions += 4) {
-#ifdef DEBUG
-            repetitions2_[threadIndex] += 1;
-#endif
-
-
-#ifdef DEBUG
-            which[threadIndex] = One;
-            for (int i = 0; i < threadCount; i += 1) {
-                WhichWorkPeriod wi = which[i];
-                if (!(wi == One || wi == BetweenFourAndOne || wi == BetweenOneAndTwo)) {
-                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
-                    assert(0);
-                }
-            }
-            which[threadIndex] = BetweenOneAndTwo;
-#endif
-            barrierDissemination1(threadIndex, threadCount, barrier1, barrier1);
-#ifdef DEBUG
-            which[threadIndex] = Two;
-            for (int i = 0; i < threadCount; i += 1) {
-                WhichWorkPeriod wi = which[i];
-                if(!(wi == Two || wi == BetweenOneAndTwo || wi == BetweenTwoAndThree)) {
-                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
-                    assert(0);
-                }
-            }
-            which[threadIndex] = BetweenTwoAndThree;
-#endif
-            barrierDissemination1(threadIndex, threadCount, barrier2, barrier2);
-#ifdef DEBUG
-            which[threadIndex] = Three;
-            for (int i = 0; i < threadCount; i += 1) {
-                WhichWorkPeriod wi = which[i];
-                if(!(wi == Three || wi == BetweenTwoAndThree || wi == BetweenThreeAndFour)) {
-                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
-                    assert(0);
-                }
-            }
-            which[threadIndex] = BetweenThreeAndFour;
-#endif
-            barrierDissemination1(threadIndex, threadCount, barrier3, barrier3);
-#ifdef DEBUG
-            which[threadIndex] = Four;
-            for (int i = 0; i < threadCount; i += 1) {
-                WhichWorkPeriod wi = which[i];
-                if(!(wi == Four || wi == BetweenThreeAndFour || wi == BetweenFourAndOne)) {
-                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
-                    assert(0);
-                }
-            }
-            which[threadIndex] = BetweenFourAndOne;
-#endif
-            barrierDissemination1(threadIndex, threadCount, barrier4, barrier4);
-
-
-            if (repetitions % (1 * 3000) == 0) {
-
-                // incorrect but works since we are constantly syncronizing threads
-                // normally some kind of communication between threads needs to happen
-                // to consistently exit this loop together
-                clock_gettime(CLOCK_REALTIME, &end);
-
-#ifdef DEBUG
-                for (int i = 0; i < threadCount; i += 1) {
-                    for (int j = i+1; j < threadCount; j += 1) {
-                        if (abs(repetitions2_[i] - repetitions2_[j]) > 1) {
-                            fprintf(stderr, "repetition counts differ too much. reps[%i] = %li, reps[%i] = %li. aborting\n", i, repetitions2_[i], j, repetitions2_[j]);
-                            assert(0);
-                        }
-                    }
-                }
-#endif
-
-                if (end.tv_sec > supposedEnd) {
-                    repetitions_ = repetitions;
-                    break;
-                }
-            }
-        }
-    }
-
-    for (int i = 0; i < threadCountsLen; i += 1) {
-        MeasurementResult m = measurePowerConsumptionOfFunction(prepare, f, finalize, threadCounts[i], c, False);
-
-        double totalCycles = m.elapsedSeconds * 1000 * 1000 * 1000 * c->clockTicksPerNanoSecond;
-        double cyclesPerRepetition = totalCycles / repetitions_;
-        double joule = m.powerConsumption * m.elapsedSeconds;
-        double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
-
-        printf("dissemination-1       t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption,  cyclesPerRepetition, nanoJoulePerRepetition);
-    }
-}
-/* *** } dissemination barrier 1 ******************************************* */
-
-/* *** dissemination barrier 2 { ******************************************* */
-/* TODO: PROBABLY WRONG */
-/* if this int64_t counter overflows the algorithm breaks
-   it is just a quick and dirty way to avoid a proper reset implementation */
-typedef union {
+/* *** dissemination barrier { ********************************************* */
+/* perhaps through aligning for memory access more cleverly one can get more performance out of this (semi-TODO)*/
+typedef struct {
     int64_t c;
-    uint8_t dontAccess[64];
-} D2Element __attribute__ ((aligned (64)));
+    int64_t repetitionCount; // is only used on element [*] [0]
+    uint8_t dontAccess[48];
+} DElement __attribute__ ((aligned (64)));
 
-static inline void barrierDissemination2(int threadIndex, int threadCount, D2Element **barrier, int64_t counter) {
-    int to, from;
-    for (int distance = 1; distance < threadCount; distance *= 2) {
-        to = (threadIndex + distance) % threadCount;
-        from = (threadIndex - distance + threadCount) % threadCount;
-        __atomic_add_fetch(&(barrier[to][threadIndex].c), 1, __ATOMIC_ACQ_REL);
+static inline void barrierDissemination(int threadIndex, int threadCount, DElement **barrier) {
+    int64_t x = ++barrier[threadIndex][0].repetitionCount;
+    for (int distance = 1; distance < threadCount; distance <<= 1) {
+        __atomic_store_n(&(barrier[(threadIndex + distance) % threadCount][threadIndex].c), x, __ATOMIC_RELEASE);
 
-        while(__atomic_load_n(&(barrier[threadIndex][from].c), __ATOMIC_ACQUIRE) == counter) {}
+        while(__atomic_load_n(&(barrier[threadIndex][(threadIndex - distance + threadCount) % threadCount].c), __ATOMIC_ACQUIRE) < x) {
+        }
     }
 }
 
-static void measureDisseminationBarrier2(Context *c, int *threadCounts, int threadCountsLen) {
+static void measureDisseminationBarrier(Context *c, int *threadCounts, int threadCountsLen) {
     //printf("# %s:\n",__func__);
 
-    D2Element **barrier;
+    DElement **barrier;
 
     int64_t repetitions_;
-#ifdef DEBUG
-    int64_t *repetitions2_;
-#endif
 
     void prepare(int threadIndex, int threadCount) {
-        (void) threadCount;
         if (threadIndex == 0) {
-            barrier = (D2Element**) malloc(sizeof(D2Element*) * threadCount);
+            barrier = (DElement**) malloc(sizeof(DElement*) * threadCount);
             for (int i = 0; i < threadCount; i += 1) {
-                barrier[i] = (D2Element*) malloc(sizeof(D2Element) * threadCount);
+                barrier[i] = (DElement*) malloc(sizeof(DElement) * threadCount);
                 for (int j = 0; j < threadCount; j += 1) {
                     barrier[i][j].c = 0;
+                    barrier[i][j].repetitionCount = 0;
                 }
             }
-#ifdef DEBUG
-            repetitions2_ = (int64_t*) malloc(sizeof(int64_t) * threadCount);
-            for (int i = 0; i < threadCount; i += 1) { repetitions2_[i] = 0; }
-#endif
         }
     }
     void finalize(int threadIndex, int threadCount) {
-        (void) threadCount;
         if (threadIndex == 0) {
             for (int i = 0; i < threadCount; i += 1) {
                 free(barrier[i]); barrier[i] = NULL;
             }
             free(barrier); barrier = NULL;
-#ifdef DEBUG
-            free(repetitions2_); repetitions2_ = NULL;
-#endif
         }
     }
     void f(int threadIndex, int threadCount) {
@@ -1808,29 +1611,27 @@ static void measureDisseminationBarrier2(Context *c, int *threadCounts, int thre
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
         for(int64_t repetitions = 0;; repetitions += 1) {
+
 #ifdef DEBUG
-            repetitions2_[threadIndex] += 1;
+            int x = barrier[threadIndex][0].repetitionCount;
+            int y;
+            for (int i = 0; i < threadCount; i += 1) {
+                y = barrier[i][0].repetitionCount;
+                if (!( y == x || y == x-1 || y == x+1)) {
+                    fprintf(stderr, "t %i rep %i - t %i rep %i\n", threadIndex, x, i, y);
+                    assert(0);
+                }
+            }
 #endif
 
-            barrierDissemination2(threadIndex, threadCount, barrier, repetitions);
+            barrierDissemination(threadIndex, threadCount, barrier);
 
-            if (repetitions % (3 * 3000) == 0) {
+            if (repetitions % (1 * 3000) == 0) {
 
                 // incorrect but works since we are constantly syncronizing threads
                 // normally some kind of communication between threads needs to happen
                 // to consistently exit this loop together
                 clock_gettime(CLOCK_REALTIME, &end);
-
-#ifdef DEBUG
-                for (int i = 0; i < threadCount; i += 1) {
-                    for (int j = i+1; j < threadCount; j += 1) {
-                        if (abs(repetitions2_[i] - repetitions2_[j]) > 1) {
-                            fprintf(stderr, "repetition counts differ too much. reps[%i] = %li, reps[%i] = %li. aborting\n", i, repetitions2_[i], j, repetitions2_[j]);
-                            assert(0);
-                        }
-                    }
-                }
-#endif
 
                 if (end.tv_sec > supposedEnd) {
                     repetitions_ = repetitions;
@@ -1848,10 +1649,11 @@ static void measureDisseminationBarrier2(Context *c, int *threadCounts, int thre
         double joule = m.powerConsumption * m.elapsedSeconds;
         double nanoJoulePerRepetition = joule * 1000 * 1000 * 1000 / repetitions_;
 
-        printf("dissemination-2       t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption,  cyclesPerRepetition, nanoJoulePerRepetition);
+        printf("dissemination         t %3d, reps %10lli, wallSecs %.3lf sec, totalPower %3.3lf W, cycles/reps %.3lf, nJ/reps %.3lf\n", threadCounts[i], (long long int)repetitions_, m.elapsedSeconds, m.powerConsumption,  cyclesPerRepetition, nanoJoulePerRepetition);
     }
 }
-/* *** } dissemination barrier 2 ******************************************* */
+/* *** } dissemination barrier ********************************************* */
+
 
 int main(int argc, char **args) {
 
@@ -1878,8 +1680,7 @@ int main(int argc, char **args) {
             "    --super-wasteful-4 <thread-count-list>\n"
             "    --super-wasteful-5 <thread-count-list>\n"
             "    --local-counter <thread-count-list>\n"
-            "    --dissemination-1 <thread-count-list>\n"
-            "    --dissemination-2 <thread-count-list>\n"
+            "    --dissemination <thread-count-list>\n"
             );
 
         exit(0);
@@ -1940,13 +1741,9 @@ int main(int argc, char **args) {
     int *ntimesAddFetchThreadCountList = NULL;
     int ntimesAddFetchThreadCountListLen = 0;
 
-    Bool measureDisseminationBarrier1_ = False;
-    int *dissemination1ThreadCountList = NULL;
-    int dissemination1ThreadCountListLen = 0;
-
-    Bool measureDisseminationBarrier2_ = False;
-    int *dissemination2ThreadCountList = NULL;
-    int dissemination2ThreadCountListLen = 0;
+    Bool measureDisseminationBarrier_ = False;
+    int *disseminationThreadCountList = NULL;
+    int disseminationThreadCountListLen = 0;
 
     for (int i = 3; i < argc; i += 1) {
         if (strcmp("--avoid-ht", args[i]) == 0) {
@@ -2003,14 +1800,10 @@ int main(int argc, char **args) {
             measureNtimesAddFetchBarrier_ = True;
             threadListFromArguments(args, argc, i+1, &ntimesAddFetchThreadCountList, &ntimesAddFetchThreadCountListLen, 2, threadCount);
             i += ntimesAddFetchThreadCountListLen;
-        } else if (strcmp("--dissemination-1", args[i]) == 0) {
-            measureDisseminationBarrier1_ = True;
-            threadListFromArguments(args, argc, i+1, &dissemination1ThreadCountList, &dissemination1ThreadCountListLen, 2, threadCount);
-            i += dissemination1ThreadCountListLen;
-        } else if (strcmp("--dissemination-2", args[i]) == 0) {
-            measureDisseminationBarrier2_ = True;
-            threadListFromArguments(args, argc, i+1, &dissemination2ThreadCountList, &dissemination2ThreadCountListLen, 2, threadCount);
-            i += dissemination2ThreadCountListLen;
+        } else if (strcmp("--dissemination", args[i]) == 0) {
+            measureDisseminationBarrier_ = True;
+            threadListFromArguments(args, argc, i+1, &disseminationThreadCountList, &disseminationThreadCountListLen, 2, threadCount);
+            i += disseminationThreadCountListLen;
         } else if (strcmp("--sleep-power", args[i]) == 0) {
             i += 1;
             sleepPowerConsumption = atof(args[i]);
@@ -2092,14 +1885,9 @@ int main(int argc, char **args) {
         free(ntimesAddFetchThreadCountList);
     }
 
-    if (measureDisseminationBarrier1_ == True) {
-        measureDisseminationBarrier1(context, dissemination1ThreadCountList, dissemination1ThreadCountListLen);
-        free(dissemination1ThreadCountList);
-    }
-
-    if (measureDisseminationBarrier2_ == True) {
-        measureDisseminationBarrier2(context, dissemination2ThreadCountList, dissemination2ThreadCountListLen);
-        free(dissemination2ThreadCountList);
+    if (measureDisseminationBarrier_ == True) {
+        measureDisseminationBarrier(context, disseminationThreadCountList, disseminationThreadCountListLen);
+        free(disseminationThreadCountList);
     }
 
     printContext(context);

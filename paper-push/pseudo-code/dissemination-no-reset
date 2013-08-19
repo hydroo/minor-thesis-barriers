@@ -1,16 +1,17 @@
 variables:
 
-  shared: barrier[threadCount] (each thread/process has its element locally)
-  init: barrier[*] := 0
+  shared: barrier[threadCount][threadCount] (each thread/process has its element locally)
+  init: barrier[*][*] := 0
 
 code per thread/process:
 
-  for round := 0; round < ceil(log2(numThreads)); round += 1 {
-    to := (threadIndex + (2^round)) % threadCount
+  for distance := 1; distance < numThreads; distance *= 2 {
+    to   := (threadIndex + distance) % threadCount
+    from := (threadIndex - distance) % threadCount
 
-    atomic{barrier[to] := barrier[to] + 1}
+    barrier[to][threadIndex] := 1
 
-    while barrier[threadIndex] <= round {}
+    while barrier[threadIndex][from] != 1 {}
   }
 
-// implementations/remember-others-and-add-fetch-rapl/main.c search for "dissemination barrier 1 { "
+// implementations/remember-others-and-add-fetch-rapl/main.c search for "dissemination barrier { "
