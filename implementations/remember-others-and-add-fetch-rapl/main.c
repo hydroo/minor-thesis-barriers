@@ -1454,8 +1454,8 @@ typedef union {
 } D1Element __attribute__ ((aligned (64)));
 
 static inline void barrierDissemination1(int threadIndex, int threadCount, D1Element *barrier, D1Element *delBarrier) {
-    for (int distance = 1, round = 0; distance < threadCount; distance *= 2, round += 1) {
-        __atomic_add_fetch(&(barrier[(threadIndex + distance) % threadCount].c), 1, __ATOMIC_RELEASE);
+    for (int distance = 1, round = 0; distance < threadCount; distance <<= 1, round += 1) {
+        __atomic_add_fetch(&(barrier[(threadIndex + distance) % threadCount].c), 1, __ATOMIC_ACQ_REL);
 
         while(__atomic_load_n(&(barrier[threadIndex].c), __ATOMIC_ACQUIRE) <= round) {}
     }
@@ -1576,7 +1576,7 @@ static inline void barrierDissemination2(int threadIndex, int threadCount, D2Ele
     for (int distance = 1; distance < threadCount; distance *= 2) {
         to = (threadIndex + distance) % threadCount;
         from = (threadIndex - distance + threadCount) % threadCount;
-        __atomic_add_fetch(&(barrier[to][threadIndex].c), 1, __ATOMIC_RELEASE);
+        __atomic_add_fetch(&(barrier[to][threadIndex].c), 1, __ATOMIC_ACQ_REL);
 
         while(__atomic_load_n(&(barrier[threadIndex][from].c), __ATOMIC_ACQUIRE) == counter) {}
     }
