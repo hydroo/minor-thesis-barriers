@@ -1471,8 +1471,23 @@ static void measureDisseminationBarrier1(Context *c, int *threadCounts, int thre
     D1Element *barrier4;
 
     int64_t repetitions_;
+
 #ifdef DEBUG
-    int64_t *repetitions2_;
+    typedef enum {
+        One = 0,
+        BetweenOneAndTwo = 1,
+        Two = 2,
+        BetweenTwoAndThree = 3,
+        Three = 4,
+        BetweenThreeAndFour = 5,
+        Four = 6,
+        BetweenFourAndOne = 7,
+        BetweenThreeAndOne = 8
+    } WhichWorkPeriod;
+
+    volatile WhichWorkPeriod * volatile which;
+
+    volatile int64_t * volatile repetitions2_;
 #endif
 
     void prepare(int threadIndex, int threadCount) {
@@ -1482,11 +1497,17 @@ static void measureDisseminationBarrier1(Context *c, int *threadCounts, int thre
             barrier2 = (D1Element*) malloc(sizeof(D1Element) * threadCount);
             barrier3 = (D1Element*) malloc(sizeof(D1Element) * threadCount);
             barrier4 = (D1Element*) malloc(sizeof(D1Element) * threadCount);
+#ifdef DEBUG
+            which = (WhichWorkPeriod*) malloc(sizeof(WhichWorkPeriod) * threadCount);
+#endif
             for (int i = 0; i < threadCount; i += 1) {
                 barrier1[i].c = 0;
                 barrier2[i].c = 0;
                 barrier3[i].c = 0;
                 barrier4[i].c = 0;
+#ifdef DEBUG
+                which[i] = One;
+#endif
             }
 #ifdef DEBUG
             repetitions2_ = (int64_t*) malloc(sizeof(int64_t) * threadCount);
@@ -1502,7 +1523,8 @@ static void measureDisseminationBarrier1(Context *c, int *threadCounts, int thre
             free(barrier3); barrier3 = NULL;
             free(barrier4); barrier4 = NULL;
 #ifdef DEBUG
-            free(repetitions2_); repetitions2_ = NULL;
+            free((WhichWorkPeriod*)which); which = NULL;
+            free((int64_t*)repetitions2_); repetitions2_ = NULL;
 #endif
         }
     }
@@ -1518,9 +1540,53 @@ static void measureDisseminationBarrier1(Context *c, int *threadCounts, int thre
 #endif
 
 
+#ifdef DEBUG
+            which[threadIndex] = One;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if (!(wi == One || wi == BetweenFourAndOne || wi == BetweenOneAndTwo)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenOneAndTwo;
+#endif
             barrierDissemination1(threadIndex, threadCount, barrier1, barrier1);
+#ifdef DEBUG
+            which[threadIndex] = Two;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if(!(wi == Two || wi == BetweenOneAndTwo || wi == BetweenTwoAndThree)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenTwoAndThree;
+#endif
             barrierDissemination1(threadIndex, threadCount, barrier2, barrier2);
+#ifdef DEBUG
+            which[threadIndex] = Three;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if(!(wi == Three || wi == BetweenTwoAndThree || wi == BetweenThreeAndFour)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenThreeAndFour;
+#endif
             barrierDissemination1(threadIndex, threadCount, barrier3, barrier3);
+#ifdef DEBUG
+            which[threadIndex] = Four;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if(!(wi == Four || wi == BetweenThreeAndFour || wi == BetweenFourAndOne)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenFourAndOne;
+#endif
             barrierDissemination1(threadIndex, threadCount, barrier4, barrier4);
 
 
