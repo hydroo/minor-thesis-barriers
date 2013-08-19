@@ -1,0 +1,32 @@
+variables:
+
+  shared: barrier1 := numThreads
+          barrier2 := numThreads
+          barrier3 := 0                     // 'not resetted'
+
+code per thread/process:
+
+
+  if barrier3 = 0 {                         // if barrier3 is not resetted
+
+    atomic{barrier := barrier - 1};
+    while barrier != 0 {}
+
+    barrier3 = numThreads                   // reset barrier3
+
+  } else if barrier1 = 0 {                  // if barrier1 is not resetted
+
+    atomic{barrier := barrier - 1};
+    while barrier != 0 {}
+
+    barrier1 = numThreads                   // reset barrier1
+
+  } else if barrier2 = 0 {                  // if barrier2 is not resetted
+
+    atomic{barrier := barrier - 1};
+    while barrier != 0 {}
+
+    barrier2 = numThreads                   // reset barrier2
+
+  }
+
