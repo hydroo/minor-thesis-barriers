@@ -1,0 +1,15 @@
+variables:
+
+  shared: barrier[threadCount] (each thread/process has its element locally)
+  init: barrier[*] := 0
+
+code per thread/process:
+
+  for round := 0; round < ceil(log2(numThreads)); round += 1 {
+    to := (threadIndex + (2^round)) % threadCount
+
+    atomic{barrier[to] := barrier[to] + 1}
+
+    while barrier[threadIndex] <= round {}
+  }
+

@@ -1,0 +1,9 @@
+variables:
+
+  shared: barrier := numThreads
+
+code per thread/process:
+
+  atomic{barrier := barrier - 1};
+  while barrier != 0 {}
+
