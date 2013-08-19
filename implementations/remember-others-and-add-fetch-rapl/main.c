@@ -987,17 +987,35 @@ static void measureSuperWastefulBarrier1(Context *c, int *threadCounts, int thre
 
     int64_t repetitions_;
 
+#ifdef DEBUG
+    typedef enum {
+        One = 0,
+        BetweenOneAndTwo = 1,
+        Two = 2,
+        BetweenTwoAndThree = 3,
+        Three = 4,
+        BetweenThreeAndOne = 5
+    } WhichWorkPeriod;
+
+    volatile WhichWorkPeriod * volatile which;
+#endif
+
     void prepare(int threadIndex, int threadCount) {
         (void) threadCount;
         if (threadIndex == 0) {
             barrier1 = (Sw1Element*) malloc(sizeof(Sw1Element) * threadCount);
             barrier2 = (Sw1Element*) malloc(sizeof(Sw1Element) * threadCount);
             barrier3 = (Sw1Element*) malloc(sizeof(Sw1Element) * threadCount);
-
+#ifdef DEBUG
+            which = (WhichWorkPeriod*) malloc(sizeof(WhichWorkPeriod) * threadCount);
+#endif
             for (int i = 0; i < threadCount; i += 1) {
                 barrier1[i].v = 0;
                 barrier2[i].v = 0;
                 barrier3[i].v = 0;
+#ifdef DEBUG
+                which[i] = One;
+#endif
             }
         }
     }
@@ -1007,6 +1025,9 @@ static void measureSuperWastefulBarrier1(Context *c, int *threadCounts, int thre
             free((void*)barrier1); barrier1 = NULL;
             free((void*)barrier2); barrier2 = NULL;
             free((void*)barrier3); barrier3 = NULL;
+#ifdef DEBUG
+            free((WhichWorkPeriod*)which); which = NULL;
+#endif
         }
     }
     void f(int threadIndex, int threadCount) {
@@ -1017,8 +1038,41 @@ static void measureSuperWastefulBarrier1(Context *c, int *threadCounts, int thre
 
         for(int64_t repetitions = 0;; repetitions += 3) {
 
+#ifdef DEBUG
+            which[threadIndex] = One;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if (!(wi == One || wi == BetweenThreeAndOne || wi == BetweenOneAndTwo)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenOneAndTwo;
+#endif
             barrierSuperWasteful1(threadIndex, threadCount, barrier1, barrier3);
+#ifdef DEBUG
+            which[threadIndex] = Two;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if(!(wi == Two || wi == BetweenOneAndTwo || wi == BetweenTwoAndThree)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenTwoAndThree;
+#endif
             barrierSuperWasteful1(threadIndex, threadCount, barrier2, barrier1);
+#ifdef DEBUG
+            which[threadIndex] = Three;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if(!(wi == Three || wi == BetweenTwoAndThree || wi == BetweenThreeAndOne)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenThreeAndOne;
+#endif
             barrierSuperWasteful1(threadIndex, threadCount, barrier3, barrier2);
 
             if (repetitions % (1 * 3000) == 0) {
@@ -1305,6 +1359,18 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
 
     int64_t repetitions_;
 
+#ifdef DEBUG
+    typedef enum {
+        One = 0,
+        BetweenOneAndTwo = 1,
+        Two = 2,
+        BetweenTwoAndThree = 3,
+        Three = 4,
+        BetweenThreeAndOne = 5
+    } WhichWorkPeriod;
+
+    volatile WhichWorkPeriod * volatile which;
+#endif
 
     void prepare(int threadIndex, int threadCount) {
         if (threadIndex == 0) {
@@ -1314,7 +1380,17 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
             barrier1 = (Sw5Element*) malloc(sizeof(Sw5Element) * threadCount);
             barrier2 = (Sw5Element*) malloc(sizeof(Sw5Element) * threadCount);
             barrier3 = (Sw5Element*) malloc(sizeof(Sw5Element) * threadCount);
-            for (int i = 0; i < threadCount; i += 1) { barrier1[i].m = fullMask; barrier2[i].m = fullMask; barrier3[i].m = fullMask; }
+#ifdef DEBUG
+            which = (WhichWorkPeriod*) malloc(sizeof(WhichWorkPeriod) * threadCount);
+#endif
+            for (int i = 0; i < threadCount; i += 1) {
+                barrier1[i].m = fullMask;
+                barrier2[i].m = fullMask;
+                barrier3[i].m = fullMask;
+#ifdef DEBUG
+                which[i] = One;
+#endif
+            }
 
         }
     }
@@ -1324,6 +1400,9 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
             free(barrier1); barrier1 = NULL;
             free(barrier2); barrier2 = NULL;
             free(barrier3); barrier3 = NULL;
+#ifdef DEBUG
+            free((WhichWorkPeriod*)which); which = NULL;
+#endif
         }
     }
     void f(int threadIndex, int threadCount) {
@@ -1338,8 +1417,41 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
 
         for(int64_t repetitions = 0;; repetitions += 3) {
 
+#ifdef DEBUG
+            which[threadIndex] = One;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if (!(wi == One || wi == BetweenThreeAndOne || wi == BetweenOneAndTwo)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenOneAndTwo;
+#endif
             barrierSuperWasteful5(threadIndex, threadCount, barrier1, barrier3, notMe, fullMask);
+#ifdef DEBUG
+            which[threadIndex] = Two;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if(!(wi == Two || wi == BetweenOneAndTwo || wi == BetweenTwoAndThree)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenTwoAndThree;
+#endif
             barrierSuperWasteful5(threadIndex, threadCount, barrier2, barrier1, notMe, fullMask);
+#ifdef DEBUG
+            which[threadIndex] = Three;
+            for (int i = 0; i < threadCount; i += 1) {
+                WhichWorkPeriod wi = which[i];
+                if(!(wi == Three || wi == BetweenTwoAndThree || wi == BetweenThreeAndOne)) {
+                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                    assert(0);
+                }
+            }
+            which[threadIndex] = BetweenThreeAndOne;
+#endif
             barrierSuperWasteful5(threadIndex, threadCount, barrier3, barrier2, notMe, fullMask);
 
             if (repetitions % (1 * 3000) == 0) {
