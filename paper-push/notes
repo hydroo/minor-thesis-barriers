@@ -1,0 +1,6 @@
+how to add reset to a barrier algorithm:
+ - switching between barriers using a variable (as in the mcquire/ronny barrier - 'left' variable)
+ - use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking
+   if barrier x+2 is resetted or not (as in add-fetch-with-reset)
+ - if variable space permits it you can also change the variables to 'counters' and modify all checks
+   to ask for numbers modulo round + a check that you are in the proper round
