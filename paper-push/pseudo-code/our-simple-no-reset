@@ -14,3 +14,4 @@ code per thread:
     }
   }
 
+// implementations/remember-others-and-add-fetch-rapl/main.c search for "super wasteful 1 barrier { "

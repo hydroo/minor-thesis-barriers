@@ -13,3 +13,4 @@ code per thread/process:
     while barrier[threadIndex] <= round {}
   }
 
+// implementations/remember-others-and-add-fetch-rapl/main.c search for "dissemination barrier 1 { "
