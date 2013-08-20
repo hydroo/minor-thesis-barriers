@@ -1106,11 +1106,12 @@ typedef union {
     uint8_t dontAccess[64];
 } Sw2Element __attribute__ ((aligned (64)));
 
-static inline void barrierSuperWasteful2(int threadIndex, int threadCount, Sw2Element *barrier, int64_t counter) {
-    __atomic_add_fetch(&(barrier[threadIndex].c), 1, __ATOMIC_RELEASE);
+static inline void barrierSuperWasteful2(int threadIndex, int threadCount, Sw2Element *barrier) {
+    int64_t c = __atomic_load_n(&(barrier[threadIndex].c), __ATOMIC_ACQUIRE) + 1;
+    __atomic_store_n(&(barrier[threadIndex].c), c, __ATOMIC_RELEASE);
 
     for(int i = 0; i < threadCount; i += 1) {
-        if (__atomic_load_n(&(barrier[i].c), __ATOMIC_ACQUIRE) == counter) {
+        if (__atomic_load_n(&(barrier[i].c), __ATOMIC_ACQUIRE) < c) {
             i = - 1;
             continue;
         }
@@ -1145,7 +1146,7 @@ static void measureSuperWastefulBarrier2(Context *c, int *threadCounts, int thre
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
-            barrierSuperWasteful2(threadIndex, threadCount, barrier, repetitions);
+            barrierSuperWasteful2(threadIndex, threadCount, barrier);
 
             if (repetitions % (3 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
