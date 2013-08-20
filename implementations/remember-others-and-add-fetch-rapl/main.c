@@ -1562,18 +1562,17 @@ static void measureNtimesAddFetchBarrier(Context *c, int *threadCounts, int thre
 
 /* *** dissemination barrier { ********************************************* */
 /* perhaps through aligning for memory access more cleverly one can get more performance out of this (semi-TODO)*/
-typedef struct {
+typedef union {
     int64_t c;
-    int64_t repetitionCount; // is only used on element [*] [0]
     uint8_t dontAccess[48];
 } DElement __attribute__ ((aligned (64)));
 
 static inline void barrierDissemination(int threadIndex, int threadCount, DElement **barrier) {
-    int64_t x = ++barrier[threadIndex][0].repetitionCount;
+    int64_t c = ++barrier[threadIndex][threadIndex].c;
     for (int distance = 1; distance < threadCount; distance <<= 1) {
-        __atomic_store_n(&(barrier[(threadIndex + distance) % threadCount][threadIndex].c), x, __ATOMIC_RELEASE);
+        __atomic_store_n(&(barrier[(threadIndex + distance) % threadCount][threadIndex].c), c, __ATOMIC_RELEASE);
 
-        while(__atomic_load_n(&(barrier[threadIndex][(threadIndex - distance + threadCount) % threadCount].c), __ATOMIC_ACQUIRE) < x) {
+        while(__atomic_load_n(&(barrier[threadIndex][(threadIndex - distance + threadCount) % threadCount].c), __ATOMIC_ACQUIRE) < c) {
         }
     }
 }
@@ -1581,7 +1580,7 @@ static inline void barrierDissemination(int threadIndex, int threadCount, DEleme
 static void measureDisseminationBarrier(Context *c, int *threadCounts, int threadCountsLen) {
     //printf("# %s:\n",__func__);
 
-    DElement **barrier;
+    DElement **barrier; // [to][from]
 
     int64_t repetitions_;
 
@@ -1592,7 +1591,6 @@ static void measureDisseminationBarrier(Context *c, int *threadCounts, int threa
                 barrier[i] = (DElement*) malloc(sizeof(DElement) * threadCount);
                 for (int j = 0; j < threadCount; j += 1) {
                     barrier[i][j].c = 0;
-                    barrier[i][j].repetitionCount = 0;
                 }
             }
         }
@@ -1614,10 +1612,10 @@ static void measureDisseminationBarrier(Context *c, int *threadCounts, int threa
         for(int64_t repetitions = 0;; repetitions += 1) {
 
 #ifdef DEBUG
-            int x = barrier[threadIndex][0].repetitionCount;
+            int x = barrier[threadIndex][threadIndex].c;
             int y;
             for (int i = 0; i < threadCount; i += 1) {
-                y = barrier[i][0].repetitionCount;
+                y = barrier[i][i].c;
                 if (!( y == x || y == x-1 || y == x+1)) {
                     fprintf(stderr, "t %i rep %i - t %i rep %i\n", threadIndex, x, i, y);
                     assert(0);

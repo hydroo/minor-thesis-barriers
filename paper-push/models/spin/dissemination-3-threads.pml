@@ -2,16 +2,10 @@
 #define threadCountSquared 9
 
 int bar[threadCountSquared];
-int rep[threadCount];
 
 init {
     int i = 0;
     do :: i < threadCountSquared -> bar[i] = 0; i = i + 1;
-       :: else -> break
-    od;
-
-    i = 0;
-    do :: i < threadCount -> rep[i] = 0; i = i + 1;
        :: else -> break
     od;
 
@@ -28,20 +22,22 @@ proctype p(int threadIndex) {
     int distance;
     int to;
     int from;
+    int rep;
 
     do ::
 
        one:
 
-       rep[threadIndex] = rep[threadIndex] + 1;
+       rep = bar[threadCount*threadIndex+threadIndex] + 1;
+       bar[threadCount*threadIndex+threadIndex] = rep;
 
        distance = 1;
        do :: distance < threadCount -> to   = (threadIndex + distance              ) % threadCount;
                                        from = (threadIndex - distance + threadCount) % threadCount;
 
-                                       bar[threadCount*to+threadIndex] = rep[threadIndex]; // manual index calculation [to][threadIndex]
+                                       bar[threadCount*to+threadIndex] = rep; // manual index calculation [to][threadIndex]
 
-                                       if :: bar[threadCount*threadIndex+from] >= rep[threadIndex] // same as "while (!cond) {}"
+                                       if :: bar[threadCount*threadIndex+from] == rep // same as "while (!cond) {}"
                                        fi;
 
                                        distance = distance * 2;
@@ -50,15 +46,16 @@ proctype p(int threadIndex) {
 
        two:
 
-       rep[threadIndex] = rep[threadIndex] + 1;
+       rep = bar[threadCount*threadIndex+threadIndex] + 1;
+       bar[threadCount*threadIndex+threadIndex] = rep;
 
        distance = 1;
        do :: distance < threadCount -> to   = (threadIndex + distance              ) % threadCount;
                                        from = (threadIndex - distance + threadCount) % threadCount;
 
-                                       bar[threadCount*to+threadIndex] = rep[threadIndex]; // manual index calculation [to][threadIndex]
+                                       bar[threadCount*to+threadIndex] = rep; // manual index calculation [to][threadIndex]
 
-                                       if :: bar[threadCount*threadIndex+from] >= rep[threadIndex] // same as "while (!cond) {}"
+                                       if :: bar[threadCount*threadIndex+from] == rep // same as "while (!cond) {}"
                                        fi;
 
                                        distance = distance * 2;
