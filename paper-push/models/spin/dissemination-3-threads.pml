@@ -6,22 +6,23 @@ int rep[threadCount];
 
 init {
     int i = 0;
-    do
-        :: i < threadCountSquared -> bar[i] = 0; i = i + 1;
-        :: else -> break
+    do :: i < threadCountSquared -> bar[i] = 0; i = i + 1;
+       :: else -> break
     od;
 
     i = 0;
-    do
-        :: i < threadCount -> rep[i] = 0; i = i + 1;
-        :: else -> break
+    do :: i < threadCount -> rep[i] = 0; i = i + 1;
+       :: else -> break
     od;
 
     i = 0;
-    do
-        :: i < threadCount -> i = i + 1; run p(i-1);
+    do :: i < threadCount -> i = i + 1; run p(i-1);
     od
 }
+
+
+// inserted the loop twice to be able to distinguish between work period one and two.
+// if I would not do this. I dont know how to properly check for correctness
 
 proctype p(int threadIndex) {
     int distance;
@@ -29,16 +30,35 @@ proctype p(int threadIndex) {
     int from;
 
     do ::
+
+       one:
+
        rep[threadIndex] = rep[threadIndex] + 1;
 
        distance = 1;
        do :: distance < threadCount -> to   = (threadIndex + distance              ) % threadCount;
                                        from = (threadIndex - distance + threadCount) % threadCount;
 
-                                       bar[threadCount*to+threadIndex] = rep[threadIndex];
+                                       bar[threadCount*to+threadIndex] = rep[threadIndex]; // manual index calculation [to][threadIndex]
 
-                                       if
-                                           :: bar[threadCount*threadIndex+from] >= rep[threadIndex] // same as "while (!cond) {}"
+                                       if :: bar[threadCount*threadIndex+from] >= rep[threadIndex] // same as "while (!cond) {}"
+                                       fi;
+
+                                       distance = distance * 2;
+          :: else -> break
+       od;
+
+       two:
+
+       rep[threadIndex] = rep[threadIndex] + 1;
+
+       distance = 1;
+       do :: distance < threadCount -> to   = (threadIndex + distance              ) % threadCount;
+                                       from = (threadIndex - distance + threadCount) % threadCount;
+
+                                       bar[threadCount*to+threadIndex] = rep[threadIndex]; // manual index calculation [to][threadIndex]
+
+                                       if :: bar[threadCount*threadIndex+from] >= rep[threadIndex] // same as "while (!cond) {}"
                                        fi;
 
                                        distance = distance * 2;
@@ -47,9 +67,15 @@ proctype p(int threadIndex) {
     od
 }
 
-ltl correct {[]((rep[0] == rep[1] || rep[0] == rep[1]+1 || rep[0] == rep[1]-1) &&
-                (rep[0] == rep[2] || rep[0] == rep[2]+1 || rep[0] == rep[2]-1) &&
-                (rep[1] == rep[2] || rep[1] == rep[2]+1 || rep[1] == rep[2]-1))}
+ltl correct1 {[]((p[1]@one   -> !(p[2]@two || p[3]@two)) &&
+                 (p[1]@two   -> !(p[2]@one || p[3]@one)))}
+ltl correct2 {[]((p[2]@one   -> !(p[1]@two || p[3]@two)) &&
+                 (p[2]@two   -> !(p[1]@one || p[3]@one)))}
+ltl correct3 {[]((p[3]@one   -> !(p[1]@two || p[2]@two)) &&
+                 (p[3]@two   -> !(p[1]@one || p[2]@one)))}
 
-ltl alive {<>(rep[0] == 1000) && <>(rep[1] == 1000) && <>(rep[2] == 1000)}
+ltl alive1 {([]<>p[1]@one) && ([]<>p[1]@two)}
+ltl alive2 {([]<>p[2]@one) && ([]<>p[2]@two)}
+ltl alive3 {([]<>p[3]@one) && ([]<>p[3]@two)}
 
+//ltl alive {<>(rep[0] == 1000) && <>(rep[1] == 1000) && <>(rep[2] == 1000)}
