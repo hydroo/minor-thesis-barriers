@@ -2,7 +2,7 @@
 
 int bar1 = threadCount;
 int bar2 = threadCount;
-int bar3 = threadCount;
+int bar3 = 0;
 
 init {
     int i = 0;
@@ -17,29 +17,28 @@ proctype p() {
     do
         ::
 
-        atomic{bar1 = bar1 - 1;} //would be atomic without the statement as well
-        do
-            :: bar1 == 0 -> break
-        od;
-        bar3 = threadCount;
+        if :: bar3 == 0 -> atomic{bar1 = bar1 - 1;} //would be atomic without the statement as well
+                           do
+                               :: bar1 == 0 -> break
+                           od;
+                           bar3 = threadCount;
 
-        one:
+                           one:
+           :: bar1 == 0 -> atomic{bar2 = bar2 - 1;}
+                           do
+                               :: bar2 == 0 -> break
+                           od;
+                           bar1 = threadCount;
 
-        atomic{bar2 = bar2 - 1;}
-        do
-            :: bar2 == 0 -> break
-        od;
-        bar1 = threadCount;
+                           two:
+           :: bar2 == 0 -> atomic{bar3 = bar3 - 1;}
+                           do
+                               :: bar3 == 0 -> break
+                           od;
+                           bar2 = threadCount;
 
-        two:
-
-        atomic{bar3 = bar3 - 1;}
-        do
-            :: bar3 == 0 -> break
-        od;
-        bar2 = threadCount;
-
-        three:
+                           three:
+        fi
     od
 }
 
