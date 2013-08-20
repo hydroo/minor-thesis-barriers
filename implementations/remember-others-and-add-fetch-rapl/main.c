@@ -1146,6 +1146,18 @@ static void measureSuperWastefulBarrier2(Context *c, int *threadCounts, int thre
 
         for(int64_t repetitions = 0;; repetitions += 1) {
 
+#ifdef DEBUG
+            int x = barrier[threadIndex].c;
+            int y;
+            for (int i = 0; i < threadCount; i += 1) {
+                y = barrier[i].c;
+                if (!( y == x || y == x-1 || y == x+1)) {
+                    fprintf(stderr, "t %i rep %i - t %i rep %i\n", threadIndex, x, i, y);
+                    assert(0);
+                }
+            }
+#endif
+
             barrierSuperWasteful2(threadIndex, threadCount, barrier);
 
             if (repetitions % (3 * 3000) == 0) {
