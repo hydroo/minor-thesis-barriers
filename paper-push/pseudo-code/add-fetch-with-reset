@@ -21,7 +21,7 @@ code per thread/process:
 
 
   func barrier(bar, delBar) {
-    atomic{bar := bar - 1};
+    atomic{bar := bar - 1}
     while bar != 0 {}
 
     delBar = numThreads                   // reset barrier2
