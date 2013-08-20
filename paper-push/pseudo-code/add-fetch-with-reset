@@ -9,22 +9,22 @@ code per thread/process:
 
   if barrier3 = 0 {                         // if barrier3 is not resetted
 
-    atomic{barrier := barrier - 1};
-    while barrier != 0 {}
+    atomic{barrier1 := barrier1 - 1};
+    while barrier1 != 0 {}
 
     barrier3 = numThreads                   // reset barrier3
 
   } else if barrier1 = 0 {                  // if barrier1 is not resetted
 
-    atomic{barrier := barrier - 1};
-    while barrier != 0 {}
+    atomic{barrier2 := barrier2 - 1};
+    while barrier2 != 0 {}
 
     barrier1 = numThreads                   // reset barrier1
 
   } else if barrier2 = 0 {                  // if barrier2 is not resetted
 
-    atomic{barrier := barrier - 1};
-    while barrier != 0 {}
+    atomic{barrier3 := barrier3 - 1};
+    while barrier3 != 0 {}
 
     barrier2 = numThreads                   // reset barrier2
 
