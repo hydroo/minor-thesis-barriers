@@ -1399,7 +1399,7 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
             for (int i = 0; i < threadCount; i += 1) {
                 barrier1[i].m = fullMask;
                 barrier2[i].m = fullMask;
-                barrier3[i].m = fullMask;
+                barrier3[i].m = 0; // not resetted(= finished)
 #ifdef DEBUG
                 which[i] = One;
 #endif
@@ -1428,44 +1428,51 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
         clock_gettime(CLOCK_REALTIME, &begin);
         const time_t supposedEnd = begin.tv_sec + c->minWallSecondsPerMeasurement;
 
-        for(int64_t repetitions = 0;; repetitions += 3) {
+        for(int64_t repetitions = 0;; repetitions += 1) {
+
+            if (barrier3[threadIndex].m == 0) {
 
 #ifdef DEBUG
-            which[threadIndex] = One;
-            for (int i = 0; i < threadCount; i += 1) {
-                WhichWorkPeriod wi = which[i];
-                if (!(wi == One || wi == BetweenThreeAndOne || wi == BetweenOneAndTwo)) {
-                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
-                    assert(0);
+                which[threadIndex] = One;
+                for (int i = 0; i < threadCount; i += 1) {
+                    WhichWorkPeriod wi = which[i];
+                    if (!(wi == One || wi == BetweenThreeAndOne || wi == BetweenOneAndTwo)) {
+                        fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                        assert(0);
+                    }
                 }
-            }
-            which[threadIndex] = BetweenOneAndTwo;
+                which[threadIndex] = BetweenOneAndTwo;
 #endif
-            barrierSuperWasteful5(threadIndex, threadCount, barrier1, barrier3, notMe, fullMask);
+                barrierSuperWasteful5(threadIndex, threadCount, barrier1, barrier3, notMe, fullMask);
+
+            } else if (barrier1[threadIndex].m == 0) {
 #ifdef DEBUG
-            which[threadIndex] = Two;
-            for (int i = 0; i < threadCount; i += 1) {
-                WhichWorkPeriod wi = which[i];
-                if(!(wi == Two || wi == BetweenOneAndTwo || wi == BetweenTwoAndThree)) {
-                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
-                    assert(0);
+                which[threadIndex] = Two;
+                for (int i = 0; i < threadCount; i += 1) {
+                    WhichWorkPeriod wi = which[i];
+                    if(!(wi == Two || wi == BetweenOneAndTwo || wi == BetweenTwoAndThree)) {
+                        fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                        assert(0);
+                    }
                 }
-            }
-            which[threadIndex] = BetweenTwoAndThree;
+                which[threadIndex] = BetweenTwoAndThree;
 #endif
-            barrierSuperWasteful5(threadIndex, threadCount, barrier2, barrier1, notMe, fullMask);
+                barrierSuperWasteful5(threadIndex, threadCount, barrier2, barrier1, notMe, fullMask);
+
+            } else if (barrier2[threadIndex].m == 0) {
 #ifdef DEBUG
-            which[threadIndex] = Three;
-            for (int i = 0; i < threadCount; i += 1) {
-                WhichWorkPeriod wi = which[i];
-                if(!(wi == Three || wi == BetweenTwoAndThree || wi == BetweenThreeAndOne)) {
-                    fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
-                    assert(0);
+                which[threadIndex] = Three;
+                for (int i = 0; i < threadCount; i += 1) {
+                    WhichWorkPeriod wi = which[i];
+                    if(!(wi == Three || wi == BetweenTwoAndThree || wi == BetweenThreeAndOne)) {
+                        fprintf(stderr, "t %i which %i - t %i which %i\n", threadIndex, which[threadIndex], i, wi);
+                        assert(0);
+                    }
                 }
-            }
-            which[threadIndex] = BetweenThreeAndOne;
+                which[threadIndex] = BetweenThreeAndOne;
 #endif
-            barrierSuperWasteful5(threadIndex, threadCount, barrier3, barrier2, notMe, fullMask);
+                barrierSuperWasteful5(threadIndex, threadCount, barrier3, barrier2, notMe, fullMask);
+            }
 
             if (repetitions % (1 * 3000) == 0) {
                 clock_gettime(CLOCK_REALTIME, &end);
