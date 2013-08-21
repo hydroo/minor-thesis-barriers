@@ -4,6 +4,8 @@
 *.tmp
 *.s
 *.pyc
+*.log
+*.aux
 barrier
 
 /implementations/distributed/distributed
