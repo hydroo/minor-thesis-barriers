@@ -3,6 +3,7 @@
 *~
 *.tmp
 *.s
+*.pyc
 barrier
 
 /implementations/distributed/distributed
