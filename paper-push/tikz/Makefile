@@ -6,7 +6,10 @@ ADD_FETCH_TARGET = add-fetch-no-reset.pdf
 DISSEMINATION_SOURCE = dissemination-no-reset.tex
 DISSEMINATION_TARGET = dissemination-no-reset.pdf
 
-all: $(ADD_FETCH_TARGET) $(DISSEMINATION_TARGET)
+OUR_SIMPLE_SOURCE = our-simple-no-reset.tex
+OUR_SIMPLE_TARGET = our-simple-no-reset.pdf
+
+all: $(ADD_FETCH_TARGET) $(DISSEMINATION_TARGET) $(OUR_SIMPLE_TARGET)
 
 .IGNORE: $(ADD_FETCH_TARGET) #ignores errors in the pdflatex execution
 $(ADD_FETCH_TARGET): $(ADD_FETCH_SOURCE) $(SHARED_SOURCE)
@@ -15,6 +18,10 @@ $(ADD_FETCH_TARGET): $(ADD_FETCH_SOURCE) $(SHARED_SOURCE)
 .IGNORE: $(DISSEMINATION_TARGET)
 $(DISSEMINATION_TARGET): $(DISSEMINATION_SOURCE) $(SHARED_SOURCE)
 	pdflatex -interaction=nonstopmode $(DISSEMINATION_SOURCE)
+
+.IGNORE: $(OUR_SIMPLE_TARGET)
+$(OUR_SIMPLE_TARGET): $(OUR_SIMPLE_SOURCE) $(SHARED_SOURCE)
+	pdflatex -interaction=nonstopmode $(OUR_SIMPLE_SOURCE)
 
 .PHONY: clean
 clean:
