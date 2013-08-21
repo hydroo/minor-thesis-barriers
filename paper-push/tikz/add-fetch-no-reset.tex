@@ -1,0 +1,36 @@
+\input{pre}
+
+% preamble
+\node [box, align=left] (pre)  {
+	\begin{minipage}{12cm}
+		\begin{itemize}
+			\item constants:
+				\begin{itemize}
+					\item[] \textbf{integer} nthreads {\color{gray} number of threads}
+				\end{itemize}
+			\item shared variables:
+				\begin{itemize}
+					\item[] \textbf{integer} barrier
+				\end{itemize}
+			\item local variables:
+			\item initialize:
+				\begin{itemize}
+					\item[] barrier := numThread
+				\end{itemize}
+		\end{itemize}
+	\end{minipage}
+};
+
+% nodes
+\node [o, below of=pre, draw=none, yshift=-1cm]  (init) {};
+\node [o, below of=init]                         (1)    {};
+\node [o, below of=1]                            (2)    {};
+\node [o, below of=2, draw=none]                 (done) {};
+
+%  edges
+\path [->] (init) edge                                      node        {\color{gray}(work period)}                                    (1);
+\path [->] (1)    edge                                      node        {atomic\{barrier := barrier - 1\} \color{gray}(atomic read+write)} (2);
+\path [->] (2)    edge [loop, distance=2cm, out=45, in=315] node[right] {barrier $>$ 0 \color{gray}(shared read)}                      (2);
+\path [->] (2)    edge                                      node        {else \color{gray}(shared read)}                               (done);
+
+\input{post}
