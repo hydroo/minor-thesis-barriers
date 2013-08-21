@@ -1,14 +1,6 @@
 --- 13-08-19 ---
 
  * started paper-push subdir (where ofcourse work directed to the paper will be kept)
- * added pseudo code for the four barriers we will use in the barrier
-  * no reset for all four
-  * with reset for add-fetch and dissemination
-  □ todo for our-simple, our-more-elaborate
- * add bibtex file for references
- * fixed dissemination barrier (was completely broken before)
- * added debug code to all four algorithms to make sure they work correctly
- * added spin model for add-fetch and dissemination barrier
 
 --- 13-07-27 ---
 
