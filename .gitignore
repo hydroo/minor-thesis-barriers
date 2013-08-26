@@ -4,8 +4,16 @@
 *.tmp
 *.s
 *.pyc
-*.log
+
+# tex stuff
 *.aux
+*.bbl
+*.blg
+*.lof
+*.log
+*.lot
+*.toc
+
 barrier
 
 /implementations/distributed/distributed
