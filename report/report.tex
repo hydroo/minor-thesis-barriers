@@ -52,28 +52,6 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Currently used barriers}
-
-\subsection{shared memory}
-\begin{itemize}
-	\item explain short why only these two, closed source intel, microsoft, portland, pthreads und openmp weit verbreitet
-	\item libgomp
-	\item glibc's new pthreads library
-	\item ?how is resetting handled?
-	\item pick add-fetch as contender in this category
-\end{itemize}
-
-\subsection{distributed memory}
-\begin{itemize}
-	\item explain short why only MPI
-	\item openmpi
-	\item mpich and derivatives
-	\item ?how is resetting handled?
-	\item pick dissemination as contender in this category
-	\item more?
-\end{itemize}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Survey of ?ways? to implement barrier protocols}
 \begin{itemize}
 	\item before thinking about barrier protocols we should evaluate what tools we have at our disposal to realize those protocols
@@ -98,6 +76,50 @@ MPI only
 	\item icollectives
 	\item rdma - largest part
 	\item ?hardware support?
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Survey of currently used barriers}
+
+\subsection{shared memory}
+\begin{itemize}
+	\item explain short why only research in glibc and gnu openmp. closed source intel, microsoft, portland pgi, pathscale. pthreads und openmp open source und weit verbreitet. ?llvm?
+	\item gnu openmp
+		\begin{itemize}
+			\item gcc 4.8.0, linux
+			% gnu-openmp/gcc-4.8.0/libgomp/libgomp.h
+			% gnu-openmp/gcc-4.8.0/libgomp/barrier.c
+			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/
+			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/bar.h
+			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/bar.c
+			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/futex.h (cpu_relax)
+			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/wait.h
+			\item atomic add-fetch
+			\item insert add-fetch pseudo-code here
+			\item backoff via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if cpucount $<$ threadcount. futexes. kernel based mutexes. wait queues. sleeping.
+			\item reset built in. last one to enter resets the barrier.
+		\end{itemize}
+	\item glibc's new pthreads library
+		\begin{itemize}
+			\item version 2.17. is in my ubuntu raring 13.04.
+			% glibc/nptl/sysdeps/pthread/pthread.h
+			% glibc/nptl/pthread_barrier_*
+			% glibc/nptl/sysdeps/unix/sysv/linux/internaltypes.h
+			\item add-fetch with explicit locking
+			\item back-off through futexes (without spinning before)
+			\item reset handled automatically (upon leaving the barrier every thread increments the barrier by 1 so that it is max in the end)
+		\end{itemize}
+\end{itemize}
+
+\subsection{distributed memory}
+\begin{itemize}
+	\item explain short why only MPI
+	\item openmpi
+	\item mpich and derivatives
+	\item ?how is how is back-off handled?
+	\item ?how is resetting handled?
+	\item pick dissemination as contender in this category
+	\item more?
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
