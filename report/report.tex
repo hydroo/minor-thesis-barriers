@@ -23,7 +23,7 @@
 
 \def \todo#1{\textcolor{blue}{#1}}
 
-\title{Tales about Barriers}
+\title{Development and Analysis of Barrier Protocols}
 \author{Ronny Brendel\\Tutors: Sascha Kl\"uppelholz, Marcus V\"olp}
 
 \begin{document}
@@ -74,10 +74,11 @@
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Evaluation of possible ways to implement barrier protocols}
+\section{Survey of ?ways? to implement barrier protocols}
 \begin{itemize}
 	\item before thinking about barrier protocols we should evaluate what tools we have at our disposal to realize those protocols
 	\item shared vs distributed memory
+	\item shared: weaken memory model (aqc/rel model)
 	\item the influence of latency
 	\item APIs. in the end it will be two broad categories. remote memory access and synchronous message passing. from a protocol point of view asynchronous message passing and remote memory access are very similar.
 \end{itemize}
@@ -129,7 +130,7 @@ MPI only
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Analysis of the contenders}
+\section{Analysis and comparison of the contenders}
 
 \subsection{Prose}
 \begin{itemize}
@@ -157,19 +158,19 @@ MPI only
 \end{itemize}
 
 \subsection{Model checking}
-\subsubsection{Correctness}
+\subsubsection{Qualitative Properties (correctness)}
 \begin{itemize}
 	\item threads may only exit the barrier if all threads are present
 	\item the protocol must always terminate, or in other words: if all threads are present, they will all exit the barrier in a finite amount of time"
 \end{itemize}
-\subsubsection{Quantitative analysis}
+\subsubsection{Quantitative Properties}
 \begin{itemize}
 	\item add-fetch vs ronny simple
 	\item dissemination vs ronny fancy
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Proposal: The barrier construction kit / building  blocks}
+\section{Proposal: Dissecting barrier protocols into orthogonal parts}
 Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
 \begin{itemize}
 	\item more or less intelligence / bandwidth/latency vs additional calculations
@@ -196,11 +197,14 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Future Work}
 \begin{itemize}
-	\item r
+	\item evaluate back-off strategies. mwait.
+	\item model check more and bigger. symmetrie reduction. partial order reduction.
 \end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+
 \appendix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Glossary}
