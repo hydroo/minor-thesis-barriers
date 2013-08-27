@@ -1,0 +1,12 @@
+\begin{lstlisting}[mathescape]
+shared variables: boolean barrier[threadCount]
+initialization:   barrier[0..threadCount-1] := false
+
+barrier[threadIndex] := true
+
+for i := 0; i < threadCount; i := i + 1 {
+	if barrier[i] = false {
+		i := -1
+	}
+}
+\end{lstlisting}

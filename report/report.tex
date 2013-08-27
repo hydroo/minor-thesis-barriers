@@ -220,8 +220,21 @@ MPI only
 	\item + variations: array based for more than 64 threads
 \end{itemize}
 
-\subsection{Ronny simple for shared memory}
+\subsection{Ronny's simple barrier for shared memory}
 \begin{itemize}
+	\item ~
+		\begin{figure}[htbp]
+			\centering
+			\input{listings/ronny-simple-no-reset}
+			\caption{Pseudo code of ronny's simple barrier}
+			\label{listing:ronny-simple-no-reset}
+		\end{figure}
+
+		things to explain
+		\begin{itemize}
+			\item ~
+		\end{itemize}
+
 	\item advantage: no atomic ops
 	\item much shared read communication but low computation overhead
 	\item ?discuss a variant with reset?, if not at least mention that reset is not handled here
