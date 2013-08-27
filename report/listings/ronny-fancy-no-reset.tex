@@ -1,0 +1,21 @@
+\begin{lstlisting}[mathescape]
+constants:        me := processIndex, meBit := $2^{me}$,
+                  full := $\sum_{i=0}^{processCount-1}2^i$
+shared variables: integer barrier[processCount]
+initialization:   barrier[0..processCount-1] := full
+
+barrier[me] := full & $\sim$meBit;
+
+i := 0
+do {
+	while barrier[me] & $2^i$ = 0 and i < processCount {
+		i := i + 1
+	}
+
+	if i < processCount {
+		barrier[me] := barrier[me] & barrier[i]
+	} else {
+		i := 0
+	}
+} while barrier[me] $\neq$ 0
+\end{lstlisting}

@@ -2,7 +2,8 @@ IMAGES =
 
 LISTINGS = \
 	listings/add-fetch-no-reset.tex \
-	listings/ronny-simple-no-reset.tex
+	listings/ronny-simple-no-reset.tex \
+	listings/ronny-fancy-no-reset.tex
 
 REFERENCES_SOURCE = references.bib
 
