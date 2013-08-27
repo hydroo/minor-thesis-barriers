@@ -150,7 +150,7 @@ MPI only
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/bar.c
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/futex.h (cpu_relax)
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/wait.h
-			\item atomic add-fetch
+			\item central counter barrier with atomic add and fetch
 			\item insert add-fetch pseudo-code here
 			\item backoff via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if cpucount $<$ threadcount. futexes. kernel based mutexes. wait queues. sleeping.
 			\item reset built in. last one to enter resets the barrier.
@@ -161,9 +161,9 @@ MPI only
 			% glibc/nptl/sysdeps/pthread/pthread.h
 			% glibc/nptl/pthread_barrier_*
 			% glibc/nptl/sysdeps/unix/sysv/linux/internaltypes.h
-			\item add-fetch with explicit locking
+			\item central counter with explicit locking instead of atomic add-fetch
 			\item back-off through futexes (without spinning before)
-			\item reset handled automatically (upon leaving the barrier every thread increments the barrier by 1 so that it is max in the end)
+			\item reset handled automatically (upon leaving the barrier every thread increments (atomically) the barrier by 1 so that it is max in the end)
 		\end{itemize}
 \end{itemize}
 
@@ -227,7 +227,7 @@ MPI only
 \section{Analysis and comparison of the contenders}
 
 \begin{itemize}
-	\item pick add-fetch as contender for shared mem
+	\item pick central counter barrier as contender for shared mem
 	\item pick dissemination as contender for distributed mem
 \end{itemize}
 
@@ -236,7 +236,7 @@ MPI only
 	\item meantion that no backoff is used
 \end{itemize}
 
-\subsubsection{add-fetch for shared memory}
+\subsubsection{central counter for shared memory}
 \subsubsection{ronny simple for shared memory}
 \subsubsection{dissemination for distributed memory}
 \begin{itemize}
@@ -251,7 +251,7 @@ MPI only
 
 \subsection{Benchmarks}
 \begin{itemize}
-	\item add-fetch vs ronny simple
+	\item central counter vs ronny simple
 	\item do not do dissemination vs ronny fancy
 	\item ?rapl?
 \end{itemize}
@@ -264,7 +264,7 @@ MPI only
 \end{itemize}
 \subsubsection{Quantitative Properties}
 \begin{itemize}
-	\item add-fetch vs ronny simple
+	\item central counter vs ronny simple
 	\item dissemination vs ronny fancy
 \end{itemize}
 
