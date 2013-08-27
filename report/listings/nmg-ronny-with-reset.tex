@@ -1,0 +1,33 @@
+\begin{lstlisting}[mathescape]
+constants:        meBit:=$2^{threadIndex}$, full:=$\sum_{i=0}^{numThreads-1}2^i$
+shared variables: integer entry := 0, integer exit := 0,
+                  boolean left := false
+local variables:  integer copy
+
+if left = false {
+
+	do {
+		copy := (copy&$\sim$meBit)|entry
+		if copy & meBit = 0 {
+			copy  := copy | meBit
+			entry := copy
+		}
+	} while copy $\neq$ full and left = false
+
+	left := true
+	exit := 0
+
+} else if left = true {
+
+	do {
+		copy := (copy&$\sim$meBit)|exit
+		if copy & meBit = 0 {
+			copy := copy | meBit
+			exit := copy
+		}
+	} while copy $\neq$ full and left = true
+
+	left  := false
+	entry := 0
+}
+\end{lstlisting}
