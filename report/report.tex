@@ -3,6 +3,7 @@
 \usepackage{cite}
 \usepackage{color}
 	\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\usepackage{datetime}
 \usepackage{fancyvrb}
 \usepackage{graphicx}
 \graphicspath{{images/}}
@@ -30,7 +31,30 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagenumbering{gobble}
 
-\maketitle
+\begin{titlepage}
+
+\begin{center}
+\includegraphics[width=3cm]{tu-logo}~\\[1cm]
+\textsc{\LARGE Dresden University of Technology}\\[0.5cm]
+\textsc{\Large Faculty of Computer Science}\\[0.2cm]
+\textsc{\large Institute of Theoretical Computer Science}\\[0.2cm]
+\textsc{\large Chair for Algebraic and Logical Foundations of Computer Science}\\[3cm]
+\Huge Study's Thesis \\[1cm]
+\huge Development and Analysis of Barrier Protocols\\[3cm]
+\end{center}
+
+\begin{flushleft} \large
+	Author: Ronny Brendel \\
+	Responsible university professor: Christel Baier \\
+	Supervisors: Sascha Kl\"uppelholz \& Marcus V\"olp
+\end{flushleft}
+
+\vfill
+\begin{flushright}
+	\large October 2013
+\end{flushright}
+
+\end{titlepage}
 
 \pagebreak
 \newpage \thispagestyle{empty} \mbox{}
