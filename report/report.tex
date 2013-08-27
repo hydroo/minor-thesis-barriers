@@ -195,6 +195,18 @@ MPI only
 			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
 			\item architecture specific for infiband. e.g. dissemination using rdma \cite{hoefler2006}
+			\item ~
+				\begin{figure}[htbp]
+					\centering
+					\input{listings/dissemination-no-reset}
+					\caption{Pseudo code of the dissemination barrier}
+					\label{listing:dissemination-no-reset}
+				\end{figure}
+				things to explain
+				\begin{itemize}
+					\item each array (first index) is located on the respective process's memory
+				\end{itemize}
+
 		\end{itemize}
 	\item mpich
 		\begin{itemize}
