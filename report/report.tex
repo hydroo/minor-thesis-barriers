@@ -151,7 +151,14 @@ MPI only
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/futex.h (cpu_relax)
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/wait.h
 			\item central counter barrier with atomic add and fetch
-			\item insert add-fetch pseudo-code here
+			\item ~
+				\begin{figure}[htbp]
+					\centering
+					\input{listings/add-fetch-no-reset}
+					\caption{Pseudo code of the central counter barrier}
+					\label{listing:add-fetch-no-reset}
+				\end{figure}
+
 			\item backoff via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if cpucount $<$ threadcount. futexes. kernel based mutexes. wait queues. sleeping.
 			\item reset built in. last one to enter resets the barrier.
 		\end{itemize}
