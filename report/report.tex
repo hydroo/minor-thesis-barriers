@@ -27,16 +27,39 @@
 \author{Ronny Brendel\\Tutors: Sascha Kl\"uppelholz, Marcus V\"olp}
 
 \begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagenumbering{gobble}
+
 \maketitle
 
 \pagebreak
+\newpage \thispagestyle{empty} \mbox{}
+\pagebreak
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Aufgabenstellung}
+
+\pagebreak
+\newpage \thispagestyle{empty} \mbox{}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Selbststaendigkeitserklaerung}
+
+\pagebreak
+\newpage \thispagestyle{empty} \mbox{}
+\pagebreak
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\contentsname}{Table of contents}
 \tableofcontents
 
 \pagebreak
-
+\newpage \thispagestyle{empty} \mbox{}
+\pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagenumbering{arabic}
 \section{Don't forget}
 \begin{itemize}
 	\item 
@@ -251,21 +274,35 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagebreak
-
 \appendix
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\section{Appendix}
+\subsection{e.g. source code, model source}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
 \section{Glossary}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\listoffigures
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\listoftables
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\section{Bibliography}
+\renewcommand\refname{\vskip -1cm} %TODO fine tune perhaps
 \nocite{*} % insert not cited references
 \bibliographystyle{abbrv}
 \bibliography{references}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\section{List of Figures}
+\renewcommand{\listfigurename}{\vskip -1cm} %TODO fine tune perhaps
+\listoffigures
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\section{List of Tables}
+\renewcommand{\listtablename}{\vskip -1cm} %TODO fine tune perhaps
+\listoftables
 
 \end{document}
