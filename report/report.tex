@@ -241,8 +241,21 @@ MPI only
 	\item + variations: remember first few, remember last few, more?
 \end{itemize}
 
-\subsection{Ronny fancy for dist memory}
+\subsection{Ronny's fancy barrier for dist memory}
 \begin{itemize}
+	\item ~
+		\begin{figure}[htbp]
+			\centering
+			\input{listings/ronny-fancy-no-reset}
+			\caption{Pseudo code of ronny's fancy barrier}
+			\label{listing:ronny-fancy-no-reset}
+		\end{figure}
+
+		things to explain
+		\begin{itemize}
+			\item each array element is located in its own process - dist mem
+		\end{itemize}
+
 	\item advantage: no atomic ops
 	\item trades computational overhead for, less shared read communication than the simple variant
 	\item ?discuss a variant with reset?, if not at least mention that reset is not handled here
