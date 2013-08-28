@@ -7,14 +7,14 @@ LISTINGS = \
 	listings/ronny-simple-no-reset.tex \
 	listings/ronny-fancy-no-reset.tex
 
-REFERENCES_SOURCE = references.bib
+BIBLIOGRAPHY_SOURCE = bibliography.bib
 
 REPORT_SOURCE = report.tex
 REPORT_AUX = report.aux
 REPORT_TARGET = report.pdf
 
 .IGNORE: $(REPORT_TARGET)
-$(REPORT_TARGET): $(REPORT_SOURCE) $(REFERENCES_SOURCE) $(IMAGES) $(LISTINGS)
+$(REPORT_TARGET): $(REPORT_SOURCE) $(BIBLIOGRAPHY_SOURCE) $(IMAGES) $(LISTINGS)
 	#delete later. keep for reference
 	#dot -Tpdf -o images/mdp.pdf images/mdp.dot
 	#dot -Tpdf -o images/ctmc.pdf images/ctmc.dot
