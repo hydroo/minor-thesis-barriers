@@ -123,6 +123,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item APIs. in the end it will be two broad categories. remote memory access and synchronous message passing. from a protocol point of view asynchronous message passing and remote memory access are very similar.
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{shared memory}
 \begin{itemize}
 	\item normal load/store
@@ -130,6 +131,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item ?hardware support?
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{distributed memory}
 MPI only
 \begin{itemize}
@@ -144,6 +146,7 @@ MPI only
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Survey of currently used barriers}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Shared memory systems}
 \begin{itemize}
 	\item explain short why only research in glibc and gnu openmp. closed source intel, microsoft, portland pgi, pathscale. pthreads und openmp open source und weit verbreitet. ?llvm?
@@ -181,6 +184,7 @@ MPI only
 		\end{itemize}
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Distributed memory systems}
 \begin{itemize}
 	\item explain short why only MPI. MPI prevalent (?citation?) in dist memory programming? low level api. Many other higher level APIs use it as a basis.
@@ -222,6 +226,7 @@ MPI only
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Three new barriers}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{NMG/Ronny}
 \begin{itemize}
 	\item ~
@@ -246,6 +251,7 @@ MPI only
 	\item + variations: array based for more than 64 threads
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ronny's simple barrier for shared memory}
 \begin{itemize}
 	\item ~
@@ -267,6 +273,7 @@ MPI only
 	\item + variations: remember first few, remember last few, more?
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ronny's fancy barrier for dist memory}
 \begin{itemize}
 	\item ~
@@ -296,6 +303,7 @@ MPI only
 	\item pick dissemination as contender for distributed mem
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Prose}
 \begin{itemize}
 	\item meantion that no backoff is used
@@ -314,6 +322,7 @@ MPI only
 	\item ?number of messages sent?
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Benchmarks}
 \begin{itemize}
 	\item central counter vs ronny simple
@@ -321,6 +330,7 @@ MPI only
 	\item ?rapl?
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Model checking}
 \subsubsection{Qualitative Properties (correctness)}
 \begin{itemize}
