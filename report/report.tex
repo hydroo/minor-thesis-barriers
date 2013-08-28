@@ -363,6 +363,10 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 \begin{itemize}
 	\item evaluate back-off strategies. mwait.
 	\item model check more and bigger. symmetrie reduction. partial order reduction.
+	\item explore variations of ronny's barriers
+		\begin{itemize}
+			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}.
+		\end{itemize}
 \end{itemize}
 
 
