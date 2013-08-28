@@ -192,7 +192,7 @@ MPI only
 			% ompi_coll_tuned_barrier_intra_bruck
 			% ompi/mca/coll/tuned/coll_tuned_decision_fixed.c
 			\item $n = 2^k \rightarrow$ dissemination\cite{hensgen1988} using sync sendrecv
-			\item $n \neq 2^k \rightarrow$ recursive doubling (explanation e.g. in \cite{hoefler2006})
+			\item $n \neq 2^k \rightarrow$ recursive doubling (explanation e.g. in \cite{hoefler2005})
 			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
 			\item architecture specific for infiband. e.g. dissemination using rdma \cite{hoefler2006}
