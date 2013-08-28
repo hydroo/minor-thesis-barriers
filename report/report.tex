@@ -133,15 +133,109 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{distributed memory}
-MPI only
+\subsection{Distributed memory}
 \begin{itemize}
-	\item MPI 2.2 vs 3.0
-	\item send/recv
-	\item isend/irecv
-	\item icollectives
-	\item rdma - largest part
-	\item ?hardware support?
+	\item categories
+		\begin{itemize}
+			\item synchronous message passing
+				\begin{itemize}
+					\item relatively large overhead. Queueing. Waiting even when sending.
+					\item not terribly interesting for developing new barriers
+				\end{itemize}
+			\item asynchronous message passing
+				\begin{itemize}
+					\item similar overhead as synchronous message passing. not necessarily waiting.
+				\end{itemize}
+			\item RDMA
+				\begin{itemize}
+					\item explain short what RDMA is and means. Coop between RAM and network card
+					\item needs hardware support.
+					\item less software overhead, since it is one sided. Less buffering.
+					\item (a) coherent - remotely updated memory will be visible eventually
+					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote end.
+					\item ?RDMA most interesting for new protocols because it is one sided- no active interaction with the remote end.?
+				\end{itemize}
+			\item hardware support here is more usual business e.g. Earth Simulator\cite{earthsimulator}, IBM Blue Gene/L\cite{bluegenel}, IBM Blue Gene/Q\cite{bluegeneq}, low-cost custom\cite{hoefler2006b}
+			\item lossy communication e.g. UDP. ?any examples for synchronization on lossy channels? \citationneeded
+		\end{itemize}
+	\label{why-only-mpi}
+	\item we specifically look at MPI. Explain short why only MPI. MPI prevalent \citationneeded~in dist memory programming? low level api. Many other higher level APIs use it as a basis \citationneeded.
+	\item MPI has synchronous message passing
+		\begin{itemize}
+			\item MPI\_Send (Ssend assumed), MPI\_Rsend (returns if no receiver is present), MPI\_Recv
+			\item chapter 3.2 in \cite{mpi3}
+		\end{itemize}
+	\item MPI has asynchronous message passing
+		\begin{itemize}
+			\item MPI\_Isend
+			\item MPI\_Irecv
+			\item MPI\_Wait, MPI\_Test
+			\item MPI\_Cancel
+			\item chapter 3.7 in \cite{mpi3}
+			\item writing into a buffer given to MPI\_Isend is undefined behaviour, whereas bsend buffers the input itself and the original buffer is free to be used again.
+			\item sync and async message passing can be mixed e.g. MPI\_Isend with a matching MPI\_Recv
+		\end{itemize}
+	\item MPI has asynchronous collectives
+		\begin{itemize}
+			\item chapter 5.12 in \cite{mpi3}
+			\item non-blocking collectives are not interesting, because everyone has to take part and no cancellation of anything is possible.
+		\end{itemize}
+	\item MPI has RDMA
+		\begin{itemize}
+			\item \todo probably way too complicated try to break it down. and bring in a continuous thread: possibilties for implementing barriers. maybe even make a short wrap up at the end of the section.
+			\item chapter 11 in \cite{mpi3}
+			\item major changes from MPI 2.2 to 3.0\cite{mpi3onesided}
+			\item MPI 2.2 is bad for our purpose because
+				\begin{itemize}
+					\item MPI\_Put/MPI\_get data may be not visible in main memory until a window is synchronized with fence/complete/wait
+					\item MPI\_Fence implies a barrier on the participating processes.
+					\item MPI\_Complete/MPI\_Wait is a sync between fewer processes, but ultimately the same as fence
+					\item MPI 3.0 is 1 year old. It is not yet realized by openmpi, but it is for mpich 3.0 and derivatives such as MVAPICH2, Cray MPT\cite{craympt}
+					\item following we will only consider MPI 3.0
+				\end{itemize}
+			\item MPI 3.0
+				\begin{itemize}
+					\item only scratch surface of MPI 3.0 one sided communication, because:
+						\begin{itemize}
+							\item a lot of details, because of generality, optimizability
+							\item complicated semantics
+							\item many of the details make no striking difference in protocol design/analysis
+						\end{itemize}
+					\item MPI\_Win\_Allocate allocates remotely shared memory amoung the participating process. A process group is associated with a window.
+					\item customizable attributes of windows (don't distingish between MPI\_Info and attributes for the sake of ease):
+						\begin{itemize}
+							\item no\_locks: no window locking will be used
+							\item accumulate\_ops:
+							\item ~~~-~same\_op: impl may assume that all concurrent accesses to the same target address are the same op
+							\item ~~~-~same\_op\_no\_op: assume all concurrent accumulates calls to the same address are MPI\_NO\_OP -$\>$ allows lower protection for the implementation
+							\item  upon window creation set MPI\_Info key accumulate\_ordering to zero or more of the following: rar, war, raw, waw -$\>$ optimization. raw (read after write is serialized) means a write from one process has to finish before a read issued by the same process can take place. Default is all of them (sequential consistency) which means that reads and writes issued by a process to a remote location are committed in program order. Applies only to accumulate, not put and get. Put and get within an epoch are unordered.
+							\item MPI\_WIN\_MODEL: One cannot set the MPI\_WIN\_MODEL to MPI\_WIN\_SEPARATE and MPI\_WIN\_UNIFIED myself. You can only ask for it. It has been proposed for MPI 3.1 to include being able to set a minimum necessary level.
+						\end{itemize}
+					\item mpich 3.0.4 does MPI\_WIN\_UNIFIED.
+					\item explain epochs somewhere (before window sync perhaps)
+						\begin{itemize}
+							\item an epoch is a period between two sync calls e.g. fences
+							\item rma calls like put/get/acc can only be used in an access epoch
+							\item "in active target communication a target window can be accessed by RMA operations
+								only within an exposure epoch"
+							\item each access epoch is matched with exactly one exposure epoch
+							\item used to accumulate multiple calls etc -$\>$ efficiency
+							\item ?perhaps omit the details of two distinct types of epochs, if possible?
+						\end{itemize}
+					\item window sync
+						\begin{itemize}
+							\item active vs passive target communication (\cite{mpi3} page 437)
+							\item MPI\_Win\_Fence. Is a collective over all window group members. All outstanding RMA requests between group members will be finished. More specifically: All locally initiated RMA request will finish locally before the fence call returns. At the target those same RMA requests will be completed when their respective MPI\_Win\_Fence call returns.
+								and started before the fence call will complete at that process before the fence call returns.
+								They will be completed at their target before the fence call returns at the target.
+							\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: similar to fence, but allows to specify the sync partners exactly, and distinguishes between "command-issuing" and "remotely-accessed" processes. start/complete starts and ends access periods, post and wait start and end exposure epochs.
+							\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: starts and ends access epochs. no exposure epoch. no explicit participation of remote end in synchronization
+						\end{itemize}
+					\item window sync assertions: NoPrecede, NoSucceed, NoStore, NoPut -$\>$ optimization
+					\item MPI\_Put, MPI\_Get
+					\item MPI\_Accumulate, MPI\_FetchAndOp (getaccumulate subsumed by f\&o), MPI\_CompareAndSwap
+				\end{itemize}
+		\end{itemize}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -188,7 +282,7 @@ MPI only
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Distributed memory systems}
 \begin{itemize}
-	\item explain short why only MPI. MPI prevalent (?citation?) in dist memory programming? low level api. Many other higher level APIs use it as a basis.
+	\item why only MPI. Already explained in section~\ref{why-only-mpi}.
 	\item openmpi
 		\begin{itemize}
 			\item version 1.7. not yet released.
