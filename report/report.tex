@@ -148,9 +148,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item similar overhead as synchronous message passing. not necessarily waiting.
 					\item but partners still need to shake hands for information transfer.
 				\end{itemize}
-			\item RDMA
+			\item RMA
 				\begin{itemize}
-					\item explain short what RDMA is\citationneeded. Coop between RAM and network card needed.
+					\item explain short what RMA is\citationneeded. Coop between RAM and network card needed.
 					\item needs hardware support.
 					\item less software overhead, since it is one sided. Less buffering. Ideally no buffering.
 					\item (a) coherent - remotely updated memory will be visible to the remote end eventually
@@ -197,7 +197,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item chapter 5.12 in \cite{mpi3}
 			\item non-blocking collectives are not interesting as a building block for new barriers, because everyone has to take part and no cancellation of anything is possible.
 		\end{itemize}
-	\item MPI has RDMA
+	\item MPI has RMA
 		\begin{itemize}
 			\item chapter 11 in \cite{mpi3}
 			\item major changes from MPI 2.2 to 3.0\cite{mpi3onesided}
@@ -296,7 +296,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item $n = 2^k \rightarrow$ recursive doubling (explanation e.g. in \cite{hoefler2005})
 			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
-			\item architecture specific for infiband. e.g. dissemination using rdma \cite{hoefler2006a}
+			\item architecture specific for infiband. e.g. dissemination using RMA \cite{hoefler2006a}
 			\item listing~\ref{listing:dissemination-no-reset}
 				\begin{figure}[htbp]
 					\centering
