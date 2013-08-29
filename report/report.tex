@@ -296,14 +296,14 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
 			\item architecture specific for infiband. e.g. dissemination using rdma \cite{hoefler2006a}
-			\item ~
+			\item listing~\ref{listing:dissemination-no-reset}
 				\begin{figure}[htbp]
 					\centering
 					\input{listings/dissemination-no-reset}
 					\caption{Pseudo code of the dissemination barrier}
 					\label{listing:dissemination-no-reset}
 				\end{figure}
-				things to explain
+			\item things to explain
 				\begin{itemize}
 					\item each array (first index) is located on the respective process's memory
 				\end{itemize}
@@ -325,7 +325,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{NMG/Ronny}
 \begin{itemize}
-	\item ~
+	\item listing~\ref{listing:nmg-ronny-with-reset}
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/nmg-ronny-with-reset}
@@ -333,7 +333,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{listing:nmg-ronny-with-reset}
 		\end{figure}
 
-		things to explain
+	\item things to explain
 		\begin{itemize}
 			\item ~
 		\end{itemize}
@@ -350,7 +350,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ronny's simple barrier}
 \begin{itemize}
-	\item ~
+	\item listing~\ref{listing:ronny-simple-no-reset}
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/ronny-simple-no-reset}
@@ -358,7 +358,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{listing:ronny-simple-no-reset}
 		\end{figure}
 
-		things to explain
+	\item things to explain
 		\begin{itemize}
 			\item ~
 		\end{itemize}
@@ -372,7 +372,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ronny's fancy barrier}
 \begin{itemize}
-	\item ~
+	\item listing~\ref{listing:ronny-fancy-no-reset}
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/ronny-fancy-no-reset}
@@ -380,7 +380,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{listing:ronny-fancy-no-reset}
 		\end{figure}
 
-		things to explain
+	\item things to explain
 		\begin{itemize}
 			\item each array element is located in its own process - dist mem
 		\end{itemize}
