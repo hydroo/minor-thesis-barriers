@@ -347,7 +347,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Ronny's simple barrier for shared memory}
+\subsection{Ronny's simple barrier}
 \begin{itemize}
 	\item ~
 		\begin{figure}[htbp]
@@ -369,7 +369,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Ronny's fancy barrier for dist memory}
+\subsection{Ronny's fancy barrier}
 \begin{itemize}
 	\item ~
 		\begin{figure}[htbp]
@@ -399,20 +399,18 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Prose}
+\subsection{Theoretical aspects}
 \begin{itemize}
 	\item meantion that no backoff is used
 \end{itemize}
 
-\subsubsection{central counter for shared memory}
-\subsubsection{ronny simple for shared memory}
-\subsubsection{dissemination for distributed memory}
+\subsubsection{Central counter vs ronny's simple barrier}
+\subsubsection{Dissemination vs ronny's fancy barrier}
 \begin{itemize}
 	\item number of messages sent vs the minimum necessary
 	\item progress problem when one process is missing
 	\item meantion the xeon phi work of TH
 \end{itemize}
-\subsubsection{ronny fancy for distributed memory}
 \begin{itemize}
 	\item ?number of messages sent?
 \end{itemize}
@@ -439,7 +437,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Proposal: Dissecting barrier protocols into orthogonal parts}
+\section{Proposal: Creating barriers from orthogonal parts}
 Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
 \begin{itemize}
 	\item more or less intelligence / bandwidth/latency vs additional calculations
