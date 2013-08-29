@@ -141,100 +141,90 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item synchronous message passing
 				\begin{itemize}
 					\item relatively large overhead. Queueing. Waiting even when sending.
-					\item not terribly interesting for developing new barriers
+					\item all communicating partners need to be present at the same time and shake hands.
 				\end{itemize}
 			\item asynchronous message passing
 				\begin{itemize}
 					\item similar overhead as synchronous message passing. not necessarily waiting.
+					\item but partners still need to shake hands for information transfer.
 				\end{itemize}
 			\item RDMA
 				\begin{itemize}
-					\item explain short what RDMA is and means. Coop between RAM and network card
+					\item explain short what RDMA is\citationneeded. Coop between RAM and network card needed.
 					\item needs hardware support.
-					\item less software overhead, since it is one sided. Less buffering.
-					\item (a) coherent - remotely updated memory will be visible eventually
+					\item less software overhead, since it is one sided. Less buffering. Ideally no buffering (zero copy\citationneeded).
+					\item (a) coherent - remotely updated memory will be visible to the remote end eventually
 					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote end.
-					\item ?RDMA most interesting for new protocols because it is one sided- no active interaction with the remote end.?
 				\end{itemize}
-			\item hardware support here is more usual business e.g. Earth Simulator\cite{earthsimulator}, IBM Blue Gene/L\cite{bluegenel}, IBM Blue Gene/Q\cite{bluegeneq}, low-cost custom\cite{hoefler2006b}
-			\item lossy communication e.g. UDP. ?any examples for synchronization on lossy channels? \citationneeded
+			\item hardware support here is usual business e.g. Earth Simulator\cite{earthsimulator}, IBM Blue Gene/L\cite{bluegenel}, IBM Blue Gene/Q\cite{bluegeneq}, low-cost custom\cite{hoefler2006b}
+			\item lossy communication e.g. UDP. ?any examples for synchronization over lossy channels? \citationneeded
 		\end{itemize}
 	\label{why-only-mpi}
 	\item we specifically look at MPI. Explain short why only MPI. MPI prevalent \citationneeded~in dist memory programming? low level api. Many other higher level APIs use it as a basis \citationneeded.
+	\item MPI is very general and customizable. Supports many modes of operation.
+	\item only scratch surface of MPI 3.0, because:
+		\begin{itemize}
+			\item a lot of details, because of generality, optimizability
+			\item complicated semantics
+			\item many of the details make no striking difference in protocol design/analysis
+		\end{itemize}
 	\item MPI has synchronous message passing
 		\begin{itemize}
-			\item MPI\_Send (Ssend assumed), MPI\_Rsend (returns if no receiver is present), MPI\_Recv
 			\item chapter 3.2 in \cite{mpi3}
+			\item MPI\_Ssend, MPI\_Rsend (returns if no receiver is present), MPI\_Recv
 		\end{itemize}
 	\item MPI has asynchronous message passing
 		\begin{itemize}
-			\item MPI\_Isend
-			\item MPI\_Irecv
+			\item chapter 3.7 in \cite{mpi3}
+			\item MPI\_Isend, MPI\_Irecv
 			\item MPI\_Wait, MPI\_Test
 			\item MPI\_Cancel
-			\item chapter 3.7 in \cite{mpi3}
-			\item writing into a buffer given to MPI\_Isend is undefined behaviour, whereas bsend buffers the input itself and the original buffer is free to be used again.
 			\item sync and async message passing can be mixed e.g. MPI\_Isend with a matching MPI\_Recv
 		\end{itemize}
 	\item MPI has asynchronous collectives
 		\begin{itemize}
 			\item chapter 5.12 in \cite{mpi3}
-			\item non-blocking collectives are not interesting, because everyone has to take part and no cancellation of anything is possible.
+			\item non-blocking collectives are not interesting as a building block for new barriers, because everyone has to take part and no cancellation of anything is possible.
 		\end{itemize}
 	\item MPI has RDMA
 		\begin{itemize}
-			\item \todo probably way too complicated try to break it down. and bring in a continuous thread: possibilties for implementing barriers. maybe even make a short wrap up at the end of the section.
 			\item chapter 11 in \cite{mpi3}
 			\item major changes from MPI 2.2 to 3.0\cite{mpi3onesided}
-			\item MPI 2.2 is bad for our purpose because
+			\item we will only consider MPI 3.0, because: More features. Subsumes MPI 2.2. It is already one year old. It is not yet realized by openmpi, but it is for mpich 3.0 and derivatives such as MVAPICH2\citationneeded, Cray MPT\cite{craympt}
+			\item following we will only consider MPI 3.0
 				\begin{itemize}
-					\item MPI\_Put/MPI\_get data may be not visible in main memory until a window is synchronized with fence/complete/wait
-					\item MPI\_Fence implies a barrier on the participating processes.
-					\item MPI\_Complete/MPI\_Wait is a sync between fewer processes, but ultimately the same as fence
-					\item MPI 3.0 is 1 year old. It is not yet realized by openmpi, but it is for mpich 3.0 and derivatives such as MVAPICH2, Cray MPT\cite{craympt}
-					\item following we will only consider MPI 3.0
-				\end{itemize}
-			\item MPI 3.0
-				\begin{itemize}
-					\item only scratch surface of MPI 3.0 one sided communication, because:
-						\begin{itemize}
-							\item a lot of details, because of generality, optimizability
-							\item complicated semantics
-							\item many of the details make no striking difference in protocol design/analysis
-						\end{itemize}
-					\item MPI\_Win\_Allocate allocates remotely shared memory amoung the participating process. A process group is associated with a window.
-					\item customizable attributes of windows (don't distingish between MPI\_Info and attributes for the sake of ease):
-						\begin{itemize}
-							\item no\_locks: no window locking will be used
-							\item accumulate\_ops:
-							\item ~~~-~same\_op: impl may assume that all concurrent accesses to the same target address are the same op
-							\item ~~~-~same\_op\_no\_op: assume all concurrent accumulates calls to the same address are MPI\_NO\_OP -$\>$ allows lower protection for the implementation
-							\item  upon window creation set MPI\_Info key accumulate\_ordering to zero or more of the following: rar, war, raw, waw -$\>$ optimization. raw (read after write is serialized) means a write from one process has to finish before a read issued by the same process can take place. Default is all of them (sequential consistency) which means that reads and writes issued by a process to a remote location are committed in program order. Applies only to accumulate, not put and get. Put and get within an epoch are unordered.
-							\item MPI\_WIN\_MODEL: One cannot set the MPI\_WIN\_MODEL to MPI\_WIN\_SEPARATE and MPI\_WIN\_UNIFIED myself. You can only ask for it. It has been proposed for MPI 3.1 to include being able to set a minimum necessary level.
-						\end{itemize}
+					\item MPI\_Win\_Create creates a so called 'window' of remotely shared memory among the participating process. A process group is associated with a window.
+					\item customizable attributes of windows: give the implementation guarantees about not using certain operations, not using certain operations at the same time, lowering memory consistency requirements for certain operations(accumulate).
+					\item MPI\_WIN\_MODEL: explain SEPARATE and UNIFIED. One cannot set the MPI\_WIN\_MODEL to MPI\_WIN\_SEPARATE and MPI\_WIN\_UNIFIED myself. You can only ask for it. It has been proposed for MPI 3.1 to include being able to set a minimum necessary level. Algorithms for separate work on unified as well, but not necessarily the other way round.
 					\item mpich 3.0.4 does MPI\_WIN\_UNIFIED.
-					\item explain epochs somewhere (before window sync perhaps)
+					\item explaining epochs:
 						\begin{itemize}
-							\item an epoch is a period between two sync calls e.g. fences
-							\item rma calls like put/get/acc can only be used in an access epoch
-							\item "in active target communication a target window can be accessed by RMA operations
-								only within an exposure epoch"
-							\item each access epoch is matched with exactly one exposure epoch
+							\item an epoch is a period between two window synchronization calls
+							\item rma calls data transfer calls like put, get, accumulate can only be used inside an epoch
 							\item used to accumulate multiple calls etc -$\>$ efficiency
-							\item ?perhaps omit the details of two distinct types of epochs, if possible?
+							\item MPI distinguishes access and exposure epochs, but we will ignore these.
 						\end{itemize}
 					\item window sync
 						\begin{itemize}
-							\item active vs passive target communication (\cite{mpi3} page 437)
-							\item MPI\_Win\_Fence. Is a collective over all window group members. All outstanding RMA requests between group members will be finished. More specifically: All locally initiated RMA request will finish locally before the fence call returns. At the target those same RMA requests will be completed when their respective MPI\_Win\_Fence call returns.
-								and started before the fence call will complete at that process before the fence call returns.
-								They will be completed at their target before the fence call returns at the target.
-							\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: similar to fence, but allows to specify the sync partners exactly, and distinguishes between "command-issuing" and "remotely-accessed" processes. start/complete starts and ends access periods, post and wait start and end exposure epochs.
-							\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: starts and ends access epochs. no exposure epoch. no explicit participation of remote end in synchronization
+							\item active vs passive target communication (\cite{mpi3} page 437~)
+							\item MPI\_Win\_Fence. Active target communication. Is a collective over all window group members. All outstanding RMA requests between group members will be finished implies a barrier.
+							\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: active target communication. Similar to fence, but allows to specify the sync partners exactly, and distinguishes between "command-issuing" and "remotely-accessed" processes.
+							\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: Passive target communication. No explicit participation of remote end in synchronization
+							\item MPI\_Flush*: Passive target communication. Completes outstanding RMA calls, issued by the caller, at origin and a specifiable target before returning (or only at the origin).
+							\item MPI\_Sync: Passive target communication. Used to synchronize the public and private part of the window in the separated model.
 						\end{itemize}
 					\item window sync assertions: NoPrecede, NoSucceed, NoStore, NoPut -$\>$ optimization
-					\item MPI\_Put, MPI\_Get
-					\item MPI\_Accumulate, MPI\_FetchAndOp (getaccumulate subsumed by f\&o), MPI\_CompareAndSwap
+					\item MPI\_Put, MPI\_Get - unordered inside an epoch
+					\item MPI\_Accumulate, MPI\_FetchAndOp, MPI\_CompareAndSwap influenced by specified memory order requirements. default is sequential consistency.
+					\item list cases of undefined(implementation specific) behaviour: chapter 11.3 and 11.7 in \cite{mpi3}
+						\begin{itemize}
+							\item Buffers used in a MPI\_Put call should not be written to until the operation completes
+							\item Buffers used in a MPI\_Get call should not be accessed until the operation completes
+							\item The outcome of remote memory accesses to the same location is undefined. Except of course accumulate.
+							\item concurrent local load/stores and RMA updates to the same location are undefined
+							\item the outcome of a single process issuing multiple puts to the same location within an access epoch is undefined
+							\item State this makes it harder to implement less restrictive synchronization primitives because the semantic requirements are already very strong in MPI. Lots of perhaps useless synchronization. Rather than undefined say: any order. Or at least make guarantee for the smallest units that are atomically committed to memory like primitive data types.
+						\end{itemize}
 				\end{itemize}
 		\end{itemize}
 \end{itemize}
