@@ -128,7 +128,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item atomic ops. most notably add-fetch, compare-swap \citationneeded
 	\item normal load/store
-	\item weaken memory model. default on x86 is sequential consistency. explain. \citationneeded. Most prominent weaker memory consistency model is release consistency \cite{gha90}.
+	\item weaken memory model. default on x86 is sequential consistency. "The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program." - Lamport~\cite{sequentialconsistency}. Most prominent weaker memory consistency model is release consistency \cite{gha90}.
 		One must pay attention when implementing, but gains performance.
 	\item hardware support e.g. SGI UV 2000 systems\cite{sgiuv2000}
 \end{itemize}
