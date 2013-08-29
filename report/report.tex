@@ -164,8 +164,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\end{itemize}
 		\end{itemize}
 	\label{why-only-mpi}
-	\item we specifically look at MPI. Explain short why only MPI. MPI prevalent \citationneeded~in dist memory programming? low level api. Many other higher level APIs use it as a basis \citationneeded.
-	\item MPI is very general and customizable. Supports many modes of operation.
+	\item we specifically look at MPI. Explain short why only MPI.
+		\begin{itemize}
+			\item low-level
+			\item standardized
+			\item portable, dist and shared mem, MPP, clusters of workstations, and combinations, independend on particular platform features or quantitative differences
+			\item many implementations of the standard for many programming languages exist
+			\item very general and customizable. Supports many modes of operation.
+			\item widely adopted in cluster computing / HPC, scientific computing.~\cite{mpiadoptiona}\cite{mpiadoptionb}\cite{mpiadoptionc}
+		\end{itemize}
 	\item only scratch surface of MPI 3.0, because:
 		\begin{itemize}
 			\item a lot of details, because of generality, optimizability
