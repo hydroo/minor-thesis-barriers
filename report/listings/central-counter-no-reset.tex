@@ -1,5 +1,5 @@
 \begin{lstlisting}[mathescape]
-shared variables: integer barrier := numThreads
+shared variables: integer barrier := threadCount
 
 atomic{barrier := barrier - 1}
 
