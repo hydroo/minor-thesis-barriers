@@ -126,7 +126,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Shared memory}
 \begin{itemize}
-	\item atomic ops. most notably add-fetch, compare-swap \citationneeded
+	\item atomic ops. Most notably add-fetch, compare-swap (is as old as 1970. No citations found. And perhaps not necessary)
 	\item normal load/store
 	\item weaken memory model. default on x86 is sequential consistency. "The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program." - Lamport~\cite{sequentialconsistency}. Most prominent weaker memory consistency model is release consistency \cite{gha90}.
 		One must pay attention when implementing, but gains performance.
