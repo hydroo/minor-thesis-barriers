@@ -150,9 +150,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\end{itemize}
 			\item RMA
 				\begin{itemize}
-					\item explain short what RMA is\citationneeded. Coop between RAM and network card needed.
+					\item accessing remote memory, without the remote peer being actively involved.
 					\item needs hardware support.
-					\item less software overhead, since it is one sided. Less buffering. Ideally no buffering.
+					\item less management overhead, better latency and throughput. Less buffering. Ideally no buffering - so called Zero Copy operations.
 					\item (a) coherent - remotely updated memory will be visible to the remote end eventually
 					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote end.
 				\end{itemize}
