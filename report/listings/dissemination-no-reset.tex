@@ -4,7 +4,7 @@ shared variables: boolean
 local variables:  integer dist
 initialization:   barrier[*][*] := false
 
-for dist := 1; dist < numThreads; dist := dist $\times$ 2 {
+for dist := 1; dist < processCount; dist := dist $\times$ 2 {
 	to   := (processIndex + dist) (mod processCount)
 	from := (processIndex - dist) (mod processCount)
 	
