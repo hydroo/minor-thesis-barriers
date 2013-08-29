@@ -1,7 +1,0 @@
-\begin{lstlisting}[mathescape]
-shared variables: integer barrier := numThreads
-
-atomic{barrier := barrier - 1}
-
-wait until barrier = 0
-\end{lstlisting}

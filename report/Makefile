@@ -1,7 +1,7 @@
 IMAGES =
 
 LISTINGS = \
-	listings/add-fetch-no-reset.tex \
+	listings/central-counter-no-reset.tex \
 	listings/dissemination-no-reset.tex \
 	listings/nmg-ronny-with-reset.tex \
 	listings/ronny-simple-no-reset.tex \
