@@ -157,7 +157,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote end.
 				\end{itemize}
 			\item hardware support here is usual business e.g. Earth Simulator\cite{earthsimulator}, IBM Blue Gene/L\cite{bluegenel}, IBM Blue Gene/Q\cite{bluegeneq}, low-cost custom\cite{hoefler2006b}
-			\item lossy communication e.g. UDP. ?any examples for synchronization over lossy channels? \citationneeded
+			\item lossy communication e.g.
+				\begin{itemize}
+					\item most of today's synchronization protocols are based on a reliable communication layer e.g. TCP, InfiniBand's reliable connections. Many support unreliable connections though, e.g. UDP~\cite{udp}, infiniband's unreliable connections~\cite{infiniband}.
+					\item it is easy to imagine algorithms for lossy channels. Gain performance through less checks, e.g. message receive acknowledges. Add algorithms that tolerate this behaviour and there you go.
+				\end{itemize}
 		\end{itemize}
 	\label{why-only-mpi}
 	\item we specifically look at MPI. Explain short why only MPI. MPI prevalent \citationneeded~in dist memory programming? low level api. Many other higher level APIs use it as a basis \citationneeded.
