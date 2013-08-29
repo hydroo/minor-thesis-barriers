@@ -117,6 +117,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Survey of means to implement barrier protocols}
 \begin{itemize}
+	\item \todo still feels like there should be some kind of wrap up or continuous thread :(
 	\item evaluate what tools we have at our disposal to realize barrier protocols
 	\item the influence of communication latency
 	\item bandwidth doesn't matter, because data transfered is small.
@@ -152,7 +153,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{itemize}
 					\item accessing remote memory, without the remote peer being actively involved.
 					\item needs hardware support.
-					\item less management overhead, better latency and throughput. Less buffering. Ideally no buffering - so called Zero Copy operations.
+					\item less management overhead, better latency and throughput. Less buffering. Ideally no buffering - so called Zero-copy operations.
 					\item (a) coherent - remotely updated memory will be visible to the remote end eventually
 					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote end.
 				\end{itemize}
@@ -168,12 +169,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item low-level
 			\item standardized
-			\item portable, dist and shared mem, MPP, clusters of workstations, and combinations, independent on particular platform features or quantitative differences
+			\item portable, dist and shared mem, MPP, clusters of workstations, and combinations, independent of particular platform features or quantitative differences e.g. latency/bandwidth
 			\item many implementations of the standard for many programming languages exist
 			\item very general and customizable. Supports many modes of operation.
 			\item widely adopted in cluster computing / HPC, scientific computing.~\cite{mpiadoptiona}\cite{mpiadoptionb}\cite{mpiadoptionc}
 		\end{itemize}
-	\item only scratch surface of MPI 3.0, because:
+	\item only scratch surface of MPI, because:
 		\begin{itemize}
 			\item a lot of details, because of generality, optimizability
 			\item complicated semantics
@@ -195,6 +196,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item MPI has asynchronous collectives
 		\begin{itemize}
 			\item chapter 5.12 in \cite{mpi3}
+			\item explain shortly what this is about. Maybe you need to explain what collectives are.
 			\item non-blocking collectives are not interesting as a building block for new barriers, because everyone has to take part and no cancellation of anything is possible.
 		\end{itemize}
 	\item MPI has RMA
@@ -202,40 +204,37 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item chapter 11 in \cite{mpi3}
 			\item major changes from MPI 2.2 to 3.0\cite{mpi3onesided}
 			\item we will only consider MPI 3.0, because: More features. Subsumes MPI 2.2. It is already one year old. It is not yet realized by openmpi, but it is for mpich 3.0 and derivatives such as MVAPICH2\cite{mvapich}, Cray MPT\cite{craympt}
-			\item following we will only consider MPI 3.0
+			\item MPI\_Win\_Create creates a so called 'window' of remotely shared memory among the participating process. A process group is associated with a window.
+			\item customizable attributes of windows: give the implementation guarantees about not using certain operations, not using certain operations at the same time, lowering memory consistency requirements for certain operations(accumulate).
+			\item MPI\_WIN\_MODEL: explain SEPARATE and UNIFIED. One cannot set the MPI\_WIN\_MODEL to MPI\_WIN\_SEPARATE and MPI\_WIN\_UNIFIED myself. You can only ask for it. It has been proposed for MPI 3.1 to include being able to set a minimum necessary level. Algorithms for separate work on unified as well, but not necessarily the other way round.
+			\item mpich 3.0.4 does MPI\_WIN\_UNIFIED.
+			\item explaining epochs:
 				\begin{itemize}
-					\item MPI\_Win\_Create creates a so called 'window' of remotely shared memory among the participating process. A process group is associated with a window.
-					\item customizable attributes of windows: give the implementation guarantees about not using certain operations, not using certain operations at the same time, lowering memory consistency requirements for certain operations(accumulate).
-					\item MPI\_WIN\_MODEL: explain SEPARATE and UNIFIED. One cannot set the MPI\_WIN\_MODEL to MPI\_WIN\_SEPARATE and MPI\_WIN\_UNIFIED myself. You can only ask for it. It has been proposed for MPI 3.1 to include being able to set a minimum necessary level. Algorithms for separate work on unified as well, but not necessarily the other way round.
-					\item mpich 3.0.4 does MPI\_WIN\_UNIFIED.
-					\item explaining epochs:
-						\begin{itemize}
-							\item an epoch is a period between two window synchronization calls
-							\item rma calls data transfer calls like put, get, accumulate can only be used inside an epoch
-							\item used to accumulate multiple calls etc -$\>$ efficiency
-							\item MPI distinguishes access and exposure epochs, but we will ignore these.
-						\end{itemize}
-					\item window sync
-						\begin{itemize}
-							\item active vs passive target communication (\cite{mpi3} page 437~)
-							\item MPI\_Win\_Fence. Active target communication. Is a collective over all window group members. All outstanding RMA requests between group members will be finished implies a barrier.
-							\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: active target communication. Similar to fence, but allows to specify the sync partners exactly, and distinguishes between "command-issuing" and "remotely-accessed" processes.
-							\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: Passive target communication. No explicit participation of remote end in synchronization
-							\item MPI\_Flush*: Passive target communication. Completes outstanding RMA calls, issued by the caller, at origin and a specifiable target before returning (or only at the origin).
-							\item MPI\_Sync: Passive target communication. Used to synchronize the public and private part of the window in the separated model.
-						\end{itemize}
-					\item window sync assertions: NoPrecede, NoSucceed, NoStore, NoPut -$\>$ optimization
-					\item MPI\_Put, MPI\_Get - unordered inside an epoch
-					\item MPI\_Accumulate, MPI\_FetchAndOp, MPI\_CompareAndSwap influenced by specified memory order requirements. default is sequential consistency.
-					\item list cases of undefined(implementation specific) behaviour: chapter 11.3 and 11.7 in \cite{mpi3}
-						\begin{itemize}
-							\item Buffers used in a MPI\_Put call should not be written to until the operation completes
-							\item Buffers used in a MPI\_Get call should not be accessed until the operation completes
-							\item The outcome of remote memory accesses to the same location is undefined. Except of course accumulate.
-							\item concurrent local load/stores and RMA updates to the same location are undefined
-							\item the outcome of a single process issuing multiple puts to the same location within an access epoch is undefined
-							\item State this makes it harder to implement less restrictive synchronization primitives because the semantic requirements are already very strong in MPI. Lots of perhaps useless synchronization. Rather than undefined say: any order. Or at least make guarantee for the smallest units that are atomically committed to memory like primitive data types.
-						\end{itemize}
+					\item an epoch is a period between two window synchronization calls
+					\item rma calls data transfer calls like put, get, accumulate can only be used inside an epoch
+					\item used to accumulate multiple calls etc -$\>$ efficiency
+					\item MPI distinguishes access and exposure epochs, but we will ignore these.
+				\end{itemize}
+			\item window sync
+				\begin{itemize}
+					\item active vs passive target communication (\cite{mpi3} page 437~)
+					\item MPI\_Win\_Fence. Active target communication. Is a collective over all window group members. All outstanding RMA requests between group members will be finished implies a barrier.
+					\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: active target communication. Similar to fence, but allows to specify the sync partners exactly, and distinguishes between "command-issuing" and "remotely-accessed" processes.
+					\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: Passive target communication. No explicit participation of remote end in synchronization
+					\item MPI\_Flush*: Passive target communication. Completes outstanding RMA calls, issued by the caller, at origin and a specifiable target before returning (or only at the origin).
+					\item MPI\_Sync: Passive target communication. Used to synchronize the public and private part of the window in the separated model.
+				\end{itemize}
+			\item window sync assertions: NoPrecede, NoSucceed, NoStore, NoPut -$\>$ optimization
+			\item MPI\_Put, MPI\_Get - unordered inside an epoch
+			\item MPI\_Accumulate, MPI\_FetchAndOp, MPI\_CompareAndSwap influenced by specified memory order requirements. default is sequential consistency.
+			\item list cases of undefined(implementation specific) behaviour: chapter 11.3 and 11.7 in \cite{mpi3}
+				\begin{itemize}
+					\item Buffers used in a MPI\_Put call should not be written to until the operation completes
+					\item Buffers used in a MPI\_Get call should not be accessed until the operation completes
+					\item The outcome of remote memory accesses to the same location is undefined. Except of course accumulate.
+					\item concurrent local load/stores and RMA updates to the same location are undefined
+					\item the outcome of a single process issuing multiple puts to the same location within an access epoch is undefined
+					\item State this makes it harder to implement less restrictive synchronization primitives because the semantic requirements are already very strong in MPI. Lots of perhaps useless synchronization. Rather than undefined say: any order. Or at least make guarantee for the smallest units that are atomically committed to memory like primitive data types.
 				\end{itemize}
 		\end{itemize}
 \end{itemize}
