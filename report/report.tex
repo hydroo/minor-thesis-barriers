@@ -265,7 +265,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\label{listing:central-counter-no-reset}
 				\end{figure}
 
-			\item backoff via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if cpucount $<$ threadcount. futexes. kernel based mutexes. wait queues. sleeping.
+			\item back-off via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if cpucount $<$ threadcount. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping.
 			\item reset built in. last one to enter resets the barrier.
 		\end{itemize}
 	\item glibc's new pthreads library
@@ -329,7 +329,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/nmg-ronny-with-reset}
-			\caption{Pseudo code of nmg+ronny's barrier}
+			\caption{Pseudo code of nmg/ronny's barrier}
 			\label{listing:nmg-ronny-with-reset}
 		\end{figure}
 
@@ -402,7 +402,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Theoretical aspects}
 \begin{itemize}
-	\item meantion that no backoff is used
+	\item mention that no back-off is used
 \end{itemize}
 
 \subsubsection{Central counter vs ronny's simple barrier}
@@ -447,7 +447,7 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 
 		\begin{itemize}
 			\item how is resetting handled in currently used barriers?
-			\item switching between barriers using a variable (as in the mcquire/ronny barrier - 'left' variable)
+			\item switching between barriers using a variable (as in the nmg/ronny barrier - 'left' variable)
 			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset)
 			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
 		\end{itemize}
@@ -466,7 +466,7 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 \section{Future Work}
 \begin{itemize}
 	\item evaluate back-off strategies. mwait.
-	\item model check more and bigger. symmetrie reduction. partial order reduction.
+	\item model check more and bigger. symmetry reduction. partial order reduction.
 	\item explore variations of ronny's barriers
 		\begin{itemize}
 			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}.
