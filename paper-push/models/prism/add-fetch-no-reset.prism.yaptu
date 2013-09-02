@@ -1,9 +1,8 @@
 ctmc
 
 // model parameter
-//const int noOfDataValues = $D$;
-const int barrier_min = $0$;
-const int barrier_max = $THREAD_COUNT$;
+const int bar_min = 0;
+const int bar_max = $THREAD_COUNT$;
 
 // rate parameter
 const double write    = 2;
@@ -17,86 +16,86 @@ const double pir      = 2;
 const double reactive = 1;
 
 // simple thread
-module thread1
-  barrier_localdata1 : [barrier_min..barrier_max];
+module thread0
+  bar_localdata0 : [bar_min..bar_max];
 
   // writing:
-  [barrier_push_write1] true -> write:true;
+  [bar_push_write0] true -> write:true;
 ++ for i in xrange(0,THREAD_COUNT):
-  [barrier_write1] true -> reactive:(barrier_localdata1'=$i$);
+  [bar_write0] true -> reactive:(bar_localdata0'=$i$);
 --
 
   // reading:
-  [barrier_push_read1] true -> read:true;
-++ for j in xrange(2,THREAD_COUNT+1):
-  [barrier_push$j$1] true -> reactive:(barrier_localdata1'=barrier_localdata$j$);
+  [bar_push_read0] true -> read:true;
+++ for j in xrange(1,THREAD_COUNT):
+  [bar_push$j$0] true -> reactive:(bar_localdata0'=bar_localdata$j$);
 --
 endmodule
 
-++ for i in xrange(2,THREAD_COUNT+1):
-module thread$i$ = thread1 [
+++ for i in xrange(1,THREAD_COUNT):
+module thread$i$ = thread0 [
   // localdata:
-  barrier_localdata1=barrier_localdata$i$, 
-++ for j in xrange(1,THREAD_COUNT):
-  barrier_localdata$j+1$=barrier_localdata$j+(j>=i)$, 
+  bar_localdata0=bar_localdata$i$,
+++ for j in xrange(0,THREAD_COUNT-1):
+  bar_localdata$j+1$=bar_localdata$j+(j>=i)$,
 --
 
   // messages:
-  barrier_push_write1=barrier_push_write$i$, barrier_write1=barrier_write$i$, 
-++ for j in xrange(1,THREAD_COUNT):
-  barrier_push$j+1$1=barrier_push$j+(j>=i)$$i$,
+  bar_push_write0=bar_push_write$i$, bar_write0=bar_write$i$,
+++ for j in xrange(0,THREAD_COUNT-1):
+  bar_push$j+1$0=bar_push$j+(j>=i)$$i$,
 --
-  barrier_push_read1=barrier_push_read$i$
-] 
+  bar_push_read0=bar_push_read$i$
+]
 endmodule
 
 --
 
 // BEGIN Memory Managaer
 
-++ for j in xrange(1,THREAD_COUNT+1):
-formula barrier_inform$j$       = ($' & '.join(['barrier_inform%d%d=false' %(k,i) for k in [j] for i in xrange(1,THREAD_COUNT+1) if i!=j])$);
+++ for j in xrange(0,THREAD_COUNT):
+formula bar_inform$j$       = ($' & '.join(['bar_inform%d%d=false' %(k,i) for k in [j] for i in xrange(0,THREAD_COUNT) if i!=j])$);
 --
-formula barrier_noInforms     = ($' & '.join(['barrier_inform%d' %i for i in xrange(1,THREAD_COUNT+1)])$);
-formula barrier_noInvalidates = ($' & '.join(['barrier_invalidate%d=false' %i for i in xrange(1,THREAD_COUNT+1)])$);
-formula barrier_readReady     = (barrier_noInforms & barrier_noInvalidates);
-formula barrier_writeReady    = (barrier_readReady);
+formula bar_noInforms     = ($' & '.join(['bar_inform%d' %i for i in xrange(0,THREAD_COUNT)])$);
+formula bar_noInvalidates = ($' & '.join(['bar_invalidate%d=false' %i for i in xrange(0,THREAD_COUNT)])$);
+formula bar_readReady     = (bar_noInforms & bar_noInvalidates);
+formula bar_writeReady    = (bar_readReady);
 
-// global variables valid_i encapsulated in a separate module
-module barrier_validity
-++ for i in xrange(1,THREAD_COUNT+1):
-++ if (i==1):
-  barrier_valid1: bool init true;
+// global variables valid i encapsulated in a separate module
+module bar_validity
+++ for i in xrange(0,THREAD_COUNT):
+++ if i==0:
+  bar_valid$i$: bool init true;
 --
-++ if (i!=1):
-  barrier_valid$i$: bool init false;
+++ if i!=0:
+  bar_valid$i$: bool init false;
 --
---
-
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_set_invalid$i$] true -> reactive:(barrier_valid$i$'=false);
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-++ for j in xrange(1,THREAD_COUNT+1):
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_set_invalid$i$] true -> reactive:(bar_valid$i$'=false);
+--
+
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
 ++ if (i!=j):
-  [barrier_push$i$$j$] true -> reactive:(barrier_valid$j$'=true);
+  [bar_push$i$$j$] true -> reactive:(bar_valid$j$'=true);
 --
 --
 --
 endmodule
 
 // global variables for ownership encapsulated in a separate module
-module barrier_ownership
-  barrier_currentOwner : [0..$THREAD_COUNT$] init 1;
-  barrier_nextOwner : [0..$THREAD_COUNT$] init 0;
+module bar_ownership
+  bar_currentOwner : [-1..$THREAD_COUNT$] init 0;
+  bar_nextOwner : [-1..$THREAD_COUNT$] init -1;
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_write$i$] true -> reactive:(barrier_nextOwner'=$i$);
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_write$i$] true -> reactive:(bar_nextOwner'=$i$);
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_write$i$] barrier_nextOwner=$i$ -> wr:(barrier_currentOwner'=$i$);
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_write$i$] bar_nextOwner=$i$ -> wr:(bar_currentOwner'=$i$);
 --
 endmodule
 
@@ -107,71 +106,71 @@ const int writing    = 2;
 const int inform     = 3;
 const int reading    = 4;
 
-module barrier_mm_control_flow
-  barrier_loc : [0..4] init idle;
+module bar_mm_control_flow
+  bar_loc : [0..4] init idle;
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_write$i$] (barrier_loc=idle) & barrier_writeReady -> reactive:(barrier_loc'=invalidate);
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_write$i$] (bar_loc=idle) & bar_writeReady -> reactive:(bar_loc'=invalidate);
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_write$i$] (barrier_loc=invalidate) & barrier_writeReady -> reactive:(barrier_loc'=writing);
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_write$i$] (bar_loc=invalidate) & bar_writeReady -> reactive:(bar_loc'=writing);
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_Inform$i$] (barrier_loc=writing) -> reactive:(barrier_loc'=inform);
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_inform$i$] (bar_loc=writing) -> reactive:(bar_loc'=inform);
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_read$i$] (barrier_loc=idle) & barrier_readReady -> reactive:(barrier_loc'=reading);
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_read$i$] (bar_loc=idle) & bar_readReady -> reactive:(bar_loc'=reading);
 --
 
-  [barrier_restart] (barrier_loc=reading) & barrier_readReady  -> rer:(barrier_loc'=idle);
-  [barrier_restart] (barrier_loc=inform)  & barrier_writeReady -> rer:(barrier_loc'=idle);
+  [bar_restart] (bar_loc=reading) & bar_readReady  -> rer:(bar_loc'=idle);
+  [bar_restart] (bar_loc=inform)  & bar_writeReady -> rer:(bar_loc'=idle);
 endmodule
 
 // mm actions
-module barrier_mm_activity
-++ for i in xrange(1,THREAD_COUNT+1):
-  barrier_invalidate$i$ : bool init false;
+module bar_mm_activity
+++ for i in xrange(0,THREAD_COUNT):
+  bar_invalidate$i$ : bool init false;
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-++ for j in xrange(1,THREAD_COUNT+1):
-++ if (i!=j):
-  barrier_inform$i$$j$ : bool init false;
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
+  bar_inform$i$$j$ : bool init false;
 --
 --
 --
 
   // invalidating
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_write$i$] true -> reactive:$' & '.join(['(barrier_invalidate%d\'=true)' %j for j in xrange(1,THREAD_COUNT+1) if i!=j])$;
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_write$i$] true -> reactive:$' & '.join(['(bar_invalidate%d\'=true)' %j for j in xrange(0,THREAD_COUNT) if i!=j])$;
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_set_invalid$i$] (barrier_invalidate$i$=true) -> ir:(barrier_invalidate$i$'=false);
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_set_invalid$i$] (bar_invalidate$i$=true) -> ir:(bar_invalidate$i$'=false);
 --
 
   // pushes triggered by writing
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_Inform$i$] (barrier_currentOwner=$i$) -> pir:$' & '.join(['(barrier_inform%d%d\'=true)' % (k,j) for k in [i] for j in xrange(1,THREAD_COUNT+1) if i!=j])$;
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_inform$i$] (bar_currentOwner=$i$) -> pir:$' & '.join(['(bar_inform%d%d\'=true)' % (k,j) for k in [i] for j in xrange(0,THREAD_COUNT) if i!=j])$;
 --
 
   // pushes triggered by reading
-++ for i in xrange(1,THREAD_COUNT+1):
-++ for j in xrange(1,THREAD_COUNT+1):
-++ if (i!=j):
-  [barrier_push_read$i$] (barrier_currentOwner=$j$) -> reactive:(barrier_inform$j$$i$'=true);
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
+  [bar_push_read$i$] (bar_currentOwner=$j$) -> reactive:(bar_inform$j$$i$'=true);
 --
 --
 --
 
   // pushes (triggered by either reads or writes)
-++ for i in xrange(1,THREAD_COUNT+1):
-++ for j in xrange(1,THREAD_COUNT+1):
-++ if (i!=j):
-  [barrier_push$i$$j$] (barrier_inform$i$$j$=true) -> pr:(barrier_inform$i$$j$'=false);
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
+  [bar_push$i$$j$] (bar_inform$i$$j$=true) -> pr:(bar_inform$i$$j$'=false);
 --
 --
 --
@@ -186,12 +185,12 @@ const double writingCosts    = 2;
 const double informCosts     = 3;
 const double readingCosts    = 4;
 
-rewards "barrier_location_costs"
-  (barrier_loc=idle)       : idleCosts;
-  (barrier_loc=invalidate) : invalidateCosts;
-  (barrier_loc=writing)    : writingCosts;
-  (barrier_loc=inform)     : informCosts;
-  (barrier_loc=reading)    : readingCosts;
+rewards "bar_location_costs"
+  (bar_loc=idle)       : idleCosts;
+  (bar_loc=invalidate) : invalidateCosts;
+  (bar_loc=writing)    : writingCosts;
+  (bar_loc=inform)     : informCosts;
+  (bar_loc=reading)    : readingCosts;
 endrewards
 
 // costs model - transitions
@@ -206,37 +205,41 @@ const double pushReadCosts    = pushMessageCosts;
 
 rewards "transition_costs"
   // push_message costs
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_write$i$] true : pushInvCosts;
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_write$i$] true : pushInvCosts;
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_Inform$i$] true : pushInformCosts;
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_inform$i$] true : pushInformCosts;
 --
 
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_push_read$i$] true : pushReadCosts;
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_push_read$i$] true : pushReadCosts;
 --
 
   // invalidation costs
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_set_invalid$i$] true : invCosts; 
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_set_invalid$i$] true : invCosts;
 --
 
   // write costs
-++ for i in xrange(1,THREAD_COUNT+1):
-  [barrier_write$i$] true : writeCosts;
+++ for i in xrange(0,THREAD_COUNT):
+  [bar_write$i$] true : writeCosts;
 --
 
   // read costs
-++ for i in xrange(1,THREAD_COUNT+1):
-++ for j in xrange(1,THREAD_COUNT+1):
-++ if (i!=j):
-  [barrier_push$i$$j$] true : readCosts;
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
+  [bar_push$i$$j$] true : readCosts;
 --
 --
 --
 
-  // [barrier_restart] true : 0; // (hidden)
+  // [bar_restart] true : 0; // (hidden)
 endrewards
 
+// composition (not yet useable by simulator)
+// system
+//   (thread0 || thread1 || thread2 || bar_validity || bar_ownership || bar_mm_control_flow / {bar_restart} || bar_mm_activity)
+// endsystem
