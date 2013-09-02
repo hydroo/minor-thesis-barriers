@@ -1,4 +1,4 @@
-python yaptu/yaptu.py D=2 T=4 < shared-memory.template > asdf.prism
+python yaptu/yaptu.py D=2 T=4 < shared-memory.prism.yaptu > asdf.prism
 
 D = data domain size
 T = thread count
