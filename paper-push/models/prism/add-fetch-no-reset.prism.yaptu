@@ -1,43 +1,80 @@
 ctmc
 
-// model parameter
-const int bar_min = 0;
-const int bar_max = $THREAD_COUNT$;
+// barrier local variable limits
+const int bar_min = -1;
+const int bar_max =  $THREAD_COUNT$;
 
-// rate parameter
-const double write    = 2;
-const double read     = 2;
-
+// memory menager parameters
 const double wr       = 2;
+const double rr       = 2;
 const double pr       = 2;
 const double rer      = 2;
 const double ir       = 2;
 const double pir      = 2;
 const double reactive = 1;
 
-// simple thread
-module thread0
-  bar_localdata0 : [bar_min..bar_max];
+// barrier rates
+const double baser    = 1;
+const double workr    = baser / 1000.0;
 
-  // writing:
-  [bar_push_write0] true -> write:true;
-++ for i in xrange(0,THREAD_COUNT):
-  [bar_write0] true -> reactive:(bar_localdata0'=$i$);
+// thread0 locations
+const int l_error          = -1;
+const int l_work           =  0;
+const int l_addFetchRead1  =  1;
+const int l_addFetchRead2  =  2;
+const int l_addFetchWrite1 =  3;
+const int l_addFetchWrite2 =  4;
+const int l_checkComplete1 =  5;
+const int l_checkComplete2 =  6;
+const int l_complete       =  7;
+
+
+module thread0
+  l_0 : [-1..7] init l_work;
+  bar_0 : [bar_min..bar_max] init bar_max;
+
+  // accept data pushed from i to 0, except when we are already waiting on the bar_push i 0 label
+++ for i in xrange(1,THREAD_COUNT):
+  [bar_push$i$0] (l_0!=l_checkComplete2) & (l_0!=l_addFetchRead2) -> reactive:(bar_0'=bar_$i$);
 --
 
-  // reading:
-  [bar_push_read0] true -> read:true;
-++ for j in xrange(1,THREAD_COUNT):
-  [bar_push$j$0] true -> reactive:(bar_localdata0'=bar_localdata$j$);
+
+  // start of protocol
+  [] l_0=l_work -> workr : (l_0'=l_addFetchRead1);
+
+  // read barrier
+  []               (l_0=l_addFetchRead1) & ( bar_valid0) ->          (l_0'=l_addFetchWrite1);
+  [bar_push_read0] (l_0=l_addFetchRead1) & (!bar_valid0) -> rr:      (l_0'=l_addFetchRead2);
+++ for i in xrange(1,THREAD_COUNT):
+  [bar_push$i$0]     (l_0=l_addFetchRead2)                 -> reactive:(l_0'=l_addFetchWrite1) & (bar_0'=bar_$i$);
+--
+
+  // write barrier
+  [bar_push_write0] (l_0=l_addFetchWrite1)              -> wr:      (l_0'=l_addFetchWrite2);
+  [bar_write0]      (l_0=l_addFetchWrite2) & (bar_0> 0) -> reactive:(l_0'=l_checkComplete1) & (bar_0'=max(bar_0-1,0));
+  [bar_write0]      (l_0=l_addFetchWrite2) & (bar_0<=0) ->          (l_0'=l_error);
+
+  // check if complete
+  []               (l_0=l_checkComplete1) & ( bar_valid0) & (bar_0>0) ->          (l_0'=l_checkComplete1);
+  []               (l_0=l_checkComplete1) & ( bar_valid0) & (bar_0=0) ->          (l_0'=l_complete);
+  []               (l_0=l_checkComplete1) & ( bar_valid0) & (bar_0<0) ->          (l_0'=l_error);
+  [bar_push_read0] (l_0=l_checkComplete1) & (!bar_valid0)             -> rr:      (l_0'=l_checkComplete2);
+++ for i in xrange(1,THREAD_COUNT):
+  [bar_push$i$0]     (l_0=l_checkComplete2)                 & (bar_$i$>0) -> reactive:(l_0'=l_checkComplete1) & (bar_0'=bar_$i$);
+--
+++ for i in xrange(1,THREAD_COUNT):
+  [bar_push$i$0]     (l_0=l_checkComplete2)                 & (bar_$i$=0) -> reactive:(l_0'=l_complete);
+  [bar_push$i$0]     (l_0=l_checkComplete2)                 & (bar_$i$<0) -> reactive:(l_0'=l_error);
 --
 endmodule
 
 ++ for i in xrange(1,THREAD_COUNT):
 module thread$i$ = thread0 [
-  // localdata:
-  bar_localdata0=bar_localdata$i$,
+  l_0=l_$i$,
+  bar_0=bar_$i$,
+  bar_valid0=bar_valid$i$,
 ++ for j in xrange(0,THREAD_COUNT-1):
-  bar_localdata$j+1$=bar_localdata$j+(j>=i)$,
+  bar_$j+1$=bar_$j+(j>=i)$,
 --
 
   // messages:
