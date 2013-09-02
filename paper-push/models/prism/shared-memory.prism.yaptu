@@ -36,6 +36,7 @@ endmodule
 module thread$i$ = thread0 [
   // localdata:
   v_localdata0=v_localdata$i$,
+  v_valid0=v_valid$i$,
 ++ for j in xrange(0,THREAD_COUNT-1):
   v_localdata$j+1$=v_localdata$j+(j>=i)$,
 --
