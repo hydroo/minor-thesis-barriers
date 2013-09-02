@@ -1,7 +1,8 @@
 ctmc
 
 // model parameter
-const int noOfDataValues = $D$;
+const int v_min = 0;
+const int v_max = $VALUE_COUNT-1$;
 
 // rate parameter
 const double write    = 2;
@@ -15,69 +16,69 @@ const double pir      = 2;
 const double reactive = 1;
 
 // simple thread
-module thread1
-  v_localdata1 : [1..noOfDataValues];
+module thread0
+  v_localdata0 : [v_min..v_max];
 
   // writing:
-  [v_push_write1] true -> write:true;
-++	for i in xrange(1,D+1):
-  [v_write1] true -> reactive:(v_localdata1'=$i$);
+  [v_push_write0] true -> write:true;
+++ for i in xrange(0,VALUE_COUNT):
+  [v_write0] true -> reactive:(v_localdata0'=$i$);
 --
-  
+
   // reading:
-  [v_push_read1] true -> read:true;
-++	for j in xrange(2,T+1):
-  [v_push$j$1] true -> reactive:(v_localdata1'=v_localdata$j$);
+  [v_push_read0] true -> read:true;
+++ for j in xrange(1,THREAD_COUNT):
+  [v_push$j$0] true -> reactive:(v_localdata0'=v_localdata$j$);
 --
 endmodule
 
-++	for i in xrange(2,T+1):
-module thread$i$ = thread1 [
+++ for i in xrange(1,THREAD_COUNT):
+module thread$i$ = thread0 [
   // localdata:
-  v_localdata1=v_localdata$i$, 
-++	for j in xrange(1,T):
-  v_localdata$j+1$=v_localdata$j+(j>=i)$, 
+  v_localdata0=v_localdata$i$,
+++ for j in xrange(0,THREAD_COUNT-1):
+  v_localdata$j+1$=v_localdata$j+(j>=i)$,
 --
 
   // messages:
-  v_push_write1=v_push_write$i$, v_write1=v_write$i$, 
-++	for j in xrange(1,T):
-  v_push$j+1$1=v_push$j+(j>=i)$$i$,
+  v_push_write0=v_push_write$i$, v_write0=v_write$i$,
+++ for j in xrange(0,THREAD_COUNT-1):
+  v_push$j+1$0=v_push$j+(j>=i)$$i$,
 --
-  v_push_read1=v_push_read$i$
-] 
+  v_push_read0=v_push_read$i$
+]
 endmodule
 
 --
 
 // BEGIN Memory Managaer
 
-++	for j in xrange(1,T+1):
-formula v_inform$j$       = ($' & '.join(['v_inform%d%d=false' %(k,i) for k in [j] for i in xrange(1,T+1) if i!=j])$);
+++ for j in xrange(0,THREAD_COUNT):
+formula v_inform$j$       = ($' & '.join(['v_inform%d%d=false' %(k,i) for k in [j] for i in xrange(0,THREAD_COUNT) if i!=j])$);
 --
-formula v_noInforms     = ($' & '.join(['v_inform%d' %i for i in xrange(1,T+1)])$);
-formula v_noInvalidates = ($' & '.join(['v_invalidate%d=false' %i for i in xrange(1,T+1)])$);
+formula v_noInforms     = ($' & '.join(['v_inform%d' %i for i in xrange(0,THREAD_COUNT)])$);
+formula v_noInvalidates = ($' & '.join(['v_invalidate%d=false' %i for i in xrange(0,THREAD_COUNT)])$);
 formula v_readReady     = (v_noInforms & v_noInvalidates);
 formula v_writeReady    = (v_readReady);
 
-// global variables valid_i encapsulated in a separate module
+// global variables valid i encapsulated in a separate module
 module v_validity
-++	for i in xrange(1,T+1):
-++	if (i==1):
-  v_valid1: bool init true;
+++ for i in xrange(0,THREAD_COUNT):
+++ if i==0:
+  v_valid$i$: bool init true;
 --
-++	if (i!=1):
+++ if i!=0:
   v_valid$i$: bool init false;
 --
 --
 
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   [v_set_invalid$i$] true -> reactive:(v_valid$i$'=false);
 --
 
-++	for i in xrange(1,T+1):
-++	for j in xrange(1,T+1):
-++	if (i!=j):  
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if (i!=j):
   [v_push$i$$j$] true -> reactive:(v_valid$j$'=true);
 --
 --
@@ -86,14 +87,14 @@ endmodule
 
 // global variables for ownership encapsulated in a separate module
 module v_ownership
-  v_currentOwner : [0..$T$] init 1;
-  v_nextOwner : [0..$T$] init 0;
+  v_currentOwner : [-1..$THREAD_COUNT$] init 0;
+  v_nextOwner : [-1..$THREAD_COUNT$] init -1;
 
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   [v_push_write$i$] true -> reactive:(v_nextOwner'=$i$);
 --
 
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   [v_write$i$] v_nextOwner=$i$ -> wr:(v_currentOwner'=$i$);
 --
 endmodule
@@ -107,20 +108,20 @@ const int reading    = 4;
 
 module v_mm_control_flow
   v_loc : [0..4] init idle;
-  
-++	for i in xrange(1,T+1):
+
+++ for i in xrange(0,THREAD_COUNT):
   [v_push_write$i$] (v_loc=idle) & v_writeReady -> reactive:(v_loc'=invalidate);
 --
 
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   [v_write$i$] (v_loc=invalidate) & v_writeReady -> reactive:(v_loc'=writing);
 --
 
-++	for i in xrange(1,T+1):
-  [v_push_Inform$i$] (v_loc=writing) -> reactive:(v_loc'=inform);
+++ for i in xrange(0,THREAD_COUNT):
+  [v_push_inform$i$] (v_loc=writing) -> reactive:(v_loc'=inform);
 --
 
-++	for i in xrange(1,T+1):  
+++ for i in xrange(0,THREAD_COUNT):
   [v_push_read$i$] (v_loc=idle) & v_readReady -> reactive:(v_loc'=reading);
 --
 
@@ -130,45 +131,45 @@ endmodule
 
 // mm actions
 module v_mm_activity
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   v_invalidate$i$ : bool init false;
 --
 
-++	for i in xrange(1,T+1):
-++	for j in xrange(1,T+1):
-++	if (i!=j):  
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
   v_inform$i$$j$ : bool init false;
 --
 --
 --
 
   // invalidating
-++	for i in xrange(1,T+1):
-  [v_push_write$i$] true -> reactive:$' & '.join(['(v_invalidate%d\'=true)' %j for j in xrange(1,T+1) if i!=j])$;
+++ for i in xrange(0,THREAD_COUNT):
+  [v_push_write$i$] true -> reactive:$' & '.join(['(v_invalidate%d\'=true)' %j for j in xrange(0,THREAD_COUNT) if i!=j])$;
 --
 
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   [v_set_invalid$i$] (v_invalidate$i$=true) -> ir:(v_invalidate$i$'=false);
 --
 
   // pushes triggered by writing
-++	for i in xrange(1,T+1):
-  [v_push_Inform$i$] (v_currentOwner=$i$) -> pir:$' & '.join(['(v_inform%d%d\'=true)' % (k,j) for k in [i] for j in xrange(1,T+1) if i!=j])$;
+++ for i in xrange(0,THREAD_COUNT):
+  [v_push_inform$i$] (v_currentOwner=$i$) -> pir:$' & '.join(['(v_inform%d%d\'=true)' % (k,j) for k in [i] for j in xrange(0,THREAD_COUNT) if i!=j])$;
 --
 
   // pushes triggered by reading
-++	for i in xrange(1,T+1):
-++	for j in xrange(1,T+1):
-++	if (i!=j):
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
   [v_push_read$i$] (v_currentOwner=$j$) -> reactive:(v_inform$j$$i$'=true);
 --
 --
 --
 
   // pushes (triggered by either reads or writes)
-++	for i in xrange(1,T+1):
-++	for j in xrange(1,T+1):
-++	if (i!=j):
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
   [v_push$i$$j$] (v_inform$i$$j$=true) -> pr:(v_inform$i$$j$'=false);
 --
 --
@@ -204,32 +205,32 @@ const double pushReadCosts    = pushMessageCosts;
 
 rewards "transition_costs"
   // push_message costs
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   [v_push_write$i$] true : pushInvCosts;
 --
 
-++	for i in xrange(1,T+1):
-  [v_push_Inform$i$] true : pushInformCosts;
+++ for i in xrange(0,THREAD_COUNT):
+  [v_push_inform$i$] true : pushInformCosts;
 --
 
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   [v_push_read$i$] true : pushReadCosts;
 --
-  
+
   // invalidation costs
-++	for i in xrange(1,T+1):  
-  [v_set_invalid$i$] true : invCosts; 
+++ for i in xrange(0,THREAD_COUNT):
+  [v_set_invalid$i$] true : invCosts;
 --
 
   // write costs
-++	for i in xrange(1,T+1):
+++ for i in xrange(0,THREAD_COUNT):
   [v_write$i$] true : writeCosts;
 --
 
   // read costs
-++	for i in xrange(1,T+1):
-++	for j in xrange(1,T+1):
-++	if (i!=j):
+++ for i in xrange(0,THREAD_COUNT):
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
   [v_push$i$$j$] true : readCosts;
 --
 --
@@ -240,5 +241,5 @@ endrewards
 
 // composition (not yet useable by simulator)
 // system
-//   (thread1 || thread2 || thread3 || v_validity || v_ownership || v_mm_control_flow / {v_restart} || v_mm_activity)
+//   (thread0 || thread1 || thread2 || v_validity || v_ownership || v_mm_control_flow / {v_restart} || v_mm_activity)
 // endsystem
