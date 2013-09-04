@@ -165,7 +165,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\end{itemize}
 		\end{itemize}
 	\label{why-only-mpi}
-	\item we specifically look at MPI. Explain short why only MPI.
+	\item we specifically look at MPI\cite{mpi}. Explain short why only MPI.
 		\begin{itemize}
 			\item low-level
 			\item standardized
@@ -202,7 +202,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item MPI has RMA
 		\begin{itemize}
 			\item chapter 11 in \cite{mpi3}
-			\item major changes from MPI 2.2 to 3.0\cite{mpi3onesided}
+			\item major changes from MPI 2.2\cite{mpi2} to 3.0\cite{mpi3onesided}
 			\item we will only consider MPI 3.0, because: More features. Subsumes MPI 2.2. It is already one year old. It is not yet realized by openmpi, but it is for mpich 3.0 and derivatives such as MVAPICH2\cite{mvapich}, Cray MPT\cite{craympt}
 			\item MPI\_Win\_Create creates a so called 'window' of remotely shared memory among the participating process. A process group is associated with a window.
 			\item customizable attributes of windows: give the implementation guarantees about not using certain operations, not using certain operations at the same time, lowering memory consistency requirements for certain operations(accumulate).
@@ -245,8 +245,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Shared memory systems}
 \begin{itemize}
-	\item explain short why only research in glibc and gnu openmp. closed source intel, microsoft, portland pgi, pathscale. pthreads und openmp open source und weit verbreitet. ?llvm?
-	\item gnu openmp
+	\item explain short why only research in glibc and gnu openmp\cite{omp}. closed source intel, microsoft, portland pgi, pathscale. pthreads und openmp open source und weit verbreitet. ?llvm?
+	\item gnu openmp\cite{gomp}
 		\begin{itemize}
 			\item gcc 4.8.0, linux
 			% gnu-openmp/gcc-4.8.0/libgomp/libgomp.h
@@ -268,7 +268,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item back-off via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if cpucount $<$ threadcount. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping.
 			\item reset built in. last one to enter resets the barrier.
 		\end{itemize}
-	\item glibc's new pthreads library
+	\item glibc's\cite{glibc} new pthreads library
 		\begin{itemize}
 			\item version 2.17. is in my ubuntu raring 13.04.
 			% glibc/nptl/sysdeps/pthread/pthread.h
