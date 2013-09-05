@@ -105,13 +105,24 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 \section{Introduction}
 \begin{itemize}
-	\item general introduction
 	\item what is a barrier
-	\item usage example for barriers. Reference rab00.
-	\item motivation for researching barrier
+	\item usage example for barriers.
+	\item explain that barriers are very common in concurrent programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers\cite{rab00}. Relate to normal message passing, because numbers without relation might not be very helpfull.
+	\item motivation for researching barriers: apply ideas of pwcs\cite{pwcs} to other synchronization primitives, e.g. barriers, and model check them\cite{bai13}. (reread both. Maybe his intentions are different from ours. Point that out. ?Speed vs Safety, probabilistic correctness vs probabilistic runtime?)
+		\begin{itemize}
+			\item \todo rework this list. Some of the concept do not matter that much for the barrier case. Not sure if leaving out some things or explicitly stating that it doesn't apply.
+			\item \textbf{bai13}
+			\item don't avoid inconsistency at all cost. Make errors detectable (or maybe ignorable in the barrier case).
+			\item inherent randomness\cite{mcg09}, induced by caching, scheduling, randomness at hardware level. Or short: complexity of today's computer systems.
+			\item sufficiently high probability of success
+			\item promising approach
+			\item \textbf{pwcs:}
+			
+		\end{itemize}
+
 	\item ?historical development?
-	\item ?overarching thesis that will be worked on. Add a claim as recurrent theme.?
-	\item what this report will be about
+	\item what will we attempt in this report. ?overarching thesis, setup for a continuous thread, or a claim we will pickup again later?
+	\item briefly explain the report structure
 \end{itemize}
 
 
