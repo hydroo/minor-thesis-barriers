@@ -109,6 +109,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item what is a barrier: synchronization mechanism where ...
 	\item usage example for barriers. Use example from complex lab?
 	\item explain that barriers are very common in concurrent programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers (Rolf Rabenseifner\cite{rab00}). Relate to normal send/recv, because absolute numbers without relation are not helpful.
+		\begin{itemize}
+			\item HLRS, year 2000
+			\item many calls, high exec time,
+			\item 5.3\% of all time spent inside MPI calls, 0.7\% of all CPU time, estimated 1.6\% of the barrier execution time is actual synchronization, 100\% minus 1.6\% is waiting for other processes to arrive, because of unbalanced computation, average 1852 micro seconds per call. (figure 13 in paper)
+		\end{itemize}
 	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers.
 	\item summarize pwcs
 		\begin{itemize}
