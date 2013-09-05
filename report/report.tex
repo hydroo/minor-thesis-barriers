@@ -106,24 +106,43 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 \section{Introduction}
 \begin{itemize}
-	\item what is a barrier
-	\item usage example for barriers.
-	\item explain that barriers are very common in concurrent programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers\cite{rab00}. Relate to normal message passing, because numbers without relation might not be very helpfull.
-	\item motivation for researching barriers: apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers, and model check them\cite{bai13}. (reread both. Maybe his intentions are different from ours. Point that out. ?Speed vs Safety, probabilistic correctness vs probabilistic runtime?)
+	\item what is a barrier: synchronization mechanism where ...
+	\item usage example for barriers. Use example from complex lab?
+	\item explain that barriers are very common in concurrent programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers (Rolf Rabenseifner\cite{rab00}). Relate to normal send/recv, because absolute numbers without relation are not helpful.
+	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers.
+	\item summarize pwcs
 		\begin{itemize}
-			\item \todo rework this list. Some of the concept do not matter that much for the barrier case. Not sure if leaving out some things or explicitly stating that it doesn't apply.
-			\item \textbf{bai13}
-			\item don't avoid inconsistency at all cost. Make errors detectable (or maybe ignorable in the barrier case).
-			\item inherent randomness\cite{mcg09}, induced by caching, scheduling, randomness at hardware level. Or short: complexity of today's computer systems.
-			\item sufficiently high probability of success
-			\item promising approach
-			\item \textbf{pW/CS:}
-			
+			\item usually concurrent programs work in a deterministic fashion. That is the order and partners of remote synchronization (locally, programs are obviously deterministic) are predetermined. The algorithm is executed in a very controlled fashion. Same holds for synchronization primitives themselves. Faulty behavior is avoided at great cost.
+			\item don't avoid inconsistency at all cost. Make errors detectable, or ignorable.
+			\item use the inherent randomness\cite{mcg09}, induced by caching, scheduling, randomness (ECC, flash access e.g.) at hardware level (jitter), or short: complexity of today's computer systems, in order to view concurrent accesses as really random. Thus we are able to apply probabilistic algorithms and analyse these algorithms using tools of probability theory.
+			\item design algorithms that have sufficiently high probability of success and tolerate faulty behaviour.
+			\item build them so that on average, or in their intended use case, they perform better than their deterministic counterparts, where better might e.g. be faster, more energy efficient, resource preserving.
+			\item data on the success is still rare, but it seems to be promising approach
 		\end{itemize}
-
-	\item ?historical development?
-	\item what will we attempt in this report. ?overarching thesis, setup for a continuous thread, or a claim we will pickup again later?
+	\item Testing algorithms like this does not suffice:
+		\begin{itemize}
+			\item where to put this citation~\cite{bai13}?
+			\item testing is usually deterministic. If they are then: certain states in the protocol are impossible to reach because of the randomness inherent in computers (add a short example?)
+			\item Assuming you have randomized tests, the probability to reach certain states in the protocol is so low that they are not revealed.
+			\item modelling does not have these draw backs.
+			\item we can gain better quantitative insights into protocols through modeling than with testing.
+			\item therefore we will apply model checking techniques to investigate barriers
+		\end{itemize}
+	\item what will we attempt in this report. (overarching thesis / continuous thread)
+		\begin{itemize}
+			\item today's barriers can be improved upon. New barriers.
+			\item softening the need for determinism in order to gain an advantage is a viable approach to take a stab at today's low level synchronization primitives, or in general. New barriers.
+			\item probabilistic model checking is powerful and apt for investigating barriers. Compare the barriers using this.
+		\end{itemize}
 	\item briefly explain the report structure
+		\begin{itemize}
+			\item means to implement barriers
+			\item currently used barriers
+			\item new barriers
+			\item analysis and comparison of one old for shared memory and one old for distributed memory against the new barriers
+			\item idea to split barriers into orthogonal parts and think about them separately
+			\item conclusion \& future work
+		\end{itemize}
 \end{itemize}
 
 
