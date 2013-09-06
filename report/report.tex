@@ -168,8 +168,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item atomic ops. Most notably add-fetch, compare-swap (is as old as 1970. No citations found. And perhaps not necessary)
 	\item normal load/store
-	\item weaken memory model. default on x86 is sequential consistency. "The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program." - Lamport~\cite{sequentialconsistency}. Most prominent weaker memory consistency model is release consistency \cite{gha90}.
-		One must pay attention when implementing, but gains performance.
+	\item weaken memory model. default on x86 is sequential consistency. "The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program." - Lamport~\cite{sequentialconsistency}. Most prominent weaker memory consistency model is release consistency \cite{gha90}. Add definition here. One must pay attention when implementing, but gains performance.
 	\item hardware support e.g. SGI UV 2000 systems\cite{sgiuv2000}
 \end{itemize}
 
@@ -199,8 +198,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item hardware support here is usual business e.g. Earth Simulator\cite{earthsimulator}, IBM Blue Gene/L\cite{bluegenel}, IBM Blue Gene/Q\cite{bluegeneq}, low-cost custom\cite{hoefler2006b}
 			\item lossy communication e.g.
 				\begin{itemize}
-					\item most of today's synchronization protocols are based on a reliable communication layer e.g. TCP, InfiniBand's reliable connections. Many support unreliable connections though, e.g. UDP~\cite{udp}, infiniband's unreliable connections~\cite{infiniband}.
-					\item it is easy to imagine algorithms for lossy channels. Gain performance through less checks, e.g. message receive acknowledges. Add algorithms that tolerate this behaviour and there you go.
+					\item most of today's synchronization protocols are based on a reliable communication layer e.g. TCP, InfiniBand's~\cite{infiniband} reliable connections. Many support unreliable connections though, e.g. UDP~\cite{udp}, infiniband's unreliable connections~.
+					\item it is easy to imagine algorithms for lossy channels. Gain performance through less checks, e.g. message receive acknowledges. Add algorithms that tolerate this behaviour, e.g. by asking for an answer until it gets it, and there you go.
 				\end{itemize}
 		\end{itemize}
 	\label{why-only-mpi}
