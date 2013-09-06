@@ -3,6 +3,7 @@ shared variables: boolean
                   barrier[processCount][processCount]
 local variables:  integer dist
 initialization:   barrier[*][*] := false
+$\listingrule$
 
 for dist := 1; dist < processCount; dist := dist $\times$ 2 {
 	to   := (processIndex + dist) (mod processCount)

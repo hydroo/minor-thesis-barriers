@@ -3,6 +3,7 @@ constants:        me := processIndex, meBit := $2^{me}$,
                   full := $\sum_{i=0}^{processCount-1}2^i$
 shared variables: integer barrier[processCount]
 initialization:   barrier[*] := full
+$\listingrule$
 
 barrier[me] := full & $\sim$meBit;
 
