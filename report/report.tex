@@ -93,10 +93,16 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item try all algorithms with processor counts $\neq 2^i$ especially dissemination
 	\item explain use of 'thread' and 'process'
-	\item explain constants used in listings somewhere
+	\item explain the basic listing style somewhere
 		\begin{itemize}
+			\item C-esque pseudo-code
 			\item threadCount/processCount
 			\item threadIndex/processIndex
+			\item the code in the listings is executed on each thread. Each thread has an identifier between 0 and threadCount-1
+			\item \& bit-wise \texttt{AND}
+			\item $|$ bit-wise \texttt{OR}
+			\item $\sim$ bit-wise \texttt{NOT}
+			\item \texttt{x[$*$] := y} is short for assigning y to each element in x
 			\item ?more?
 		\end{itemize}
 	\item maybe, explain model checking slang somewhere. Probabilistic ltl, pctl formulas. See bai13\cite{bai13} subsection preliminaries.
