@@ -12,6 +12,7 @@
 *.lof
 *.log
 *.lot
+*.out
 *.toc
 
 barrier
