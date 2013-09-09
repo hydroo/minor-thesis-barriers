@@ -29,6 +29,10 @@ $(REPORT_TARGET): $(REPORT_SOURCE) $(BIBLIOGRAPHY_SOURCE) $(IMAGES) $(LISTINGS)
 	@echo ""
 	bibtex $(REPORT_AUX)
 	@echo ""
+	@echo ">>> PRERUN PDFLATEX <<<"
+	@echo ""
+	pdflatex -interaction=nonstopmode $(REPORT_SOURCE) 1> /dev/null 2> /dev/null
+	@echo ""
 	@echo ">>> PDFLATEX <<<"
 	@echo ""
 	pdflatex -interaction=nonstopmode $(REPORT_SOURCE)
