@@ -368,8 +368,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Three new barriers}
 \begin{itemize}
-	\item \todo pay attention where to draw the line between this section and the analysis in the next section (perhaps, leave some/most of the analysis for the next section)
 	\item put some introductory text here
+	\item \todo pay attention where to draw the line between this section and the analysis in the next section (perhaps, leave some/most of the analysis for the next section)
 	\item \todo elegantly transition to Ronny's fancy barrier (distributed memory case). Suddenly talking about processes and remote/local memory is bad.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -377,7 +377,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item original idea by Nicholas Mc Guire was given to me in a private communique.
 	\item modification of the original protocol resulted in Figure~\ref{fig:nmg-ronny-with-reset}
-	\item first appearance in bre13\cite{bre13}. Slight modification since then "remembers others" considered here.
+	\item first appearance in bre13\cite{bre13}. Slight modification since then "remembers others" considered here. Don't explain in detail what the modification is and does, since the reader has no knowledge of the previous version and I don't want to explain all of it.
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/nmg-ronny-with-reset}
@@ -404,12 +404,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:ronny-simple-no-reset}
 		\end{figure}
 	\item explanation here.
-	\item one date per cache line to avoid false sharing (?citation?, ?explanation?)
-	\item advantage: in contrast to the central-counter barrier the assignments to shared variables can be done in parallel. Elaborate.
-	\item many read accesses, but since data is cached the latency is only significant once per cache line / date. i.e. when the thread arrives and writes his date to be \texttt{true}.
+	\item one date per cache line to avoid false sharing\cite{falsesharing}
+	\item do not mention (analysis section instead): in contrast to the central-counter barrier the assignments to shared variables can be done in parallel, since the variables written are not the same, no are they on the same cache line.
+	\item many read accesses, but since data is cached the latency is only significant once per cache line / date. i.e. when the thread arrives and writes his date to be \texttt{true} and when a thread reads it after it has been written by it's "owner".
 	\item advantage: no atomic ops
-	\item much shared read communication but low computation overhead
-	\item The barrier is destructive in the sense that it cannot be executed two times in a row. One way to circumvent this is to modify the algorithm to use a repetition counter instead of a boolean (since we have one date per cache line we allocated the space anyways) and keep track of it. The algorithm would then atomically increase the counter instead of the assignment in line 4.
+	\item do not mention (analysis section instead): larger memory cost than central counter, Mc Guire/Ronny. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
+	\item The barrier is destructive in the sense that it cannot be executed multiple times in a row. One way to circumvent this is to modify the algorithm to use a repetition counter instead of a boolean (since we have one date per cache line we allocated the space anyways) and keep track of it. The algorithm would then atomically increase the counter instead of the assignment in line 4. We use a 64 bit integer variable for this. It will not overflow over so we don't need to consider this case (If you could run one barrier each clock cycle on a 3Ghz machine you would still need about 200 years to overflow it).
 	\item another small improvement would be to keep track of the first and last few successfully read entries, and skip those in the loop. For simplicity's sake and modelling we will not consider these optimizations.
 \end{itemize}
 
@@ -417,6 +417,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subsection{Ronny's fancy barrier}
 \begin{itemize}
 	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well. Perhaps show parallel to "remember others" case of the Mc Guire/Ronny barrier.
+	\item evaluation has shown that cache latency is so low, that the additional computation a mechanism like this introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario, where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
 	\item Figure~\ref{fig:ronny-fancy-no-reset}
 		\begin{figure}[htbp]
 			\centering
@@ -424,12 +425,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\caption{Pseudo code of Ronny's fancy barrier}
 			\label{fig:ronny-fancy-no-reset}
 		\end{figure}
-	\item each array element is located in the memory of the respective process. Distributed memory.
-	\item both protocols work for shared memory and remote memory access.
+	\item each array element is located in the memory of the respective process.
 	\item probabilistic runtime. Depending on circumstances the protocol will finish in more or less steps (or perhaps successful non-zero reads). It is not predetermined what is communicated and with whom.
 	\item advantage: no atomic ops. The writing does not have to be atomic, since processes only write to local memory, and no inconsistent data can be read since 64 bit reads and writes are atomic.
 	\item more computational overhead (bit shuffling) for less communication.
-	\item discuss resetting through triple barrier. Perhaps, briefly hint that this kind of resetting can be added to any barrier, more on this in the section on the orthogonal design of barriers.
+	\item discuss resetting through triple barrier. Perhaps, briefly hint that this kind of resetting can be added to any barrier (perhaps add a listing how this would look like (the spin model should have it, or one of the pseudo code files)), more on this in the section on the orthogonal design of barriers.
 	\item restricted to 64 threads. An extension to arrays of bit masks, similar to the Mc Guire/Ronny barrier, should not pose a problem.
 \end{itemize}
 
