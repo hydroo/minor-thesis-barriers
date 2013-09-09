@@ -161,22 +161,27 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Survey of means to implement barrier protocols}
+\section{Means to implement barrier protocols}
 \begin{itemize}
 	\item \todo still feels like there should be some kind of wrap up or continuous thread :(
-	\item evaluate what tools we have at our disposal to realize barrier protocols
-	\item the influence of communication latency
-	\item bandwidth doesn't matter, because data transfered is small.
-	\item shared vs distributed memory - explain both
+	\item evaluate what tools / APIs we have at our disposal to realize barrier protocols
+	\item distinction between shared and distribute memory:
+	\item shared memory: all threads share one global memory. They are thus able to communicate by just writing to and reading from memory.
+	\item distributed memory: each process has its own private memory. Computation can only be done on private memory. Communication is explicitly done via an interconnect.
+	\item programming these two memory architectures is very different, thus subsequently we will differentiate these two worlds.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Shared memory}
 \begin{itemize}
-	\item atomic ops. Most notably add-fetch, compare-swap (is as old as 1970. No citations found. And perhaps not necessary)
-	\item normal load/store
-	\item weaken memory model. default on x86 is sequential consistency. "The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program." - Lamport~\cite{sequentialconsistency}. Most prominent weaker memory consistency model is release consistency \cite{gha90}. Add definition here. One must pay attention when implementing, but gains performance.
-	\item hardware support e.g. SGI UV 2000 systems\cite{sgiuv2000}
+	\item normal load/store.
+	\item atomic ops. An atomic operation is done in one instant without being interrupted by other memory accesses. E.g. add-fetch, compare-swap (is as old as 1970. No citations found. And perhaps not necessary). Never faster than normal read/write. (don't elaborate too much since we want a very high level view of the tools at our disposal)
+	\item weaken consistency model. Consistency models describe restrictions on the order of visibility of memory accesses between multiple threads. In a thread, locally, the order is always the one specified by the program -- sequential. The default on x86 and most restrictive consistency model is sequential consistency. It is defined as follows:
+		\begin{quote}
+			The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program. -- Lamport~\cite{sequentialconsistency}
+		\end{quote}
+		The most prominent weaker memory consistency model is release consistency~\cite{gha90}. Memory accesses appear unordered except so called \emph{release} and \emph{acquire} operations. No memory access that has been issued after an acquire operation is permitted to finish before this acquire operation. No memory access is allowed to finish later than the next release operation. Acquire and release encapsulate the memory accesses in between. Add a figure to explain. Generally speaking, weakening the consistency model gives improved performance, but one must pay attention while implementing concurrent programs, since the globally visible order of memory accesses will be different from the order specified by the source code.
+	\item hardware support for barriers rare. Only found example: SGI UV 2000 systems\cite{sgiuv2000}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -186,42 +191,44 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item synchronous message passing
 				\begin{itemize}
-					\item relatively large overhead. Queueing. Waiting even when sending.
+					\item relatively large overhead. Queueing. Waiting.
 					\item all communicating partners need to be present at the same time and shake hands.
 				\end{itemize}
 			\item asynchronous message passing
 				\begin{itemize}
 					\item similar overhead as synchronous message passing. not necessarily waiting.
+					\item needs buffering of data.
 					\item but partners still need to shake hands for information transfer.
 				\end{itemize}
-			\item RMA
+			\item remote memory access (RMA)
 				\begin{itemize}
-					\item accessing remote memory, without the remote peer being actively involved.
+					\item accessing remote memory through read, write, (atomic operations), without the remote peer being actively involved.
 					\item needs hardware support.
 					\item less management overhead, better latency and throughput. Less buffering. Ideally no buffering - so called Zero-copy operations.
+					\item distinction between coherent and non-coherent
 					\item (a) coherent - remotely updated memory will be visible to the remote end eventually
 					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote end.
 				\end{itemize}
 			\item hardware support here is usual business e.g. Earth Simulator\cite{earthsimulator}, IBM Blue Gene/L\cite{bluegenel}, IBM Blue Gene/Q\cite{bluegeneq}, low-cost custom\cite{hoefler2006b}
 			\item lossy communication e.g.
 				\begin{itemize}
-					\item most of today's synchronization protocols are based on a reliable communication layer e.g. TCP, InfiniBand's~\cite{infiniband} reliable connections. Many support unreliable connections though, e.g. UDP~\cite{udp}, infiniband's unreliable connections~.
-					\item it is easy to imagine algorithms for lossy channels. Gain performance through less checks, e.g. message receive acknowledges. Add algorithms that tolerate this behaviour, e.g. by asking for an answer until it gets it, and there you go.
+					\item most of today's synchronization protocols are based on a reliable communication layer e.g. TCP, InfiniBand's~\cite{infiniband} reliable connections. Unreliable communication is often supported though, e.g. UDP~\cite{udp}, InfiniBand's unreliable connections.
+					\item Synchronization protocols for lossy channels could gain performance by performing less checks, like receive acknowledgements.
 				\end{itemize}
 		\end{itemize}
 	\label{why-only-mpi}
-	\item we specifically look at MPI\cite{mpi}. Explain short why only MPI.
+	\item we specifically look at MPI\cite{mpi}. Why only MPI:
 		\begin{itemize}
 			\item low-level
 			\item standardized
-			\item portable, dist and shared mem, MPP, clusters of workstations, and combinations, independent of particular platform features or quantitative differences e.g. latency/bandwidth
+			\item portable, dist and shared mem, MPP, clusters of workstations, and combinations, independent of particular platform features or quantitative differences like latency/bandwidth
 			\item many implementations of the standard for many programming languages exist
 			\item very general and customizable. Supports many modes of operation.
 			\item widely adopted in cluster computing / HPC, scientific computing.~\cite{mpiadoptiona}\cite{mpiadoptionb}\cite{mpiadoptionc}
 		\end{itemize}
 	\item only scratch surface of MPI, because:
 		\begin{itemize}
-			\item a lot of details, because of generality, optimizability
+			\item a lot of details, because the standard is geared towards generality (supporting many different hardware platforms) and optimizability
 			\item complicated semantics
 			\item many of the details make no striking difference in protocol design/analysis
 		\end{itemize}
@@ -249,7 +256,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item chapter 11 in \cite{mpi3}
 			\item major changes from MPI 2.2\cite{mpi2} to 3.0\cite{mpi3onesided}
 			\item we only consider MPI 3.0, because: More features. Subsumes MPI 2.2. It is already one year old. It is not yet realized by openmpi, but it is for mpich 3.0 and derivatives such as MVAPICH2\cite{mvapich}, Cray MPT\cite{craympt}
-			\item MPI\_Win\_Create creates a so called 'window' of remotely shared memory among the participating process. A process group is associated with a window.
+			\item MPI\_Win\_Create creates a so called 'window' of remotely shared memory among the participating processes. A process group is associated with a window.
 			\item customizable attributes of windows: give the implementation guarantees about not using certain operations, not using certain operations at the same time, lowering memory consistency requirements for certain operations(accumulate).
 			\item MPI\_WIN\_MODEL: explain SEPARATE and UNIFIED. One cannot set the MPI\_WIN\_MODEL to MPI\_WIN\_SEPARATE and MPI\_WIN\_UNIFIED myself. You can only ask for it. It has been proposed for MPI 3.1 to include being able to set a minimum necessary level. Algorithms for separate work on unified as well, but not necessarily the other way round.
 			\item mpich 3.0.4 does MPI\_WIN\_UNIFIED.
@@ -263,8 +270,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item window sync
 				\begin{itemize}
 					\item active vs passive target communication (\cite{mpi3} page 437~)
-					\item MPI\_Win\_Fence. Active target communication. Is a collective over all window group members. All outstanding RMA requests between group members will be finished implies a barrier.
-					\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: active target communication. Similar to fence, but allows to specify the sync partners exactly, and distinguishes between "command-issuing" and "remotely-accessed" processes.
+					\item MPI\_Win\_Fence. Active target communication. Is a collective over all window group members. All outstanding RMA requests between group members will be finished. Implies a barrier.
+					\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: active target communication. Similar to fence, but allows to specify the sync partners, and distinguishes between "command-issuing" and "remotely-accessed" processes.
 					\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: Passive target communication. No explicit participation of remote end in synchronization
 					\item MPI\_Flush*: Passive target communication. Completes outstanding RMA calls, issued by the caller, at origin and a specifiable target before returning (or only at the origin).
 					\item MPI\_Sync: Passive target communication. Used to synchronize the public and private part of the window in the separated model.
@@ -279,9 +286,16 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item The outcome of remote memory accesses to the same location is undefined. Except of course accumulate.
 					\item concurrent local load/stores and RMA updates to the same location are undefined
 					\item the outcome of a single process issuing multiple puts to the same location within an access epoch is undefined
-					\item State this makes it harder to implement less restrictive synchronization primitives because the semantic requirements are already very strong in MPI. Lots of perhaps useless synchronization. Rather than undefined say: any order. Or at least make guarantee for the smallest units that are atomically committed to memory like primitive data types.
+					\item State that this makes it very hard to implement less restrictive synchronization primitives because the semantic requirements are already very strong in MPI. Lots of perhaps useless synchronization. Rather than undefined say: any order. Or at least make guarantee for the smallest units that are atomically committed to memory like primitive data types.
+					\item perhaps state that in the following we will not implement, nor measure the performance of distributed memory algorithms. We will only measure shared memory stuff. But the will of course model check all the things.
 				\end{itemize}
 		\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+	\item most shared memory barriers rely on atomic operations
+	\item most distributed memory barriers use synchronous message passing. These protocols have been implemented using RMA to improve efficeny, but they still behave exactly as if it was synchronous communication.
+	\item as we will see in the next section
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
