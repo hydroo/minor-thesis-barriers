@@ -418,20 +418,21 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:ronny-simple-no-reset}
 		\end{figure}
 	\item explanation here.
-	\item one date per cache line to avoid false sharing\cite{falsesharing}
+	\item one array element per cache line to avoid false sharing\cite{falsesharing}
+	\item every thread writes into the array element he owns. Indicated by his threadIndex.
 	\item do not mention (analysis section instead): in contrast to the central-counter barrier the assignments to shared variables can be done in parallel, since the variables written are not the same, no are they on the same cache line.
-	\item many read accesses, but since data is cached the latency is only significant once per cache line / date. i.e. when the thread arrives and writes his date to be \texttt{true} and when a thread reads it after it has been written by it's "owner".
+	\item many read accesses, but since data is cached upon the first read the latency is only significant once per array element / cache line. i.e. when the thread arrives and writes his array element to be \texttt{true} and when a thread reads it after it has been written by it's owner.
 	\item advantage: no atomic ops
 	\item do not mention (analysis section instead): larger memory cost than central counter, Mc Guire/Ronny. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
-	\item The barrier is destructive in the sense that it cannot be executed multiple times in a row. One way to circumvent this is to modify the algorithm to use a repetition counter instead of a boolean (since we have one date per cache line we allocated the space anyways) and keep track of it. The algorithm would then atomically increase the counter instead of the assignment in line 4. We use a 64 bit integer variable for this. It will not overflow over so we don't need to consider this case (If you could run one barrier each clock cycle on a 3Ghz machine you would still need about 200 years to overflow it).
-	\item another small improvement would be to keep track of the first and last few successfully read entries, and skip those in the loop. For simplicity's sake and modelling we will not consider these optimizations.
+	\item The barrier is destructive in the sense that it cannot be executed multiple times in a row. One way to circumvent this is to modify the algorithm to use a repetition counter instead of a boolean (since we have one date per cache line we allocated the space anyways) and keep track of it. The algorithm would then atomically increase the counter instead of the assignment in line 4. We use a 64 bit integer variable for this. It will not overflow over so we don't need to consider this case (If you could run one barrier each clock cycle on a 3GHz machine you would need roughly 200 years to overflow it).
+	\item another small improvement would be to keep track of the first couple of successfully read entries and skip those when repeating the loop. For simplicity's sake and modelling we will not consider these optimizations.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ronny's fancy barrier}
 \begin{itemize}
-	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well. Perhaps show parallel to "remember others" case of the Mc Guire/Ronny barrier.
-	\item evaluation has shown that cache latency is so low, that the additional computation a mechanism like this introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario, where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
+	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well. Similar to the "remember others" modification of the Mc Guire/Ronny barrier.
+	\item evaluation has shown that cache latency is so low, that the additional computation this mechanism introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
 	\item Figure~\ref{fig:ronny-fancy-no-reset}
 		\begin{figure}[htbp]
 			\centering
@@ -440,7 +441,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:ronny-fancy-no-reset}
 		\end{figure}
 	\item each array element is located in the memory of the respective process.
+	\item Only the own element is written. Only remote reading.
+	\item When a process reads remotely he is informed of other processes, the remote end knows, have arrived.
 	\item probabilistic runtime. Depending on circumstances the protocol will finish in more or less steps (or perhaps successful non-zero reads). It is not predetermined what is communicated and with whom.
+	\item We will quantify this effect in Section~\ref{sec:analysis}.
 	\item advantage: no atomic ops. The writing does not have to be atomic, since processes only write to local memory, and no inconsistent data can be read since 64 bit reads and writes are atomic.
 	\item more computational overhead (bit shuffling) for less communication.
 	\item discuss resetting through triple barrier. Perhaps, briefly hint that this kind of resetting can be added to any barrier (perhaps add a listing how this would look like (the spin model should have it, or one of the pseudo code files)), more on this in the section on the orthogonal design of barriers.
@@ -449,6 +453,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Analysis and comparison}
+\label{sec:analysis}
 
 \begin{itemize}
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architecture. We pit them against one new protocol in each category.
