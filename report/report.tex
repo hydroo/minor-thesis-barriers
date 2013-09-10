@@ -106,11 +106,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item \& bit-wise \texttt{AND}
 			\item $|$ bit-wise \texttt{OR}
 			\item $\sim$ bit-wise \texttt{NOT}
-			\item \texttt{x[$*$] := y} is short for assigning y to each element in x
+			\item \texttt{x[$ \times $] := y} is short for assigning y to each element in x
 			\item ?more?
 		\end{itemize}
 	\item maybe, explain model checking slang somewhere. Probabilistic ltl, pctl formulas. See bai13\cite{bai13} subsection preliminaries.
-	\item mention somewhere that we assume atomic read and write at 32/64 bit a piece
+	\item mention somewhere that we assume atomic read and write at 32/64 bits a piece
 	\item explain cores vs processes, threads - we always assume $>$= threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-theory-shared} next to memory consumption. -- additionally talk about what to do in case of cores < threads (somewhere near?!)
 	\item we assume that one barrier per thread time is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-theory-shared}
 \end{itemize}
