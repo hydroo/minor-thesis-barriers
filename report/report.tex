@@ -64,6 +64,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section*{Aufgabenstellung}
+\label{sec:task}
 
 \pagebreak
 \newpage \thispagestyle{empty} \mbox{}
@@ -74,6 +75,7 @@
 %Ich erkl\"are hiermit, dass ich die vorliegende Arbeit selbst\"andig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Die aus fremden Quellen w\"ortlich oder sinngem\"a\ss ~\"ubernommenen Gedanken sind als solche kenntlich gemacht. Ich erkl\"are ferner, dass ich die vorliegende Arbeit an keiner anderen Stelle als Pr\"ufungsarbeit eingereicht habe oder einreichen werde.
 
 \section*{Statement of academic integrity}
+\label{sec:integrity}
 I hereby declare that I prepared this thesis independently and without use of tools other than specified. Foreign thoughts, taken literally or in spirit, are marked as such. I also declare that I have not filed the present work at any other location or will submit it.
 
 \pagebreak
@@ -112,6 +114,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Introduction}
+\label{sec:introduction}
 \begin{itemize}
 	\item what is a barrier: synchronization mechanism where ...
 	\item usage example for barriers. Use example from complex lab?
@@ -162,6 +165,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Means to implement barrier protocols}
+\label{sec:means}
 \begin{itemize}
 	\item \todo still feels like there should be some kind of wrap up or continuous thread :(
 	\item evaluate what tools / APIs we have at our disposal to realize barrier protocols
@@ -173,6 +177,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Shared memory}
+\label{ssec:means-shared}
 \begin{itemize}
 	\item normal load/store.
 	\item atomic ops. An atomic operation is done in one instant without being interrupted by other memory accesses. E.g. add-fetch, compare-swap (is as old as 1970. No citations found. And perhaps not necessary). Never faster than normal read/write. (don't elaborate too much since we want a very high level view of the tools at our disposal)
@@ -186,6 +191,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Distributed memory}
+\label{ssec:means-distributed}
 \begin{itemize}
 	\item categories
 		\begin{itemize}
@@ -300,9 +306,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Survey of currently used barriers}
+\label{sec:currently-used}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Shared memory systems}
+\label{ssec:currently-used-shared}
 \begin{itemize}
 	\item explain short why only research in glibc and gnu openmp\cite{openmp}. closed source intel, microsoft, portland pgi, pathscale. pthreads und openmp open source und weit verbreitet. ?llvm?
 	\item gnu openmp\cite{gomp}
@@ -341,6 +349,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Distributed memory systems}
+\label{ssec:currently-used-distributed}
 \begin{itemize}
 	\item why only MPI. Already explained in section~\ref{why-only-mpi}.
 	\item openmpi
@@ -381,6 +390,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Three new barriers}
+\label{sec:new}
 \begin{itemize}
 	\item put some introductory text here
 	\item \todo pay attention where to draw the line between this section and the analysis in the next section (perhaps, leave some/most of the analysis for the next section)
@@ -388,6 +398,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Mc Guire/Ronny}
+\label{ssec:new-nmg}
 \begin{itemize}
 	\item original idea by Nicholas Mc Guire was given to me in a private communique.
 	\item modification of the original protocol resulted in Figure~\ref{fig:nmg-ronny-with-reset}
@@ -408,6 +419,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ronny's simple barrier}
+\label{ssec:new-simple}
 \begin{itemize}
 	\item new and shiny. Read mostly, write exactly once. In contrast to Mc Guire/Ronny's barrier.
 	\item Figure~\ref{fig:ronny-simple-no-reset}
@@ -430,6 +442,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ronny's fancy barrier}
+\label{ssec:new-fancy}
 \begin{itemize}
 	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well. Similar to the "remember others" modification of the Mc Guire/Ronny barrier.
 	\item evaluation has shown that cache latency is so low, that the additional computation this mechanism introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
@@ -463,6 +476,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Theoretical aspects}
+\label{ssec:analysis-theory}
 \begin{itemize}
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and would go beyond the scope of this thesis.
 	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis.
@@ -470,6 +484,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Central counter vs Ronny's simple barrier}
+\label{sssec:analysis-theory-shared}
 \begin{itemize}
 	\item both algorithms are performed in two phases. A writing phase and a reading phase.
 	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the exact same moment writing is up to $threadCount$ times faster than executing serialized add-fetch operations. In more balanced scenarios this effect diminishes.
@@ -481,6 +496,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Dissemination vs Ronny's fancy barrier}
+\label{sssec:analysis-theory-distributed}
 \begin{itemize}
 	\item number of remote writes. Dissemination remotely writes more than the minimum. Add picture about the minimum.
 	\item memory used
@@ -490,6 +506,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Benchmarks}
+\label{ssec:analysis-benchmarks}
 \begin{itemize}
 	\item central counter vs ronny simple
 	\item do not do dissemination vs ronny fancy
@@ -498,6 +515,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Model checking}
+\label{ssec:analysis-modelchecking}
 \begin{itemize}
 	\item perhaps change structure to separate quantitative and qualitative modelling
 	\item CSL\cite{assb96}, CSRL\cite{bhhk00} (+rewards), SPIN\cite{spin}\cite{hol97}, PRISM\cite{prism}\cite{knp09}
@@ -505,12 +523,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{?Preliminaries?}
+\label{sssec:analysis-modelchecking-preliminaries}
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Modelling} %AE: modeling, BE: modelling
+\label{sssec:analysis-modelchecking-modelling}
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Qualitative Properties (correctness)}
+\label{sssec:analysis-modelchecking-quality}
 \begin{itemize}
 	\item threads may only exit the barrier if all threads are present
 	\item the protocol must always terminate, or in other words: if all threads are present, they will all exit the barrier in a finite amount of time"
@@ -518,6 +539,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Quantitative Properties}
+\label{sssec:analysis-modelchecking-quantity}
 \begin{itemize}
 	\item central counter vs ronny simple
 	\item dissemination vs ronny fancy
@@ -525,6 +547,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Proposal: Creating barriers from orthogonal parts}
+\label{sssec:analysis-orthogonal}
 Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
 \begin{itemize}
 	\item more or less intelligence / bandwidth/latency vs additional calculations
@@ -543,6 +566,7 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion}
+\label{sec:conclusion}
 \begin{itemize}
 	\item condense results into a small passage
 	\item ?repeat claim - overarching thesis - present an answer?
@@ -550,6 +574,7 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Future Work}
+\label{sec:future}
 \begin{itemize}
 	\item evaluate back-off strategies. mwait.
 	\item model check more and bigger. symmetry reduction. partial order reduction.
@@ -566,15 +591,18 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
 \section{Appendix}
+\label{sec:appendix}
 \subsection{e.g. source code, model source}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
 \section{Glossary}
+\label{sec:glossary}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
 \section{Bibliography}
+\label{sec:bibliography}
 \renewcommand\refname{\vskip -1cm} %TODO fine tune perhaps
 \nocite{*} % insert not cited references
 \bibliographystyle{abbrv}
@@ -583,12 +611,14 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
 \section{List of Figures}
+\label{sec:figures}
 \renewcommand{\listfigurename}{\vskip -1cm} %TODO fine tune perhaps
 \listoffigures
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagebreak
 \section{List of Tables}
+\label{sec:tables}
 \renewcommand{\listtablename}{\vskip -1cm} %TODO fine tune perhaps
 \listoftables
 
