@@ -7,7 +7,7 @@ $\listingrule$
 
 barrier[me] := full & $\sim$meBit;
 
-i := 0
+i := processIndex + 1 (mod processCount)
 do {
 	while barrier[me] & $2^i$ = 0 and i < processCount {
 		i := i + 1

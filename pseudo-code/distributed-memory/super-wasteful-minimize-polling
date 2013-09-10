@@ -4,7 +4,7 @@ init: barrier[*] := 0
 
 barrier[threadIndex] := full & ~me;
 
-i := 0
+i := threadIndex+1 (mod threadCount)
 b := 2^i
 
 while barrier[threadIndex] != 0 {

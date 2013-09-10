@@ -1,3 +1,13 @@
+--- 13-09-10 ---
+
+ * I changed super wasteful 5 aka Ronny's fancy barrier aka our-more-elaborate to have a different initial index
+   other derived or similar barriers might not be up to date because of this change. Beware!
+
+ * realization about super wasteful 5
+  □ try using different increments of i (e.g. i = i*2. this doesnt work everytime. race. be cleverer)
+  □ try randomizing the choice of i!
+    (all to forego network contention)
+
 --- 13-08-19 ---
 
  * started paper-push subdir (where ofcourse work directed to the paper will be kept)
