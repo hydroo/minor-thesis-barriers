@@ -584,9 +584,11 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 \label{sec:future}
 \begin{itemize}
 	\item evaluate back-off strategies. mwait.
-	\item model check more and bigger. symmetry reduction. partial order reduction.
+	\item benchmark on Intel system, not only bulldozer. Results might be very different from above benchmarks.
+	\item model check more and bigger. Symmetry reduction. Partial order reduction.
 	\item explore variations of ronny's barriers
 		\begin{itemize}
+			\item Ronny's fancy barrier: Try different i increment strategies. Or perhaps randomize the choice of i.
 			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}.
 		\end{itemize}
 \end{itemize}
