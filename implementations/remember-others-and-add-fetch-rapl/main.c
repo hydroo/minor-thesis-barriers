@@ -1352,7 +1352,7 @@ static inline void barrierSuperWasteful5(int threadIndex, int threadCount, Sw5El
 
     barrier[threadIndex].m = fullMask&notMe;
 
-    int i = 0;
+    int i = (threadIndex+1) % threadCount;
     do {
         while ((barrier[threadIndex].m&(1<<i)) == 0x0 && i < threadCount) { i += 1; }
 
