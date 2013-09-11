@@ -163,8 +163,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Means to implement barrier protocols}
-\label{sec:means}
+\section{Existing stuff}
+\label{sec:existing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Means to implement barrier protocols}
+\label{ssec:existing-means}
 \begin{itemize}
 	\item \todo still feels like there should be some kind of wrap up or continuous thread :(
 	\item evaluate what tools / APIs we have at our disposal to realize barrier protocols
@@ -174,9 +178,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item programming these two memory architectures is very different, thus subsequently we will differentiate these two worlds.
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Shared memory}
-\label{ssec:means-shared}
+%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Shared memory}
+\label{sssec:existing-means-shared}
 \begin{itemize}
 	\item normal load/store.
 	\item atomic ops. An atomic operation is done in one instant without being interrupted by other memory accesses. E.g. add-fetch, compare-swap (is as old as 1970. No citations found. And perhaps not necessary). Never faster than normal read/write. (don't elaborate too much since we want a very high level view of the tools at our disposal)
@@ -188,9 +192,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item hardware support for barriers rare. Only found example: SGI UV 2000 systems\cite{sgiuv2000}
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Distributed memory}
-\label{ssec:means-distributed}
+%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Distributed memory}
+\label{sssec:existing-means-distributed}
 \begin{itemize}
 	\item categories
 		\begin{itemize}
@@ -303,13 +307,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item as we will see in the next section
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Survey of currently used barriers}
-\label{sec:currently-used}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Shared memory systems}
-\label{ssec:currently-used-shared}
+\subsection{Survey of currently used barriers}
+\label{ssec:existing-currently-used}
+
+%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Shared memory systems}
+\label{sssec:existing-currently-used-shared}
 \begin{itemize}
 	\item explain short why only research in glibc and gnu openmp\cite{openmp}. closed source intel, microsoft, portland pgi, pathscale. pthreads und openmp open source und weit verbreitet. ?llvm?
 	\item gnu openmp\cite{gomp}
@@ -346,9 +350,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{itemize}
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Distributed memory systems}
-\label{ssec:currently-used-distributed}
+%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Distributed memory systems}
+\label{sssec:existing-currently-used-distributed}
 \begin{itemize}
 	\item why only MPI. Already explained in Section~\ref{why-only-mpi}.
 	\item openmpi
@@ -387,9 +391,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item dissemination can also be used for shared memory\cite{hoefler2013}
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Barrier building blocks}
-\label{sec:building-blocks}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Barrier building blocks}
+\label{ssec:building-blocks}
 Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
 \begin{itemize}
 	\item \todo if we don't get enough content make it a paragraph not a (sub)section
@@ -487,11 +491,11 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
 	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the central counter barrier, whereas Ronny's simple barrier shows promise. Therefore we restrict our attention to the latter.
-	\item For the shared memory case the central counter barrier (Figure~\ref{fig:central-counter-no-reset} in Section~\ref{ssec:currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:ronny-simple-no-reset} in Section~\ref{ssec:new-simple}).
-	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:dissemination-no-reset} in Section~\ref{ssec:currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:ronny-fancy-no-reset} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref currently-used?)
-	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{ssec:means-distributed}. But it can be implemented using, for example, the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis. (duplicate to the means-distributed subsection -- to be found at the very end -- repetition might not be too bad -- sections are supposed to be self contained -- etc)
+	\item For the shared memory case the central counter barrier (Figure~\ref{fig:central-counter-no-reset} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:ronny-simple-no-reset} in Section~\ref{ssec:new-simple}).
+	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:dissemination-no-reset} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:ronny-fancy-no-reset} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
+	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{sssec:existing-means-distributed}. But it can be implemented using, for example, the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis. (duplicate to the means-distributed subsection -- to be found at the very end -- repetition might not be too bad -- sections are supposed to be self contained -- etc)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
-	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{sec:building-blocks}
+	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{ssec:building-blocks}
 	\item The analysis is split into three parts: general properties, measurement and model checking.
 \end{itemize}
 
