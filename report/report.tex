@@ -113,7 +113,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item mention somewhere that we assume atomic read and write at 32/64 bits a piece
 	\item explain cores vs processes, threads - we always assume $>$= threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-general-shared} next to memory consumption. -- additionally talk about what to do in case of cores < threads (somewhere near?!)
 	\item we assume that one barrier per thread time is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-general-shared}
-	\item add (perhaps to "orthogonal") that we can combine barriers. Reap benefits, mitigate shortcomings. Topology (explain. Node shared mem, internode dist mem.) aware.
+	\item add (perhaps to "building-blocks") that we can combine barriers. Reap benefits, mitigate shortcomings. Topology (explain. Node shared mem, internode dist mem.) aware.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -153,7 +153,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{itemize}
 	\item briefly explain the report structure
 		\begin{itemize}
-			\item means to implement barriers TODO TODO TODO rework
+			\item means to implement barriers
 			\item currently used barriers
 			\item idea to split barriers into orthogonal parts and think about them separately
 			\item new barriers
@@ -389,8 +389,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Proposal: Creating barriers from orthogonal parts}
-\label{sec:orthogonal}
+\section{Barrier building blocks}
+\label{sec:building-blocks}
 Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
 \begin{itemize}
 	\item more or less intelligence / bandwidth/latency vs additional calculations
@@ -491,7 +491,7 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:dissemination-no-reset} in Section~\ref{ssec:currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:ronny-fancy-no-reset} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref currently-used?)
 	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{ssec:means-distributed}. But it can be implemented using, for example, the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis. (duplicate to the means-distributed subsection -- to be found at the very end -- repetition might not be too bad -- sections are supposed to be self contained -- etc)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
-	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{sec:orthogonal}
+	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{sec:building-blocks}
 	\item The analysis is split into three parts: general properties, measurement and model checking.
 \end{itemize}
 
