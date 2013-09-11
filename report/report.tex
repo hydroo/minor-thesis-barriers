@@ -415,7 +415,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 	\item high-level explanation
 	\item detailed walk through one iteration
-	\item newer and more detailed benchmarks have shown that this protocol is slower and scales worse than the central counter barrier using add-fetch (?add numbers as proof?).
+	\item newer and more detailed measurements have shown that this protocol is slower and scales worse than the central counter barrier using add-fetch (?add numbers as proof?).
 	\item advantage: no atomic ops
 	\item resetting is integrated. Barrier can immediately be repeated.
 	\item Limited to 64 threads in this version. But one can modify the protocol to use an array of bit masks, representing a big bit mask. Updating the bit mask will then only be done on the element where the updating thread is itself located on. This way we only write one 64 bit value which is committed atomically. If we would attempt to write more than one element, we would run into consistency problems. Reading the shared variable will then read the whole array instead.
@@ -479,7 +479,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{ssec:means-distributed}. But it can be implemented using, for example, the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis. (duplicate to the means-distributed subsection -- to be found at the very end -- repetition might not be too bad -- sections are supposed to be self contained -- etc)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
 	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{sec:orthogonal}
-	\item The analysis is split into three parts: general properties, benchmarking and model checking.
+	\item The analysis is split into three parts: general properties, measurement and model checking.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -564,8 +564,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Benchmarks}
-\label{ssec:analysis-benchmarks}
+\subsection{Measurement}
+\label{ssec:analysis-measurement}
 \begin{itemize}
 	\item central counter vs ronny simple
 	\item do not do dissemination vs ronny fancy
