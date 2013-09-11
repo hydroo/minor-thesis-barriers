@@ -1,3 +1,18 @@
+--- 13-09-11 ---
+
+ □ dissemination with 2^i + 1 cores needs i+1 rounds. runtime increase is non-linear because of $\lceil ld~n \rceil$ rounds
+   this is especially bad for 4->5 8->9 etc processes. because the communication overhead is similar to the next higher
+   power of two ... there should exist ways to diminish the bad effect of this by grouping processes more cleverly
+
+   in fact our barriers perform better in these non-power-of-two scenarios, than in power-of-two against dissemination,
+   because they simply don't mind
+
+   super-wasteful provides a more balanced scaling behaviour, where dissemination has a "jump" at power of two core counts
+
+   dissemination could be improved by reducing the additional 1 round to as few processes as possible and then, with the
+   new groups, continue with a power-of-two number of groups. Then you would not have the maximum of all threads doing the
+   additional round, but only a few.
+
 --- 13-09-10 ---
 
  * I changed super wasteful 5 aka Ronny's fancy barrier aka our-more-elaborate to have a different initial index
