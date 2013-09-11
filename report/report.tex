@@ -111,25 +111,26 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{itemize}
 	\item maybe, explain model checking slang somewhere. Probabilistic ltl, pctl formulas. See bai13\cite{bai13} subsection preliminaries.
 	\item mention somewhere that we assume atomic read and write at 32/64 bits a piece
-	\item explain cores vs processes, threads - we always assume $>$= threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-theory-shared} next to memory consumption. -- additionally talk about what to do in case of cores < threads (somewhere near?!)
-	\item we assume that one barrier per thread time is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-theory-shared}
-	\item add (perhaps to "orthogonal") that we can combine barriers. Reap benefits, mitigate shortcomings. Topology (explain. Node shared mem, internode dist mem.) aware.
+	\item explain cores vs processes, threads - we always assume $>$= threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-general-shared} next to memory consumption. -- additionally talk about what to do in case of cores < threads (somewhere near?!)
+	\item we assume that one barrier per thread time is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-general-shared}
+	\item add (perhaps to "building-blocks") that we can combine barriers. Reap benefits, mitigate shortcomings. Topology (explain. Node shared mem, internode dist mem.) aware.
 \end{itemize}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 \label{sec:introduction}
 \begin{itemize}
-	\item what is a barrier: synchronization mechanism where ...
-	\item usage example for barriers. Use example from complex lab?
-	\item explain that barriers are very common in parallel programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers (Rolf Rabenseifner\cite{rab00}). Relate to normal send/recv, because absolute numbers without relation are not helpful.
+	\item \todo watch out that the intention/laying down a continuous thread is strong enough (barriers can be improved, through pW/CS, model checking is useful)
+	\item what is a barrier
+	\item usage example for barriers
+	\item barriers are common in parallel programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers (Rolf Rabenseifner\cite{rab00}). Relate to normal send/recv, because absolute numbers without relation are not helpful.
 		\begin{itemize}
 			\item HLRS, year 2000
 			\item many calls,
 			\item 5.3\% of all time spent inside MPI calls, 0.7\% of all CPU time, estimated 1.6\% of the barrier execution time is actual synchronization, 100\% minus 1.6\% is waiting for other processes to arrive, because of unbalanced computation, average 1852 micro seconds per call. (Figure~13 in paper)
 			\item e.g. receive 12.9\% of all time spent inside MPI calls, 1.8\% of all cpu time, 33\% of the recv executation time is actual latency plus transfer time, 100\% minus 33\% is waiting for other processes to arrive, because of unbalanced comoputation, average 498 micro seconds per call.
 		\end{itemize}
-	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers.
+	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers in order to gain performance (say something about possible improvements that can still be made).
 	\item summarize pW/CS
 		\begin{itemize}
 			\item usually concurrent programs work in a deterministic fashion. That is the order and partners of remote synchronization (locally, programs are obviously mostly deterministic) are predetermined. The algorithm is executed in a very controlled fashion. Same holds for synchronization primitives themselves. Faulty behavior is avoided at great cost.
@@ -138,38 +139,36 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item design algorithms that have sufficiently high probability of success and tolerate faulty behaviour.
 			\item build them so that on average, or in their intended use case, they perform better than their deterministic counterparts, where better might e.g. be faster, more energy efficient, resource preserving.
 			\item data on the success is still rare, but it seems to be promising approach
+			\item pasted: today's barriers can be improved upon. New barriers.
+			\item pasted: softening the need for determinism in order to gain an advantage is a viable approach to take a stab at today's low level synchronization primitives, or in general. New barriers.
 		\end{itemize}
-	\item how do we gather data on these algorithms to build confidence that they work properly, i.e. satisfy certain properties?
-	\item Testing/Sampling this is hard or not super-useful:
+	\item how do we gather data on these algorithms to build confidence that they work properly, i.e. satisfy certain properties? And get a feeling for how they perform?
+	\item Testing/Measurement (explain wording. Be aware of possible confusion) and model checking complement one another:
 		\begin{itemize}
-			\item where to put this citation bai13~\cite{bai13}?
-			\item testing is usually deterministic. If so, certain states in the protocol are impossible to reach because of the randomness inherent in computers (add a short example? A special very case of a low level lock being contented?)
-			\item Assuming you have randomized tests, the probability to reach certain states in the protocol is so low that they are not revealed.
-			\item modelling does not have these draw backs. Of course it does have others.
-			\item we can gain better quantitative insights into protocols through modeling than with testing.
-			\item therefore we apply model checking techniques to investigate barriers
-		\end{itemize}
-	\item what we attempt in this report: (overarching thesis / continuous thread)
-		\begin{itemize}
-			\item today's barriers can be improved upon. New barriers.
-			\item softening the need for determinism in order to gain an advantage is a viable approach to take a stab at today's low level synchronization primitives, or in general. New barriers.
-			\item probabilistic model checking is powerful and apt for investigating barriers. Compare the barriers using this.
+			\item Measurement is usually deterministic. If so, certain interesting states in a protocol are impossible to reach because of the randomness inherent to today's computers (add a short example? A special very case of a low level lock being contented?)
+			\item Assuming you have randomized measurements, the probability to reach certain states in the protocol is so low that they are not revealed.
+			\item Some parts of algorithms are performed in such a short time or need very exact preparation that it is practically impossible to analyse these parts using measurement. In this case model checking can be applied because it offers this granularity.
+			\item Modelling has of course its own short comings. For example the state explosion problem.
+			\item we can gain better quantitative insights into synchronization protocols by combining both measurement and model checking.
 		\end{itemize}
 	\item briefly explain the report structure
 		\begin{itemize}
 			\item means to implement barriers
 			\item currently used barriers
+			\item idea to split barriers into orthogonal parts and think about them separately
 			\item new barriers
 			\item analysis and comparison of one old for shared memory and one old for distributed memory against the new barriers
-			\item idea to split barriers into orthogonal parts and think about them separately
 			\item conclusion \& future work
 		\end{itemize}
 \end{itemize}
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Means to implement barrier protocols}
-\label{sec:means}
+\section{Existing stuff}
+\label{sec:existing}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Means to implement barrier protocols}
+\label{ssec:existing-means}
 \begin{itemize}
 	\item \todo still feels like there should be some kind of wrap up or continuous thread :(
 	\item evaluate what tools / APIs we have at our disposal to realize barrier protocols
@@ -179,9 +178,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item programming these two memory architectures is very different, thus subsequently we will differentiate these two worlds.
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Shared memory}
-\label{ssec:means-shared}
+%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Shared memory}
+\label{sssec:existing-means-shared}
 \begin{itemize}
 	\item normal load/store.
 	\item atomic ops. An atomic operation is done in one instant without being interrupted by other memory accesses. E.g. add-fetch, compare-swap (is as old as 1970. No citations found. And perhaps not necessary). Never faster than normal read/write. (don't elaborate too much since we want a very high level view of the tools at our disposal)
@@ -193,9 +192,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item hardware support for barriers rare. Only found example: SGI UV 2000 systems\cite{sgiuv2000}
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Distributed memory}
-\label{ssec:means-distributed}
+%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Distributed memory}
+\label{sssec:existing-means-distributed}
 \begin{itemize}
 	\item categories
 		\begin{itemize}
@@ -308,13 +307,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item as we will see in the next section
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Survey of currently used barriers}
-\label{sec:currently-used}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Shared memory systems}
-\label{ssec:currently-used-shared}
+\subsection{Survey of currently used barriers}
+\label{ssec:existing-currently-used}
+
+%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Shared memory systems}
+\label{sssec:existing-currently-used-shared}
 \begin{itemize}
 	\item explain short why only research in glibc and gnu openmp\cite{openmp}. closed source intel, microsoft, portland pgi, pathscale. pthreads und openmp open source und weit verbreitet. ?llvm?
 	\item gnu openmp\cite{gomp}
@@ -351,9 +350,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{itemize}
 \end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Distributed memory systems}
-\label{ssec:currently-used-distributed}
+%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Distributed memory systems}
+\label{sssec:existing-currently-used-distributed}
 \begin{itemize}
 	\item why only MPI. Already explained in Section~\ref{why-only-mpi}.
 	\item openmpi
@@ -392,6 +391,23 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item dissemination can also be used for shared memory\cite{hoefler2013}
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Barrier building blocks}
+\label{ssec:building-blocks}
+Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
+\begin{itemize}
+	\item \todo if we don't get enough content make it a paragraph not a (sub)section
+	\item more or less intelligence / bandwidth/latency vs additional calculations
+	\item reset
+		\begin{itemize}
+			\item how is resetting handled in currently used barriers?
+			\item switching between barriers using a variable (as in the nmg/ronny barrier - 'left' variable)
+			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset)
+			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
+		\end{itemize}
+	\item back-off
+\end{itemize}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Three new barriers}
 \label{sec:new}
@@ -415,7 +431,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 	\item high-level explanation
 	\item detailed walk through one iteration
-	\item newer and more detailed benchmarks have shown that this protocol is slower and scales worse than the central counter barrier using add-fetch (?add numbers as proof?).
+	\item newer and more detailed measurements have shown that this protocol is slower and scales worse than the central counter barrier using add-fetch (?add numbers as proof?).
 	\item advantage: no atomic ops
 	\item resetting is integrated. Barrier can immediately be repeated.
 	\item Limited to 64 threads in this version. But one can modify the protocol to use an array of bit masks, representing a big bit mask. Updating the bit mask will then only be done on the element where the updating thread is itself located on. This way we only write one 64 bit value which is committed atomically. If we would attempt to write more than one element, we would run into consistency problems. Reading the shared variable will then read the whole array instead.
@@ -472,26 +488,28 @@ I hereby declare that I prepared this thesis independently and without use of to
 \section{Analysis and comparison}
 \label{sec:analysis}
 \begin{itemize}
+	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
 	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the central counter barrier, whereas Ronny's simple barrier shows promise. Therefore we restrict our attention to the latter.
-	\item For the shared memory case the central counter barrier (Figure~\ref{fig:central-counter-no-reset} in Section~\ref{ssec:currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:ronny-simple-no-reset} in Section~\ref{ssec:new-simple}).
-	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:dissemination-no-reset} in Section~\ref{ssec:currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:ronny-fancy-no-reset} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref currently-used?)
-	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{ssec:means-distributed}. But it can be implemented using, for example, the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis. (duplicate to the means-distributed subsection -- to be found at the very end -- repetition might not be too bad -- sections are supposed to be self contained -- etc)
+	\item For the shared memory case the central counter barrier (Figure~\ref{fig:central-counter-no-reset} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:ronny-simple-no-reset} in Section~\ref{ssec:new-simple}).
+	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:dissemination-no-reset} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:ronny-fancy-no-reset} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
+	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{sssec:existing-means-distributed}. But it can be implemented using, for example, the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis. (duplicate to the means-distributed subsection -- to be found at the very end -- repetition might not be too bad -- sections are supposed to be self contained -- etc)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
-	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{sec:orthogonal}
-	\item The analysis is split into three parts: theoretical aspects, benchmarking and model checking.
+	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{ssec:building-blocks}
+	\item The analysis is split into three parts: general properties, measurement and model checking.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Theoretical aspects}
-\label{ssec:analysis-theory}
+\subsection{General properties}
+\label{ssec:analysis-general}
 \begin{itemize}
+	\item group properties into measurable and non-measurable (model checking, sharp looking at)
 	\item present considerations of interest about the chosen algorithms.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Central counter vs Ronny's simple barrier}
-\label{sssec:analysis-theory-shared}
+\label{sssec:analysis-general-shared}
 \begin{itemize}
 	\item TIME: both algorithms are performed in two phases. A writing phase and a reading phase.
 	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $threadCount$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
@@ -504,7 +522,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Dissemination vs Ronny's fancy barrier}
-\label{sssec:analysis-theory-distributed}
+\label{sssec:analysis-general-distributed}
 \begin{itemize}
 	\item For the dissemination barrier the number of remote writes is exactly $n \times \lceil ld~n \rceil$ -- $n$ processes times $\lceil ld~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is $2 \times (n-1)$ writes in $2 \times  \lceil ld~n \rceil$ rounds. Add picture about the minimum. (a linear and a tree-esque).
 	\item Reading is only done locally.
@@ -563,8 +581,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Benchmarks}
-\label{ssec:analysis-benchmarks}
+\subsection{Measurement}
+\label{ssec:analysis-measurement}
 \begin{itemize}
 	\item central counter vs ronny simple
 	\item do not do dissemination vs ronny fancy
@@ -575,13 +593,17 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subsection{Model checking}
 \label{ssec:analysis-modelchecking}
 \begin{itemize}
+	\item introduce layers. Program graphs (vs lower level) vs tools. -- adds structure -- might be nice
 	\item perhaps change structure to separate quantitative and qualitative modelling
 	\item CSL\cite{assb96}, CSRL\cite{bhhk00} (+rewards), SPIN\cite{spin}\cite{hol97}, PRISM\cite{prism}\cite{knp09}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{?Preliminaries?}
+\subsubsection{Preliminaries}
 \label{sssec:analysis-modelchecking-preliminaries}
+\begin{itemize}
+	\item as short as possible. Use bai13's preliminaries.
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Modelling} %AE: modeling, BE: modelling
@@ -601,25 +623,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item central counter vs ronny simple
 	\item dissemination vs ronny fancy
-\end{itemize}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Proposal: Creating barriers from orthogonal parts}
-\label{sec:orthogonal}
-Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
-\begin{itemize}
-	\item more or less intelligence / bandwidth/latency vs additional calculations
-	\item 
-		reset
-
-		\begin{itemize}
-			\item how is resetting handled in currently used barriers?
-			\item switching between barriers using a variable (as in the nmg/ronny barrier - 'left' variable)
-			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset)
-			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
-		\end{itemize}
-
-	\item back-off
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
