@@ -155,9 +155,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item means to implement barriers TODO TODO TODO rework
 			\item currently used barriers
+			\item idea to split barriers into orthogonal parts and think about them separately
 			\item new barriers
 			\item analysis and comparison of one old for shared memory and one old for distributed memory against the new barriers
-			\item idea to split barriers into orthogonal parts and think about them separately
 			\item conclusion \& future work
 		\end{itemize}
 \end{itemize}
@@ -389,6 +389,22 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Proposal: Creating barriers from orthogonal parts}
+\label{sec:orthogonal}
+Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
+\begin{itemize}
+	\item more or less intelligence / bandwidth/latency vs additional calculations
+	\item reset
+		\begin{itemize}
+			\item how is resetting handled in currently used barriers?
+			\item switching between barriers using a variable (as in the nmg/ronny barrier - 'left' variable)
+			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset)
+			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
+		\end{itemize}
+	\item back-off
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Three new barriers}
 \label{sec:new}
 \begin{itemize}
@@ -603,25 +619,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item central counter vs ronny simple
 	\item dissemination vs ronny fancy
-\end{itemize}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Proposal: Creating barriers from orthogonal parts}
-\label{sec:orthogonal}
-Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
-\begin{itemize}
-	\item more or less intelligence / bandwidth/latency vs additional calculations
-	\item 
-		reset
-
-		\begin{itemize}
-			\item how is resetting handled in currently used barriers?
-			\item switching between barriers using a variable (as in the nmg/ronny barrier - 'left' variable)
-			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset)
-			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
-		\end{itemize}
-
-	\item back-off
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
