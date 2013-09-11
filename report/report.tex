@@ -120,16 +120,17 @@ I hereby declare that I prepared this thesis independently and without use of to
 \section{Introduction}
 \label{sec:introduction}
 \begin{itemize}
-	\item what is a barrier: synchronization mechanism where ...
-	\item usage example for barriers. Use example from complex lab?
-	\item explain that barriers are very common in parallel programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers (Rolf Rabenseifner\cite{rab00}). Relate to normal send/recv, because absolute numbers without relation are not helpful.
+	\item \todo watch out that the intention/laying down a continuous thread is strong enough (barriers can be improved, through pW/CS, model checking is useful)
+	\item what is a barrier
+	\item usage example for barriers
+	\item barriers are common in parallel programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers (Rolf Rabenseifner\cite{rab00}). Relate to normal send/recv, because absolute numbers without relation are not helpful.
 		\begin{itemize}
 			\item HLRS, year 2000
 			\item many calls,
 			\item 5.3\% of all time spent inside MPI calls, 0.7\% of all CPU time, estimated 1.6\% of the barrier execution time is actual synchronization, 100\% minus 1.6\% is waiting for other processes to arrive, because of unbalanced computation, average 1852 micro seconds per call. (Figure~13 in paper)
 			\item e.g. receive 12.9\% of all time spent inside MPI calls, 1.8\% of all cpu time, 33\% of the recv executation time is actual latency plus transfer time, 100\% minus 33\% is waiting for other processes to arrive, because of unbalanced comoputation, average 498 micro seconds per call.
 		\end{itemize}
-	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers.
+	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers in order to gain performance (say something about possible improvements that can still be made).
 	\item summarize pW/CS
 		\begin{itemize}
 			\item usually concurrent programs work in a deterministic fashion. That is the order and partners of remote synchronization (locally, programs are obviously mostly deterministic) are predetermined. The algorithm is executed in a very controlled fashion. Same holds for synchronization primitives themselves. Faulty behavior is avoided at great cost.
@@ -138,26 +139,21 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item design algorithms that have sufficiently high probability of success and tolerate faulty behaviour.
 			\item build them so that on average, or in their intended use case, they perform better than their deterministic counterparts, where better might e.g. be faster, more energy efficient, resource preserving.
 			\item data on the success is still rare, but it seems to be promising approach
+			\item pasted: today's barriers can be improved upon. New barriers.
+			\item pasted: softening the need for determinism in order to gain an advantage is a viable approach to take a stab at today's low level synchronization primitives, or in general. New barriers.
 		\end{itemize}
-	\item how do we gather data on these algorithms to build confidence that they work properly, i.e. satisfy certain properties?
-	\item Testing/Sampling this is hard or not super-useful:
+	\item how do we gather data on these algorithms to build confidence that they work properly, i.e. satisfy certain properties? And get a feeling for how they perform?
+	\item Testing/Measurement (explain wording. Be aware of possible confusion) and model checking complement one another:
 		\begin{itemize}
-			\item where to put this citation bai13~\cite{bai13}?
-			\item testing is usually deterministic. If so, certain states in the protocol are impossible to reach because of the randomness inherent in computers (add a short example? A special very case of a low level lock being contented?)
-			\item Assuming you have randomized tests, the probability to reach certain states in the protocol is so low that they are not revealed.
-			\item modelling does not have these draw backs. Of course it does have others.
-			\item we can gain better quantitative insights into protocols through modeling than with testing.
-			\item therefore we apply model checking techniques to investigate barriers
-		\end{itemize}
-	\item what we attempt in this report: (overarching thesis / continuous thread)
-		\begin{itemize}
-			\item today's barriers can be improved upon. New barriers.
-			\item softening the need for determinism in order to gain an advantage is a viable approach to take a stab at today's low level synchronization primitives, or in general. New barriers.
-			\item probabilistic model checking is powerful and apt for investigating barriers. Compare the barriers using this.
+			\item Measurement is usually deterministic. If so, certain interesting states in a protocol are impossible to reach because of the randomness inherent to today's computers (add a short example? A special very case of a low level lock being contented?)
+			\item Assuming you have randomized measurements, the probability to reach certain states in the protocol is so low that they are not revealed.
+			\item Some parts of algorithms are performed in such a short time or need very exact preparation that it is practically impossible to analyse these parts using measurement. In this case model checking can be applied because it offers this granularity.
+			\item Modelling has of course its own short comings. For example the state explosion problem.
+			\item we can gain better quantitative insights into synchronization protocols by combining both measurement and model checking.
 		\end{itemize}
 	\item briefly explain the report structure
 		\begin{itemize}
-			\item means to implement barriers
+			\item means to implement barriers TODO TODO TODO rework
 			\item currently used barriers
 			\item new barriers
 			\item analysis and comparison of one old for shared memory and one old for distributed memory against the new barriers
