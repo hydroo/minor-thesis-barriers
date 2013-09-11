@@ -111,8 +111,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{itemize}
 	\item maybe, explain model checking slang somewhere. Probabilistic ltl, pctl formulas. See bai13\cite{bai13} subsection preliminaries.
 	\item mention somewhere that we assume atomic read and write at 32/64 bits a piece
-	\item explain cores vs processes, threads - we always assume $>$= threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-theory-shared} next to memory consumption. -- additionally talk about what to do in case of cores < threads (somewhere near?!)
-	\item we assume that one barrier per thread time is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-theory-shared}
+	\item explain cores vs processes, threads - we always assume $>$= threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-general-shared} next to memory consumption. -- additionally talk about what to do in case of cores < threads (somewhere near?!)
+	\item we assume that one barrier per thread time is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-general-shared}
 	\item add (perhaps to "orthogonal") that we can combine barriers. Reap benefits, mitigate shortcomings. Topology (explain. Node shared mem, internode dist mem.) aware.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -479,19 +479,20 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{ssec:means-distributed}. But it can be implemented using, for example, the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis. (duplicate to the means-distributed subsection -- to be found at the very end -- repetition might not be too bad -- sections are supposed to be self contained -- etc)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
 	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{sec:orthogonal}
-	\item The analysis is split into three parts: theoretical aspects, benchmarking and model checking.
+	\item The analysis is split into three parts: general properties, benchmarking and model checking.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Theoretical aspects}
-\label{ssec:analysis-theory}
+\subsection{General properties}
+\label{ssec:analysis-general}
 \begin{itemize}
+	\item group properties into measurable and non-measurable (model checking, sharp looking at)
 	\item present considerations of interest about the chosen algorithms.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Central counter vs Ronny's simple barrier}
-\label{sssec:analysis-theory-shared}
+\label{sssec:analysis-general-shared}
 \begin{itemize}
 	\item TIME: both algorithms are performed in two phases. A writing phase and a reading phase.
 	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $threadCount$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
@@ -504,7 +505,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Dissemination vs Ronny's fancy barrier}
-\label{sssec:analysis-theory-distributed}
+\label{sssec:analysis-general-distributed}
 \begin{itemize}
 	\item For the dissemination barrier the number of remote writes is exactly $n \times \lceil ld~n \rceil$ -- $n$ processes times $\lceil ld~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is $2 \times (n-1)$ writes in $2 \times  \lceil ld~n \rceil$ rounds. Add picture about the minimum. (a linear and a tree-esque).
 	\item Reading is only done locally.
