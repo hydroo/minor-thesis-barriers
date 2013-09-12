@@ -396,11 +396,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Barrier building blocks}
 \label{ssec:building-blocks}
-Cut up existing barriers into orthogonal pieces. Analyse and replace them independently.
 \begin{itemize}
-	\item \todo if we don't get enough content make it a paragraph not a (sub)section
-	\item more or less intelligence / bandwidth/latency vs additional calculations
-	\item reset
+	\item latency/computation trade-off
+	\item resetting:
 		\begin{itemize}
 			\item how is resetting handled in currently used barriers?
 			\item switching between barriers using a variable (as in the nmg/ronny barrier - 'left' variable)
@@ -408,7 +406,8 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
 		\end{itemize}
 	\item back-off
-	\item we can combine barrier protocols. Explain how. Reap benefits, mitigate shortcomings. Adapt to topology (explain. Node shared mem, internode dist mem., different interconnect topologies) aware.
+	\item thread count $<$= cores, thread count $>$ cores
+	\item combining: we can combine barrier protocols. Explain how. Reap benefits, mitigate shortcomings. Adapt to topology (explain. Node shared mem, internode dist mem., different interconnect topologies) aware.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
