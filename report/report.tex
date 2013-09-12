@@ -94,10 +94,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 \pagenumbering{arabic}
 \section{Don't forget}
 \begin{itemize}
-	\item try all algorithms with processor counts $\neq 2^i$ especially dissemination
 	\item explain use of 'thread' and 'process'
 	\item ld is the logarithmus digitalis.
-	\item explain the basic figure style somewhere
+	\item explain the basic pseudo code listing style somewhere
 		\begin{itemize}
 			\item C-esque pseudo-code
 			\item threadCount/processCount
@@ -111,16 +110,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{itemize}
 	\item maybe, explain model checking slang somewhere. Probabilistic ltl, pctl formulas. See bai13\cite{bai13} subsection preliminaries.
 	\item mention somewhere that we assume atomic read and write at 32/64 bits a piece
-	\item explain cores vs processes, threads - we always assume $>$= threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-general-shared} next to memory consumption. -- additionally talk about what to do in case of cores < threads (somewhere near?!)
-	\item we assume that one barrier per thread time is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-general-shared}
-	\item add (perhaps to "building-blocks") that we can combine barriers. Reap benefits, mitigate shortcomings. Topology (explain. Node shared mem, internode dist mem.) aware.
+	\item explain cores vs processes, threads - we always assume threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-general-shared} next to memory consumption. -- additionally talk about what to do in case of cores $<$ threads (somewhere near?!)
+	\item we assume that one barrier per thread team is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-general-shared}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 \label{sec:introduction}
 \begin{itemize}
-	\item \todo watch out that the intention/laying down a continuous thread is strong enough (barriers can be improved, through pW/CS, model checking is useful)
+	\item \todo watch out that the intention/laying down a continuous thread is strong enough ((1)barriers can be improved, (2)through pW/CS, (3)model checking is useful)
 	\item what is a barrier
 	\item usage example for barriers
 	\item barriers are common in parallel programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers (Rolf Rabenseifner\cite{rab00}). Relate to normal send/recv, because absolute numbers without relation are not helpful.
@@ -130,7 +128,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item 5.3\% of all time spent inside MPI calls, 0.7\% of all CPU time, estimated 1.6\% of the barrier execution time is actual synchronization, 100\% minus 1.6\% is waiting for other processes to arrive, because of unbalanced computation, average 1852 micro seconds per call. (Figure~13 in paper)
 			\item e.g. receive 12.9\% of all time spent inside MPI calls, 1.8\% of all cpu time, 33\% of the recv executation time is actual latency plus transfer time, 100\% minus 33\% is waiting for other processes to arrive, because of unbalanced comoputation, average 498 micro seconds per call.
 		\end{itemize}
-	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers in order to gain performance (say something about possible improvements that can still be made).
+	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers in order to gain performance, where performance can be any important measure e.g. speed, energy efficiency, (say something about possible improvements that can still be made).
 	\item summarize pW/CS
 		\begin{itemize}
 			\item usually concurrent programs work in a deterministic fashion. That is the order and partners of remote synchronization (locally, programs are obviously mostly deterministic) are predetermined. The algorithm is executed in a very controlled fashion. Same holds for synchronization primitives themselves. Faulty behavior is avoided at great cost.
@@ -139,8 +137,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item design algorithms that have sufficiently high probability of success and tolerate faulty behaviour.
 			\item build them so that on average, or in their intended use case, they perform better than their deterministic counterparts, where better might e.g. be faster, more energy efficient, resource preserving.
 			\item data on the success is still rare, but it seems to be promising approach
-			\item pasted: today's barriers can be improved upon. New barriers.
-			\item pasted: softening the need for determinism in order to gain an advantage is a viable approach to take a stab at today's low level synchronization primitives, or in general. New barriers.
+			\item barriers can be improved. One possible way is through pW/CS.
 		\end{itemize}
 	\item how do we gather data on these algorithms to build confidence that they work properly, i.e. satisfy certain properties? And get a feeling for how they perform?
 	\item Testing/Measurement (explain wording. Be aware of possible confusion) and model checking complement one another:
@@ -176,9 +173,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item \todo still feels like there should be some kind of wrap up or continuous thread :(
 	\item evaluate what tools / APIs we have at our disposal to realize barrier protocols
 	\item distinction between shared and distribute memory:
-	\item shared memory: all threads share one global memory. They are thus able to communicate by just writing to and reading from memory.
+	\item shared memory: all threads share one global memory. They are thus able to communicate by just writing to and reading from main memory.
 	\item distributed memory: each process has its own private memory. Computation can only be done on private memory. Communication is explicitly done via an interconnect.
-	\item programming these two memory architectures is very different, thus subsequently we will differentiate these two worlds.
+	\item programming these two memory architectures is very different, thus subsequently we will differentiate between these two worlds.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
@@ -191,7 +188,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{quote}
 			The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program. -- Lamport~\cite{sequentialconsistency}
 		\end{quote}
-		The most prominent weaker memory consistency model is release consistency~\cite{gha90}. Memory accesses appear unordered except so called \emph{release} and \emph{acquire} operations. No memory access that has been issued after an acquire operation is permitted to finish before this acquire operation. No memory access is allowed to finish later than the next release operation. Acquire and release encapsulate the memory accesses in between. Add a figure to explain. Generally speaking, weakening the consistency model gives improved performance, but one must pay attention while implementing concurrent programs, since the globally visible order of memory accesses will be different from the order specified by the source code.
+		The most prominent weaker memory consistency model is release consistency~\cite{gha90}. Memory accesses appear unordered except so called \emph{release} and \emph{acquire} operations. No memory access that has been issued after an acquire operation is permitted to finish before this acquire operation. No memory access is allowed to finish later than the next release operation. Acquire and release encapsulate the memory accesses in between. Add a figure to explain. Generally speaking, weakening the consistency model gives improved performance, but one must pay attention while implementing concurrent programs, since the globally visible order of memory accesses will be different from the order specified by the source code. Improved performance: less waiting/queuing=more speed of operations, less need for wiring these restrictions in hardware.
 	\item hardware support for barriers rare. Only found example: SGI UV 2000 systems\cite{sgiuv2000}
 \end{itemize}
 
@@ -203,20 +200,21 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item synchronous message passing
 				\begin{itemize}
+					\item high level explanation (wikipedia?)
 					\item relatively large overhead. Queueing. Waiting.
 					\item all communicating partners need to be present at the same time and shake hands.
 				\end{itemize}
 			\item asynchronous message passing
 				\begin{itemize}
+					\item high level explanation (wikipedia?)
 					\item similar overhead as synchronous message passing. not necessarily waiting.
-					\item needs buffering of data.
 					\item but partners still need to shake hands for information transfer.
 				\end{itemize}
 			\item remote memory access (RMA)
 				\begin{itemize}
 					\item accessing remote memory through read, write, (atomic operations), without the remote peer being actively involved.
 					\item needs hardware support.
-					\item less management overhead, better latency and throughput. Less buffering. Ideally no buffering - so called Zero-copy operations.
+					\item less management overhead, better latency and throughput than message passing. Less buffering. Ideally no buffering - so called Zero-copy operations.
 					\item distinction between coherent and non-coherent
 					\item (a) coherent - remotely updated memory will be visible to the remote end eventually
 					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote end.
@@ -231,26 +229,29 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\label{why-only-mpi}
 	\item we specifically look at MPI\cite{mpi}. Why only MPI:
 		\begin{itemize}
-			\item low-level
 			\item standardized
+			\item low-level
 			\item portable, dist and shared mem, MPP, clusters of workstations, and combinations, independent of particular platform features or quantitative differences like latency/bandwidth
-			\item many implementations of the standard for many programming languages exist
 			\item very general and customizable. Supports many modes of operation.
+			\item many implementations of the standard for many programming languages exist
 			\item widely adopted in cluster computing / HPC, scientific computing.~\cite{mpiadoptiona}\cite{mpiadoptionb}\cite{mpiadoptionc}
 		\end{itemize}
 	\item only scratch surface of MPI, because:
 		\begin{itemize}
-			\item a lot of details, because the standard is geared towards generality (supporting many different hardware platforms) and optimizability
+			\item lots of details, because the standard is geared towards generality (supporting many different hardware platforms) and optimizability
 			\item complicated semantics
-			\item many of the details make no striking difference in protocol design/analysis
+			\item many of the details make no difference in protocol design/analysis
 		\end{itemize}
+	\item Don't use any MPI specific names. Keep it high-level
 	\item MPI has synchronous message passing
 		\begin{itemize}
+			\item describe what you can do. How it is used.
 			\item chapter 3.2 in \cite{mpi3}
 			\item MPI\_Ssend, MPI\_Rsend (returns if no receiver is present), MPI\_Recv
 		\end{itemize}
 	\item MPI has asynchronous message passing
 		\begin{itemize}
+			\item describe what you can do. How it is used.
 			\item chapter 3.7 in \cite{mpi3}
 			\item MPI\_Isend, MPI\_Irecv
 			\item MPI\_Wait, MPI\_Test
@@ -260,7 +261,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item MPI has asynchronous collectives
 		\begin{itemize}
 			\item chapter 5.12 in \cite{mpi3}
-			\item explain shortly what this is about. Maybe you need to explain what collectives are.
+			\item explain shortly what this is about. You need to explain what collectives are.
 			\item non-blocking collectives are not interesting as a building block for new barriers, because everyone has to take part and no cancellation of anything is possible.
 		\end{itemize}
 	\item MPI has RMA
@@ -338,7 +339,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\label{fig:central-counter-no-reset}
 				\end{figure}
 
-			\item back-off via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if cpucount $<$ threadcount. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping.
+			\item back-off via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if core count $<$ thread count. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping.
 			\item reset built in. last one to enter resets the barrier.
 		\end{itemize}
 	\item glibc's\cite{glibc} new pthreads library
@@ -357,7 +358,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subsubsection{Distributed memory systems}
 \label{sssec:existing-currently-used-distributed}
 \begin{itemize}
-	\item why only MPI. Already explained in Section~\ref{why-only-mpi}.
+	\item only MPI implementations. Why has already been explained in Section~\ref{why-only-mpi}.
+	\item only openmpi and mpich. Explain why. (opensource. mpich is base of many others (name them). weit verbreitete implementationen.)
 	\item openmpi
 		\begin{itemize}
 			\item version 1.7. not yet released.
@@ -371,6 +373,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
 			\item architecture specific for infiband. e.g. dissemination using RMA \cite{hoefler2006a}
 			\item Figure~\ref{fig:dissemination-no-reset}
+			\item state that we use an RMA representation of the algorithm. Maybe state why. Writing is sending. Reading is Receiving so to speak.
 				\begin{figure}[htbp]
 					\centering
 					\input{listings/dissemination-no-reset}
@@ -409,6 +412,7 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
 		\end{itemize}
 	\item back-off
+	\item we can combine barrier protocols. Explain how. Reap benefits, mitigate shortcomings. Adapt to topology (explain. Node shared mem, internode dist mem., different interconnect topologies) aware.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -434,7 +438,6 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 		\end{figure}
 	\item high-level explanation
 	\item detailed walk through one iteration
-	\item newer and more detailed measurements have shown that this protocol is slower and scales worse than the central counter barrier using add-fetch (?add numbers as proof?).
 	\item advantage: no atomic ops
 	\item resetting is integrated. Barrier can immediately be repeated.
 	\item Limited to 64 threads in this version. But one can modify the protocol to use an array of bit masks, representing a big bit mask. Updating the bit mask will then only be done on the element where the updating thread is itself located on. This way we only write one 64 bit value which is committed atomically. If we would attempt to write more than one element, we would run into consistency problems. Reading the shared variable will then read the whole array instead.
@@ -456,9 +459,9 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 	\item one array element per cache line to avoid false sharing\cite{falsesharing}
 	\item every thread writes into the array element he owns. Indicated by his threadIndex.
 	\item do not mention (analysis section instead): in contrast to the central-counter barrier the assignments to shared variables can be done in parallel, since the variables written are not the same, no are they on the same cache line.
-	\item many read accesses, but since data is cached upon the first read the latency is only significant once per array element / cache line. i.e. when the thread arrives and writes his array element to be \texttt{true} and when a thread reads it after it has been written by it's owner.
+	\item (do not mention. Is in the analysis) many read accesses, but since data is cached upon the first read the latency is only significant once per array element / cache line. i.e. when the thread arrives and writes his array element to be \texttt{true} and when a thread reads it after it has been written by it's owner.
 	\item advantage: no atomic ops
-	\item do not mention (analysis section instead): larger memory cost than central counter, Mc Guire/Ronny. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
+	\item (do not mention. Is in the analysis) larger memory cost than central counter, Mc Guire/Ronny. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
 	\item The barrier is destructive in the sense that it cannot be executed multiple times in a row. One way to circumvent this is to modify the algorithm to use a repetition counter instead of a boolean (since we have one date per cache line we allocated the space anyways) and keep track of it. The algorithm would then atomically increase the counter instead of the assignment in line 4. We use a 64 bit integer variable for this. It will not overflow over so we don't need to consider this case (If you could run one barrier each clock cycle on a 3GHz machine you would need roughly 200 years to overflow it).
 	\item another small improvement would be to keep track of the first couple of successfully read entries and skip those when repeating the loop. For simplicity's sake and modelling we will not consider these optimizations.
 \end{itemize}
@@ -496,7 +499,7 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the central counter barrier, whereas Ronny's simple barrier shows promise. Therefore we restrict our attention to the latter.
 	\item For the shared memory case the central counter barrier (Figure~\ref{fig:central-counter-no-reset} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:ronny-simple-no-reset} in Section~\ref{ssec:new-simple}).
 	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:dissemination-no-reset} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:ronny-fancy-no-reset} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
-	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{sssec:existing-means-distributed}. But it can be implemented using, for example, the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis. (duplicate to the means-distributed subsection -- to be found at the very end -- repetition might not be too bad -- sections are supposed to be self contained -- etc)
+	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{sssec:existing-means-distributed}. But it is of course possible to implement such an algorithm using lower level APIs, for example the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis.
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
 	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{ssec:building-blocks}
 	\item The analysis is split into three parts: general properties, measurement and model checking.
@@ -514,7 +517,8 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 \subsubsection{Central counter vs Ronny's simple barrier}
 \label{sssec:analysis-general-shared}
 \begin{itemize}
-	\item TIME: both algorithms are performed in two phases. A writing phase and a reading phase.
+	\item give an introduction to cache. Factor of 10-100 between cache and main memory access latency. Cache line invalidation and fetching make up most of the time used in such protocols. Thus it's important to look at these.
+	\item PHASES: both algorithms are performed in two phases. A writing phase and a reading phase.
 	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $threadCount$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
 	\item The reading phase of the central counter barrier reads a single variable repeatedly. The cache line this variable resides on will be invalidated for each core exactly $threadCount - 1$ times((, thus each core fetches the variable at most $threadCount - 1$ times)).
 	\item The reading phase of Ronny's simple barrier needs to read each array element once until it can make a decision whether to leave or repeat the loop. Each array element is invalidated exactly once. Thus each array element, from the viewpoint of one thread, has to be fetched from memory at most twice. From then on it is cached and quickly accessible.
