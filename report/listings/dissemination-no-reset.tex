@@ -1,9 +1,11 @@
-\begin{lstlisting}[mathescape]
+\begin{minipage}
+\centering
+\begin{lstlisting}[mathescape, linewidth=11.8cm]
 shared variables: boolean
                   barrier[processCount][processCount]
 local variables:  integer dist
 initialization:   barrier[*][*] := false
-$\listingrule$
+$\listingrule{11.8cm}$
 
 for dist := 1; dist < processCount; dist := dist $\times$ 2 {
 	to   := (processIndex + dist) (mod processCount)
@@ -14,4 +16,4 @@ for dist := 1; dist < processCount; dist := dist $\times$ 2 {
 	wait until barrier[processIndex][from] = true
 }
 \end{lstlisting}
-
+\end{minipage}

@@ -1,7 +1,9 @@
-\begin{lstlisting}[mathescape]
+\begin{minipage}
+\centering
+\begin{lstlisting}[mathescape, linewidth=10.1cm]
 shared variables: boolean barrier[threadCount]
 initialization:   barrier[*] := false
-$\listingrule$
+$\listingrule{10.1cm}$
 
 barrier[threadIndex] := true
 
@@ -11,3 +13,4 @@ for i := 0; i < threadCount; i := i + 1 {
 	}
 }
 \end{lstlisting}
+\end{minipage}
