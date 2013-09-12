@@ -8,7 +8,7 @@ $\listingrule$
 if left = false {
 
 	do {
-		copy := (copy&$\sim$meBit)|entry
+		copy := (copy & $\sim$meBit) | entry
 		if copy & meBit = 0 {
 			copy  := copy | meBit
 			entry := copy
@@ -21,7 +21,7 @@ if left = false {
 } else if left = true {
 
 	do {
-		copy := (copy&$\sim$meBit)|exit
+		copy := (copy & $\sim$meBit) | exit
 		if copy & meBit = 0 {
 			copy := copy | meBit
 			exit := copy
