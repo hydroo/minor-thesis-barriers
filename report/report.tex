@@ -106,6 +106,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \pagenumbering{arabic}
 \section{Don't forget}
 \begin{itemize}
+	\item "don't overuse passive voice"
 	\item explain use of 'thread' and 'process'. Probably in Section~\ref{ssec:existing-means}, when explaining the distinction between shared and distributed memory.
 	\item make clear what is meant in the listings
 		\begin{itemize}
@@ -118,6 +119,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{itemize}
 	\item mention that we assume atomic read and write at 32/64 bits a piece, when it matters
 	\item explain cores vs processes, threads - we always assume threads, processes $>$= cores. Why. Find an appropriate spot to talk about this. I have marked a good spot in the text in Section~\ref{sssec:existing-currently-used-shared}
+	\item "be forthright about the limitations and assumptions of your design. Also, make sure you justify any shortcuts/limitations convincingly"
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -241,7 +243,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item portable, dist and shared mem, MPP, clusters of workstations, and combinations, independent of particular platform features or quantitative differences like latency/bandwidth
 			\item very general and customizable. Supports many modes of operation.
 			\item many implementations of the standard for many programming languages exist
-			\item widely adopted in cluster computing / HPC, scientific computing.~\cite{mpiadoptiona}\cite{mpiadoptionb}\cite{mpiadoptionc}
+			\item widely adopted in cluster computing / HPC, scientific computing.~\cite{mpiadoptiona, mpiadoptionb, mpiadoptionc}
 		\end{itemize}
 	\item only scratch surface of MPI, because:
 		\begin{itemize}
@@ -455,6 +457,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{ssec:new-simple}
 \begin{itemize}
 	\item new and shiny. Read mostly, write exactly once. In contrast to Mc Guire/Ronny's barrier.
+	\item How did I come up with the idea?
 	\item Figure~\ref{fig:ronny-simple-no-reset}
 		\begin{figure}[htbp]
 			\centering
@@ -641,17 +644,28 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item dissemination vs ronny fancy
 \end{itemize}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Discussion}
+\label{ssec:analysis-discussion}
+\begin{itemize}
+	\item "Discuss and explain your results"
+	\item "Show how they support your thesis (or, if they don't, come up with a damned good reason real quick)"
+	\item "It is important to separate objective facts clearly from their discussion"
+\end{itemize}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion and future work}
 \label{sec:conclusion}
 conclusion:
 \begin{itemize}
+	\item "Don't leave it at the discussion: discuss what you/we can learn from the results. Draw some real conclusions. Separate discussion/interpretation of the results clearly from the conclusions you draw from them"
 	\item condense results into a small passage
 	\item ?repeat claim - overarching thesis - present an answer?
 \end{itemize}
 
 future work:
 \begin{itemize}
+	\item "Identify all shortcomings/limitations of your work, and discuss how they could be fixed"
 	\item evaluate back-off strategies. mwait.
 	\item benchmark on Intel system, not only bulldozer. Results might be very different from above benchmarks.
 	\item model check more and bigger. Symmetry reduction. Partial order reduction.
