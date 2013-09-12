@@ -94,7 +94,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \pagenumbering{arabic}
 \section{Don't forget}
 \begin{itemize}
-	\item explain use of 'thread' and 'process'
+	\item explain use of 'thread' and 'process'. Probably in Section~\ref{ssec:existing-means}, when explaining the distinction between shared and distributed memory.
 	\item make clear what is meant in the listings
 		\begin{itemize}
 			\item C-esque pseudo-code
@@ -104,10 +104,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item \texttt{x[$*$] := y} is short for assigning y to each element in x
 			\item ?more?
 		\end{itemize}
-	\item maybe, explain model checking slang somewhere. Probabilistic ltl, pctl formulas. See bai13\cite{bai13} subsection preliminaries.
-	\item mention somewhere that we assume atomic read and write at 32/64 bits a piece
-	\item explain cores vs processes, threads - we always assume threads, processes $>$= cores. Why. Find an appropriate spot to talk about this -- perhaps mention it in~\ref{sssec:analysis-general-shared} next to memory consumption. -- additionally talk about what to do in case of cores $<$ threads (somewhere near?!)
-	\item we assume that one barrier per thread team is enough. There is no use to having two barrier data structures for the same team. When we talk about memory consumption this is important. -- is already mentioned in~\ref{sssec:analysis-general-shared}
+	\item mention that we assume atomic read and write at 32/64 bits a piece, when it matters
+	\item explain cores vs processes, threads - we always assume threads, processes $>$= cores. Why. Find an appropriate spot to talk about this. I have marked a good spot in the text in Section~\ref{sssec:existing-currently-used-shared}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -169,6 +167,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item \todo still feels like there should be some kind of wrap up or continuous thread :(
 	\item evaluate what tools / APIs we have at our disposal to realize barrier protocols
 	\item distinction between shared and distribute memory:
+	\item threads vs processes. Explain use of these two words here.
 	\item shared memory: all threads share one global memory. They are thus able to communicate by just writing to and reading from main memory.
 	\item distributed memory: each process has its own private memory. Computation can only be done on private memory. Communication is explicitly done via an interconnect.
 	\item programming these two memory architectures is very different, thus subsequently we will differentiate between these two worlds.
@@ -335,7 +334,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\label{fig:central-counter-no-reset}
 				\end{figure}
 
-			\item back-off via a spin-counter $\sim$ 3ms. architecture specific. lowers spincount if core count $<$ thread count. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping.
+			\item back-off via a spin-counter $\sim$ 3ms. architecture specific. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping. lowers spincount if core count $<$ thread count.
+			\item talk about us assuming core count $>$= thread count. (from don't forget)
 			\item reset built in. last one to enter resets the barrier.
 		\end{itemize}
 	\item glibc's\cite{glibc} new pthreads library
