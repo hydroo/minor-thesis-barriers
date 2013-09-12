@@ -95,7 +95,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 \section{Don't forget}
 \begin{itemize}
 	\item explain use of 'thread' and 'process'
-	\item ld is the logarithmus digitalis.
 	\item explain the basic pseudo code listing style somewhere
 		\begin{itemize}
 			\item C-esque pseudo-code
@@ -531,7 +530,7 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 \subsubsection{Dissemination vs Ronny's fancy barrier}
 \label{sssec:analysis-general-distributed}
 \begin{itemize}
-	\item For the dissemination barrier the number of remote writes is exactly $n \times \lceil ld~n \rceil$ -- $n$ processes times $\lceil ld~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is $2 \times (n-1)$ writes in $2 \times  \lceil ld~n \rceil$ rounds. Add picture about the minimum. (a linear and a tree-esque).
+	\item For the dissemination barrier the number of remote writes is exactly $n \times \lceil \log _2~n \rceil$ -- $n$ processes times $\lceil \log _2~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is $2 \times (n-1)$ writes in $2 \times  \lceil \log _2~n \rceil$ rounds. Add picture about the minimum. (a linear and a tree-esque).
 	\item Reading is only done locally.
 
 %  +--------+        +--------+             round (2)
@@ -541,9 +540,9 @@ Cut up existing barriers into orthogonal pieces. Analyse and replace them indepe
 %  +-----------------+                      round (3)
 
 	\item Ronny's fancy barrier needs between $2 \times (n-1)$ and $n \times (n-1)$ successful (non-zero) remote reads. Writing is only done locally.
-	\item dissemination needs exactly $\lceil ld~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the dissemination barrier waits for its designated communication partner.
-	\item needing $\lceil ld~n \rceil$ rounds is obviously worse than $ld~n$. This especially means that from $\lfloor ld~n \rfloor$ to $\lfloor ld~n \rfloor + 1$ the number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where dissemination has jumps at power of two core counts. (elaborate? Since we do not benchmark and we probably won't model check larger numbers, we won't be able to quantify this). Benchmarks on shared memory have shown this to be true. (perhaps future work?: A way to mitigate this would be to reduce the number of processes executing the additional round to as few as possible and then do a normal power-of-2 dissemination barrier)
-	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. In principle for both algorithms $\lceil ld~n \rceil$ bits per process suffice. The dissemination variant shown in Figure~\ref{fig:dissemination-no-reset} uses a total of $n \times n$ bits, but, since each thread communicates only with $\lceil ld~n \rceil$ other threads, a modified index calculation would allow it to work with $n \times \lceil ld~n \rceil$ bits. The memory usage is minuscule either way.
+	\item dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the dissemination barrier waits for its designated communication partner.
+	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $\lfloor \log _2~n \rfloor$ to $\lfloor \log _2~n \rfloor + 1$ the number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where dissemination has jumps at power of two core counts. (elaborate? Since we do not benchmark and we probably won't model check larger numbers, we won't be able to quantify this). Benchmarks on shared memory have shown this to be true. (perhaps future work?: A way to mitigate this would be to reduce the number of processes executing the additional round to as few as possible and then do a normal power-of-2 dissemination barrier)
+	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. In principle for both algorithms $\lceil \log _2~n \rceil$ bits per process suffice. The dissemination variant shown in Figure~\ref{fig:dissemination-no-reset} uses a total of $n \times n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \times \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item talk about the progress problem when one process is missing.
 		\begin{itemize}
 			\item number of blocked processes doubles each round.
