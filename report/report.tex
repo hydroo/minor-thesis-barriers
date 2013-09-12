@@ -344,7 +344,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			% glibc/nptl/sysdeps/pthread/pthread.h
 			% glibc/nptl/pthread_barrier_*
 			% glibc/nptl/sysdeps/unix/sysv/linux/internaltypes.h
-			\item central counter with explicit locking instead of atomic add-fetch
+			\item central counter with locking instead of atomic add-fetch
 			\item back-off through futexes (without spinning before)
 			\item reset handled automatically (upon leaving the barrier every thread increments (atomically) the barrier by 1 so that it is max in the end)
 		\end{itemize}
