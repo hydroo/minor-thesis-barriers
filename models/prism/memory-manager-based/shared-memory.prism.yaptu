@@ -32,10 +32,10 @@ endmodule
 
 ++ for i in xrange(1,THREAD_COUNT):
 module thread$i$ = thread0 [
-  v_0=v_$i$, $', '.join([ 'v_%d=v_%d' % (j+1, j+(j>=i))for j in xrange(0,THREAD_COUNT-1)])$,
+  v_0=v_$i$, $", ".join([ "v_%d=v_%d" % (j+1, j+(j>=i))for j in xrange(0,THREAD_COUNT-1)])$,
   v_valid0=v_valid$i$,
   v_push_write0=v_push_write$i$, v_write0=v_write$i$, v_push_read0=v_push_read$i$,
-  $', '.join(['v_push%d0=v_push%d%d' %(j+1, j+(j>=i), i) for j in xrange(0,THREAD_COUNT-1)])$
+  $", ".join(["v_push%d0=v_push%d%d" %(j+1, j+(j>=i), i) for j in xrange(0,THREAD_COUNT-1)])$
 ]
 endmodule
 --
@@ -43,8 +43,8 @@ endmodule
 
 // BEGIN Memory Managaer
 
-formula v_noInforms     = ($' & '.join([' & '.join([ 'v_inform%d%d=false' % (i, j) for j in xrange(0,THREAD_COUNT) if i != j])  for i in xrange(0,THREAD_COUNT)])$);
-formula v_noInvalidates = ($' & '.join(['v_invalidate%d=false' %i for i in xrange(0,THREAD_COUNT)])$);
+formula v_noInforms     = ($" & ".join([" & ".join([ "v_inform%d%d=false" % (i, j) for j in xrange(0,THREAD_COUNT) if i != j])  for i in xrange(0,THREAD_COUNT)])$);
+formula v_noInvalidates = ($" & ".join(["v_invalidate%d=false" %i for i in xrange(0,THREAD_COUNT)])$);
 formula v_readReady     = (v_noInforms & v_noInvalidates);
 formula v_writeReady    = (v_readReady);
 
@@ -129,7 +129,7 @@ module v_mm_activity
 
   // invalidating
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_write$i$] true -> reactive:$' & '.join(['(v_invalidate%d\'=true)' %j for j in xrange(0,THREAD_COUNT) if i!=j])$;
+  [v_push_write$i$] true -> reactive:$" & ".join(["(v_invalidate%d'=true)" %j for j in xrange(0,THREAD_COUNT) if i!=j])$;
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
@@ -138,7 +138,7 @@ module v_mm_activity
 
   // pushes triggered by writing
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_inform$i$] (v_currentOwner=$i$) -> pir:$' & '.join(['(v_inform%d%d\'=true)' % (k,j) for k in [i] for j in xrange(0,THREAD_COUNT) if i!=j])$;
+  [v_push_inform$i$] (v_currentOwner=$i$) -> pir:$" & ".join(["(v_inform%d%d'=true)" % (k,j) for k in [i] for j in xrange(0,THREAD_COUNT) if i!=j])$;
 --
 
   // pushes triggered by reading
