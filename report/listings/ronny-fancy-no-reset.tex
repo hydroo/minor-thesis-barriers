@@ -2,7 +2,7 @@
 \centering
 \begin{lstlisting}[mathescape, linewidth=11.5cm]
 constants:        me := processIndex, meBit := $2^{me}$,
-                  full := $\sum_{i=0}^{processCount-1}2^i$
+                  full := $\sum_{i=0}^{\mathit{processCount}-1}2^i$
 shared variables: integer barrier[processCount]
 initialization:   barrier[*] := full
 $\listingrule{11.5cm}$
