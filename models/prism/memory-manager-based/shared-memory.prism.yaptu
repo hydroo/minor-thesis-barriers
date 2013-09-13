@@ -73,7 +73,7 @@ endmodule
 
 module v_ownership
   v_currentOwner : [-1..$THREAD_COUNT$] init 0;
-  v_nextOwner : [-1..$THREAD_COUNT$] init -1;
+  v_nextOwner : [-1..$THREAD_COUNT$] init -1; //makes sure no writes are triggered without a request for writing
 
 ++ for i in xrange(0,THREAD_COUNT):
   [v_request_write$i$] true -> reactive:(v_nextOwner'=$i$);
