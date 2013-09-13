@@ -80,6 +80,10 @@ module v_validity
 --
 --
 --
+
+++ for i in xrange(0,THREAD_COUNT):
+  [v_write$i$] true -> reactive:(v_valid$i$'=true);
+--
 endmodule
 
 module v_ownership
