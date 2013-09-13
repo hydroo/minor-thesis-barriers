@@ -54,10 +54,7 @@ endmodule
 
 // BEGIN Memory Managaer
 
-++ for j in xrange(0,THREAD_COUNT):
-formula v_inform$j$       = ($' & '.join(['v_inform%d%d=false' %(k,i) for k in [j] for i in xrange(0,THREAD_COUNT) if i!=j])$);
---
-formula v_noInforms     = ($' & '.join(['v_inform%d' %i for i in xrange(0,THREAD_COUNT)])$);
+formula v_noInforms     = ($' & '.join([' & '.join([ 'v_inform%d%d=false' % (i, j) for j in xrange(0,THREAD_COUNT) if i != j])  for i in xrange(0,THREAD_COUNT)])$);
 formula v_noInvalidates = ($' & '.join(['v_invalidate%d=false' %i for i in xrange(0,THREAD_COUNT)])$);
 formula v_readReady     = (v_noInforms & v_noInvalidates);
 formula v_writeReady    = (v_readReady);
