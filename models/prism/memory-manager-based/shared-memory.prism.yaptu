@@ -1,10 +1,9 @@
 ctmc
 
-// model parameter
 const int v_min = 0;
 const int v_max = $VALUE_COUNT-1$;
 
-// rate parameter
+// rates
 const double write    = 2;
 const double read     = 2;
 
@@ -15,17 +14,16 @@ const double ir       = 2;
 const double pir      = 2;
 const double reactive = 1;
 
-// simple thread
 module thread0
   v_localdata0 : [v_min..v_max];
 
-  // writing:
+  // example writing:
   [v_push_write0] true -> write:true;
 ++ for i in xrange(0,VALUE_COUNT):
   [v_write0] true -> reactive:(v_localdata0'=$i$);
 --
 
-  // reading:
+  // example reading:
   [v_push_read0] true -> read:true;
 ++ for j in xrange(1,THREAD_COUNT):
   [v_push$j$0] true -> reactive:(v_localdata0'=v_localdata$j$);
@@ -34,14 +32,12 @@ endmodule
 
 ++ for i in xrange(1,THREAD_COUNT):
 module thread$i$ = thread0 [
-  // localdata:
   v_localdata0=v_localdata$i$,
   v_valid0=v_valid$i$,
 ++ for j in xrange(0,THREAD_COUNT-1):
   v_localdata$j+1$=v_localdata$j+(j>=i)$,
 --
 
-  // messages:
   v_push_write0=v_push_write$i$, v_write0=v_write$i$,
 ++ for j in xrange(0,THREAD_COUNT-1):
   v_push$j+1$0=v_push$j+(j>=i)$$i$,
@@ -59,7 +55,6 @@ formula v_noInvalidates = ($' & '.join(['v_invalidate%d=false' %i for i in xrang
 formula v_readReady     = (v_noInforms & v_noInvalidates);
 formula v_writeReady    = (v_readReady);
 
-// global variables valid i encapsulated in a separate module
 module v_validity
 ++ for i in xrange(0,THREAD_COUNT):
 ++ if i==0:
@@ -83,7 +78,6 @@ module v_validity
 --
 endmodule
 
-// global variables for ownership encapsulated in a separate module
 module v_ownership
   v_currentOwner : [-1..$THREAD_COUNT$] init 0;
   v_nextOwner : [-1..$THREAD_COUNT$] init -1;
@@ -127,7 +121,6 @@ module v_mm_control_flow
   [v_restart] (v_loc=inform)  & v_writeReady -> rer:(v_loc'=idle);
 endmodule
 
-// mm actions
 module v_mm_activity
 ++ for i in xrange(0,THREAD_COUNT):
   v_invalidate$i$ : bool init false;
@@ -202,7 +195,6 @@ const double pushInformCosts  = pushMessageCosts;
 const double pushReadCosts    = pushMessageCosts;
 
 rewards "transition_costs"
-  // push_message costs
 ++ for i in xrange(0,THREAD_COUNT):
   [v_push_write$i$] true : pushInvCosts;
 --
@@ -215,17 +207,14 @@ rewards "transition_costs"
   [v_push_read$i$] true : pushReadCosts;
 --
 
-  // invalidation costs
 ++ for i in xrange(0,THREAD_COUNT):
   [v_set_invalid$i$] true : invCosts;
 --
 
-  // write costs
 ++ for i in xrange(0,THREAD_COUNT):
   [v_write$i$] true : writeCosts;
 --
 
-  // read costs
 ++ for i in xrange(0,THREAD_COUNT):
 ++ for j in xrange(0,THREAD_COUNT):
 ++ if i!=j:
