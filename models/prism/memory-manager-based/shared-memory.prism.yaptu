@@ -13,6 +13,14 @@ const double pir      = 2; // push inform rate
 const double reactive = 1; // always 1
 
 
+// rules of usage:
+//
+//  * never query for v_valid0, or anything else memory manager control flow related
+//
+//  * always v_request_write0 before v_write0
+//  * always v_write0 after v_request_write0
+//  * analogue holds for read
+
 module thread0
   v_0 : [v_min..v_max];
 
@@ -33,7 +41,6 @@ endmodule
 ++ for i in xrange(1,THREAD_COUNT):
 module thread$i$ = thread0 [
   v_0=v_$i$, $", ".join([ "v_%d=v_%d" % (j+1, j+(j>=i))for j in xrange(0,THREAD_COUNT-1)])$,
-  v_valid0=v_valid$i$,
   v_request_write0=v_request_write$i$, v_write0=v_write$i$, v_request_read0=v_request_read$i$,
   $", ".join(["v_read0%d=v_read%d%d" %(j+1, i, j+(j>=i)) for j in xrange(0,THREAD_COUNT-1)])$
 ]
