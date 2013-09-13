@@ -1,7 +1,0 @@
-shared: barrier:=numThreads
-
-if atomic_add_fetch(barrier, -1) != 0 {
-	while barrier != 0 {}
-}
-
-// reset is problematic
