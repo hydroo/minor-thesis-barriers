@@ -32,19 +32,12 @@ endmodule
 
 ++ for i in xrange(1,THREAD_COUNT):
 module thread$i$ = thread0 [
-  v_0=v_$i$,
+  v_0=v_$i$, $', '.join([ 'v_%d=v_%d' % (j+1, j+(j>=i))for j in xrange(0,THREAD_COUNT-1)])$,
   v_valid0=v_valid$i$,
-++ for j in xrange(0,THREAD_COUNT-1):
-  v_$j+1$=v_$j+(j>=i)$,
---
-  v_push_write0=v_push_write$i$, v_write0=v_write$i$,
-++ for j in xrange(0,THREAD_COUNT-1):
-  v_push$j+1$0=v_push$j+(j>=i)$$i$,
---
-  v_push_read0=v_push_read$i$
+  v_push_write0=v_push_write$i$, v_write0=v_write$i$, v_push_read0=v_push_read$i$,
+  $', '.join(['v_push%d0=v_push%d%d' %(j+1, j+(j>=i), i) for j in xrange(0,THREAD_COUNT-1)])$
 ]
 endmodule
-
 --
 
 
