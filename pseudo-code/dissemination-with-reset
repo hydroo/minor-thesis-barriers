@@ -1,0 +1,22 @@
+variables:
+
+  shared: barrier[threadCount][threadCount] (each thread/process has its element locally)
+  local: c (local copy of barrier[threadIndex][threadIndex])
+  init: barrier[*][*] := 0
+
+code per thread/process:
+
+  c := barrier[threadIndex][threadIndex] + 1;               // expect new repetition
+  barrier[threadIndex][threadIndex] := c;
+
+  for distance := 0; distance < numThreads; distance *= 2 {
+    to   := (threadIndex + distance) % threadCount
+    from := (threadIndex - distance) % threadCount
+
+    barrier[to][threadIndex] := c                           // set to-poor to repetiton counter
+
+    while barrier[threadIndex][from] < c {}                 // expect your from-poor to set your counter to the current repetition
+  }
+
+// implementations/remember-others-and-add-fetch-rapl/main.c search for "dissemination barrier { "
+// adapted/taken from hoefler2005 Listing 2.7

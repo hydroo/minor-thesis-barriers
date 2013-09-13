@@ -1,0 +1,44 @@
+\input{pre}
+
+% preamble
+\node [box, align=left] (pre)  {
+	\begin{minipage}{12cm}
+		\begin{itemize}
+			\item constants:
+				\begin{itemize}
+					\item[] \textbf{integer} nthreads {\color{gray} number of threads}
+					\item[] \textbf{integer} me \color{gray} thread identificator (0..nthreads-1)
+				\end{itemize}
+			\item shared variables:
+				\begin{itemize}
+					\item[] \textbf{boolean} barrier[0..nthreads-1][0..nthreads-1] \\
+					\color{gray}where barrier[me][*] is stored on each thread/process
+				\end{itemize}
+			\item local variables:
+				\begin{itemize}
+					\item[] \textbf{integer} distance
+					\item[] \textbf{integer} to
+					\item[] \textbf{integer} from
+				\end{itemize}
+			\item initialize:
+				\begin{itemize}
+					\item[] barrier[*][*] := 0
+					\item[] distance := false
+				\end{itemize}
+		\end{itemize}
+	\end{minipage}
+};
+
+% nodes
+\node [o, below of=pre, draw=none,yshift=-3cm]  (init) {};
+\node [o, below right of=init]                  (1)    {};
+\node [o, below of=1]                           (2)    {};
+\node [o, above right of=1, draw=none]          (done) {};
+%  edges
+\path [->] (init) edge node [below left] {\color{gray}(work period)} (1);
+\path [->] (1)    edge [out=-45, in=45] node [right, align=left] {distance $<$ nthreads : \\ to := me + distance (mod nthreads) \\ from := me - distance (mod nthreads) \\ barrier[to][me] := true \color{gray}(remote write)}        (2);
+\path [->] (1)    edge node [below right] {else} (done);
+\path [->] (2)    edge [loop, distance=2cm, out=315, in=225] node[below] {barrier[me][from] $\ne$ true \color{gray}(local read)} (2);
+\path [->] (2)    edge [out=135, in=225] node[left] {else : distance := distance $\times$ 2 \color{gray}(local read)} (1);
+
+\input{post}

@@ -1,9 +1,0 @@
-[] Fast Barrier Synchronization for InfiniBand
-  * http://htor.inf.ethz.ch/publications//img/hoefler-ipdps-ibbarr.pdf
-  * good refs and explanation of n-way dissemination
-
-[] MPI 3.0 Standard
-  * http://www.mpi-forum.org/docs/mpi-3.0/mpi30-report.pdf
-
-[] MPI 2.2 Standard
-  * http://www.mpi-forum.org/docs/mpi-2.2/mpi22-report.pdf

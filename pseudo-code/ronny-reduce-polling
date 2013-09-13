@@ -1,0 +1,26 @@
+// do not save the updated mask to my own date (in comparison to super-wasteful 5 / ronny-fancy), but
+// use it only to not ask all other threads again (as in super-wasteful 2 / ronny-simple)
+
+shared: barrier[threadCount] (each process owns its own array element)
+local: me:=$2^{threadIndex}$, full:=$\sum_{i=0}^{numThreads-1}2^i$
+init: barrier[*] := 0
+
+barrier[threadIndex] := 1
+
+mask := full & ~me;
+
+i := 0
+b := 2^i
+
+while mask != 0 {
+	if mask&b != 0 {
+		if barrier[i] == 1 {
+			mask = mask & ~b;
+		}
+	}
+
+	i := i + 1
+	b := 2^i
+}
+
+// resetting not handled here
