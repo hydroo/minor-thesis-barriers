@@ -1270,7 +1270,7 @@ static inline void barrierSuperWasteful4(int threadIndex, int threadCount, Sw4El
 
     uint64_t mask = fullMask&notMe;
 
-    int i = 0;
+    int i = threadIndex + 1 % threadCount;
     uint64_t b = 1;
     do {
 
