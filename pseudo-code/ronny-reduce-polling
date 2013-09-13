@@ -9,7 +9,7 @@ barrier[threadIndex] := 1
 
 mask := full & ~me;
 
-i := 0
+i := (threadIndex + 1 %) threadCount
 b := 2^i
 
 while mask != 0 {
