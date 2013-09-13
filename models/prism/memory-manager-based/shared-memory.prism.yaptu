@@ -17,15 +17,15 @@ module thread0
   v_0 : [v_min..v_max];
 
   // example writing:
-  [v_push_write0] true -> wr:true;
+  [v_request_write0] true -> wr:true;
 ++ for i in xrange(0,VALUE_COUNT):
   [v_write0] true -> reactive:(v_0'=$i$);
 --
 
   // example reading:
-  [v_push_read0] true -> rr:true;
+  [v_request_read0] true -> rr:true;
 ++ for j in xrange(1,THREAD_COUNT):
-  [v_push$j$0] true -> reactive:(v_0'=v_$j$);
+  [v_read0$j$] true -> reactive:(v_0'=v_$j$);
 --
 endmodule
 
@@ -34,8 +34,8 @@ endmodule
 module thread$i$ = thread0 [
   v_0=v_$i$, $", ".join([ "v_%d=v_%d" % (j+1, j+(j>=i))for j in xrange(0,THREAD_COUNT-1)])$,
   v_valid0=v_valid$i$,
-  v_push_write0=v_push_write$i$, v_write0=v_write$i$, v_push_read0=v_push_read$i$,
-  $", ".join(["v_push%d0=v_push%d%d" %(j+1, j+(j>=i), i) for j in xrange(0,THREAD_COUNT-1)])$
+  v_request_write0=v_request_write$i$, v_write0=v_write$i$, v_request_read0=v_request_read$i$,
+  $", ".join(["v_read0%d=v_read%d%d" %(j+1, i, j+(j>=i)) for j in xrange(0,THREAD_COUNT-1)])$
 ]
 endmodule
 --
@@ -59,13 +59,13 @@ module v_validity
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_set_invalid$i$] true -> reactive:(v_valid$i$'=false);
+  [v_invalidate$i$] true -> reactive:(v_valid$i$'=false);
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
 ++ for j in xrange(0,THREAD_COUNT):
 ++ if (i!=j):
-  [v_push$i$$j$] true -> reactive:(v_valid$j$'=true);
+  [v_read$i$$j$] true -> reactive:(v_valid$i$'=true);
 --
 --
 --
@@ -76,7 +76,7 @@ module v_ownership
   v_nextOwner : [-1..$THREAD_COUNT$] init -1;
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_write$i$] true -> reactive:(v_nextOwner'=$i$);
+  [v_request_write$i$] true -> reactive:(v_nextOwner'=$i$);
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
@@ -85,33 +85,33 @@ module v_ownership
 endmodule
 
 // locations for mm control flow
-const int idle       = 0;
-const int invalidate = 1;
-const int writing    = 2;
-const int inform     = 3;
-const int reading    = 4;
+const int idling       = 0;
+const int invalidating = 1;
+const int writing      = 2;
+const int informing    = 3;
+const int reading      = 4;
 
 module v_mm_control_flow
-  v_l : [0..4] init idle;
+  v_l : [0..4] init idling;
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_write$i$] (v_l=idle) & v_writeReady -> reactive:(v_l'=invalidate);
+  [v_request_write$i$] (v_l=idling) & v_writeReady -> reactive:(v_l'=invalidating);
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_write$i$] (v_l=invalidate) & v_writeReady -> reactive:(v_l'=writing);
+  [v_write$i$] (v_l=invalidating) & v_writeReady -> reactive:(v_l'=writing);
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_inform$i$] (v_l=writing) -> reactive:(v_l'=inform);
+  [v_push_inform$i$] (v_l=writing) -> reactive:(v_l'=informing);
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_read$i$] (v_l=idle) & v_readReady -> reactive:(v_l'=reading);
+  [v_request_read$i$] (v_l=idling) & v_readReady -> reactive:(v_l'=reading);
 --
 
-  [v_restart] (v_l=reading) & v_readReady  -> rer:(v_l'=idle);
-  [v_restart] (v_l=inform)  & v_writeReady -> rer:(v_l'=idle);
+  [v_restart] (v_l=reading) & v_readReady  -> rer:(v_l'=idling);
+  [v_restart] (v_l=informing)  & v_writeReady -> rer:(v_l'=idling);
 endmodule
 
 module v_mm_activity
@@ -129,11 +129,11 @@ module v_mm_activity
 
   // invalidating
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_write$i$] true -> reactive:$" & ".join(["(v_invalidate%d'=true)" %j for j in xrange(0,THREAD_COUNT) if i!=j])$;
+  [v_request_write$i$] true -> reactive:$" & ".join(["(v_invalidate%d'=true)" %j for j in xrange(0,THREAD_COUNT) if i!=j])$;
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_set_invalid$i$] (v_invalidate$i$=true) -> ir:(v_invalidate$i$'=false);
+  [v_invalidate$i$] (v_invalidate$i$=true) -> ir:(v_invalidate$i$'=false);
 --
 
   // pushes triggered by writing
@@ -145,7 +145,7 @@ module v_mm_activity
 ++ for i in xrange(0,THREAD_COUNT):
 ++ for j in xrange(0,THREAD_COUNT):
 ++ if i!=j:
-  [v_push_read$i$] (v_currentOwner=$j$) -> reactive:(v_inform$j$$i$'=true);
+  [v_request_read$i$] (v_currentOwner=$j$) -> reactive:(v_inform$j$$i$'=true);
 --
 --
 --
@@ -154,7 +154,7 @@ module v_mm_activity
 ++ for i in xrange(0,THREAD_COUNT):
 ++ for j in xrange(0,THREAD_COUNT):
 ++ if i!=j:
-  [v_push$i$$j$] (v_inform$i$$j$=true) -> pr:(v_inform$i$$j$'=false);
+  [v_read$i$$j$] (v_inform$j$$i$=true) -> pr:(v_inform$j$$i$'=false);
 --
 --
 --
@@ -163,33 +163,32 @@ endmodule
 // END Memory Manager
 
 // costs model - states
-const double idleCosts       = 0;
-const double invalidateCosts = 1;
-const double writingCosts    = 2;
-const double informCosts     = 3;
-const double readingCosts    = 4;
+const double idlingCosts       = 0;
+const double invalidatingCosts = 1;
+const double writingCosts      = 2;
+const double informingCosts    = 3;
+const double readingCosts      = 4;
 
 rewards "v_location_costs"
-  (v_l=idle)       : idleCosts;
-  (v_l=invalidate) : invalidateCosts;
-  (v_l=writing)    : writingCosts;
-  (v_l=inform)     : informCosts;
-  (v_l=reading)    : readingCosts;
+  (v_l=idling)       : idlingCosts;
+  (v_l=invalidating) : invalidatingCosts;
+  (v_l=writing)      : writingCosts;
+  (v_l=informing)    : informingCosts;
+  (v_l=reading)      : readingCosts;
 endrewards
 
 // costs model - transitions
-const double invCosts         = 0.25;
+const double invalidateCosts  = 0.25;
 const double writeCosts       = 2.0;
 const double readCosts        = 1.0;
 
-const double pushMessageCosts = 0.5;
-const double pushInvCosts     = pushMessageCosts;
-const double pushInformCosts  = pushMessageCosts;
-const double pushReadCosts    = pushMessageCosts;
+const double pushInformCosts   = 0.5;
+const double requestReadCosts  = 0.5;
+const double requestWriteCosts = 0.5;
 
 rewards "transition_costs"
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_write$i$] true : pushInvCosts;
+  [v_request_write$i$] true : requestWriteCosts;
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
@@ -197,11 +196,11 @@ rewards "transition_costs"
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_push_read$i$] true : pushReadCosts;
+  [v_request_read$i$] true : requestReadCosts;
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_set_invalid$i$] true : invCosts;
+  [v_invalidate$i$] true : invalidateCosts;
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
@@ -211,7 +210,7 @@ rewards "transition_costs"
 ++ for i in xrange(0,THREAD_COUNT):
 ++ for j in xrange(0,THREAD_COUNT):
 ++ if i!=j:
-  [v_push$i$$j$] true : readCosts;
+  [v_read$i$$j$] true : readCosts;
 --
 --
 --
