@@ -50,6 +50,10 @@ endmodule
 
 // BEGIN Memory Managaer
 
+++ if DEBUG:
+label "error" = v_ownerError;
+--
+
 formula v_noInforms     = ($" & ".join([" & ".join([ "v_inform%d%d=false" % (i, j) for j in xrange(0,THREAD_COUNT) if i != j])  for i in xrange(0,THREAD_COUNT)])$);
 formula v_noInvalidates = ($" & ".join(["v_invalidate%d=false" %i for i in xrange(0,THREAD_COUNT)])$);
 formula v_readReady     = (v_noInforms & v_noInvalidates);
@@ -79,15 +83,29 @@ module v_validity
 endmodule
 
 module v_ownership
-  v_currentOwner : [-1..$THREAD_COUNT$] init 0;
-  v_nextOwner : [-1..$THREAD_COUNT$] init -1; //makes sure no writes are triggered without a request for writing
-
-++ for i in xrange(0,THREAD_COUNT):
-  [v_request_write$i$] true -> reactive:(v_nextOwner'=$i$);
+  v_currentOwner : [-1..$THREAD_COUNT$] init  0;
+  v_nextOwner    : [-1..$THREAD_COUNT$] init -1;    //makes sure no writes are triggered without a request for writing
+++ if DEBUG:
+  v_ownerError   : bool    init false; // is false, if the order of requests/writes is wrong
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_write$i$] v_nextOwner=$i$ -> wr:(v_currentOwner'=$i$);
+  [v_request_write$i$] v_nextOwner =-1 -> reactive:(v_nextOwner' =$i$);
+++ if DEBUG:
+  [v_request_write$i$] v_nextOwner!=-1 ->          (v_ownerError'=true);
+--
+--
+
+++ for i in xrange(0,THREAD_COUNT):
+  [v_write$i$] v_nextOwner= $i$ -> wr:(v_currentOwner'=$i$) & (v_nextOwner'=-1);
+++ if DEBUG:
+  [v_write$i$] v_nextOwner=-1 ->    (v_ownerError'=true);
+++ for j in xrange(0,THREAD_COUNT):
+++ if i!=j:
+  [v_write$i$] v_nextOwner= $j$ ->    (v_ownerError'=true);
+--
+--
+--
 --
 endmodule
 
