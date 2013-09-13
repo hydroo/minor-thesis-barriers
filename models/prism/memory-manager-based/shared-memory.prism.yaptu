@@ -14,28 +14,28 @@ const double reactive = 1; // always 1
 
 
 module thread0
-  v_localdata0 : [v_min..v_max];
+  v_0 : [v_min..v_max];
 
   // example writing:
   [v_push_write0] true -> wr:true;
 ++ for i in xrange(0,VALUE_COUNT):
-  [v_write0] true -> reactive:(v_localdata0'=$i$);
+  [v_write0] true -> reactive:(v_0'=$i$);
 --
 
   // example reading:
   [v_push_read0] true -> rr:true;
 ++ for j in xrange(1,THREAD_COUNT):
-  [v_push$j$0] true -> reactive:(v_localdata0'=v_localdata$j$);
+  [v_push$j$0] true -> reactive:(v_0'=v_$j$);
 --
 endmodule
 
 
 ++ for i in xrange(1,THREAD_COUNT):
 module thread$i$ = thread0 [
-  v_localdata0=v_localdata$i$,
+  v_0=v_$i$,
   v_valid0=v_valid$i$,
 ++ for j in xrange(0,THREAD_COUNT-1):
-  v_localdata$j+1$=v_localdata$j+(j>=i)$,
+  v_$j+1$=v_$j+(j>=i)$,
 --
   v_push_write0=v_push_write$i$, v_write0=v_write$i$,
 ++ for j in xrange(0,THREAD_COUNT-1):
