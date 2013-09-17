@@ -1,18 +1,6 @@
 // variable is v_ because making the name variable in
 // yaptu makes this document look even more ugly
 
-// critique:
-//  * general:
-//  * shared memory:
-//    * inform is not a thing
-//    * invalidation should be a broadcast, not independt invalidate messages
-//    * ownership is not a thing in shared state
-//  * remote memory:
-//   * validity, inform, invalidation, ownership don't exist
-//
-// shared memory seems doable, but being able to use it for distributed at the same time looks hard
-// many changes would be needed. Or maybe it is not possible at all.
-
 ctmc
 
 const int v_min = 0;
