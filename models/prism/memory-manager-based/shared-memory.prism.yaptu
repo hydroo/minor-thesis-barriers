@@ -104,12 +104,12 @@ module v_ownership
 --
 
 ++ for i in xrange(0,THREAD_COUNT):
-  [v_write$i$] v_nextOwner= $i$ -> wr:(v_currentOwner'=$i$) & (v_nextOwner'=-1);
+  [v_write$i$] v_nextOwner= $i$ -> reactive:(v_currentOwner'=$i$) & (v_nextOwner'=-1);
 ++ if DEBUG:
-  [v_write$i$] v_nextOwner=-1 ->    (v_ownerError'=true);
+  [v_write$i$] v_nextOwner=-1 ->          (v_ownerError'=true);
 ++ for j in xrange(0,THREAD_COUNT):
 ++ if i!=j:
-  [v_write$i$] v_nextOwner= $j$ ->    (v_ownerError'=true);
+  [v_write$i$] v_nextOwner= $j$ ->          (v_ownerError'=true);
 --
 --
 --
