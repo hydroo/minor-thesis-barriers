@@ -1,3 +1,21 @@
+--- 13-09-16 ---
+
+ * decided to ditch memory manager, because
+   * general:
+   * shared memory:
+     * inform is not a thing
+     * invalidation should be a broadcast, not independt invalidate messages
+     * ownership is not a thing in shared state
+   * remote memory:
+    * the idea of one variable shared among many in distributed setting is still weird (makes no sense to me)
+    * validity, inform, invalidation, ownership don't exist
+    * i don't know how to do distributed memory on this basis
+
+   * shared memory seems doable, but being able to use it for distributed at the same time looks hard
+   * many changes would be needed. Or maybe it is not possible at all.
+   * it would not resemble anything near sasha's idea
+   * therefore I thought it's no use "modifying" it
+
 --- 13-09-11 ---
 
  □ dissemination with 2^i + 1 cores needs i+1 rounds. runtime increase is non-linear because of $\lceil ld~n \rceil$ rounds
