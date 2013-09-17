@@ -1,3 +1,6 @@
+// variable is v_ because making the name variable in
+// yaptu makes this document look even more ugly
+
 ctmc
 
 const int v_min = 0;
