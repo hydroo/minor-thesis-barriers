@@ -150,32 +150,36 @@ def generateLabels(threadCount) :
 
 	s = ""
 
-	s += "formula one_is_done      = " + " | ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
-	s += "formula all_are_done     = " + " & ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
-	s += "label \"one_is_done\"      = one_is_done;\n"
-	s += "label \"all_are_done\"     = all_are_done;\n"
+	s += "formula one_is_done                  = " + " | ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula all_are_done                 = " + " & ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
+	#s += "formula exactly_one_is_done          = " +  " | ".join([ "(l_%d = l_done & " % i + " & ".join(["l_%d < l_done" % j for j in range(0, threadCount) if j!=i]) + ")" for i in range(0, threadCount)]) + ";\n"
+	s += "label \"one_is_done\"                  = one_is_done;\n"
+	s += "label \"all_are_done\"                 = all_are_done;\n"
+	#s += "label \"exactly_one_is_done\"          = exactly_one_is_done;\n"
 
 	s += "\n"
 
-	s += "formula one_is_working   = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
-	s += "formula all_are_working  = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
-	s += "label \"one_is_working\"   = one_is_working;\n"
-	s += "label \"all_are_working\"  = all_are_working;\n"
+	s += "formula one_is_working               = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula all_are_working              = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula exactly_one_is_done_working  = " +  " | ".join([ "(l_%d = l_atomic_begin & " % i + " & ".join(["l_%d = l_work" % j for j in range(0, threadCount) if j!=i]) + ")" for i in range(0, threadCount)]) + ";\n"
+	s += "label \"one_is_working\"               = one_is_working;\n"
+	s += "label \"all_are_working\"              = all_are_working;\n"
+	s += "label \"exactly_one_is_done_working\"  = exactly_one_is_done_working;\n"
 
 	s += "\n"
 
-	s += "formula one_is_writing   = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
-	s += "formula all_are_writing  = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
-	s += "formula none_are_writing = !one_is_writing;\n"
-	s += "label \"one_is_writing\"   = one_is_writing;\n"
-	s += "label \"all_are_writing\"  = all_are_writing;\n"
+	s += "formula one_is_writing               = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
+	s += "formula all_are_writing              = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
+	s += "formula none_are_writing             = !one_is_writing;\n"
+	s += "label \"one_is_writing\"               = one_is_writing;\n"
+	s += "label \"all_are_writing\"              = all_are_writing;\n"
 
 	s += "\n"
 
-	s += "formula one_is_reading   = " + " | ".join(["l_%d=l_wait" % i for i in range(0, threadCount)]) + ";\n"
-	s += "formula all_are_reading  = " + " & ".join(["l_%d=l_wait" % i for i in range(0, threadCount)]) + ";\n"
-	s += "label \"one_is_reading\"   = one_is_reading;\n"
-	s += "label \"all_are_reading\"  = all_are_reading;\n"
+	s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula all_are_reading_or_done      = " + " & ".join(["l_%d>=l_wait" % i for i in range(0, threadCount)]) + ";\n"
+	s += "label \"one_is_reading\"             = one_is_reading;\n"
+	s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
 
 	return s
 
@@ -197,34 +201,70 @@ def generateCorrectnessProperties(threadCount) :
 # ### quantitative props ### ##################################################
 def generateQuantitativeProperties(threadCount) :
 
-	s = ""
+	t = ""
 
-	#loc = "l_between_2"
+	t += "// *** thread begin ***\n\n"
 
-	#s += "// how long does it take for one thread to get behind the first barrier\n"
-	#q = ""
-	#for p in range(0, threadCount) :
-	#	q += "l_" + str(p) + ">=" + loc + "|"
-	#s += "P=? [F<=time (" + q + "false)]\n"
-	#s += "\n"
-	#s += "// excpected number of ticks\n"
-	#s += "base_rate * R{\"time\"}=? [F (" + q + "false)]\n"
-	#s += "\n"
+	basicQuerySpecs = {
+		"A" : ["F", "!all_are_working"         , "first finished working phase and entered the barrier"],
+		"B" : ["F", "!one_is_working "         , "last finished working phase and entered the barrier"],
+		"C" : ["F",  "one_is_done"             , "first recognized the barrier is full and left"],
+		"D" : ["F",  "all_are_done"            , "all recognized the barrier is full and left"],
+		"E" : ["F",  "one_is_writing"          , "at least one is still writing"],
+		"F" : ["F",  "all_are_reading_or_done" , "all are reading or already finished"],
+		"Z" : ["F",  "one_is_reading" ,          "at least one is reading"]}
 
-	#s += "// how long does it take for all thread to get behind the first barrier\n"
-	#q = ""
-	#for p in range(0, threadCount) :
-	#	q += "l_" + str(p) + ">=" + loc + "&"
-	#s += "P=? [F<=time (" + q + "true)]\n"
-	#s += "\n"
-	#s += "//excpected number of ticks\n"
-	#s += "base_rate * R{\"time\"}=? [F (" + q + "true)]\n"
-	#s += "\n"
+	basicQueryStrings = {}
+	for k in basicQuerySpecs.keys() :
+		query = basicQuerySpecs[k]
+		basicQueryStrings[k      ] = ["P=? [%s<=time (%s)]" % (query[0], query[1]), "%s" % (query[2])]
+		basicQueryStrings[k + "e"] = ["base_rate * R{\"time\"}=? [%s (%s)]" % (query[0], query[1]), ""]
 
-	#s += "const double time=ticks/base_rate;\n"
-	#s += "const double ticks;\n"
+	queryStrings = {}
+	#wrong
+	queryStrings["C-A"]  = ["(" + basicQueryStrings["C" ][0] + ") - ("+ basicQueryStrings["A" ][0] + ")", "from the first entered until the first is done"]
+	#correct
+	queryStrings["C-Ae"] = ["(" + basicQueryStrings["Ce"][0] + ") - ("+ basicQueryStrings["Ae"][0] + ")", ""]
+	#queryStrings["D-A"]  = ["(" + basicQueryStrings["D" ][0] + ") - ("+ basicQueryStrings["A" ][0] + ")", ""]
+	#queryStrings["D-Ae"] = ["(" + basicQueryStrings["De"][0] + ") - ("+ basicQueryStrings["Ae"][0] + ")", ""]
+	#wrong
+	queryStrings["D-B"]  = ["(" + basicQueryStrings["D" ][0] + ") - ("+ basicQueryStrings["B" ][0] + ")", "from all entered until all are done"]
+	#correct
+	queryStrings["D-Be"] = ["(" + basicQueryStrings["De"][0] + ") - ("+ basicQueryStrings["Be"][0] + ")", ""]
+	#wrong
+	queryStrings["D-C"]  = ["(" + basicQueryStrings["D" ][0] + ") - ("+ basicQueryStrings["C" ][0] + ")", "from all entered until one is done"]
+	#correct
+	queryStrings["D-Ce"] = ["(" + basicQueryStrings["De"][0] + ") - ("+ basicQueryStrings["Ce"][0] + ")", ""]
 
-	return s
+	#wrong
+	queryStrings["F-E"]  = ["(" + basicQueryStrings["F" ][0] + ") - ("+ basicQueryStrings["E" ][0] + ")", "%s" % "writing phase: from the first entered until the all finished writing"]
+	#correct
+	queryStrings["F-Ee"] = ["(" + basicQueryStrings["Fe"][0] + ") - ("+ basicQueryStrings["Ee"][0] + ")", "%s" % ""]
+
+	#wrong
+	queryStrings["D-F"]  = ["(" + basicQueryStrings["D" ][0] + ") - ("+ basicQueryStrings["F" ][0] + ")", "%s" % "reading phase: from all are read to all are done"]
+	#correct
+	queryStrings["D-Fe"] = ["(" + basicQueryStrings["De"][0] + ") - ("+ basicQueryStrings["Fe"][0] + ")", "%s" % ""]
+
+	t += "// e for expected value\n"
+	t += "\n"
+
+	for query_ in sorted(basicQueryStrings.items()) + sorted(queryStrings.items()) :
+		k     = query_[0]
+		query = query_[1]
+
+		t += "%s // (%s) %s\n" % (query[0], k, query[1])
+
+	t += "\n"
+
+	t += "const double time=ticks/base_rate;\n"
+	t += "const double ticks;\n"
+
+	t += "\n"
+
+	t += "// *** thread end ***\n"
+
+	return t
 
 # ### helper ### ##############################################################
 def everyThreadButMyself (p, threadCount) :
