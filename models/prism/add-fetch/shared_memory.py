@@ -99,8 +99,6 @@ def generateVariable(name, typee, init, values, threadCount, debug) :
 		s += "label \"var_shared_#\"    =  (var_state=someAreShared       & mod(floor(var_who/me_bit_#),2)=1);\n"
 		s = s.replace('#', str(p))
 
-	s = s.replace("var_", name + "_")
-
 	# correctness props
 	t = ""
 
@@ -115,6 +113,8 @@ def generateVariable(name, typee, init, values, threadCount, debug) :
 		t += "\n"
 		t += "P<=0 [F (var_error=true)]; // if a cache copy is shared, at least one other is too\n"
 
+
+	s = s.replace("var_", name + "_")
 	t = t.replace("var_", name + "_")
 
 	return s, t
