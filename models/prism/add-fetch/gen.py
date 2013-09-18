@@ -85,8 +85,8 @@ def generateConstants(threadCount) :
 	s += "\n"
 
 	s += "// rates\n"
-	s += "const double base_rate = 1000.0;\n"
-	s += "const double tick      = base_rate / 1.0;\n"
+	s += "const double base_rate = 1000.0;\n"            # needed for shared_memory as well
+	s += "const double tick      = base_rate / 1.0;\n"   # needed for shared_memory as well
 	s += "const double work      = tick / work_ticks;\n"
 
 	s += "\n"
