@@ -150,30 +150,32 @@ def generateLabels(threadCount) :
 
 	s = ""
 
-	for p in range(0, threadCount) :
-		s += "formula done_# = l_# = l_exit; "
-		s = s.replace('#', str(p))
-	s += "\n"
-
-
-	s += "formula one_done  = " + " | ".join(["done_%d" % i for i in range(0, threadCount)]) + ";\n"
-	s += "formula all_done  = " + " & ".join(["done_%d" % i for i in range(0, threadCount)]) + ";\n"
-	s += "formula none_done = !one_done;\n"
+	s += "formula one_is_done      = " + " | ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula all_are_done     = " + " & ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
+	s += "label \"one_is_done\"      = one_is_done;\n"
+	s += "label \"all_are_done\"     = all_are_done;\n"
 
 	s += "\n"
 
-	s += "label \"one_done\" = one_done;\n"
-	s += "label \"all_done\" = all_done;\n"
+	s += "formula one_is_working   = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula all_are_working  = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
+	s += "label \"one_is_working\"   = one_is_working;\n"
+	s += "label \"all_are_working\"  = all_are_working;\n"
 
 	s += "\n"
 
-	s += "formula writing_phase = " +  " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + "; // all are before reading\n"
-	s += "formula reading_phase = !all_done & " +  " & ".join([ "l_%d >= l_wait" % i for i in range(0, threadCount)]) + ";       // all are at least waiting, but we are not yet done\n"
+	s += "formula one_is_writing   = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
+	s += "formula all_are_writing  = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
+	s += "formula none_are_writing = !one_is_writing;\n"
+	s += "label \"one_is_writing\"   = one_is_writing;\n"
+	s += "label \"all_are_writing\"  = all_are_writing;\n"
 
 	s += "\n"
 
-	s += "label \"writing_phase\" = writing_phase;\n"
-	s += "label \"reading_phase\" = reading_phase;\n"
+	s += "formula one_is_reading   = " + " | ".join(["l_%d=l_wait" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula all_are_reading  = " + " & ".join(["l_%d=l_wait" % i for i in range(0, threadCount)]) + ";\n"
+	s += "label \"one_is_reading\"   = one_is_reading;\n"
+	s += "label \"all_are_reading\"  = all_are_reading;\n"
 
 	return s
 
