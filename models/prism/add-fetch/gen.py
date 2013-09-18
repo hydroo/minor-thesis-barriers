@@ -184,8 +184,13 @@ def generateCorrectnessProperties(threadCount) :
 
 	t = ""
 
-	#t += "const double error=1.0E-6;\n"
-	#t += "\n"
+	t += "// *** thread begin ***\n\n"
+
+	t += "P>=1 [F all_are_done]\n"
+
+	t += "\n"
+
+	t += "// *** thread end ***\n"
 
 	return t
 
