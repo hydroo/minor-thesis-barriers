@@ -13,7 +13,11 @@ def generateModel(threadCount, workTicks, read_ticks, writeTicks, debug) :
 	s += generateConstants(threadCount)
 	s += "\n"
 
-	s += "// *** main thread begin ***\n\n"
+	s += "// *** main thread begin ***\n"
+	s += "\n"
+	s += "// * you always need to add transitions for all sync labels in var_shared, otherwise\n"
+	s += "//   they will not be recognized as synchronized and are able to fire always\n"
+	s += "//\n"
 	s += "// * not all labels are for sync. but for easier debugging in the simulator: work_*, done_*\n"
 	s += "// * always read using [var_read_n]\n"
 	s += "// * always write using [var_set_to_*_n]\n"
