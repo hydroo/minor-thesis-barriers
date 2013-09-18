@@ -102,7 +102,7 @@ def generateConstants(threadCount) :
 	s += "const l_write        = 3;\n"
 	s += "const l_atomic_end   = 4;\n"
 	s += "const l_wait         = 5;\n"
-	s += "const l_exit         = 6;\n"
+	s += "const l_done         = 6;\n"
 
 	return s
 
@@ -112,7 +112,7 @@ def generateThread(p, threadCount) :
 
 	s += "module thread_#\n"
 
-	s += "    l_# : [l_init..l_exit] init l_init;\n"
+	s += "    l_# : [l_init..l_done] init l_init;\n"
 
 	s += "\n"
 
@@ -131,9 +131,9 @@ def generateThread(p, threadCount) :
 	s += "    [bar_atomic_end_#]   l_#=l_atomic_end          ->        (l_#'=l_wait);\n"
 	s += "\n"
 	s += "    [bar_read_#]         l_#=l_wait       & bar!=0 ->        true;\n"
-	s += "    [bar_read_#]         l_#=l_wait       & bar =0 ->        (l_#'=l_exit);\n"
+	s += "    [bar_read_#]         l_#=l_wait       & bar =0 ->        (l_#'=l_done);\n"
 	s += "\n"
-	s += "    [done_#]             l_#=l_exit                ->        true;\n"
+	s += "    [done_#]             l_#=l_done                ->        true;\n"
 
 	s += "endmodule\n"
 
