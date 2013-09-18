@@ -7,7 +7,7 @@ def generateModel(threadCount, workTicks, read_ticks, writeTicks, debug) :
 	s = "" # model
 	t = "" # correctness props
 
-	s += generateModelType()
+	s += "ctmc\n" # nothing but ctmc is supported
 	s += "\n"
 
 	s += generateConstants(threadCount)
@@ -71,9 +71,6 @@ def generateModel(threadCount, workTicks, read_ticks, writeTicks, debug) :
 	s += "// *** thread rewards end ***\n\n"
 
 	return s, t
-
-def generateModelType() :
-	return "ctmc\n"
 
 def generateConstants(threadCount) :
 
