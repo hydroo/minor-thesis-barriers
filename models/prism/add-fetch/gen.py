@@ -12,7 +12,7 @@ def generateModel(threadCount, workTicks, readTicks, writeTicks, debug) :
 	s += "ctmc\n" # nothing but ctmc is supported
 	s += "\n"
 
-	s += generateConstants(threadCount)
+	s += generateConstants(threadCount, workTicks)
 	s += "\n"
 
 	s += "// *** main thread begin ***\n"
@@ -74,7 +74,7 @@ def generateModel(threadCount, workTicks, readTicks, writeTicks, debug) :
 
 	return s, t
 
-def generateConstants(threadCount) :
+def generateConstants(threadCount, workTicks) :
 
 	s = ""
 
@@ -274,7 +274,7 @@ if __name__ == "__main__":
 			threadCount = int(sys.argv[i+1])
 			i += 1
 		elif sys.argv[i] == "--work":
-			work_ticks = int(sys.argv[i+1])
+			workTicks = int(sys.argv[i+1])
 			i += 1
 		elif sys.argv[i] == "--read":
 			readTicks = int(sys.argv[i+1])
