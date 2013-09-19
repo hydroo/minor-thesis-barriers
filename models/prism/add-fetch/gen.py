@@ -211,8 +211,7 @@ def generateQuantitativeProperties(threadCount) :
 		"C" : ["F",  "one_is_done"             , "first recognized the barrier is full and left"],
 		"D" : ["F",  "all_are_done"            , "all recognized the barrier is full and left"],
 		"E" : ["F",  "one_is_writing"          , "at least one is still writing"],
-		"F" : ["F",  "all_are_reading_or_done" , "all are reading or already finished"],
-		"Z" : ["F",  "one_is_reading" ,          "at least one is reading"]}
+		"F" : ["F",  "all_are_reading_or_done" , "all are reading or already finished"]}
 
 	basicQueryStrings = {}
 	for k in basicQuerySpecs.keys() :
