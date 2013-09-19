@@ -153,8 +153,8 @@ def generateLabels(threadCount) :
 	s += "formula one_is_done                  = " + " | ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
 	s += "formula all_are_done                 = " + " & ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
 	#s += "formula exactly_one_is_done          = " +  " | ".join([ "(l_%d = l_done & " % i + " & ".join(["l_%d < l_done" % j for j in range(0, threadCount) if j!=i]) + ")" for i in range(0, threadCount)]) + ";\n"
-	s += "label \"one_is_done\"                  = one_is_done;\n"
-	s += "label \"all_are_done\"                 = all_are_done;\n"
+	#s += "label \"one_is_done\"                  = one_is_done;\n"
+	#s += "label \"all_are_done\"                 = all_are_done;\n"
 	#s += "label \"exactly_one_is_done\"          = exactly_one_is_done;\n"
 
 	s += "\n"
@@ -162,24 +162,24 @@ def generateLabels(threadCount) :
 	s += "formula one_is_working               = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
 	s += "formula all_are_working              = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
 	s += "formula exactly_one_is_done_working  = " +  " | ".join([ "(l_%d = l_atomic_begin & " % i + " & ".join(["l_%d = l_work" % j for j in range(0, threadCount) if j!=i]) + ")" for i in range(0, threadCount)]) + ";\n"
-	s += "label \"one_is_working\"               = one_is_working;\n"
-	s += "label \"all_are_working\"              = all_are_working;\n"
-	s += "label \"exactly_one_is_done_working\"  = exactly_one_is_done_working;\n"
+	#s += "label \"one_is_working\"               = one_is_working;\n"
+	#s += "label \"all_are_working\"              = all_are_working;\n"
+	#s += "label \"exactly_one_is_done_working\"  = exactly_one_is_done_working;\n"
 
 	s += "\n"
 
 	s += "formula one_is_writing               = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
 	s += "formula all_are_writing              = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
 	s += "formula none_are_writing             = !one_is_writing;\n"
-	s += "label \"one_is_writing\"               = one_is_writing;\n"
-	s += "label \"all_are_writing\"              = all_are_writing;\n"
+	#s += "label \"one_is_writing\"               = one_is_writing;\n"
+	#s += "label \"all_are_writing\"              = all_are_writing;\n"
 
 	s += "\n"
 
 	s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait" % i for i in range(0, threadCount)]) + ";\n"
 	s += "formula all_are_reading_or_done      = " + " & ".join(["l_%d>=l_wait" % i for i in range(0, threadCount)]) + ";\n"
-	s += "label \"one_is_reading\"             = one_is_reading;\n"
-	s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
+	#s += "label \"one_is_reading\"             = one_is_reading;\n"
+	#s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
 
 	return s
 
