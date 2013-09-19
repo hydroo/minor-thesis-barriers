@@ -102,12 +102,16 @@ def generateVariable(name, typee, init, values, threadCount, debug) :
 	# correctness props
 	t = ""
 
-	t += "P<=0 [F (var_state=someoneIsModified   &  " + " & ".join(["var_who!=0"] + [ "var_who!=me_bit_%d" % i for i in range(0, threadCount) ]) + ")]; // one or zero threads can be in modified state at a time\n"
-
-	t += "P<=0 [F (var_state=someoneDoesAtomicOp &               " + " & ".join([ "var_who!=me_bit_%d" % i for i in range(0, threadCount) ]) + ")]; // one and only one thread can be in atomic op state at a time\n"
-
+	t += "// one or zero threads can be in modified state at a time\n"
+	t += "P<=0 [F (var_state=someoneIsModified   &  " + " & ".join(["var_who!=0"] + [ "var_who!=me_bit_%d" % i for i in range(0, threadCount) ]) + ")];\n"
 	t += "\n"
-	t += "P<=0 [F (var_state=someAreShared       & (" + " | ".join(["var_who =0"] + [ "var_who =me_bit_%d" % i for i in range(0, threadCount)]) + "))]; // if a cache copy is shared, at least one other is too\n"
+
+	t += "// one and only one thread can be in atomic op state at a time\n"
+	t += "P<=0 [F (var_state=someoneDoesAtomicOp &               " + " & ".join([ "var_who!=me_bit_%d" % i for i in range(0, threadCount) ]) + ")];\n"
+	t += "\n"
+
+	t += "// if a cache copy is shared, at least one other is too\n"
+	t += "P<=0 [F (var_state=someAreShared       & (" + " | ".join(["var_who =0"] + [ "var_who =me_bit_%d" % i for i in range(0, threadCount)]) + "))];\n"
 
 	if debug == True :
 		t += "\n"
