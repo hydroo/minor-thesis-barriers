@@ -253,7 +253,9 @@ def generateQuantitativeProperties(threadCount) :
 		k     = query_[0]
 		query = query_[1]
 
-		t += "%s // (%s) %s\n" % (query[0], k, query[1])
+		t += "// (%s) %s\n" % (k, query[1])
+		t += "%s\n" % query[0]
+		t += "\n"
 
 	t += "\n"
 
