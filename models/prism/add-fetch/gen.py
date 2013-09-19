@@ -146,7 +146,49 @@ def generateRewards() :
 	s += "rewards \"time\"\n"
 	s += "\t" + "true : base_rate;\n"
 	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_all_are_working\"\n"
+	s += "\t" + "all_are_working : base_rate;\n"
 	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_one_is_working\"\n"
+	s += "\t" + "one_is_working : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_writing\"\n"
+	s += "\t" + "one_is_writing : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_reading\"\n"
+	s += "\t" + "one_is_reading : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_not_one_is_done\"\n"
+	s += "\t" + "!one_is_done : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_not_all_are_done\"\n"
+	s += "\t" + "!all_are_done : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_done\"\n"
+	s += "\t" + "all_are_done : base_rate;\n"
+	s += "endrewards\n"
+
 	return s
 
 def generateLabels(threadCount) :
@@ -179,7 +221,7 @@ def generateLabels(threadCount) :
 
 	s += "\n"
 
-	s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait & (" % i + " & ".join(["l_%d>=l_wait" % j for j in range(0, threadCount) if i!=j]) + ")" for i in range(0, threadCount)]) + ";\n"
 	s += "formula all_are_reading_or_done      = " + " & ".join(["l_%d>=l_wait" % i for i in range(0, threadCount)]) + ";\n"
 	#s += "label \"one_is_reading\"             = one_is_reading;\n"
 	#s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
@@ -194,6 +236,10 @@ def generateCorrectnessProperties(threadCount) :
 	t += "// *** thread begin ***\n\n"
 
 	t += "P>=1 [F all_are_done]\n"
+	t += "\n"
+
+	t += "// the following 4 queries partition the state space and have to add up to the total state count\n"
+	t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_writing]) + filter(+, P=? [one_is_reading]) + filter(+, P=? [all_are_done])\n"
 
 	t += "\n"
 
@@ -208,55 +254,47 @@ def generateQuantitativeProperties(threadCount) :
 
 	t += "// *** thread begin ***\n\n"
 
-	basicQuerySpecs = {
-		"A" : ["F", "!all_are_working"         , "first finished working phase and entered the barrier"],
-		"B" : ["F", "!one_is_working "         , "last finished working phase and entered the barrier"],
-		"C" : ["F",  "one_is_done"             , "first recognized the barrier is full and left"],
-		"D" : ["F",  "all_are_done"            , "all recognized the barrier is full and left"],
-		"E" : ["F",  "one_is_writing"          , "at least one is still writing"],
-		"F" : ["F",  "all_are_reading_or_done" , "all are reading or already finished"]}
+	t += "P=?           [F<=time !all_are_working] // (A)\n"
+	t += "R{\"time\"}=? [F       !all_are_working]\n"
+	t += "P=?           [F<=time !one_is_working]  // (B)\n"
+	t += "R{\"time\"}=? [F       !one_is_working]\n"
+	t += "P=?           [F<=time one_is_done]      // (C)\n"
+	t += "R{\"time\"}=? [F       one_is_done]\n"
+	t += "P=?           [F<=time all_are_done]     // (D)\n"
+	t += "R{\"time\"}=? [F       all_are_done]\n"
 
-	basicQueryStrings = {}
-	for k in basicQuerySpecs.keys() :
-		query = basicQuerySpecs[k]
-		basicQueryStrings[k      ] = ["P=? [%s<=time (%s)]" % (query[0], query[1]), "%s" % (query[2])]
-		basicQueryStrings[k + "e"] = ["base_rate * R{\"time\"}=? [%s (%s)]" % (query[0], query[1]), ""]
-
-	queryStrings = {}
-	#wrong
-	queryStrings["C-A"]  = ["(" + basicQueryStrings["C" ][0] + ") - ("+ basicQueryStrings["A" ][0] + ")", "from the first entered until the first is done"]
-	#correct
-	queryStrings["C-Ae"] = ["(" + basicQueryStrings["Ce"][0] + ") - ("+ basicQueryStrings["Ae"][0] + ")", ""]
-	#queryStrings["D-A"]  = ["(" + basicQueryStrings["D" ][0] + ") - ("+ basicQueryStrings["A" ][0] + ")", ""]
-	#queryStrings["D-Ae"] = ["(" + basicQueryStrings["De"][0] + ") - ("+ basicQueryStrings["Ae"][0] + ")", ""]
-	#wrong
-	queryStrings["D-B"]  = ["(" + basicQueryStrings["D" ][0] + ") - ("+ basicQueryStrings["B" ][0] + ")", "from all entered until all are done"]
-	#correct
-	queryStrings["D-Be"] = ["(" + basicQueryStrings["De"][0] + ") - ("+ basicQueryStrings["Be"][0] + ")", ""]
-	#wrong
-	queryStrings["D-C"]  = ["(" + basicQueryStrings["D" ][0] + ") - ("+ basicQueryStrings["C" ][0] + ")", "from all entered until one is done"]
-	#correct
-	queryStrings["D-Ce"] = ["(" + basicQueryStrings["De"][0] + ") - ("+ basicQueryStrings["Ce"][0] + ")", ""]
-
-	#wrong
-	queryStrings["F-E"]  = ["(" + basicQueryStrings["F" ][0] + ") - ("+ basicQueryStrings["E" ][0] + ")", "%s" % "writing phase: from the first entered until the all finished writing"]
-	#correct
-	queryStrings["F-Ee"] = ["(" + basicQueryStrings["Fe"][0] + ") - ("+ basicQueryStrings["Ee"][0] + ")", "%s" % ""]
-
-	#wrong
-	queryStrings["D-F"]  = ["(" + basicQueryStrings["D" ][0] + ") - ("+ basicQueryStrings["F" ][0] + ")", "%s" % "reading phase: from all are read to all are done"]
-	#correct
-	queryStrings["D-Fe"] = ["(" + basicQueryStrings["De"][0] + ") - ("+ basicQueryStrings["Fe"][0] + ")", "%s" % ""]
+	basicQueries = {
+		#key : [query, comment]
+		"A" : ["time_all_are_working" , "time up to: first finished working and entered"],
+		"B" : ["time_one_is_working"  , "time up to: last finished working and entered"],
+		"C" : ["time_not_one_is_done", "time up to: first recognized the barrier is full and left"],
+		"D" : ["time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
+		"E" : ["time_writing"         , "time spent writing"],
+		"F" : ["time_reading"         , "time spent reading"]}
 
 	t += "// e for expected value\n"
 	t += "\n"
 
-	for query_ in sorted(basicQueryStrings.items()) + sorted(queryStrings.items()) :
-		k     = query_[0]
-		query = query_[1]
-
+	for k in sorted(basicQueries.keys()) :
+		query = basicQueries[k]
 		t += "// (%s) %s\n" % (k, query[1])
-		t += "%s\n" % query[0]
+		t += "R{\"%s\"}=? [C<=time]\n" % query[0]        # wrong TODO (compare with A, B, C, D above)
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0] # correct
+		t += "\n"
+
+	t += "\n"
+
+	diffQueries = [
+		["D", "B", "from last to enter to last to leave"],
+		["D", "C", "from first to leave to last to leave"]
+	]
+
+	for query in diffQueries :
+		q = basicQueries[query[0]]
+		u = basicQueries[query[1]]
+		t += "// (%s-%s) %s\n" % (query[0], query[1], query[2])
+		t += "R{\"%s\"}=? [C<=time] - R{\"%s\"}=? [C<=time]\n" % (q[0], u[0])               # wrong TODO
+		t += "R{\"%s\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]\n" % (q[0], u[0]) # likely correct
 		t += "\n"
 
 	t += "\n"
