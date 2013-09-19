@@ -141,9 +141,11 @@ def generateThread(p, threadCount) :
 
 def generateRewards() :
 	s = ""
+
 	s += "// state rewards\n"
 	s += "rewards \"time\"\n"
-	s += "\ttrue : 1;\n"
+	s += "\t" + "true : base_rate;\n"
+	s += "endrewards\n"
 	s += "endrewards\n"
 	return s
 
