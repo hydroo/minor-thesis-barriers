@@ -155,20 +155,38 @@ def generateRewards() :
 
 	s += "\n"
 
+	s += "rewards \"time_not_all_are_working\"\n"
+	s += "\t" + "!all_are_working : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
 	s += "rewards \"time_one_is_working\"\n"
 	s += "\t" + "one_is_working : base_rate;\n"
 	s += "endrewards\n"
 
 	s += "\n"
 
-	s += "rewards \"time_writing\"\n"
+	s += "rewards \"time_not_one_is_working\"\n"
+	s += "\t" + "!one_is_working : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_one_is_writing\"\n"
 	s += "\t" + "one_is_writing : base_rate;\n"
 	s += "endrewards\n"
 
 	s += "\n"
 
-	s += "rewards \"time_reading\"\n"
+	s += "rewards \"time_one_is_reading\"\n"
 	s += "\t" + "one_is_reading : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
+	s += "rewards \"time_one_is_done\"\n"
+	s += "\t" + "one_is_done : base_rate;\n"
 	s += "endrewards\n"
 
 	s += "\n"
@@ -185,7 +203,7 @@ def generateRewards() :
 
 	s += "\n"
 
-	s += "rewards \"time_done\"\n"
+	s += "rewards \"time_all_are_done\"\n"
 	s += "\t" + "all_are_done : base_rate;\n"
 	s += "endrewards\n"
 
@@ -254,32 +272,33 @@ def generateQuantitativeProperties(threadCount) :
 
 	t += "// *** thread begin ***\n\n"
 
-	t += "P=?           [F<=time !all_are_working] // (A)\n"
-	t += "R{\"time\"}=? [F       !all_are_working]\n"
-	t += "P=?           [F<=time !one_is_working]  // (B)\n"
-	t += "R{\"time\"}=? [F       !one_is_working]\n"
-	t += "P=?           [F<=time one_is_done]      // (C)\n"
-	t += "R{\"time\"}=? [F       one_is_done]\n"
-	t += "P=?           [F<=time all_are_done]     // (D)\n"
-	t += "R{\"time\"}=? [F       all_are_done]\n"
+	t += "// python source contains comments on queries as well\n"
+	t += "\n"
+	t += "// e for expected value\n"
+	t += "// c for cumulative\n"
+	t += "// p for partition\n\n"
+
+	# sascha queries A-D begin
+	t += "// sascha queries A-D begin\n\n"
 
 	basicQueries = {
 		#key : [query, comment]
-		"A" : ["time_all_are_working" , "time up to: first finished working and entered"],
-		"B" : ["time_one_is_working"  , "time up to: last finished working and entered"],
-		"C" : ["time_not_one_is_done", "time up to: first recognized the barrier is full and left"],
-		"D" : ["time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
-		"E" : ["time_writing"         , "time spent writing"],
-		"F" : ["time_reading"         , "time spent reading"]}
+		"A" : ["time_not_all_are_working" , "time up to: first finished working and entered"],            # correct
+		"B" : ["time_not_one_is_working"  , "time up to: last finished working and entered"],             # correct
+		"C" : ["time_one_is_done"         , "time up to: first recognized the barrier is full and left"], # correct
+		"D" : ["time_all_are_done"        , "time up to: all recognized the barrier is full and left"],   # correct
+		}
 
-	t += "// e for expected value\n"
-	t += "\n"
+	# D-B is probably R{\"time_all_are_done\"}=? [I=time2]), where time2 = time-R{\"time_one_is_working\"}=? [I=time]\n"
+	# prose: you subtract the time which at least one is working from the x-axis of the query for all done
+	# You can't query like that. It is very possible to do in a script though. Making sure it is correct is hard.
 
 	for k in sorted(basicQueries.keys()) :
 		query = basicQueries[k]
-		t += "// (%s) %s\n" % (k, query[1])
-		t += "R{\"%s\"}=? [C<=time]\n" % query[0]        # wrong TODO (compare with A, B, C, D above)
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0] # correct
+		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
+		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[0]                              # correct
+		# invers of label %s. reachability reward until the label holds, or during the invers of the label holds
+		t += "R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]\n" % query[0] # correct
 		t += "\n"
 
 	t += "\n"
@@ -292,12 +311,63 @@ def generateQuantitativeProperties(threadCount) :
 	for query in diffQueries :
 		q = basicQueries[query[0]]
 		u = basicQueries[query[1]]
-		t += "// (%s-%s) %s\n" % (query[0], query[1], query[2])
-		t += "R{\"%s\"}=? [C<=time] - R{\"%s\"}=? [C<=time]\n" % (q[0], u[0])               # wrong TODO
-		t += "R{\"%s\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]\n" % (q[0], u[0]) # likely correct
+		t += "// (%s-%s)e %s\n" % (query[0], query[1], query[2])
+		# no better than expected value difference is possible at the moment
+		t += "(R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]) - (R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done])\n" % (q[0], u[0]) # correct
 		t += "\n"
 
-	t += "\n"
+	t += "// sascha queries A-D end\n\n"
+
+	# ### partition queries begin
+	t += "// partition queries begin\n\n"
+
+	# the following 4 queries partition the state space.
+	# useful for a diagram showing with which percentage we are in which phase at a certain point in time
+	# perhaps as a stacked diagram
+	queries = {
+		#key : [query, comment]
+		"Ap" : ["time_all_are_working" , "time up to: first finished working and entered"],
+		"Ep" : ["time_one_is_writing"  , "time spent writing"],
+		"Fp" : ["time_one_is_reading"  , "time spent reading"],
+		"Dp" : ["time_all_are_done"    , "time all are done" ],
+	}
+
+	for k in sorted(queries.keys()) :
+		query = queries[k]
+		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
+		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[0] # correct
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]     # correct
+		t += "\n"
+
+	t += "// partition queries end\n\n"
+	# ### partition queries end
+
+	# ### cumulative queries begin
+	# shows how much time has been spent in different parts of the algorithm
+	# if simulated up to a certain point
+	#
+	# in order for cumulative queries to make sense here we have to invert some labels
+	t += "// cumulative queries begin\n\n"
+
+	queries = {
+		#key : [query, comment]
+		"Ac" : ["time_all_are_working" , "time up to: first finished working and entered"],
+		"Bc" : ["time_one_is_working"  , "time up to: last finished working and entered"],
+		"Cc" : ["time_not_one_is_done" , "time up to: first recognized the barrier is full and left"],
+		"Dc" : ["time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
+		"Ec" : ["time_one_is_writing"  , "time spent writing"],
+		"Fc" : ["time_one_is_reading"  , "time spent reading"],
+	}
+
+	for k in sorted(queries.keys()) :
+		query = queries[k]
+		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
+		t += "R{\"%s\"}=? [C<=time]\n" % query[0]
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]
+		t += "\n"
+
+	t += "// cumulative queries end\n\n"
+	# ### cumulative queries end
 
 	t += "const double time=ticks/base_rate;\n"
 	t += "const double ticks;\n"
