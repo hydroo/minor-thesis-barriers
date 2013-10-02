@@ -31,12 +31,14 @@ def generatePrerequisites(threadCount, readTicks, writeTicks) :
 	s += "const read_ticks         = " + str(readTicks) + ";\n"
 	s += "const write_ticks        = " + str(writeTicks) + ";\n"
 	s += "const atomic_begin_ticks = write_ticks;\n"
+	s += "const atomic_end_ticks   = 1;\n"
 
 	s += "\n"
 
 	s += "const double read         = tick / read_ticks;\n"
 	s += "const double write        = tick / write_ticks;\n"
 	s += "const double atomic_begin = tick / atomic_begin_ticks;\n"
+	s += "const double atomic_end   = tick / atomic_end_ticks;\n"
 
 	return s, t
 
@@ -79,7 +81,7 @@ def generateVariable(name, typee, init, values, threadCount, debug, generateLabe
 		s += "\t[var_atomic_begin_#] (var_state =someoneIsModified   & var_who =me_bit_#)      -> tick         : (var_state'=someoneDoesAtomicOp);\n"
 		s += "\t[var_atomic_begin_#] (var_state =someoneIsModified   & var_who!=me_bit_#)      -> atomic_begin : (var_state'=someoneDoesAtomicOp) & (var_who'=me_bit_#);\n"
 		s += "\t[var_atomic_begin_#] (var_state =someAreShared)                                -> atomic_begin : (var_state'=someoneDoesAtomicOp) & (var_who'=me_bit_#);\n"
-		s += "\t[var_atomic_end_#]   (var_state =someoneDoesAtomicOp & var_who =me_bit_#)      -> tick         : (var_state'=someoneIsModified);\n"
+		s += "\t[var_atomic_end_#]   (var_state =someoneDoesAtomicOp & var_who =me_bit_#)      -> atomic_end   : (var_state'=someoneIsModified);\n"
 
 		if debug == True :
 			s += "\t[var_atomic_begin_#] (var_state =someoneDoesAtomicOp & var_who =me_bit_#)      ->                (var_error'=true);\n"
