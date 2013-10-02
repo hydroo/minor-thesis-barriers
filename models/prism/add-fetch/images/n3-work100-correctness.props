@@ -1,0 +1,21 @@
+// *** shared memory begin ***
+
+// one or zero threads can be in modified state at a time
+P<=0 [F (bar_state=someoneIsModified   &  bar_who!=0 & bar_who!=me_bit_0 & bar_who!=me_bit_1 & bar_who!=me_bit_2)];
+
+// one and only one thread can be in atomic op state at a time
+P<=0 [F (bar_state=someoneDoesAtomicOp &               bar_who!=me_bit_0 & bar_who!=me_bit_1 & bar_who!=me_bit_2)];
+
+// if a cache copy is shared, at least one other is too
+P<=0 [F (bar_state=someAreShared       & (bar_who =0 | bar_who =me_bit_0 | bar_who =me_bit_1 | bar_who =me_bit_2))];
+
+// *** shared memory end ***
+
+// *** thread begin ***
+
+P>=1 [F all_are_done]
+
+// the following 4 queries partition the state space and have to add up to the total state count
+filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_writing]) + filter(+, P=? [one_is_reading]) + filter(+, P=? [all_are_done])
+
+// *** thread end ***
