@@ -49,7 +49,7 @@ def generateModel(threadCount, workTicks, readTicks, writeTicks, debug) :
 
 	s += "\n"
 
-	s_, t_ = shared_memory.generateVariable("bar", "[0..thread_count]",  "thread_count", [str(i) for i in range(0, threadCount)], threadCount, debug)
+	s_, t_ = shared_memory.generateVariable("bar", "[0..thread_count]",  "thread_count", [str(i) for i in range(0, threadCount)], threadCount, debug, True)
 	s += s_
 	t += t_
 

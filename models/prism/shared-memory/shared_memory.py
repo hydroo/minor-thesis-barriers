@@ -41,7 +41,7 @@ def generatePrerequisites(threadCount, readTicks, writeTicks) :
 	return s, t
 
 # returns prism-model-string, prism-correctness-prop-string
-def generateVariable(name, typee, init, values, threadCount, debug) :
+def generateVariable(name, typee, init, values, threadCount, debug, generateLabels) :
 
 	s = ""
 
@@ -92,12 +92,13 @@ def generateVariable(name, typee, init, values, threadCount, debug) :
 	s += "\n"
 
 	# labels
-	for p in range(0, threadCount) :
-		s += "label \"var_invalid_#\"   = ((var_state=someoneIsModified   | var_state=someAreShared) & mod(floor(var_who/me_bit_#),2)=0);\n"
-		s += "label \"var_modified_#\"  =  (var_state=someoneIsModified   & var_who=me_bit_#);\n"
-		s += "label \"var_atomic_op_#\" =  (var_state=someoneDoesAtomicOp & var_who=me_bit_#);\n"
-		s += "label \"var_shared_#\"    =  (var_state=someAreShared       & mod(floor(var_who/me_bit_#),2)=1);\n"
-		s = s.replace('#', str(p))
+	if generateLabels:
+		for p in range(0, threadCount) :
+			s += "label \"var_invalid_#\"   = ((var_state=someoneIsModified   | var_state=someAreShared) & mod(floor(var_who/me_bit_#),2)=0);\n"
+			s += "label \"var_modified_#\"  =  (var_state=someoneIsModified   & var_who=me_bit_#);\n"
+			s += "label \"var_atomic_op_#\" =  (var_state=someoneDoesAtomicOp & var_who=me_bit_#);\n"
+			s += "label \"var_shared_#\"    =  (var_state=someAreShared       & mod(floor(var_who/me_bit_#),2)=1);\n"
+			s = s.replace('#', str(p))
 
 	# correctness props
 	t = ""
