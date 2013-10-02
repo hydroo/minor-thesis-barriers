@@ -111,8 +111,9 @@ def generateVariable(name, typee, init, values, threadCount, debug, generateLabe
 	t += "P<=0 [F (var_state=someoneDoesAtomicOp &               " + " & ".join([ "var_who!=me_bit_%d" % i for i in range(0, threadCount) ]) + ")];\n"
 	t += "\n"
 
-	t += "// if a cache copy is shared, at least one other is too\n"
-	t += "P<=0 [F (var_state=someAreShared       & (" + " | ".join(["var_who =0"] + [ "var_who =me_bit_%d" % i for i in range(0, threadCount)]) + "))];\n"
+	# this happens when an all invalid cacheline is read. therefore it is allowed
+	# t += "// if a cache copy is shared, at least one other is too\n"
+	# t += "P<=0 [F (var_state=someAreShared       & (" + " | ".join(["var_who =0"] + [ "var_who =me_bit_%d" % i for i in range(0, threadCount)]) + "))];\n"
 
 	if debug == True :
 		t += "\n"
