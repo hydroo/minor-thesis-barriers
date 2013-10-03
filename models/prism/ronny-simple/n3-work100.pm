@@ -79,7 +79,6 @@ formula none_are_writing             = !one_is_writing;
 
 formula one_is_reading               = l_0=l_wait & (l_1>=l_wait & l_2>=l_wait) | l_1=l_wait & (l_0>=l_wait & l_2>=l_wait) | l_2=l_wait & (l_0>=l_wait & l_1>=l_wait);
 formula all_are_reading_or_done      = l_0>=l_wait & l_1>=l_wait & l_2>=l_wait;
- label "woot"                      =  (bar_0_state=someAreShared & !(bar_0_who =0 | bar_0_who =me_bit_0 | bar_0_who =me_bit_1 | bar_0_who =me_bit_2)) | (bar_1_state=someAreShared & !(bar_1_who =0 | bar_1_who =me_bit_0 | bar_1_who =me_bit_1 | bar_1_who =me_bit_2)) | (bar_2_state=someAreShared & !(bar_2_who =0 | bar_2_who =me_bit_0 | bar_2_who =me_bit_1 | bar_2_who =me_bit_2));
 
 // *** thread labels end ***
 
