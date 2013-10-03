@@ -95,10 +95,12 @@ const someAreShared       = 2;
 const read_ticks         = 50;
 const write_ticks        = 100;
 const atomic_begin_ticks = write_ticks;
+const atomic_end_ticks   = 1;
 
 const double read         = tick / read_ticks;
 const double write        = tick / write_ticks;
 const double atomic_begin = tick / atomic_begin_ticks;
+const double atomic_end   = tick / atomic_end_ticks;
 
 module bar_0_variable
 	bar_0 : [0..1] init 0;
@@ -133,7 +135,7 @@ module bar_0_shared
 	[bar_0_atomic_begin_0] (bar_0_state =someoneIsModified   & bar_0_who =me_bit_0)      -> tick         : (bar_0_state'=someoneDoesAtomicOp);
 	[bar_0_atomic_begin_0] (bar_0_state =someoneIsModified   & bar_0_who!=me_bit_0)      -> atomic_begin : (bar_0_state'=someoneDoesAtomicOp) & (bar_0_who'=me_bit_0);
 	[bar_0_atomic_begin_0] (bar_0_state =someAreShared)                                -> atomic_begin : (bar_0_state'=someoneDoesAtomicOp) & (bar_0_who'=me_bit_0);
-	[bar_0_atomic_end_0]   (bar_0_state =someoneDoesAtomicOp & bar_0_who =me_bit_0)      -> tick         : (bar_0_state'=someoneIsModified);
+	[bar_0_atomic_end_0]   (bar_0_state =someoneDoesAtomicOp & bar_0_who =me_bit_0)      -> atomic_end   : (bar_0_state'=someoneIsModified);
 
 	[bar_0_set_to_0_1] (bar_0_state =someoneIsModified   & bar_0_who =me_bit_1)          -> tick         : true;
 	[bar_0_set_to_0_1] (bar_0_state =someoneDoesAtomicOp & bar_0_who =me_bit_1)          -> tick         : true;
@@ -153,7 +155,7 @@ module bar_0_shared
 	[bar_0_atomic_begin_1] (bar_0_state =someoneIsModified   & bar_0_who =me_bit_1)      -> tick         : (bar_0_state'=someoneDoesAtomicOp);
 	[bar_0_atomic_begin_1] (bar_0_state =someoneIsModified   & bar_0_who!=me_bit_1)      -> atomic_begin : (bar_0_state'=someoneDoesAtomicOp) & (bar_0_who'=me_bit_1);
 	[bar_0_atomic_begin_1] (bar_0_state =someAreShared)                                -> atomic_begin : (bar_0_state'=someoneDoesAtomicOp) & (bar_0_who'=me_bit_1);
-	[bar_0_atomic_end_1]   (bar_0_state =someoneDoesAtomicOp & bar_0_who =me_bit_1)      -> tick         : (bar_0_state'=someoneIsModified);
+	[bar_0_atomic_end_1]   (bar_0_state =someoneDoesAtomicOp & bar_0_who =me_bit_1)      -> atomic_end   : (bar_0_state'=someoneIsModified);
 
 	[bar_0_set_to_0_2] (bar_0_state =someoneIsModified   & bar_0_who =me_bit_2)          -> tick         : true;
 	[bar_0_set_to_0_2] (bar_0_state =someoneDoesAtomicOp & bar_0_who =me_bit_2)          -> tick         : true;
@@ -173,7 +175,7 @@ module bar_0_shared
 	[bar_0_atomic_begin_2] (bar_0_state =someoneIsModified   & bar_0_who =me_bit_2)      -> tick         : (bar_0_state'=someoneDoesAtomicOp);
 	[bar_0_atomic_begin_2] (bar_0_state =someoneIsModified   & bar_0_who!=me_bit_2)      -> atomic_begin : (bar_0_state'=someoneDoesAtomicOp) & (bar_0_who'=me_bit_2);
 	[bar_0_atomic_begin_2] (bar_0_state =someAreShared)                                -> atomic_begin : (bar_0_state'=someoneDoesAtomicOp) & (bar_0_who'=me_bit_2);
-	[bar_0_atomic_end_2]   (bar_0_state =someoneDoesAtomicOp & bar_0_who =me_bit_2)      -> tick         : (bar_0_state'=someoneIsModified);
+	[bar_0_atomic_end_2]   (bar_0_state =someoneDoesAtomicOp & bar_0_who =me_bit_2)      -> atomic_end   : (bar_0_state'=someoneIsModified);
 endmodule
 
 module bar_1_variable
@@ -209,7 +211,7 @@ module bar_1_shared
 	[bar_1_atomic_begin_0] (bar_1_state =someoneIsModified   & bar_1_who =me_bit_0)      -> tick         : (bar_1_state'=someoneDoesAtomicOp);
 	[bar_1_atomic_begin_0] (bar_1_state =someoneIsModified   & bar_1_who!=me_bit_0)      -> atomic_begin : (bar_1_state'=someoneDoesAtomicOp) & (bar_1_who'=me_bit_0);
 	[bar_1_atomic_begin_0] (bar_1_state =someAreShared)                                -> atomic_begin : (bar_1_state'=someoneDoesAtomicOp) & (bar_1_who'=me_bit_0);
-	[bar_1_atomic_end_0]   (bar_1_state =someoneDoesAtomicOp & bar_1_who =me_bit_0)      -> tick         : (bar_1_state'=someoneIsModified);
+	[bar_1_atomic_end_0]   (bar_1_state =someoneDoesAtomicOp & bar_1_who =me_bit_0)      -> atomic_end   : (bar_1_state'=someoneIsModified);
 
 	[bar_1_set_to_0_1] (bar_1_state =someoneIsModified   & bar_1_who =me_bit_1)          -> tick         : true;
 	[bar_1_set_to_0_1] (bar_1_state =someoneDoesAtomicOp & bar_1_who =me_bit_1)          -> tick         : true;
@@ -229,7 +231,7 @@ module bar_1_shared
 	[bar_1_atomic_begin_1] (bar_1_state =someoneIsModified   & bar_1_who =me_bit_1)      -> tick         : (bar_1_state'=someoneDoesAtomicOp);
 	[bar_1_atomic_begin_1] (bar_1_state =someoneIsModified   & bar_1_who!=me_bit_1)      -> atomic_begin : (bar_1_state'=someoneDoesAtomicOp) & (bar_1_who'=me_bit_1);
 	[bar_1_atomic_begin_1] (bar_1_state =someAreShared)                                -> atomic_begin : (bar_1_state'=someoneDoesAtomicOp) & (bar_1_who'=me_bit_1);
-	[bar_1_atomic_end_1]   (bar_1_state =someoneDoesAtomicOp & bar_1_who =me_bit_1)      -> tick         : (bar_1_state'=someoneIsModified);
+	[bar_1_atomic_end_1]   (bar_1_state =someoneDoesAtomicOp & bar_1_who =me_bit_1)      -> atomic_end   : (bar_1_state'=someoneIsModified);
 
 	[bar_1_set_to_0_2] (bar_1_state =someoneIsModified   & bar_1_who =me_bit_2)          -> tick         : true;
 	[bar_1_set_to_0_2] (bar_1_state =someoneDoesAtomicOp & bar_1_who =me_bit_2)          -> tick         : true;
@@ -249,7 +251,7 @@ module bar_1_shared
 	[bar_1_atomic_begin_2] (bar_1_state =someoneIsModified   & bar_1_who =me_bit_2)      -> tick         : (bar_1_state'=someoneDoesAtomicOp);
 	[bar_1_atomic_begin_2] (bar_1_state =someoneIsModified   & bar_1_who!=me_bit_2)      -> atomic_begin : (bar_1_state'=someoneDoesAtomicOp) & (bar_1_who'=me_bit_2);
 	[bar_1_atomic_begin_2] (bar_1_state =someAreShared)                                -> atomic_begin : (bar_1_state'=someoneDoesAtomicOp) & (bar_1_who'=me_bit_2);
-	[bar_1_atomic_end_2]   (bar_1_state =someoneDoesAtomicOp & bar_1_who =me_bit_2)      -> tick         : (bar_1_state'=someoneIsModified);
+	[bar_1_atomic_end_2]   (bar_1_state =someoneDoesAtomicOp & bar_1_who =me_bit_2)      -> atomic_end   : (bar_1_state'=someoneIsModified);
 endmodule
 
 module bar_2_variable
@@ -285,7 +287,7 @@ module bar_2_shared
 	[bar_2_atomic_begin_0] (bar_2_state =someoneIsModified   & bar_2_who =me_bit_0)      -> tick         : (bar_2_state'=someoneDoesAtomicOp);
 	[bar_2_atomic_begin_0] (bar_2_state =someoneIsModified   & bar_2_who!=me_bit_0)      -> atomic_begin : (bar_2_state'=someoneDoesAtomicOp) & (bar_2_who'=me_bit_0);
 	[bar_2_atomic_begin_0] (bar_2_state =someAreShared)                                -> atomic_begin : (bar_2_state'=someoneDoesAtomicOp) & (bar_2_who'=me_bit_0);
-	[bar_2_atomic_end_0]   (bar_2_state =someoneDoesAtomicOp & bar_2_who =me_bit_0)      -> tick         : (bar_2_state'=someoneIsModified);
+	[bar_2_atomic_end_0]   (bar_2_state =someoneDoesAtomicOp & bar_2_who =me_bit_0)      -> atomic_end   : (bar_2_state'=someoneIsModified);
 
 	[bar_2_set_to_0_1] (bar_2_state =someoneIsModified   & bar_2_who =me_bit_1)          -> tick         : true;
 	[bar_2_set_to_0_1] (bar_2_state =someoneDoesAtomicOp & bar_2_who =me_bit_1)          -> tick         : true;
@@ -305,7 +307,7 @@ module bar_2_shared
 	[bar_2_atomic_begin_1] (bar_2_state =someoneIsModified   & bar_2_who =me_bit_1)      -> tick         : (bar_2_state'=someoneDoesAtomicOp);
 	[bar_2_atomic_begin_1] (bar_2_state =someoneIsModified   & bar_2_who!=me_bit_1)      -> atomic_begin : (bar_2_state'=someoneDoesAtomicOp) & (bar_2_who'=me_bit_1);
 	[bar_2_atomic_begin_1] (bar_2_state =someAreShared)                                -> atomic_begin : (bar_2_state'=someoneDoesAtomicOp) & (bar_2_who'=me_bit_1);
-	[bar_2_atomic_end_1]   (bar_2_state =someoneDoesAtomicOp & bar_2_who =me_bit_1)      -> tick         : (bar_2_state'=someoneIsModified);
+	[bar_2_atomic_end_1]   (bar_2_state =someoneDoesAtomicOp & bar_2_who =me_bit_1)      -> atomic_end   : (bar_2_state'=someoneIsModified);
 
 	[bar_2_set_to_0_2] (bar_2_state =someoneIsModified   & bar_2_who =me_bit_2)          -> tick         : true;
 	[bar_2_set_to_0_2] (bar_2_state =someoneDoesAtomicOp & bar_2_who =me_bit_2)          -> tick         : true;
@@ -325,7 +327,7 @@ module bar_2_shared
 	[bar_2_atomic_begin_2] (bar_2_state =someoneIsModified   & bar_2_who =me_bit_2)      -> tick         : (bar_2_state'=someoneDoesAtomicOp);
 	[bar_2_atomic_begin_2] (bar_2_state =someoneIsModified   & bar_2_who!=me_bit_2)      -> atomic_begin : (bar_2_state'=someoneDoesAtomicOp) & (bar_2_who'=me_bit_2);
 	[bar_2_atomic_begin_2] (bar_2_state =someAreShared)                                -> atomic_begin : (bar_2_state'=someoneDoesAtomicOp) & (bar_2_who'=me_bit_2);
-	[bar_2_atomic_end_2]   (bar_2_state =someoneDoesAtomicOp & bar_2_who =me_bit_2)      -> tick         : (bar_2_state'=someoneIsModified);
+	[bar_2_atomic_end_2]   (bar_2_state =someoneDoesAtomicOp & bar_2_who =me_bit_2)      -> atomic_end   : (bar_2_state'=someoneIsModified);
 endmodule
 
 
