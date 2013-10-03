@@ -86,11 +86,13 @@ const someAreShared       = 2;
 
 const read_ticks         = 50;
 const write_ticks        = 100;
-const atomic_begin_ticks = write_ticks;
+const atomic_begin_ticks = 1;
+const atomic_end_ticks   = write_ticks;
 
 const double read         = tick / read_ticks;
 const double write        = tick / write_ticks;
 const double atomic_begin = tick / atomic_begin_ticks;
+const double atomic_end   = tick / atomic_end_ticks;
 
 module bar_variable
 	bar : [0..thread_count] init thread_count;
@@ -132,7 +134,7 @@ module bar_shared
 	[bar_atomic_begin_0] (bar_state =someoneIsModified   & bar_who =me_bit_0)      -> tick         : (bar_state'=someoneDoesAtomicOp);
 	[bar_atomic_begin_0] (bar_state =someoneIsModified   & bar_who!=me_bit_0)      -> atomic_begin : (bar_state'=someoneDoesAtomicOp) & (bar_who'=me_bit_0);
 	[bar_atomic_begin_0] (bar_state =someAreShared)                                -> atomic_begin : (bar_state'=someoneDoesAtomicOp) & (bar_who'=me_bit_0);
-	[bar_atomic_end_0]   (bar_state =someoneDoesAtomicOp & bar_who =me_bit_0)      -> tick         : (bar_state'=someoneIsModified);
+	[bar_atomic_end_0]   (bar_state =someoneDoesAtomicOp & bar_who =me_bit_0)      -> atomic_end   : (bar_state'=someoneIsModified);
 
 	[bar_set_to_0_1] (bar_state =someoneIsModified   & bar_who =me_bit_1)          -> tick         : true;
 	[bar_set_to_0_1] (bar_state =someoneDoesAtomicOp & bar_who =me_bit_1)          -> tick         : true;
@@ -156,7 +158,7 @@ module bar_shared
 	[bar_atomic_begin_1] (bar_state =someoneIsModified   & bar_who =me_bit_1)      -> tick         : (bar_state'=someoneDoesAtomicOp);
 	[bar_atomic_begin_1] (bar_state =someoneIsModified   & bar_who!=me_bit_1)      -> atomic_begin : (bar_state'=someoneDoesAtomicOp) & (bar_who'=me_bit_1);
 	[bar_atomic_begin_1] (bar_state =someAreShared)                                -> atomic_begin : (bar_state'=someoneDoesAtomicOp) & (bar_who'=me_bit_1);
-	[bar_atomic_end_1]   (bar_state =someoneDoesAtomicOp & bar_who =me_bit_1)      -> tick         : (bar_state'=someoneIsModified);
+	[bar_atomic_end_1]   (bar_state =someoneDoesAtomicOp & bar_who =me_bit_1)      -> atomic_end   : (bar_state'=someoneIsModified);
 
 	[bar_set_to_0_2] (bar_state =someoneIsModified   & bar_who =me_bit_2)          -> tick         : true;
 	[bar_set_to_0_2] (bar_state =someoneDoesAtomicOp & bar_who =me_bit_2)          -> tick         : true;
@@ -180,7 +182,7 @@ module bar_shared
 	[bar_atomic_begin_2] (bar_state =someoneIsModified   & bar_who =me_bit_2)      -> tick         : (bar_state'=someoneDoesAtomicOp);
 	[bar_atomic_begin_2] (bar_state =someoneIsModified   & bar_who!=me_bit_2)      -> atomic_begin : (bar_state'=someoneDoesAtomicOp) & (bar_who'=me_bit_2);
 	[bar_atomic_begin_2] (bar_state =someAreShared)                                -> atomic_begin : (bar_state'=someoneDoesAtomicOp) & (bar_who'=me_bit_2);
-	[bar_atomic_end_2]   (bar_state =someoneDoesAtomicOp & bar_who =me_bit_2)      -> tick         : (bar_state'=someoneIsModified);
+	[bar_atomic_end_2]   (bar_state =someoneDoesAtomicOp & bar_who =me_bit_2)      -> atomic_end   : (bar_state'=someoneIsModified);
 endmodule
 
 label "bar_invalid_0"   = ((bar_state=someoneIsModified   | bar_state=someAreShared) & mod(floor(bar_who/me_bit_0),2)=0);

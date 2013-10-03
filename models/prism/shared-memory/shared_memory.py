@@ -30,8 +30,8 @@ def generatePrerequisites(threadCount, readTicks, writeTicks) :
 
 	s += "const read_ticks         = " + str(readTicks) + ";\n"
 	s += "const write_ticks        = " + str(writeTicks) + ";\n"
-	s += "const atomic_begin_ticks = write_ticks;\n"
-	s += "const atomic_end_ticks   = 1;\n"
+	s += "const atomic_begin_ticks = 1;\n"
+	s += "const atomic_end_ticks   = write_ticks;\n"
 
 	s += "\n"
 

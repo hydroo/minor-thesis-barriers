@@ -94,8 +94,8 @@ const someAreShared       = 2;
 
 const read_ticks         = 50;
 const write_ticks        = 100;
-const atomic_begin_ticks = write_ticks;
-const atomic_end_ticks   = 1;
+const atomic_begin_ticks = 1;
+const atomic_end_ticks   = write_ticks;
 
 const double read         = tick / read_ticks;
 const double write        = tick / write_ticks;
