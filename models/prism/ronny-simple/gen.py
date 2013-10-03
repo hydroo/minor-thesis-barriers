@@ -249,7 +249,6 @@ def generateLabels(threadCount) :
 	#s += "label \"one_is_reading\"             = one_is_reading;\n"
 	#s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
 
-	s += " label \"woot\"                      =  (bar_0_state=someAreShared & !(bar_0_who =0 | bar_0_who =me_bit_0 | bar_0_who =me_bit_1 | bar_0_who =me_bit_2)) | (bar_1_state=someAreShared & !(bar_1_who =0 | bar_1_who =me_bit_0 | bar_1_who =me_bit_1 | bar_1_who =me_bit_2)) | (bar_2_state=someAreShared & !(bar_2_who =0 | bar_2_who =me_bit_0 | bar_2_who =me_bit_1 | bar_2_who =me_bit_2));\n"
 	return s
 
 # ### correctness props ### ###################################################
