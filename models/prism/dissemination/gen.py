@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import math
 import sys
 
 def generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks, debug) :
@@ -15,17 +16,11 @@ def generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putT
 
 	s += "// *** main process begin ***\n"
 	s += "\n"
-	#s += "// * you always need to add transitions for all sync labels in var_shared, otherwise\n"
-	#s += "//   they will not be recognized as synchronized and are able to fire always\n"
-	#s += "//\n"
-	#s += "// * not all labels are for sync. but for easier debugging in the simulator: work_*, done_*\n"
-	#s += "// * always read using [var_read_n]\n"
-	#s += "// * always write using [var_set_to_*_n]\n"
-	#s += "//\n"
-	#s += "// * always introduce an atomic op using [bar_atomic_begin_n]\n"
-	#s += "// * use read and writes as usual in between\n"
-	#s += "// * always end an atomic op using [bar_atomic_end_n]\n"
-	#s += "\n"
+	s += "// * last _# at labels and variables is always the id of the \"owning\" process "
+	s += "//\n"
+	s += "\n"
+	s += "// * not all labels are for sync. but for easier debugging in the simulator: work_*, wait_*, done_*\n"
+	s += "\n"
 
 	s += generateProcess(0, processCount)
 	s += "\n"
@@ -55,15 +50,17 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 
 	s = ""
 
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
+
 	s = "const process_count = " + str(processCount) + ";\n"
 
 	s += "\n"
 
-	s += "const work_ticks   = " + str(workTicks)  + ";\n"
-	s += "const read_ticks   = " + str(readTicks)  + ";\n"
-	s += "const write_ticks  = " + str(writeTicks) + ";\n"
-	s += "const get_ticks    = " + str(getTicks)   + ";\n"
-	s += "const put_ticks    = " + str(putTicks)   + ";\n"
+	s += "const work_ticks  = " + str(workTicks)  + ";\n"
+	s += "const read_ticks  = " + str(readTicks)  + ";\n"
+	s += "const write_ticks = " + str(writeTicks) + ";\n"
+	s += "const get_ticks   = " + str(getTicks)   + ";\n"
+	s += "const put_ticks   = " + str(putTicks)   + ";\n"
 
 	s += "\n"
 
@@ -80,45 +77,53 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 
 	s += "// process locations\n"
 	s += "// all names describe the behaviour of the next transition\n"
-	s += "const l_init         = 0;\n"
-	s += "const l_work         = l_init;\n"
-	s += "const l_atomic_begin = 1;\n"
-	s += "const l_read         = 2;\n"
-	s += "const l_write        = 3;\n"
-	s += "const l_atomic_end   = 4;\n"
-	s += "const l_wait         = 5;\n"
-	s += "const l_done         = 6;\n"
+	s += "const l_init = 0;\n"
+	s += "const l_work = l_init;\n"
+	s += "const l_put  = 1;\n"
+	s += "const l_wait = 2;\n"
+	s += "const l_done = 3;\n"
 
 	return s
 
 def generateProcess(p, processCount) :
 
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
+
 	s = ""
 
 	s += "module process_#\n"
 
-	s += "    l_# : [l_init..l_done] init l_init;\n"
+	s += "    l_#      : [l_init..l_done] init l_init;\n"
+	s += "    //bar_$fromwhom$_$me$ - an array of bits from whom we will receive\n"
+	for i in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
+		s += "    bar_%d_#  : bool             init false;\n" % ((p-i)%processCount)
+	s += "    dist_#   : [1..%d]    init 1; // distance\n" % maxDist
 
 	s += "\n"
 
-	s += "    [work_#]             l_#=l_work                -> work : (l_#'=l_atomic_begin);\n"
-	s += "\n"
-	s += "    [bar_atomic_begin_#] l_#=l_atomic_begin        ->        (l_#'=l_read);\n"
-	s += "\n"
-	s += "    [bar_read_#]         l_#=l_read                ->        (l_#'=l_write);\n"
+	s += "    [work_#]   l_#=l_work                                -> work : (l_#'=l_put);\n"
 	s += "\n"
 
-	# set to 2 will never be triggered, but is needed for sync
-	for i in range(1, processCount+1) :
-		s += "    [bar_set_to_" + str(i-1) + "_#]     l_#=l_write      & bar =" + str(i) + " ->        (l_#'=l_atomic_end);\n"
+	for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
+		s += "    [put_#_%d]  l_#=l_put  & dist_# = %d                   -> put  : (l_#'=l_wait);\n" % (((p+dist) % processCount), dist)
 
 	s += "\n"
-	s += "    [bar_atomic_end_#]   l_#=l_atomic_end          ->        (l_#'=l_wait);\n"
+
+	for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
+		if dist != maxDist :
+			s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> read : (l_#'=l_put) & (dist_#'=dist_#*2);\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
+		else :
+			s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> read : (l_#'=l_done);\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
+
+		s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_# != true -> read : true;\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
+
 	s += "\n"
-	s += "    [bar_read_#]         l_#=l_wait       & bar!=0 ->        true;\n"
-	s += "    [bar_read_#]         l_#=l_wait       & bar =0 ->        (l_#'=l_done);\n"
+	s += "    [done_#]   l_#=l_done                                ->        true;\n"
 	s += "\n"
-	s += "    [done_#]             l_#=l_done                ->        true;\n"
+
+	s += "    // listen for remote puts\n"
+	for i in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
+		s += "    [put_%d_#] true -> (bar_%d_#'=true);\n" % (((p-i) % processCount), ((p-i) % processCount))
 
 	s += "endmodule\n"
 
@@ -128,69 +133,69 @@ def generateRewards() :
 	s = ""
 
 	s += "// state rewards\n"
-	s += "rewards \"time\"\n"
-	s += "\t" + "true : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time\"\n"
+	#s += "\t" + "true : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_all_are_working\"\n"
-	s += "\t" + "all_are_working : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_all_are_working\"\n"
+	#s += "\t" + "all_are_working : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_not_all_are_working\"\n"
-	s += "\t" + "!all_are_working : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_not_all_are_working\"\n"
+	#s += "\t" + "!all_are_working : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_one_is_working\"\n"
-	s += "\t" + "one_is_working : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_one_is_working\"\n"
+	#s += "\t" + "one_is_working : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_not_one_is_working\"\n"
-	s += "\t" + "!one_is_working : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_not_one_is_working\"\n"
+	#s += "\t" + "!one_is_working : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_one_is_writing\"\n"
-	s += "\t" + "one_is_writing : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_one_is_writing\"\n"
+	#s += "\t" + "one_is_writing : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_one_is_reading\"\n"
-	s += "\t" + "one_is_reading : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_one_is_reading\"\n"
+	#s += "\t" + "one_is_reading : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_one_is_done\"\n"
-	s += "\t" + "one_is_done : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_one_is_done\"\n"
+	#s += "\t" + "one_is_done : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_not_one_is_done\"\n"
-	s += "\t" + "!one_is_done : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_not_one_is_done\"\n"
+	#s += "\t" + "!one_is_done : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_not_all_are_done\"\n"
-	s += "\t" + "!all_are_done : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_not_all_are_done\"\n"
+	#s += "\t" + "!all_are_done : base_rate;\n"
+	#s += "endrewards\n"
 
-	s += "\n"
+	#s += "\n"
 
-	s += "rewards \"time_all_are_done\"\n"
-	s += "\t" + "all_are_done : base_rate;\n"
-	s += "endrewards\n"
+	#s += "rewards \"time_all_are_done\"\n"
+	#s += "\t" + "all_are_done : base_rate;\n"
+	#s += "endrewards\n"
 
 	return s
 
@@ -209,23 +214,23 @@ def generateLabels(processCount) :
 
 	s += "formula one_is_working               = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, processCount)]) + ";\n"
 	s += "formula all_are_working              = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, processCount)]) + ";\n"
-	s += "formula exactly_one_is_done_working  = " +  " | ".join([ "(l_%d >= l_atomic_begin & " % i + " & ".join(["l_%d = l_work" % j for j in range(0, processCount) if j!=i]) + ")" for i in range(0, processCount)]) + ";\n"
+	##s += "formula exactly_one_is_done_working  = " +  " | ".join([ "(l_%d >= l_atomic_begin & " % i + " & ".join(["l_%d = l_work" % j for j in range(0, processCount) if j!=i]) + ")" for i in range(0, processCount)]) + ";\n"
 	#s += "label \"one_is_working\"               = one_is_working;\n"
 	#s += "label \"all_are_working\"              = all_are_working;\n"
 	#s += "label \"exactly_one_is_done_working\"  = exactly_one_is_done_working;\n"
 
 	s += "\n"
 
-	s += "formula one_is_writing               = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, processCount)]) + ");\n"
-	s += "formula all_are_writing              = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, processCount)]) + ");\n"
-	s += "formula none_are_writing             = !one_is_writing;\n"
+	##s += "formula one_is_writing               = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, processCount)]) + ");\n"
+	##s += "formula all_are_writing              = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, processCount)]) + ");\n"
+	##s += "formula none_are_writing             = !one_is_writing;\n"
 	#s += "label \"one_is_writing\"               = one_is_writing;\n"
 	#s += "label \"all_are_writing\"              = all_are_writing;\n"
 
 	s += "\n"
 
-	s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait & (" % i + " & ".join(["l_%d>=l_wait" % j for j in range(0, processCount) if i!=j]) + ")" for i in range(0, processCount)]) + ";\n"
-	s += "formula all_are_reading_or_done      = " + " & ".join(["l_%d>=l_wait" % i for i in range(0, processCount)]) + ";\n"
+	##s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait & (" % i + " & ".join(["l_%d>=l_wait" % j for j in range(0, processCount) if i!=j]) + ")" for i in range(0, processCount)]) + ";\n"
+	##s += "formula all_are_reading_or_done      = " + " & ".join(["l_%d>=l_wait" % i for i in range(0, processCount)]) + ";\n"
 	#s += "label \"one_is_reading\"             = one_is_reading;\n"
 	#s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
 
@@ -236,13 +241,18 @@ def generateCorrectnessProperties(processCount) :
 
 	t = ""
 
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
+
 	t += "// *** process begin ***\n\n"
 
 	t += "P>=1 [F all_are_done]\n"
 	t += "\n"
 
-	t += "// the following 4 queries partition the state space and have to add up to the total state count\n"
-	t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_writing]) + filter(+, P=? [one_is_reading]) + filter(+, P=? [all_are_done])\n"
+	for p in range(0, processCount) :
+		t += "P>=1 [G ((l_%d=l_done => (" % p + " & ".join(["bar_%d_%d=true" % (from_, p) for from_ in [(p-2**x) % processCount for x in range(0, int(math.log(maxDist, 2)) + 1)]]) + ")))]"
+
+	##t += "// the following 4 queries partition the state space and have to add up to the total state count\n"
+	##t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_writing]) + filter(+, P=? [one_is_reading]) + filter(+, P=? [all_are_done])\n"
 
 	t += "\n"
 
@@ -263,101 +273,101 @@ def generateQuantitativeProperties(processCount) :
 	t += "// c for cumulative\n"
 	t += "// p for partition\n\n"
 
-	# sascha queries A-D begin
-	t += "// sascha queries A-D begin\n\n"
+	## sascha queries A-D begin
+	#t += "// sascha queries A-D begin\n\n"
 
-	basicQueries = {
-		#key : [query, comment]
-		"A" : ["time_not_all_are_working" , "time up to: first finished working and entered"],            # correct
-		"B" : ["time_not_one_is_working"  , "time up to: last finished working and entered"],             # correct
-		"C" : ["time_one_is_done"         , "time up to: first recognized the barrier is full and left"], # correct
-		"D" : ["time_all_are_done"        , "time up to: all recognized the barrier is full and left"],   # correct
-		}
+	#basicQueries = {
+	#	#key : [query, comment]
+	#	"A" : ["time_not_all_are_working" , "time up to: first finished working and entered"],            # correct
+	#	"B" : ["time_not_one_is_working"  , "time up to: last finished working and entered"],             # correct
+	#	"C" : ["time_one_is_done"         , "time up to: first recognized the barrier is full and left"], # correct
+	#	"D" : ["time_all_are_done"        , "time up to: all recognized the barrier is full and left"],   # correct
+	#	}
 
-	# D-B is probably R{\"time_all_are_done\"}=? [I=time2]), where time2 = time-R{\"time_one_is_working\"}=? [I=time]\n"
-	# prose: you subtract the time which at least one is working from the x-axis of the query for all done
-	# You can't query like that. It is very possible to do in a script though. Making sure it is correct is hard.
+	## D-B is probably R{\"time_all_are_done\"}=? [I=time2]), where time2 = time-R{\"time_one_is_working\"}=? [I=time]\n"
+	## prose: you subtract the time which at least one is working from the x-axis of the query for all done
+	## You can't query like that. It is very possible to do in a script though. Making sure it is correct is hard.
 
-	for k in sorted(basicQueries.keys()) :
-		query = basicQueries[k]
-		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
-		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[0]                              # correct
-		# invers of label %s. reachability reward until the label holds, or during the invers of the label holds
-		t += "R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]\n" % query[0] # correct
-		t += "\n"
+	#for k in sorted(basicQueries.keys()) :
+	#	query = basicQueries[k]
+	#	t += "// (%s) and (%se) %s\n" % (k, k, query[1])
+	#	t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[0]                              # correct
+	#	# invers of label %s. reachability reward until the label holds, or during the invers of the label holds
+	#	t += "R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]\n" % query[0] # correct
+	#	t += "\n"
 
-	t += "\n"
+	#t += "\n"
 
-	diffQueries = [
-		["D", "B", "from last to enter to last to leave"],
-		["D", "C", "from first to leave to last to leave"]
-	]
+	#diffQueries = [
+	#	["D", "B", "from last to enter to last to leave"],
+	#	["D", "C", "from first to leave to last to leave"]
+	#]
 
-	for query in diffQueries :
-		q = basicQueries[query[0]]
-		u = basicQueries[query[1]]
-		t += "// (%s-%s)e %s\n" % (query[0], query[1], query[2])
-		# no better than expected value difference is possible at the moment
-		t += "(R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]) - (R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done])\n" % (q[0], u[0]) # correct
-		t += "\n"
+	#for query in diffQueries :
+	#	q = basicQueries[query[0]]
+	#	u = basicQueries[query[1]]
+	#	t += "// (%s-%s)e %s\n" % (query[0], query[1], query[2])
+	#	# no better than expected value difference is possible at the moment
+	#	t += "(R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]) - (R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done])\n" % (q[0], u[0]) # correct
+	#	t += "\n"
 
-	t += "// sascha queries A-D end\n\n"
+	#t += "// sascha queries A-D end\n\n"
 
-	# ### partition queries begin
-	t += "// partition queries begin\n\n"
+	## ### partition queries begin
+	#t += "// partition queries begin\n\n"
 
-	# the following 4 queries partition the state space.
-	# useful for a diagram showing with which percentage we are in which phase at a certain point in time
-	# perhaps as a stacked diagram
-	queries = {
-		#key : [query, comment]
-		"Ap" : ["time_all_are_working" , "time up to: first finished working and entered"],
-		"Ep" : ["time_one_is_writing"  , "time spent writing"],
-		"Fp" : ["time_one_is_reading"  , "time spent reading"],
-		"Dp" : ["time_all_are_done"    , "time all are done" ],
-	}
+	## the following 4 queries partition the state space.
+	## useful for a diagram showing with which percentage we are in which phase at a certain point in time
+	## perhaps as a stacked diagram
+	#queries = {
+	#	#key : [query, comment]
+	#	"Ap" : ["time_all_are_working" , "time up to: first finished working and entered"],
+	#	"Ep" : ["time_one_is_writing"  , "time spent writing"],
+	#	"Fp" : ["time_one_is_reading"  , "time spent reading"],
+	#	"Dp" : ["time_all_are_done"    , "time all are done" ],
+	#}
 
-	for k in sorted(queries.keys()) :
-		query = queries[k]
-		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
-		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[0] # correct
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]     # correct
-		t += "\n"
+	#for k in sorted(queries.keys()) :
+	#	query = queries[k]
+	#	t += "// (%s) and (%se) %s\n" % (k, k, query[1])
+	#	t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[0] # correct
+	#	t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]     # correct
+	#	t += "\n"
 
-	t += "// partition queries end\n\n"
-	# ### partition queries end
+	#t += "// partition queries end\n\n"
+	## ### partition queries end
 
-	# ### cumulative queries begin
-	# shows how much time has been spent in different parts of the algorithm
-	# if simulated up to a certain point
-	#
-	# in order for cumulative queries to make sense here we have to invert some labels
-	t += "// cumulative queries begin\n\n"
+	## ### cumulative queries begin
+	## shows how much time has been spent in different parts of the algorithm
+	## if simulated up to a certain point
+	##
+	## in order for cumulative queries to make sense here we have to invert some labels
+	#t += "// cumulative queries begin\n\n"
 
-	queries = {
-		#key : [query, comment]
-		"Ac" : ["time_all_are_working" , "time up to: first finished working and entered"],
-		"Bc" : ["time_one_is_working"  , "time up to: last finished working and entered"],
-		"Cc" : ["time_not_one_is_done" , "time up to: first recognized the barrier is full and left"],
-		"Dc" : ["time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
-		"Ec" : ["time_one_is_writing"  , "time spent writing"],
-		"Fc" : ["time_one_is_reading"  , "time spent reading"],
-	}
+	#queries = {
+	#	#key : [query, comment]
+	#	"Ac" : ["time_all_are_working" , "time up to: first finished working and entered"],
+	#	"Bc" : ["time_one_is_working"  , "time up to: last finished working and entered"],
+	#	"Cc" : ["time_not_one_is_done" , "time up to: first recognized the barrier is full and left"],
+	#	"Dc" : ["time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
+	#	"Ec" : ["time_one_is_writing"  , "time spent writing"],
+	#	"Fc" : ["time_one_is_reading"  , "time spent reading"],
+	#}
 
-	for k in sorted(queries.keys()) :
-		query = queries[k]
-		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
-		t += "R{\"%s\"}=? [C<=time]\n" % query[0]
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]
-		t += "\n"
+	#for k in sorted(queries.keys()) :
+	#	query = queries[k]
+	#	t += "// (%s) and (%se) %s\n" % (k, k, query[1])
+	#	t += "R{\"%s\"}=? [C<=time]\n" % query[0]
+	#	t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]
+	#	t += "\n"
 
-	t += "// cumulative queries end\n\n"
-	# ### cumulative queries end
+	#t += "// cumulative queries end\n\n"
+	## ### cumulative queries end
 
-	t += "const double time=ticks/base_rate;\n"
-	t += "const double ticks;\n"
+	#t += "const double time=ticks/base_rate;\n"
+	#t += "const double ticks;\n"
 
-	t += "\n"
+	#t += "\n"
 
 	t += "// *** process end ***\n"
 
