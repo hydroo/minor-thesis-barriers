@@ -1,100 +1,84 @@
 #! /usr/bin/env python3
 
 import sys
-sys.path.append("../shared-memory")
 
-import shared_memory
-
-def generateModel(threadCount, workTicks, readTicks, writeTicks, debug) :
+def generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks, debug) :
 
 	s = "" # model
 	t = "" # correctness props
 
-	s += "ctmc\n" # nothing but ctmc is supported
+	s += "ctmc\n"
 	s += "\n"
 
-	s += generateConstants(threadCount, workTicks)
+	s += generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks)
 	s += "\n"
 
-	s += "// *** main thread begin ***\n"
+	s += "// *** main process begin ***\n"
 	s += "\n"
-	s += "// * you always need to add transitions for all sync labels in var_shared, otherwise\n"
-	s += "//   they will not be recognized as synchronized and are able to fire always\n"
-	s += "//\n"
-	s += "// * not all labels are for sync. but for easier debugging in the simulator: work_*, done_*\n"
-	s += "// * always read using [var_read_n]\n"
-	s += "// * always write using [var_set_to_*_n]\n"
-	s += "//\n"
-	s += "// * always introduce an atomic op using [bar_atomic_begin_n]\n"
-	s += "// * use read and writes as usual in between\n"
-	s += "// * always end an atomic op using [bar_atomic_end_n]\n"
-	s += "\n"
+	#s += "// * you always need to add transitions for all sync labels in var_shared, otherwise\n"
+	#s += "//   they will not be recognized as synchronized and are able to fire always\n"
+	#s += "//\n"
+	#s += "// * not all labels are for sync. but for easier debugging in the simulator: work_*, done_*\n"
+	#s += "// * always read using [var_read_n]\n"
+	#s += "// * always write using [var_set_to_*_n]\n"
+	#s += "//\n"
+	#s += "// * always introduce an atomic op using [bar_atomic_begin_n]\n"
+	#s += "// * use read and writes as usual in between\n"
+	#s += "// * always end an atomic op using [bar_atomic_end_n]\n"
+	#s += "\n"
 
-	s += generateThread(0, threadCount)
-	s += "\n"
-
-	s += "// *** main thread end ***\n\n"
-
-	s += "// *** thread labels begin ***\n\n"
-	s += generateLabels(threadCount)
-	s += "\n"
-	s += "// *** thread labels end ***\n\n"
-
-	s += "// *** shared memory begin ***\n\n"
-	t += "// *** shared memory begin ***\n\n"
-
-	s_, t_ = shared_memory.generatePrerequisites(threadCount, readTicks, writeTicks)
-	s += s_
-	t += t_
-
+	s += generateProcess(0, processCount)
 	s += "\n"
 
-	s_, t_ = shared_memory.generateVariable("bar", "[0..thread_count]",  "thread_count", [str(i) for i in range(0, threadCount)], threadCount, debug, True)
-	s += s_
-	t += t_
+	s += "// *** main process end ***\n\n"
 
-	t += "\n"
-
-	s += shared_memory.generateRewards()
+	s += "// *** process labels begin ***\n\n"
+	s += generateLabels(processCount)
 	s += "\n"
+	s += "// *** process labels end ***\n\n"
 
-	s += "// *** shared memory end ***\n\n"
-	t += "// *** shared memory end ***\n\n"
-
-	s += "// *** thread copies begin ***\n\n"
-	for p in range(1, threadCount) :
-		s += generateThread(p, threadCount)
+	s += "// *** process copies begin ***\n\n"
+	for p in range(1, processCount) :
+		s += generateProcess(p, processCount)
 		s += "\n"
 
-	s += "// *** thread copies end ***\n\n"
+	s += "// *** process copies end ***\n\n"
 
-	s += "// *** thread rewards begin ***\n\n"
+	s += "// *** process rewards begin ***\n\n"
 	s += generateRewards()
 	s += "\n"
-	s += "// *** thread rewards end ***\n\n"
+	s += "// *** process rewards end ***\n\n"
 
 	return s, t
 
-def generateConstants(threadCount, workTicks) :
+def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks) :
 
 	s = ""
 
-	s = "const thread_count = " + str(threadCount) + ";\n"
+	s = "const process_count = " + str(processCount) + ";\n"
 
 	s += "\n"
 
-	s += "const work_ticks  = " + str(workTicks) + ";\n"
+	s += "const work_ticks   = " + str(workTicks)  + ";\n"
+	s += "const read_ticks   = " + str(readTicks)  + ";\n"
+	s += "const write_ticks  = " + str(writeTicks) + ";\n"
+	s += "const get_ticks    = " + str(getTicks)   + ";\n"
+	s += "const put_ticks    = " + str(putTicks)   + ";\n"
 
 	s += "\n"
 
 	s += "// rates\n"
-	s += "const double base_rate = 1000.0;\n"            # needed for shared_memory as well
-	s += "const double tick      = base_rate / 1.0;\n"   # needed for shared_memory as well
+	s += "const double base_rate = 1000.0;\n"
+	s += "const double tick      = base_rate / 1.0;\n"
 	s += "const double work      = tick / work_ticks;\n"
+	s += "const double read      = tick / read_ticks;\n"
+	s += "const double write     = tick / write_ticks;\n"
+	s += "const double get       = tick / get_ticks;\n"
+	s += "const double put       = tick / put_ticks;\n"
 
 	s += "\n"
 
-	s += "// thread locations\n"
+	s += "// process locations\n"
 	s += "// all names describe the behaviour of the next transition\n"
 	s += "const l_init         = 0;\n"
 	s += "const l_work         = l_init;\n"
@@ -107,11 +91,11 @@ def generateConstants(threadCount, workTicks) :
 
 	return s
 
-def generateThread(p, threadCount) :
+def generateProcess(p, processCount) :
 
 	s = ""
 
-	s += "module thread_#\n"
+	s += "module process_#\n"
 
 	s += "    l_# : [l_init..l_done] init l_init;\n"
 
@@ -125,7 +109,7 @@ def generateThread(p, threadCount) :
 	s += "\n"
 
 	# set to 2 will never be triggered, but is needed for sync
-	for i in range(1, threadCount+1) :
+	for i in range(1, processCount+1) :
 		s += "    [bar_set_to_" + str(i-1) + "_#]     l_#=l_write      & bar =" + str(i) + " ->        (l_#'=l_atomic_end);\n"
 
 	s += "\n"
@@ -210,49 +194,49 @@ def generateRewards() :
 
 	return s
 
-def generateLabels(threadCount) :
+def generateLabels(processCount) :
 
 	s = ""
 
-	s += "formula one_is_done                  = " + " | ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
-	s += "formula all_are_done                 = " + " & ".join(["l_%d=l_done" % i for i in range(0, threadCount)]) + ";\n"
-	#s += "formula exactly_one_is_done          = " +  " | ".join([ "(l_%d = l_done & " % i + " & ".join(["l_%d < l_done" % j for j in range(0, threadCount) if j!=i]) + ")" for i in range(0, threadCount)]) + ";\n"
+	s += "formula one_is_done                  = " + " | ".join(["l_%d=l_done" % i for i in range(0, processCount)]) + ";\n"
+	s += "formula all_are_done                 = " + " & ".join(["l_%d=l_done" % i for i in range(0, processCount)]) + ";\n"
+	#s += "formula exactly_one_is_done          = " +  " | ".join([ "(l_%d = l_done & " % i + " & ".join(["l_%d < l_done" % j for j in range(0, processCount) if j!=i]) + ")" for i in range(0, processCount)]) + ";\n"
 	#s += "label \"one_is_done\"                  = one_is_done;\n"
 	#s += "label \"all_are_done\"                 = all_are_done;\n"
 	#s += "label \"exactly_one_is_done\"          = exactly_one_is_done;\n"
 
 	s += "\n"
 
-	s += "formula one_is_working               = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
-	s += "formula all_are_working              = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, threadCount)]) + ";\n"
-	s += "formula exactly_one_is_done_working  = " +  " | ".join([ "(l_%d >= l_atomic_begin & " % i + " & ".join(["l_%d = l_work" % j for j in range(0, threadCount) if j!=i]) + ")" for i in range(0, threadCount)]) + ";\n"
+	s += "formula one_is_working               = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, processCount)]) + ";\n"
+	s += "formula all_are_working              = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, processCount)]) + ";\n"
+	s += "formula exactly_one_is_done_working  = " +  " | ".join([ "(l_%d >= l_atomic_begin & " % i + " & ".join(["l_%d = l_work" % j for j in range(0, processCount) if j!=i]) + ")" for i in range(0, processCount)]) + ";\n"
 	#s += "label \"one_is_working\"               = one_is_working;\n"
 	#s += "label \"all_are_working\"              = all_are_working;\n"
 	#s += "label \"exactly_one_is_done_working\"  = exactly_one_is_done_working;\n"
 
 	s += "\n"
 
-	s += "formula one_is_writing               = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
-	s += "formula all_are_writing              = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
+	s += "formula one_is_writing               = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, processCount)]) + ");\n"
+	s += "formula all_are_writing              = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, processCount)]) + ");\n"
 	s += "formula none_are_writing             = !one_is_writing;\n"
 	#s += "label \"one_is_writing\"               = one_is_writing;\n"
 	#s += "label \"all_are_writing\"              = all_are_writing;\n"
 
 	s += "\n"
 
-	s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait & (" % i + " & ".join(["l_%d>=l_wait" % j for j in range(0, threadCount) if i!=j]) + ")" for i in range(0, threadCount)]) + ";\n"
-	s += "formula all_are_reading_or_done      = " + " & ".join(["l_%d>=l_wait" % i for i in range(0, threadCount)]) + ";\n"
+	s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait & (" % i + " & ".join(["l_%d>=l_wait" % j for j in range(0, processCount) if i!=j]) + ")" for i in range(0, processCount)]) + ";\n"
+	s += "formula all_are_reading_or_done      = " + " & ".join(["l_%d>=l_wait" % i for i in range(0, processCount)]) + ";\n"
 	#s += "label \"one_is_reading\"             = one_is_reading;\n"
 	#s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
 
 	return s
 
 # ### correctness props ### ###################################################
-def generateCorrectnessProperties(threadCount) :
+def generateCorrectnessProperties(processCount) :
 
 	t = ""
 
-	t += "// *** thread begin ***\n\n"
+	t += "// *** process begin ***\n\n"
 
 	t += "P>=1 [F all_are_done]\n"
 	t += "\n"
@@ -262,16 +246,16 @@ def generateCorrectnessProperties(threadCount) :
 
 	t += "\n"
 
-	t += "// *** thread end ***\n"
+	t += "// *** process end ***\n"
 
 	return t
 
 # ### quantitative props ### ##################################################
-def generateQuantitativeProperties(threadCount) :
+def generateQuantitativeProperties(processCount) :
 
 	t = ""
 
-	t += "// *** thread begin ***\n\n"
+	t += "// *** process begin ***\n\n"
 
 	t += "// python source contains comments on queries as well\n"
 	t += "\n"
@@ -375,25 +359,25 @@ def generateQuantitativeProperties(threadCount) :
 
 	t += "\n"
 
-	t += "// *** thread end ***\n"
+	t += "// *** process end ***\n"
 
 	return t
 
 # ### helper ### ##############################################################
-def everyThreadButMyself (p, threadCount) :
+def everyProcessButMyself (p, processCount) :
 	l = []
-	for j in range(0, threadCount):
+	for j in range(0, processCount):
 		if p != j:
 			l += [j]
 	return l
 
-def forMe(p, threadCount) :
+def forMe(p, processCount) :
 	#me and all but one other
 	l = []
-	for fromWhom in range(0, threadCount) :
+	for fromWhom in range(0, processCount) :
 		if fromWhom != p :
 			s = ""
-			for forWhom in range(0, threadCount) :
+			for forWhom in range(0, processCount) :
 				if forWhom != fromWhom :
 					s += str(forWhom)
 			l += [s]
@@ -405,22 +389,26 @@ helpMessage = \
  gen.py [OPTIONS] [outfile-prefix]
 
   -h, --help              print help message
-  -n <nr>                 set thread count
-  --work  <ticks>         set tick count for a work period [default 1]
-  --read  <ticks>         set tick count for a cache read  [default 50]
-  --write <ticks>         set tick count a cache write     [default 100]
+  -n <nr>                 set process count
+  --work  <ticks>         set tick count for a work period        [default 1]
+  --read  <ticks>         set tick count for a local read         [default 1]
+  --write <ticks>         set tick count for a local write        [default 1]
+  --get   <ticks>         set tick count for a remote read (get)  [default 100]
+  --put   <ticks>         set tick count for a remote write (put) [default 100]
 
-  --debug
+  --debug                                                         [default False]
 """
 
 if __name__ == "__main__":
 
-	threadCount = 0
+	processCount = 0
 	filePrefix = modelFileName = correctnessPropertiesFileName = ""
 
 	workTicks  = 1
-	readTicks  = 50
-	writeTicks = 100
+	readTicks  = 1
+	writeTicks = 1
+	getTicks   = 100
+	putTicks   = 100
 	debug = False
 
 	i = 1
@@ -428,8 +416,8 @@ if __name__ == "__main__":
 		if sys.argv[i] == "-h" or sys.argv[i] == "--help":
 			print (helpMessage)
 			exit(0)
-		elif sys.argv[i] == "-n" or sys.argv[i] == "--threads":
-			threadCount = int(sys.argv[i+1])
+		elif sys.argv[i] == "-n" or sys.argv[i] == "--processes":
+			processCount = int(sys.argv[i+1])
 			i += 1
 		elif sys.argv[i] == "--work":
 			workTicks = int(sys.argv[i+1])
@@ -439,6 +427,12 @@ if __name__ == "__main__":
 			i += 1
 		elif sys.argv[i] == "--write":
 			writeTicks = int(sys.argv[i+1])
+			i += 1
+		elif sys.argv[i] == "--get":
+			getTicks = int(sys.argv[i+1])
+			i += 1
+		elif sys.argv[i] == "--put":
+			putTicks = int(sys.argv[i+1])
 			i += 1
 		elif sys.argv[i] == "--debug":
 			debug = True
@@ -459,19 +453,21 @@ if __name__ == "__main__":
 		print(helpMessage)
 		exit(0)
 
-	assert threadCount >= 2
+	assert processCount >= 2
 	assert workTicks   >= 1
 	assert readTicks   >= 1
 	assert writeTicks  >= 1
+	assert getTicks    >= 1
+	assert putTicks    >= 1
 
 	modelString = ""
 	correctnessPropertiesString = ""
 
-	modelString, correctnessPropertiesString = generateModel(threadCount, workTicks, readTicks, writeTicks, debug)
+	modelString, correctnessPropertiesString = generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks, debug)
 
-	correctnessPropertiesString += generateCorrectnessProperties(threadCount)
+	correctnessPropertiesString  = generateCorrectnessProperties(processCount)
 
-	quantitativePropertiesString = generateQuantitativeProperties(threadCount)
+	quantitativePropertiesString = generateQuantitativeProperties(processCount)
 
 	f = open(modelFileName, 'w')
 	f.write(modelString)
