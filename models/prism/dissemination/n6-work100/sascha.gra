@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE chartFormat SYSTEM "chartformat.dtd">
+<chartFormat graphTitle="" legendFontColourB="0" legendFontColourG="0" legendFontColourR="0" legendFontName="SansSerif" legendFontSize="11" legendFontStyle="0" legendPosition="right" legendVisible="true" titleFontColourB="0" titleFontColourG="0" titleFontColourR="0" titleFontName="SansSerif" titleFontSize="14" titleFontStyle="0" versionString="4.1.beta.r6275">
+<layout/>
+<axis autoscale="true" heading="ticks" headingFontColourB="0" headingFontColourG="0" headingFontColourR="0" headingFontName="SansSerif" headingFontSize="12" headingFontStyle="0" logBase="10.0" logStyle="1" logarithmic="false" majorColourB="204" majorColourG="204" majorColourR="204" majorGridInterval="0.2" maxValue="1.0" maximumPower="1.0" minValue="0.0" minimumPower="0.0" numberFontColourB="0" numberFontColourG="0" numberFontColourR="0" numberFontName="SansSerif" numberFontSize="12" numberFontStyle="0" showMajor="true"/>
+<axis autoscale="true" heading="Result" headingFontColourB="0" headingFontColourG="0" headingFontColourR="0" headingFontName="SansSerif" headingFontSize="12" headingFontStyle="0" logBase="10.0" logStyle="1" logarithmic="false" majorColourB="204" majorColourG="204" majorColourR="204" majorGridInterval="0.2" maxValue="1.0" maximumPower="1.0" minValue="0.0" minimumPower="0.0" numberFontColourB="0" numberFontColourG="0" numberFontColourR="0" numberFontName="SansSerif" numberFontSize="12" numberFontStyle="0" showMajor="true"/>
+<graph lineStyle="normal" lineWidth="1.0" seriesColourB="255" seriesColourG="0" seriesColourR="0" seriesHeading="(A) not all are working" seriesShape="circle" showLines="true" showPoints="true">
+<point x="0.0" y="0.0"/>
+<point x="100.0" y="0.9990881180344556"/>
+<point x="200.0" y="0.9999873882221177"/>
+<point x="300.0" y="0.9999873882221177"/>
+<point x="400.0" y="0.9999873882221177"/>
+<point x="500.0" y="0.9999873882221177"/>
+<point x="600.0" y="0.9999873882221177"/>
+<point x="700.0" y="0.9999873882221177"/>
+<point x="800.0" y="0.9999873882221177"/>
+<point x="900.0" y="0.9999873882221177"/>
+<point x="1000.0" y="0.9999873882221177"/>
+<point x="1100.0" y="0.9999873882221177"/>
+<point x="1200.0" y="0.9999873882221177"/>
+<point x="1300.0" y="0.9999873882221177"/>
+<point x="1400.0" y="0.9999873882221177"/>
+</graph>
+<graph lineStyle="normal" lineWidth="1.0" seriesColourB="0" seriesColourG="127" seriesColourR="0" seriesHeading="(B) not one is working" seriesShape="square" showLines="true" showPoints="true">
+<point x="0.0" y="0.0"/>
+<point x="100.0" y="0.040327324289545365"/>
+<point x="200.0" y="0.36135507923316035"/>
+<point x="300.0" y="0.6994337033271896"/>
+<point x="400.0" y="0.8786240912429373"/>
+<point x="500.0" y="0.9537771347996024"/>
+<point x="600.0" y="0.9827772314928166"/>
+<point x="700.0" y="0.9936342618294585"/>
+<point x="800.0" y="0.9976541235225103"/>
+<point x="900.0" y="0.9991364511352081"/>
+<point x="1000.0" y="0.9996822437726297"/>
+<point x="1100.0" y="0.9998830294780142"/>
+<point x="1200.0" y="0.9999109870868356"/>
+<point x="1300.0" y="0.9999109870868452"/>
+<point x="1400.0" y="0.9999109870868452"/>
+</graph>
+<graph lineStyle="normal" lineWidth="1.0" seriesColourB="0" seriesColourG="0" seriesColourR="255" seriesHeading="(C) one is done" seriesShape="triangle" showLines="true" showPoints="true">
+<point x="0.0" y="0.0"/>
+<point x="100.0" y="1.0257127935106735E-8"/>
+<point x="200.0" y="2.548096834725862E-4"/>
+<point x="300.0" y="0.01906308141731709"/>
+<point x="400.0" y="0.15463595991055398"/>
+<point x="500.0" y="0.42945649283934395"/>
+<point x="600.0" y="0.6931994569393345"/>
+<point x="700.0" y="0.8576043685246416"/>
+<point x="800.0" y="0.9388215560991894"/>
+<point x="900.0" y="0.9746358264582942"/>
+<point x="1000.0" y="0.9896542603127938"/>
+<point x="1100.0" y="0.9958176995378581"/>
+<point x="1200.0" y="0.9983203543887084"/>
+<point x="1300.0" y="0.999329333042577"/>
+<point x="1400.0" y="0.9997336423744896"/>
+</graph>
+<graph lineStyle="normal" lineWidth="1.0" seriesColourB="191" seriesColourG="191" seriesColourR="0" seriesHeading="(D) all are done" seriesShape="rectangle_h" showLines="true" showPoints="true">
+<point x="0.0" y="0.0"/>
+<point x="100.0" y="1.1534207894530414E-14"/>
+<point x="200.0" y="5.260475513987447E-8"/>
+<point x="300.0" y="6.589792073249517E-5"/>
+<point x="400.0" y="0.003441372623096054"/>
+<point x="500.0" y="0.035451213220210866"/>
+<point x="600.0" y="0.143882633843652"/>
+<point x="700.0" y="0.3326400317306624"/>
+<point x="800.0" y="0.5443822527110321"/>
+<point x="900.0" y="0.721726105517346"/>
+<point x="1000.0" y="0.843946188962054"/>
+<point x="1100.0" y="0.9178429504886693"/>
+<point x="1200.0" y="0.9587184307519192"/>
+<point x="1300.0" y="0.9799720781696611"/>
+<point x="1400.0" y="0.990543322287028"/>
+</graph>
+</chartFormat>
