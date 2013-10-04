@@ -87,9 +87,9 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 
 def generateProcess(p, processCount) :
 
-	maxDist = 2**math.floor(math.log(processCount-1, 2))
-
 	s = ""
+
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
 
 	s += "module process_#\n"
 
@@ -130,7 +130,10 @@ def generateProcess(p, processCount) :
 	return s.replace('#', str(p))
 
 def generateRewards() :
+
 	s = ""
+
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
 
 	s += "// state rewards\n"
 	s += "rewards \"time\"\n"
@@ -197,11 +200,25 @@ def generateRewards() :
 	s += "\t" + "all_are_done : base_rate;\n"
 	s += "endrewards\n"
 
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		s += "rewards \"time_one_is_in_round_%d\"\n" % r
+		s += "\t" + "one_is_in_round_%d : base_rate;\n" % r
+		s += "endrewards\n"
+
+	s += "\n"
+
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		s += "rewards \"time_all_are_in_round_%d\"\n" % r
+		s += "\t" + "all_are_in_round_%d : base_rate;\n" % r
+		s += "endrewards\n"
+
 	return s
 
 def generateLabels(processCount) :
 
 	s = ""
+
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
 
 	s += "formula one_is_done                  = " + " | ".join(["l_%d=l_done" % i for i in range(0, processCount)]) + ";\n"
 	s += "formula all_are_done                 = " + " & ".join(["l_%d=l_done" % i for i in range(0, processCount)]) + ";\n"
@@ -234,7 +251,15 @@ def generateLabels(processCount) :
 	#s += "label \"one_is_reading\"             = one_is_reading;\n"
 	#s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
 
+	s += "\n"
 
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		for p in range(0, processCount) :
+			s += "formula round_%d_%d          = l_%d > l_work & l_%d < l_done & dist_%d = %d;\n" % (r, p, p, p, p, 2**r)
+		s += "formula one_is_in_round_%d  = " % r + " | ".join([ "round_%d_%d" % (r, p) for p in range(0, processCount)]) + ";\n"
+		s += "formula all_are_in_round_%d = " % r + " & ".join([ "round_%d_%d" % (r, p) for p in range(0, processCount)]) + ";\n"
+		#s += "label \"one_is_in_round_%d\"  = one_is_in_round_%d;\n" % (r, r)
+		#s += "label \"all_are_in_round_%d\" = all_are_in_round_%d;\n" % (r, r)
 
 	return s
 
@@ -266,6 +291,8 @@ def generateCorrectnessProperties(processCount) :
 def generateQuantitativeProperties(processCount) :
 
 	t = ""
+
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
 
 	t += "// *** process begin ***\n\n"
 
@@ -314,6 +341,23 @@ def generateQuantitativeProperties(processCount) :
 		t += "\n"
 
 	t += "// sascha queries A-D end\n\n"
+
+	# ### round queries begin
+	t += "// round queries begin\n\n"
+
+	queries = {}
+
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		t += "// (%sr one) and (%sre one) round query\n" % (r, k)
+		t += "R{\"time_one_is_in_round_%d\"}=? [I=time] / base_rate\n" % r
+		t += "R{\"time\"}=? [F all_are_done] - R{\"time_one_is_in_round_%d\"}=? [F all_are_done]\n" % r
+		t += "// (%sr all) and (%sre all) round query\n" % (r, k)
+		t += "R{\"time_all_are_in_round_%d\"}=? [I=time] / base_rate\n" % r
+		t += "R{\"time\"}=? [F all_are_done] - R{\"time_all_are_in_round_%d\"}=? [F all_are_done]\n" % r
+		t += "\n"
+
+	t += "// round queries end\n\n"
+	# ### round queries end
 
 	## ### partition queries begin
 	#t += "// partition queries begin\n\n"

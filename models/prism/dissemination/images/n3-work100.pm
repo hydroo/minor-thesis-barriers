@@ -2,11 +2,11 @@ ctmc
 
 const process_count = 3;
 
-const work_ticks   = 100;
-const read_ticks   = 1;
-const write_ticks  = 1;
-const get_ticks    = 100;
-const put_ticks    = 100;
+const work_ticks  = 100;
+const read_ticks  = 1;
+const write_ticks = 1;
+const get_ticks   = 100;
+const put_ticks   = 100;
 
 // rates
 const double base_rate = 1000.0;
@@ -19,11 +19,11 @@ const double put       = tick / put_ticks;
 
 // process locations
 // all names describe the behaviour of the next transition
-const l_init         = 0;
-const l_work         = l_init;
-const l_put          = 1;
-const l_wait         = 2;
-const l_done         = 3;
+const l_init = 0;
+const l_work = l_init;
+const l_put  = 1;
+const l_wait = 2;
+const l_done = 3;
 
 // *** main process begin ***
 
@@ -65,7 +65,16 @@ formula all_are_done                 = l_0=l_done & l_1=l_done & l_2=l_done;
 formula one_is_working               = l_0 = l_work | l_1 = l_work | l_2 = l_work;
 formula all_are_working              = l_0 = l_work & l_1 = l_work & l_2 = l_work;
 
-
+formula round_0_0          = l_0 > l_work & l_0 < l_done & dist_0 = 1;
+formula round_0_1          = l_1 > l_work & l_1 < l_done & dist_1 = 1;
+formula round_0_2          = l_2 > l_work & l_2 < l_done & dist_2 = 1;
+formula one_is_in_round_0  = round_0_0 | round_0_1 | round_0_2;
+formula all_are_in_round_0 = round_0_0 & round_0_1 & round_0_2;
+formula round_1_0          = l_0 > l_work & l_0 < l_done & dist_0 = 2;
+formula round_1_1          = l_1 > l_work & l_1 < l_done & dist_1 = 2;
+formula round_1_2          = l_2 > l_work & l_2 < l_done & dist_2 = 2;
+formula one_is_in_round_1  = round_1_0 | round_1_1 | round_1_2;
+formula all_are_in_round_1 = round_1_0 & round_1_1 & round_1_2;
 
 // *** process labels end ***
 
@@ -158,6 +167,19 @@ endrewards
 
 rewards "time_all_are_done"
 	all_are_done : base_rate;
+endrewards
+rewards "time_one_is_in_round_0"
+	one_is_in_round_0 : base_rate;
+endrewards
+rewards "time_one_is_in_round_1"
+	one_is_in_round_1 : base_rate;
+endrewards
+
+rewards "time_all_are_in_round_0"
+	all_are_in_round_0 : base_rate;
+endrewards
+rewards "time_all_are_in_round_1"
+	all_are_in_round_1 : base_rate;
 endrewards
 
 // *** process rewards end ***
