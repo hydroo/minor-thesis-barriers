@@ -18,6 +18,8 @@ def generateModel(threadCount, workTicks, readTicks, writeTicks, debug) :
 
 	s += "// *** main thread begin ***\n"
 	s += "\n"
+	s += "// * last _# at labels and variables is always the id of the \"owning\" process "
+	s += "//\n"
 	s += "// * you always need to add transitions for all sync labels in var_shared, otherwise\n"
 	s += "//   they will not be recognized as synchronized and are able to fire always\n"
 	s += "//\n"
