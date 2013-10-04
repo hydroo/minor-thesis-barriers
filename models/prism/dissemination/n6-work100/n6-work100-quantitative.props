@@ -1,0 +1,84 @@
+// *** process begin ***
+
+// python source contains comments on queries as well
+
+// e for expected value
+// c for cumulative
+// p for partition
+
+// sascha queries A-D begin
+
+// (A) and (Ae) time up to: first finished working and entered
+R{"time_not_all_are_working"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_not_all_are_working"}=? [F all_are_done]
+
+// (B) and (Be) time up to: last finished working and entered
+R{"time_not_one_is_working"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_not_one_is_working"}=? [F all_are_done]
+
+// (C) and (Ce) time up to: first recognized the barrier is full and left
+R{"time_one_is_done"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_one_is_done"}=? [F all_are_done]
+
+// (D) and (De) time up to: all recognized the barrier is full and left
+R{"time_all_are_done"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_all_are_done"}=? [F all_are_done]
+
+
+// (D-B)e from last to enter to last to leave
+(R{"time"}=? [F all_are_done] - R{"time_all_are_done"}=? [F all_are_done]) - (R{"time"}=? [F all_are_done] - R{"time_not_one_is_working"}=? [F all_are_done])
+
+// (D-C)e from first to leave to last to leave
+(R{"time"}=? [F all_are_done] - R{"time_all_are_done"}=? [F all_are_done]) - (R{"time"}=? [F all_are_done] - R{"time_one_is_done"}=? [F all_are_done])
+
+// sascha queries A-D end
+
+// round queries begin
+
+// (0r one) and (Dre one) round query
+R{"time_one_is_in_round_0"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_one_is_in_round_0"}=? [F all_are_done]
+// (0r all) and (Dre all) round query
+R{"time_all_are_in_round_0"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_all_are_in_round_0"}=? [F all_are_done]
+
+// (1r one) and (Dre one) round query
+R{"time_one_is_in_round_1"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_one_is_in_round_1"}=? [F all_are_done]
+// (1r all) and (Dre all) round query
+R{"time_all_are_in_round_1"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_all_are_in_round_1"}=? [F all_are_done]
+
+// (2r one) and (Dre one) round query
+R{"time_one_is_in_round_2"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_one_is_in_round_2"}=? [F all_are_done]
+// (2r all) and (Dre all) round query
+R{"time_all_are_in_round_2"}=? [I=time] / base_rate
+R{"time"}=? [F all_are_done] - R{"time_all_are_in_round_2"}=? [F all_are_done]
+
+// round queries end
+
+// cumulative queries begin
+
+// (Ac) and (Ace) time up to: first finished working and entered
+R{"time_all_are_working"}=? [C<=time]
+R{"time_all_are_working"}=? [F all_are_done]
+
+// (Bc) and (Bce) time up to: last finished working and entered
+R{"time_one_is_working"}=? [C<=time]
+R{"time_one_is_working"}=? [F all_are_done]
+
+// (Cc) and (Cce) time up to: first recognized the barrier is full and left
+R{"time_not_one_is_done"}=? [C<=time]
+R{"time_not_one_is_done"}=? [F all_are_done]
+
+// (Dc) and (Dce) time up to: all recognized the barrier is full and left
+R{"time_not_all_are_done"}=? [C<=time]
+R{"time_not_all_are_done"}=? [F all_are_done]
+
+// cumulative queries end
+
+const double time=ticks/base_rate;
+const double ticks;
+
+// *** process end ***

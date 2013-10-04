@@ -1,0 +1,6 @@
+// *** process begin ***
+
+P>=1 [F all_are_done]
+
+P>=1 [G ((l_0=l_done => (bar_5_0=true & bar_4_0=true & bar_2_0=true)))]P>=1 [G ((l_1=l_done => (bar_0_1=true & bar_5_1=true & bar_3_1=true)))]P>=1 [G ((l_2=l_done => (bar_1_2=true & bar_0_2=true & bar_4_2=true)))]P>=1 [G ((l_3=l_done => (bar_2_3=true & bar_1_3=true & bar_5_3=true)))]P>=1 [G ((l_4=l_done => (bar_3_4=true & bar_2_4=true & bar_0_4=true)))]P>=1 [G ((l_5=l_done => (bar_4_5=true & bar_3_5=true & bar_1_5=true)))]
+// *** process end ***
