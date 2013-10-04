@@ -410,7 +410,7 @@ helpMessage = \
   --read  <ticks>         set tick count for a cache read  [default 50]
   --write <ticks>         set tick count a cache write     [default 100]
 
-  --debug
+  --debug                                                  [default False]
 """
 
 if __name__ == "__main__":
