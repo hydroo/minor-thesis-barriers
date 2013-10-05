@@ -50,8 +50,6 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 
 	s = ""
 
-	maxDist = 2**math.floor(math.log(processCount-1, 2))
-
 	s = "const process_count = " + str(processCount) + ";\n"
 
 	s += "\n"
@@ -88,8 +86,6 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 def generateProcess(p, processCount) :
 
 	s = ""
-
-	maxDist = 2**math.floor(math.log(processCount-1, 2))
 
 	s += "module process_#\n"
 
@@ -136,8 +132,6 @@ def generateRewards() :
 
 	s = ""
 
-	maxDist = 2**math.floor(math.log(processCount-1, 2))
-
 	s += "// state rewards\n"
 	s += "rewards \"time\"\n"
 	s += "    true : base_rate;\n"
@@ -175,33 +169,33 @@ def generateRewards() :
 	s += "    all_are_done : base_rate;\n"
 	s += "endrewards\n\n"
 
-	s += "// round_#_one is the time from one enters a round until one enters the next round\n"
-	s += "// correctness queries show how the state space is partitioned\n"
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		s += "rewards \"time_round_%d_one\"\n" % r
-		s += "    round_%d_one : base_rate;\n" % r
-		s += "endrewards\n"
-		s += "\n"
+	#s += "// round_#_one is the time from one enters a round until one enters the next round\n"
+	#s += "// correctness queries show how the state space is partitioned\n"
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	s += "rewards \"time_round_%d_one\"\n" % r
+	#	s += "    round_%d_one : base_rate;\n" % r
+	#	s += "endrewards\n"
+	#	s += "\n"
 
-	s += "// round_#_all is the time from all entered a round until all entered the next round\n"
-	s += "// correctness queries show how the state space is partitioned\n"
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		s += "rewards \"time_round_%d_all\"\n" % r
-		s += "    round_%d_all : base_rate;\n" % r
-		s += "endrewards\n"
-		s += "\n"
+	#s += "// round_#_all is the time from all entered a round until all entered the next round\n"
+	#s += "// correctness queries show how the state space is partitioned\n"
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	s += "rewards \"time_round_%d_all\"\n" % r
+	#	s += "    round_%d_all : base_rate;\n" % r
+	#	s += "endrewards\n"
+	#	s += "\n"
 
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		s += "rewards \"time_up_to_round_%d_one\"\n" % r
-		s += "    up_to_round_%d_one : base_rate;\n" % r
-		s += "endrewards\n"
-		s += "\n"
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	s += "rewards \"time_up_to_round_%d_one\"\n" % r
+	#	s += "    up_to_round_%d_one : base_rate;\n" % r
+	#	s += "endrewards\n"
+	#	s += "\n"
 
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		s += "rewards \"time_up_to_round_%d_all\"\n" % r
-		s += "    up_to_round_%d_all : base_rate;\n" % r
-		s += "endrewards\n"
-		s += "\n"
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	s += "rewards \"time_up_to_round_%d_all\"\n" % r
+	#	s += "    up_to_round_%d_all : base_rate;\n" % r
+	#	s += "endrewards\n"
+	#	s += "\n"
 
 	return s
 
@@ -209,7 +203,7 @@ def generateLabels(processCount) :
 
 	s = ""
 
-	maxDist = 2**math.floor(math.log(processCount-1, 2))
+	#maxDist = 2**math.floor(math.log(processCount-1, 2))
 
 	s += "formula one_is_done       = " + " | ".join(["l_%d = l_done" % i for i in range(0, processCount)]) + ";\n"
 	s += "formula all_are_done      = " + " & ".join(["l_%d = l_done" % i for i in range(0, processCount)]) + ";\n"
@@ -227,27 +221,27 @@ def generateLabels(processCount) :
 	#s += "label \"all_are_working\"              = all_are_working;\n"
 	#s += "label \"exactly_one_is_done_working\"  = exactly_one_is_done_working;\n"
 
-	s += "\n"
+	#s += "\n"
 
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		if r < int(math.log(maxDist, 2)) :
-			s += "formula round_%d_one       = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_one" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
-			s += "formula round_%d_all       = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_all" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
-		else :
-			s += "formula round_%d_one       = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
-			s += "formula round_%d_all       = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	if r < int(math.log(maxDist, 2)) :
+	#		s += "formula round_%d_one       = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_one" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
+	#		s += "formula round_%d_all       = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_all" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
+	#	else :
+	#		s += "formula round_%d_one       = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
+	#		s += "formula round_%d_all       = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
 
-		#s += "label \"round_%d_one\" = round_%d_one;\n" % (r, r)
-		#s += "label \"round_%d_all\" = round_%d_all;\n" % (r, r)
-		s += "\n"
+	#	#s += "label \"round_%d_one\" = round_%d_one;\n" % (r, r)
+	#	#s += "label \"round_%d_all\" = round_%d_all;\n" % (r, r)
+	#	s += "\n"
 
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		if r == 0 :
-			s += "formula up_to_round_%d_one = all_are_working   | round_%d_one;\n" % (r, r)
-			s += "formula up_to_round_%d_all = one_is_working    | round_%d_all;\n" % (r, r)
-		else :
-			s += "formula up_to_round_%d_one = up_to_round_%d_one | round_%d_one;\n" % (r, r-1, r)
-			s += "formula up_to_round_%d_all = up_to_round_%d_all | round_%d_all;\n" % (r, r-1, r)
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	if r == 0 :
+	#		s += "formula up_to_round_%d_one = all_are_working   | round_%d_one;\n" % (r, r)
+	#		s += "formula up_to_round_%d_all = one_is_working    | round_%d_all;\n" % (r, r)
+	#	else :
+	#		s += "formula up_to_round_%d_one = up_to_round_%d_one | round_%d_one;\n" % (r, r-1, r)
+	#		s += "formula up_to_round_%d_all = up_to_round_%d_all | round_%d_all;\n" % (r, r-1, r)
 
 	return s
 
@@ -256,21 +250,19 @@ def generateCorrectnessProperties(processCount) :
 
 	t = ""
 
-	maxDist = 2**math.floor(math.log(processCount-1, 2))
-
 	t += "// *** process begin ***\n\n"
 
 	t += "P>=1 [F all_are_done]\n"
 	t += "\n"
 
-	for p in range(0, processCount) :
-		t += "P>=1 [G ((l_%d=l_done => (" % p + " & ".join(["bar_%d_%d=true" % (from_, p) for from_ in [(p-2**x) % processCount for x in range(0, int(math.log(maxDist, 2)) + 1)]]) + ")))]"
+	#for p in range(0, processCount) :
+	#	t += "P>=1 [G ((l_%d=l_done => (" % p + " & ".join(["bar_%d_%d=true" % (from_, p) for from_ in [(p-2**x) % processCount for x in range(0, int(math.log(maxDist, 2)) + 1)]]) + ")))]"
 
-	t += "// the following queries partition the state space and have to add up to the total state count\n"
-	t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_done]) + " + " + ".join(["filter(+, P=? [round_%d_one])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
-	t += "filter(+, P=? [one_is_working]) + filter(+, P=? [all_are_done]) + " + " + ".join(["filter(+, P=? [round_%d_all])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
+	#t += "// the following queries partition the state space and have to add up to the total state count\n"
+	#t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_done]) + " + " + ".join(["filter(+, P=? [round_%d_one])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
+	#t += "filter(+, P=? [one_is_working]) + filter(+, P=? [all_are_done]) + " + " + ".join(["filter(+, P=? [round_%d_all])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
 
-	t += "\n"
+	#t += "\n"
 
 	t += "// *** process end ***\n"
 
@@ -280,8 +272,6 @@ def generateCorrectnessProperties(processCount) :
 def generateQuantitativeProperties(processCount) :
 
 	t = ""
-
-	maxDist = 2**math.floor(math.log(processCount-1, 2))
 
 	t += "// *** process begin ***\n\n"
 
@@ -331,47 +321,47 @@ def generateQuantitativeProperties(processCount) :
 
 	t += "// sascha queries A-D end\n\n"
 
-	# ### partition queries "one" begin
-	t += "// partition queries \"one\" begin\n\n"
+	## ### partition queries "one" begin
+	#t += "// partition queries \"one\" begin\n\n"
 
-	# the following queries partition the state space.
-	# useful for a diagram showing with which percentage we are in which phase at a certain point in time
-	# perhaps as a stacked diagram
-	queries = [
-		#[key, query, comment]
-		["Ap", "time_all_are_working" , "time up to: first finished working and entered"],
-		["Cp", "time_one_is_done"     , "time all are done" ],
-	]
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		queries.insert(-1, ["%dp" % r, "time_round_%d_one" % r, "time from the first entered round %d until the first entered round %d" % (r, r+1)])
-	for query in queries :
-		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
-		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[1]
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
-		t += "\n"
+	## the following queries partition the state space.
+	## useful for a diagram showing with which percentage we are in which phase at a certain point in time
+	## perhaps as a stacked diagram
+	#queries = [
+	#	#[key, query, comment]
+	#	["Ap", "time_all_are_working" , "time up to: first finished working and entered"],
+	#	["Cp", "time_one_is_done"     , "time all are done" ],
+	#]
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	queries.insert(-1, ["%dp" % r, "time_round_%d_one" % r, "time from the first entered round %d until the first entered round %d" % (r, r+1)])
+	#for query in queries :
+	#	t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
+	#	t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[1]
+	#	t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
+	#	t += "\n"
 
-	t += "// partition queries \"one\" end\n\n"
-	# ### partition queries "one" end
+	#t += "// partition queries \"one\" end\n\n"
+	## ### partition queries "one" end
 
-	# ### partition queries "all" begin
-	t += "// partition queries \"all\" begin\n\n"
+	## ### partition queries "all" begin
+	#t += "// partition queries \"all\" begin\n\n"
 
-	queries = [
-		#[key, query, comment]
-		["Bp", "time_one_is_working" , "time up to: first finished working and entered"],
-		["Dp", "time_all_are_done"   , "time all are done" ],
-	]
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		queries.insert(-1, ["%dp" % r, "time_round_%d_all" % r, "time from the last entered round %d until the last entered round %d" % (r, r+1)])
-	for query in queries :
-		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
-		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[1]
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
-		t += "\n"
+	#queries = [
+	#	#[key, query, comment]
+	#	["Bp", "time_one_is_working" , "time up to: first finished working and entered"],
+	#	["Dp", "time_all_are_done"   , "time all are done" ],
+	#]
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	queries.insert(-1, ["%dp" % r, "time_round_%d_all" % r, "time from the last entered round %d until the last entered round %d" % (r, r+1)])
+	#for query in queries :
+	#	t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
+	#	t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[1]
+	#	t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
+	#	t += "\n"
 
 
-	t += "// partition queries \"all\" end\n\n"
-	# ### partition queries "all" end
+	#t += "// partition queries \"all\" end\n\n"
+	## ### partition queries "all" end
 
 	# ### cumulative queries begin
 	# shows how much time has been spent in different parts of the algorithm
@@ -387,9 +377,9 @@ def generateQuantitativeProperties(processCount) :
 		["Cc", "time_not_one_is_done" , "time up to: first recognized the barrier is full and left"],
 		["Dc", "time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
 	]
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		queries.insert(-2, ["%dc" % r, "time_up_to_round_%d_one" % r, "time up to: first entered round %d" % (r+1)])
-		queries.insert(-2, ["%dc" % r, "time_up_to_round_%d_all" % r, "time up to: last entered round %d" % (r+1)])
+	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
+	#	queries.insert(-2, ["%dc" % r, "time_up_to_round_%d_one" % r, "time up to: first entered round %d" % (r+1)])
+	#	queries.insert(-2, ["%dc" % r, "time_up_to_round_%d_all" % r, "time up to: last entered round %d" % (r+1)])
 
 	for query in queries :
 		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
