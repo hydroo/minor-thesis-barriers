@@ -7,6 +7,7 @@ variables:
   local:
     me := $2^{threadIndex}$
     full := $\sum_{i=0}^{numThreads-1}2^i$
+	i := threadIndex + 1 (mod threadCount)
   init:
     barrier1[*] := 0
     barrier2[*] := 0

@@ -4,12 +4,13 @@
 constants:        me := processIndex, meBit := $2^{me}$,
                   full := $\sum_{i=0}^{\mathit{processCount}-1}2^i$
 shared variables: integer barrier[processCount]
+local variables:  integer i
 initialization:   barrier[*] := 0
+                  i := processIndex + 1 (mod ProcessCount)
 $\listingrule{11.5cm}$
 
 barrier[me] := meBit;
 
-i := processIndex + 1 (mod processCount)
 do {
 	while barrier[me] & $2^i$ == 1 {
 		i := i + 1 (mod processCount)
