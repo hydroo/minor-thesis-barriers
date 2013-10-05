@@ -166,18 +166,6 @@ def generateRewards() :
 
 	s += "\n"
 
-	#s += "rewards \"time_one_is_writing\"\n"
-	#s += "\t" + "one_is_writing : base_rate;\n"
-	#s += "endrewards\n"
-
-	#s += "\n"
-
-	#s += "rewards \"time_one_is_reading\"\n"
-	#s += "\t" + "one_is_reading : base_rate;\n"
-	#s += "endrewards\n"
-
-	#s += "\n"
-
 	s += "rewards \"time_one_is_done\"\n"
 	s += "\t" + "one_is_done : base_rate;\n"
 	s += "endrewards\n"
@@ -235,21 +223,6 @@ def generateLabels(processCount) :
 	#s += "label \"one_is_working\"               = one_is_working;\n"
 	#s += "label \"all_are_working\"              = all_are_working;\n"
 	#s += "label \"exactly_one_is_done_working\"  = exactly_one_is_done_working;\n"
-
-	#s += "\n"
-
-	##s += "formula one_is_writing               = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, processCount)]) + ");\n"
-	##s += "formula all_are_writing              = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, processCount)]) + ");\n"
-	##s += "formula none_are_writing             = !one_is_writing;\n"
-	#s += "label \"one_is_writing\"               = one_is_writing;\n"
-	#s += "label \"all_are_writing\"              = all_are_writing;\n"
-
-	#s += "\n"
-
-	##s += "formula one_is_reading               = " + " | ".join(["l_%d=l_wait & (" % i + " & ".join(["l_%d>=l_wait" % j for j in range(0, processCount) if i!=j]) + ")" for i in range(0, processCount)]) + ";\n"
-	##s += "formula all_are_reading_or_done      = " + " & ".join(["l_%d>=l_wait" % i for i in range(0, processCount)]) + ";\n"
-	#s += "label \"one_is_reading\"             = one_is_reading;\n"
-	#s += "label \"all_are_reading_or_done\"    = all_are_reading_or_done;\n"
 
 	s += "\n"
 
@@ -396,8 +369,6 @@ def generateQuantitativeProperties(processCount) :
 		"Bc" : ["time_one_is_working"  , "time up to: last finished working and entered"],
 		"Cc" : ["time_not_one_is_done" , "time up to: first recognized the barrier is full and left"],
 		"Dc" : ["time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
-	#	"Ec" : ["time_one_is_writing"  , "time spent writing"],
-	#	"Fc" : ["time_one_is_reading"  , "time spent reading"],
 	}
 
 	for k in sorted(queries.keys()) :
