@@ -22,7 +22,7 @@
 				\end{itemize}
 			\item initialize:
 				\begin{itemize}
-					\item[] barrier[*] := full
+					\item[] barrier[*] := empty
 					\item[] i := 0
 				\end{itemize}
 		\end{itemize}
@@ -40,13 +40,13 @@
 
 %  edges
 \path [->] (init) edge                                       node [left]  {\color{gray}(work period)} (1);
-\path [->] (1)    edge                                       node [left]  {barrier[me] := full $\& \sim$me \color{gray}(local shared write)} (2);
-\path [->] (2)    edge [loop, distance=1.5cm, out=90, in=35] node [right] {barrier[me]\&2$^i$ = 0 \&\& i $<$ nthreads : i := i + 1 \color{gray}(local shared read)} (2);
+\path [->] (1)    edge                                       node [left]  {barrier[me] := me \color{gray}(local shared write)} (2);
+\path [->] (2)    edge [loop, distance=1.5cm, out=90, in=35] node [right] {barrier[me]\&2$^i$ = 1 \&\& i $<$ nthreads : i := i + 1 \color{gray}(local shared read)} (2);
 \path [->] (2)    edge [out=-90, in=180] node [below left]  {else \color{gray}(local shared read)} (3);
 \path [->] (3)    edge [out=90, in=0]    node [above right] {i = nthreads : i := 0}                (2);
 \path [->] (3)    edge                   node [right] {else : tmp := barrier[i] \color{gray}(remote shared read)} (4);
-\path [->] (4)    edge [out=-90, in=0]   node [below right] {barrier[me] := barrier[me]\&tmp \color{gray}(local shared read+write)} (5);
-\path [->] (5)    edge [distance=6cm, out=180, in=180]       node         {barrier[me] $\ne$ empty \color{gray}(local shared read)} (2);
+\path [->] (4)    edge [out=-90, in=0]   node [below right] {barrier[me] := barrier[me] \textbar~tmp \color{gray}(local shared read+write)} (5);
+\path [->] (5)    edge [distance=6cm, out=180, in=180]       node         {barrier[me] $\ne$ full \color{gray}(local shared read)} (2);
 \path [->] (5)    edge                                       node         {else}                                                    (done);
 
 \input{post}
