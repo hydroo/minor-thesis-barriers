@@ -4,22 +4,22 @@
 constants:        me := processIndex, meBit := $2^{me}$,
                   full := $\sum_{i=0}^{\mathit{processCount}-1}2^i$
 shared variables: integer barrier[processCount]
-initialization:   barrier[*] := full
+initialization:   barrier[*] := 0
 $\listingrule{11.5cm}$
 
-barrier[me] := full & $\sim$meBit;
+barrier[me] := meBit;
 
 i := processIndex + 1 (mod processCount)
 do {
-	while barrier[me] & $2^i$ = 0 and i < processCount {
+	while barrier[me] & $2^i$ == 1 and i < processCount {
 		i := i + 1
 	}
 
 	if i < processCount {
-		barrier[me] := barrier[me] & barrier[i]
+		barrier[me] := barrier[me] | barrier[i]
 	} else {
 		i := 0
 	}
-} while barrier[me] $\neq$ 0
+} while barrier[me] $\neq$ full
 \end{lstlisting}
 \end{minipage}

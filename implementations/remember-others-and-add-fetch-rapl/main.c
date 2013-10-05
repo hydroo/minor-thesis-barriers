@@ -1348,22 +1348,22 @@ typedef union {
     uint8_t dontAccess[64];
 } Sw5Element __attribute__ ((aligned (64)));
 
-static inline void barrierSuperWasteful5(int threadIndex, int threadCount, Sw5Element *barrier, Sw5Element *delBarrier, uint64_t notMe, uint64_t fullMask) {
+static inline void barrierSuperWasteful5(int threadIndex, int threadCount, Sw5Element *barrier, Sw5Element *delBarrier, uint64_t me, uint64_t fullMask) {
 
-    barrier[threadIndex].m = fullMask&notMe;
+    barrier[threadIndex].m = me;
 
     int i = (threadIndex+1) % threadCount;
     do {
-        while ((barrier[threadIndex].m&(1<<i)) == 0x0 && i < threadCount) { i += 1; }
+        while ((barrier[threadIndex].m&(1<<i)) == 0x1 && i < threadCount) { i += 1; }
 
         if (i < threadCount) {
-            barrier[threadIndex].m &= __atomic_load_n(&(barrier[i].m), __ATOMIC_ACQUIRE);
+            barrier[threadIndex].m |= __atomic_load_n(&(barrier[i].m), __ATOMIC_ACQUIRE);
         } else {
             i = 0;
         }
-    } while (barrier[threadIndex].m != 0x0);
+    } while (barrier[threadIndex].m != fullMask);
 
-    delBarrier[threadIndex].m = fullMask;
+    delBarrier[threadIndex].m = 0;
 }
 
 static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int threadCountsLen) {
@@ -1424,7 +1424,7 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
     void f(int threadIndex, int threadCount) {
         struct timespec begin, end;
 
-        uint64_t notMe = ~(1<<threadIndex);
+        uint64_t me = 1<<threadIndex;
         uint64_t fullMask = 0x0;
         for (int i = 0; i < threadCount; i += 1) { fullMask |= 1<<i; }
 
@@ -1446,7 +1446,7 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
                 }
                 which[threadIndex] = BetweenOneAndTwo;
 #endif
-                barrierSuperWasteful5(threadIndex, threadCount, barrier1, barrier3, notMe, fullMask);
+                barrierSuperWasteful5(threadIndex, threadCount, barrier1, barrier3, me, fullMask);
 
             } else if (barrier1[threadIndex].m == 0) {
 #ifdef DEBUG
@@ -1460,7 +1460,7 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
                 }
                 which[threadIndex] = BetweenTwoAndThree;
 #endif
-                barrierSuperWasteful5(threadIndex, threadCount, barrier2, barrier1, notMe, fullMask);
+                barrierSuperWasteful5(threadIndex, threadCount, barrier2, barrier1, me, fullMask);
 
             } else if (barrier2[threadIndex].m == 0) {
 #ifdef DEBUG
@@ -1474,7 +1474,7 @@ static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int thre
                 }
                 which[threadIndex] = BetweenThreeAndOne;
 #endif
-                barrierSuperWasteful5(threadIndex, threadCount, barrier3, barrier2, notMe, fullMask);
+                barrierSuperWasteful5(threadIndex, threadCount, barrier3, barrier2, me, fullMask);
             }
 
             if (repetitions % (1 * 3000) == 0) {
