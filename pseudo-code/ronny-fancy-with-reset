@@ -28,13 +28,9 @@ code per thread/process:
 
     i := threadIndex+1 (mod threadCount)
     do {
-      while bar[threadIndex]&(2^i) == 1 && i < numThreads { i := i + 1 } // pick one thread that has not yet arrived
+      while bar[threadIndex]&(2^i) == 1 { i := i + 1 (mod threadCount) } // pick one thread that has not yet arrived
 
-      if i < numThreads {
-        bar[threadIndex] := bar[threadIndex] | bar[i]                    // pull his 'data' and connect it with ours by logical OR
-      } else {
-        i := 0
-      }
+      bar[threadIndex] := bar[threadIndex] | bar[i]                      // pull his data and connect it with ours by logical OR
     } while bar[threadIndex] != full                                     // as long as not everyone arrived
 
     delBar[threadIndex] = 0                                              // reset

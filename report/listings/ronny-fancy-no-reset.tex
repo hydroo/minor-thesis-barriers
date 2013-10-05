@@ -11,15 +11,11 @@ barrier[me] := meBit;
 
 i := processIndex + 1 (mod processCount)
 do {
-	while barrier[me] & $2^i$ == 1 and i < processCount {
-		i := i + 1
+	while barrier[me] & $2^i$ == 1 {
+		i := i + 1 (mod processCount)
 	}
 
-	if i < processCount {
-		barrier[me] := barrier[me] | barrier[i]
-	} else {
-		i := 0
-	}
+	barrier[me] := barrier[me] | barrier[i]
 } while barrier[me] $\neq$ full
 \end{lstlisting}
 \end{minipage}
