@@ -19,7 +19,9 @@ def generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putT
 	s += "// * last _# at labels and variables is always the id of the \"owning\" process "
 	s += "//\n"
 	s += "\n"
-	s += "// * not all labels are for sync. but for easier debugging in the simulator: work_*, wait_*, done_*\n"
+	s += "// * no label is for sync. all are for easyier debugging in the simulator\n"
+	s += "\n"
+	s += "// * changing read and write rates does not work anymore because we collapsed some of those transitions (optimization)\n"
 	s += "\n"
 
 	s += generateProcess(0, processCount)
@@ -54,6 +56,21 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 
 	s += "\n"
 
+	for i in range(0, processCount+0) :
+		s += "const int me_" + str(i) + " = " + str(i) + ";\n"
+	s += "\n"
+
+	for i in range(0, processCount) :
+		s += "const int me_bit_" + str(i) + " = " + str(2**i) + ";\n"
+	s += "\n"
+
+	s += "const int empty = 0;\n"
+	s += "const int full  = "
+	for i in range(0, processCount) :
+		s += "me_bit_" + str(i) + " + "
+	s += "0;\n"
+	s += "\n"
+
 	s += "const work_ticks  = " + str(workTicks)  + ";\n"
 	s += "const read_ticks  = " + str(readTicks)  + ";\n"
 	s += "const write_ticks = " + str(writeTicks) + ";\n"
@@ -75,11 +92,12 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 
 	s += "// process locations\n"
 	s += "// all names describe the behaviour of the next transition\n"
-	s += "const l_init = 0;\n"
-	s += "const l_work = l_init;\n"
-	s += "const l_put  = 1;\n"
-	s += "const l_wait = 2;\n"
-	s += "const l_done = 3;\n"
+	s += "const l_init   = 0;\n"
+	s += "const l_work   = l_init;\n"
+	s += "const l_write  = 1;\n"
+	s += "const l_search = 2;\n"
+	s += "const l_test   = 3;\n"
+	s += "const l_done   = 4;\n"
 
 	return s
 
@@ -89,40 +107,35 @@ def generateProcess(p, processCount) :
 
 	s += "module process_#\n"
 
-	s += "    l_#      : [l_init..l_done] init l_init;\n"
-	s += "    //bar_$fromwhom$_$me$ - an array of bits from whom we will receive\n"
-	for i in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
-		s += "    bar_%d_#  : bool             init false;\n" % ((p-i)%processCount)
-	if maxDist > 1 :
-		s += "    dist_#   : [1..%d]           init 1; // distance\n" % maxDist
-	else : #happens at process count 2
-		s += "    dist_#   : [1..2]           init 1; // distance\n"
+	s += "    l_#   : [l_init..l_done]     init l_init;\n"
+	s += "    bar_# : [0..full]            init 0;\n"
+	s += "    i_#   : [0..process_count-1] init me_#;\n"
 
 	s += "\n"
 
-	s += "    [work_#]   l_#=l_work                                -> work : (l_#'=l_put);\n"
+	s += "    [work_#]     l_#=l_work  -> work  : (l_#'=l_write);\n"
 	s += "\n"
 
-	for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
-		s += "    [put_#_%d]  l_#=l_put  & dist_# = %d                   -> put  : (l_#'=l_wait);\n" % (((p+dist) % processCount), dist)
+	s += "    [write_#]    l_#=l_write -> write : (l_#'=l_search) & (bar_#'=me_bit_#);\n"
 
 	s += "\n"
 
-	for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
-		if dist != maxDist :
-			s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> read : (l_#'=l_put) & (dist_#'=dist_#*2);\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
-		else :
-			s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> read : (l_#'=l_done);\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
-
-		s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_# != true -> read : true;\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
+	s += "    // bar_# = bar_# | bar_x. all combinations for all i's\n"
+	s += "    // emulates a foot controlled loop by clevery using +1 and i increment\n"
+	for i in range(0, processCount) :
+		s += "    [search_#]   l_#=l_search & i_#=%d & mod(floor(bar_#/me_bit_%d),2) = 1                        ->  read  : (l_#'=l_search) & (i_#'=mod(i_#+1, process_count));\n" % (i, (i + 1) % processCount)
+		for j in range(0, 2**processCount) :
+			for k in range(0, 2**processCount) :
+				s += "    [search_#]   l_#=l_search & i_#=%d & mod(floor(bar_#/me_bit_%d),2) = 0 & bar_#=%2d & bar_%d=%2d  ->  get   : (l_#'=l_test)   & (i_#'=mod(i_#+1, process_count)) & (bar_#'=%d);\n" % (i, (i+1) % processCount, j, (i+1) % processCount, k, j|k)
 
 	s += "\n"
-	s += "    [done_#]   l_#=l_done                                ->        true;\n"
+
+	s += "    [test_#]     l_#=l_test   & bar_# =full -> read : (l_#'=l_done);\n"
+	s += "    [test_#]     l_#=l_test   & bar_#!=full -> read : (l_#'=l_search);\n"
+
 	s += "\n"
 
-	s += "    // listen for remote puts\n"
-	for i in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
-		s += "    [put_%d_#] true -> (bar_%d_#'=true);\n" % (((p-i) % processCount), ((p-i) % processCount))
+	s += "    [done_#]     l_#=l_done                 ->        true;\n"
 
 	s += "endmodule\n"
 
@@ -169,41 +182,11 @@ def generateRewards() :
 	s += "    all_are_done : base_rate;\n"
 	s += "endrewards\n\n"
 
-	#s += "// round_#_one is the time from one enters a round until one enters the next round\n"
-	#s += "// correctness queries show how the state space is partitioned\n"
-	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
-	#	s += "rewards \"time_round_%d_one\"\n" % r
-	#	s += "    round_%d_one : base_rate;\n" % r
-	#	s += "endrewards\n"
-	#	s += "\n"
-
-	#s += "// round_#_all is the time from all entered a round until all entered the next round\n"
-	#s += "// correctness queries show how the state space is partitioned\n"
-	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
-	#	s += "rewards \"time_round_%d_all\"\n" % r
-	#	s += "    round_%d_all : base_rate;\n" % r
-	#	s += "endrewards\n"
-	#	s += "\n"
-
-	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
-	#	s += "rewards \"time_up_to_round_%d_one\"\n" % r
-	#	s += "    up_to_round_%d_one : base_rate;\n" % r
-	#	s += "endrewards\n"
-	#	s += "\n"
-
-	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
-	#	s += "rewards \"time_up_to_round_%d_all\"\n" % r
-	#	s += "    up_to_round_%d_all : base_rate;\n" % r
-	#	s += "endrewards\n"
-	#	s += "\n"
-
 	return s
 
 def generateLabels(processCount) :
 
 	s = ""
-
-	#maxDist = 2**math.floor(math.log(processCount-1, 2))
 
 	s += "formula one_is_done       = " + " | ".join(["l_%d = l_done" % i for i in range(0, processCount)]) + ";\n"
 	s += "formula all_are_done      = " + " & ".join(["l_%d = l_done" % i for i in range(0, processCount)]) + ";\n"
@@ -223,26 +206,6 @@ def generateLabels(processCount) :
 
 	#s += "\n"
 
-	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
-	#	if r < int(math.log(maxDist, 2)) :
-	#		s += "formula round_%d_one       = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_one" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
-	#		s += "formula round_%d_all       = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_all" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
-	#	else :
-	#		s += "formula round_%d_one       = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
-	#		s += "formula round_%d_all       = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
-
-	#	#s += "label \"round_%d_one\" = round_%d_one;\n" % (r, r)
-	#	#s += "label \"round_%d_all\" = round_%d_all;\n" % (r, r)
-	#	s += "\n"
-
-	#for r in range(0, int(math.log(maxDist, 2)) + 1) :
-	#	if r == 0 :
-	#		s += "formula up_to_round_%d_one = all_are_working   | round_%d_one;\n" % (r, r)
-	#		s += "formula up_to_round_%d_all = one_is_working    | round_%d_all;\n" % (r, r)
-	#	else :
-	#		s += "formula up_to_round_%d_one = up_to_round_%d_one | round_%d_one;\n" % (r, r-1, r)
-	#		s += "formula up_to_round_%d_all = up_to_round_%d_all | round_%d_all;\n" % (r, r-1, r)
-
 	return s
 
 # ### correctness props ### ###################################################
@@ -254,15 +217,6 @@ def generateCorrectnessProperties(processCount) :
 
 	t += "P>=1 [F all_are_done]\n"
 	t += "\n"
-
-	#for p in range(0, processCount) :
-	#	t += "P>=1 [G ((l_%d=l_done => (" % p + " & ".join(["bar_%d_%d=true" % (from_, p) for from_ in [(p-2**x) % processCount for x in range(0, int(math.log(maxDist, 2)) + 1)]]) + ")))]"
-
-	#t += "// the following queries partition the state space and have to add up to the total state count\n"
-	#t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_done]) + " + " + ".join(["filter(+, P=? [round_%d_one])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
-	#t += "filter(+, P=? [one_is_working]) + filter(+, P=? [all_are_done]) + " + " + ".join(["filter(+, P=? [round_%d_all])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
-
-	#t += "\n"
 
 	t += "// *** process end ***\n"
 
