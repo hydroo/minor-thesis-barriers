@@ -1350,16 +1350,16 @@ typedef union {
 
 static inline void barrierSuperWasteful5(int threadIndex, int threadCount, Sw5Element *barrier, Sw5Element *delBarrier, uint64_t me, uint64_t fullMask) {
 
-    barrier[threadIndex].m = me;
+    __atomic_store_n(&(barrier[threadIndex].m), me, __ATOMIC_RELEASE);
 
     int i = (threadIndex+1) % threadCount;
     do {
-        while ((barrier[threadIndex].m&(1<<i)) == 0x1) { i = (i + 1) % threadCount; }
+        while ((__atomic_load_n(&(barrier[threadIndex].m), __ATOMIC_ACQUIRE)&(1<<i)) == 0x1) { i = (i + 1) % threadCount; }
 
-        barrier[threadIndex].m |= __atomic_load_n(&(barrier[i].m), __ATOMIC_ACQUIRE);
-    } while (barrier[threadIndex].m != fullMask);
+        __atomic_store_n(&(barrier[threadIndex].m), __atomic_load_n(&(barrier[threadIndex].m), __ATOMIC_ACQUIRE) | __atomic_load_n(&(barrier[i].m), __ATOMIC_ACQUIRE), __ATOMIC_RELEASE);
+    } while (__atomic_load_n(&(barrier[threadIndex].m), __ATOMIC_ACQUIRE) != fullMask);
 
-    delBarrier[threadIndex].m = 0;
+    __atomic_store_n( &(delBarrier[threadIndex].m), 0, __ATOMIC_RELEASE);
 }
 
 static void measureSuperWastefulBarrier5(Context *c, int *threadCounts, int threadCountsLen) {
