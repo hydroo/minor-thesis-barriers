@@ -27,7 +27,7 @@ proctype p(int threadIndex) {
        if :: bar3[threadIndex] == full ->
 
              bar1[threadIndex] = me;
-             i = 0;
+             i = (threadIndex + 1) % threadCount;
              do :: bar1[threadIndex] != full ->
                    do :: (bar1[threadIndex]&(1<<i)) == 0 -> break
                       :: else -> i = (i + 1) % threadCount
@@ -43,7 +43,7 @@ proctype p(int threadIndex) {
           :: bar1[threadIndex] == full ->
 
              bar2[threadIndex] = me;
-             i = 0;
+             i = (threadIndex + 1) % threadCount;
              do :: bar2[threadIndex] != full ->
                    do :: (bar2[threadIndex]&(1<<i)) == 0 -> break
                       :: else -> i = (i + 1) % threadCount
@@ -59,7 +59,7 @@ proctype p(int threadIndex) {
           :: bar2[threadIndex] == full ->
 
              bar3[threadIndex] = me;
-             i = 0;
+             i = (threadIndex + 1) % threadCount;
              do :: bar3[threadIndex] != full ->
                    do :: (bar3[threadIndex]&(1<<i)) == 0 -> break
                       :: else -> i = (i + 1) % threadCount
