@@ -1,3 +1,7 @@
+--- 13-10-05 ---
+
+ * ronny fancy seems now faster than ronny simple, due to the recent optimizations
+
 --- 13-09-16 ---
 
  * decided to ditch memory manager, because
