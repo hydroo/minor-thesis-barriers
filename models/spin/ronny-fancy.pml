@@ -29,16 +29,11 @@ proctype p(int threadIndex) {
              bar1[threadIndex] = me;
              i = 0;
              do :: bar1[threadIndex] != full ->
-                   do :: i < threadCount ->
-                         if :: (bar1[threadIndex]&(1<<i)) == 0 -> break
-                            :: else -> i = i + 1
-                         fi
-                      :: else -> break
+                   do :: (bar1[threadIndex]&(1<<i)) == 0 -> break
+                      :: else -> i = (i + 1) % threadCount
                    od;
 
-                   if :: i < threadCount -> bar1[threadIndex] = bar1[threadIndex] | bar1[i]
-                      :: else -> i = 0
-                   fi
+                   bar1[threadIndex] = bar1[threadIndex] | bar1[i]
                 :: else -> break
              od;
              bar3[threadIndex] = empty;
@@ -50,16 +45,11 @@ proctype p(int threadIndex) {
              bar2[threadIndex] = me;
              i = 0;
              do :: bar2[threadIndex] != full ->
-                   do :: i < threadCount ->
-                         if :: (bar2[threadIndex]&(1<<i)) == 0 -> break
-                            :: else -> i = i + 1
-                         fi
-                      :: else -> break
+                   do :: (bar2[threadIndex]&(1<<i)) == 0 -> break
+                      :: else -> i = (i + 1) % threadCount
                    od;
 
-                   if :: i < threadCount -> bar2[threadIndex] = bar2[threadIndex] | bar2[i]
-                      :: else -> i = 0
-                   fi
+                   bar2[threadIndex] = bar2[threadIndex] | bar2[i]
                 :: else -> break
              od;
              bar1[threadIndex] = empty;
@@ -71,16 +61,11 @@ proctype p(int threadIndex) {
              bar3[threadIndex] = me;
              i = 0;
              do :: bar3[threadIndex] != full ->
-                   do :: i < threadCount ->
-                         if :: (bar3[threadIndex]&(1<<i)) == 0 -> break
-                            :: else -> i = i + 1
-                         fi
-                      :: else -> break
+                   do :: (bar3[threadIndex]&(1<<i)) == 0 -> break
+                      :: else -> i = (i + 1) % threadCount
                    od;
 
-                   if :: i < threadCount -> bar3[threadIndex] = bar3[threadIndex] | bar3[i]
-                      :: else -> i = 0
-                   fi
+                   bar3[threadIndex] = bar3[threadIndex] | bar3[i]
                 :: else -> break
              od;
              bar2[threadIndex] = empty;
