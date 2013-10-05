@@ -211,8 +211,8 @@ def generateLabels(processCount) :
 
 	maxDist = 2**math.floor(math.log(processCount-1, 2))
 
-	s += "formula one_is_done                  = " + " | ".join(["l_%d=l_done" % i for i in range(0, processCount)]) + ";\n"
-	s += "formula all_are_done                 = " + " & ".join(["l_%d=l_done" % i for i in range(0, processCount)]) + ";\n"
+	s += "formula one_is_done       = " + " | ".join(["l_%d = l_done" % i for i in range(0, processCount)]) + ";\n"
+	s += "formula all_are_done      = " + " & ".join(["l_%d = l_done" % i for i in range(0, processCount)]) + ";\n"
 	#s += "formula exactly_one_is_done          = " +  " | ".join([ "(l_%d = l_done & " % i + " & ".join(["l_%d < l_done" % j for j in range(0, processCount) if j!=i]) + ")" for i in range(0, processCount)]) + ";\n"
 	#s += "label \"one_is_done\"                  = one_is_done;\n"
 	#s += "label \"all_are_done\"                 = all_are_done;\n"
@@ -220,8 +220,8 @@ def generateLabels(processCount) :
 
 	s += "\n"
 
-	s += "formula one_is_working               = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, processCount)]) + ";\n"
-	s += "formula all_are_working              = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, processCount)]) + ";\n"
+	s += "formula one_is_working    = " +  " | ".join([ "l_%d = l_work" % i for i in range(0, processCount)]) + ";\n"
+	s += "formula all_are_working   = " +  " & ".join([ "l_%d = l_work" % i for i in range(0, processCount)]) + ";\n"
 	##s += "formula exactly_one_is_done_working  = " +  " | ".join([ "(l_%d >= l_atomic_begin & " % i + " & ".join(["l_%d = l_work" % j for j in range(0, processCount) if j!=i]) + ")" for i in range(0, processCount)]) + ";\n"
 	#s += "label \"one_is_working\"               = one_is_working;\n"
 	#s += "label \"all_are_working\"              = all_are_working;\n"
@@ -231,11 +231,11 @@ def generateLabels(processCount) :
 
 	for r in range(0, int(math.log(maxDist, 2)) + 1) :
 		if r < int(math.log(maxDist, 2)) :
-			s += "formula round_%d_one = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_one" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
-			s += "formula round_%d_all = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_all" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
+			s += "formula round_%d_one       = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_one" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
+			s += "formula round_%d_all       = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_all" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
 		else :
-			s += "formula round_%d_one = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
-			s += "formula round_%d_all = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
+			s += "formula round_%d_one       = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
+			s += "formula round_%d_all       = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
 
 		#s += "label \"round_%d_one\" = round_%d_one;\n" % (r, r)
 		#s += "label \"round_%d_all\" = round_%d_all;\n" % (r, r)
