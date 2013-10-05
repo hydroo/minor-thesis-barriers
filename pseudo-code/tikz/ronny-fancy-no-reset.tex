@@ -45,7 +45,7 @@
 %  edges
 \path [->] (init) edge                                       node [left]  {\color{gray}(work period)} (1);
 \path [->] (1)    edge                                       node [left]  {barrier[me] := me \color{gray}(local shared write)} (2);
-\path [->] (2)    edge [loop, distance=1.5cm, out=90, in=35] node [right] {barrier[me]\&2$^i$ = 1 : i := i + 1 (mod nthreads) \color{gray}(local shared read)} (2);
+\path [->] (2)    edge [loop, distance=1.5cm, out=90, in=35] node [right] {barrier[me]\&2$^i$ = 1 : i := i + 1 (\textbf{mod} nthreads) \color{gray}(local shared read)} (2);
 \path [->] (2)    edge                   node [right]       {else : tmp := barrier[i] \color{gray}(remote shared read)} (4);
 \path [->] (4)    edge [out=-90, in=0]   node [below right] {barrier[me] := barrier[me] \textbar~tmp \color{gray} (local shared read+write)} (5);
 \path [->] (5)    edge [out=180, in=180] node               {barrier[me] $\ne$ full \color{gray}(local shared read)}    (2);
