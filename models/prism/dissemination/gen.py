@@ -97,7 +97,10 @@ def generateProcess(p, processCount) :
 	s += "    //bar_$fromwhom$_$me$ - an array of bits from whom we will receive\n"
 	for i in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
 		s += "    bar_%d_#  : bool             init false;\n" % ((p-i)%processCount)
-	s += "    dist_#   : [1..%d]    init 1; // distance\n" % maxDist
+	if maxDist > 1 :
+		s += "    dist_#   : [1..%d]           init 1; // distance\n" % maxDist
+	else : #happens at process count 2
+		s += "    dist_#   : [1..2]           init 1; // distance\n"
 
 	s += "\n"
 
