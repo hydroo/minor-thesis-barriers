@@ -2,5 +2,8 @@
 
 P>=1 [F all_are_done]
 
-P>=1 [G ((l_0=l_done => (bar_2_0=true & bar_1_0=true)))]P>=1 [G ((l_1=l_done => (bar_0_1=true & bar_2_1=true)))]P>=1 [G ((l_2=l_done => (bar_1_2=true & bar_0_2=true)))]
+P>=1 [G ((l_0=l_done => (bar_2_0=true & bar_1_0=true)))]P>=1 [G ((l_1=l_done => (bar_0_1=true & bar_2_1=true)))]P>=1 [G ((l_2=l_done => (bar_1_2=true & bar_0_2=true)))]// the following queries partition the state space and have to add up to the total state count
+filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_done]) + filter(+, P=? [round_0_one]) + filter(+, P=? [round_1_one])
+filter(+, P=? [one_is_working]) + filter(+, P=? [all_are_done]) + filter(+, P=? [round_0_all]) + filter(+, P=? [round_1_all])
+
 // *** process end ***

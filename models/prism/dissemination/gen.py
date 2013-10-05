@@ -175,17 +175,33 @@ def generateRewards() :
 	s += "    all_are_done : base_rate;\n"
 	s += "endrewards\n\n"
 
+	s += "// round_#_one is the time from one enters a round until one enters the next round\n"
+	s += "// correctness queries show how the state space is partitioned\n"
 	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		s += "rewards \"time_one_is_in_round_%d\"\n" % r
-		s += "\t" + "one_is_in_round_%d : base_rate;\n" % r
+		s += "rewards \"time_round_%d_one\"\n" % r
+		s += "    round_%d_one : base_rate;\n" % r
 		s += "endrewards\n"
+		s += "\n"
 
-	s += "\n"
+	s += "// round_#_all is the time from all entered a round until all entered the next round\n"
+	s += "// correctness queries show how the state space is partitioned\n"
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		s += "rewards \"time_round_%d_all\"\n" % r
+		s += "    round_%d_all : base_rate;\n" % r
+		s += "endrewards\n"
+		s += "\n"
 
 	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		s += "rewards \"time_all_are_in_round_%d\"\n" % r
-		s += "\t" + "all_are_in_round_%d : base_rate;\n" % r
+		s += "rewards \"time_up_to_round_%d_one\"\n" % r
+		s += "    up_to_round_%d_one : base_rate;\n" % r
 		s += "endrewards\n"
+		s += "\n"
+
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		s += "rewards \"time_up_to_round_%d_all\"\n" % r
+		s += "    up_to_round_%d_all : base_rate;\n" % r
+		s += "endrewards\n"
+		s += "\n"
 
 	return s
 
@@ -214,12 +230,24 @@ def generateLabels(processCount) :
 	s += "\n"
 
 	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		for p in range(0, processCount) :
-			s += "formula round_%d_%d          = l_%d > l_work & l_%d < l_done & dist_%d = %d;\n" % (r, p, p, p, p, 2**r)
-		s += "formula one_is_in_round_%d  = " % r + " | ".join([ "round_%d_%d" % (r, p) for p in range(0, processCount)]) + ";\n"
-		s += "formula all_are_in_round_%d = " % r + " & ".join([ "round_%d_%d" % (r, p) for p in range(0, processCount)]) + ";\n"
-		#s += "label \"one_is_in_round_%d\"  = one_is_in_round_%d;\n" % (r, r)
-		#s += "label \"all_are_in_round_%d\" = all_are_in_round_%d;\n" % (r, r)
+		if r < int(math.log(maxDist, 2)) :
+			s += "formula round_%d_one = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_one" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
+			s += "formula round_%d_all = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ") & !(" + " | ".join(["round_%d_all" % s for s in range(r+1, int(math.log(maxDist, 2)) + 1)]) + ");\n"
+		else :
+			s += "formula round_%d_one = !all_are_working & !one_is_done  & (" % r + " | ".join([ "dist_%d  = %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
+			s += "formula round_%d_all = !one_is_working  & !all_are_done & (" % r + " & ".join([ "dist_%d >= %d" % (p, 2**r) for p in range(0, processCount)]) + ");\n"
+
+		#s += "label \"round_%d_one\" = round_%d_one;\n" % (r, r)
+		#s += "label \"round_%d_all\" = round_%d_all;\n" % (r, r)
+		s += "\n"
+
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		if r == 0 :
+			s += "formula up_to_round_%d_one = all_are_working   | round_%d_one;\n" % (r, r)
+			s += "formula up_to_round_%d_all = one_is_working    | round_%d_all;\n" % (r, r)
+		else :
+			s += "formula up_to_round_%d_one = up_to_round_%d_one | round_%d_one;\n" % (r, r-1, r)
+			s += "formula up_to_round_%d_all = up_to_round_%d_all | round_%d_all;\n" % (r, r-1, r)
 
 	return s
 
@@ -238,8 +266,9 @@ def generateCorrectnessProperties(processCount) :
 	for p in range(0, processCount) :
 		t += "P>=1 [G ((l_%d=l_done => (" % p + " & ".join(["bar_%d_%d=true" % (from_, p) for from_ in [(p-2**x) % processCount for x in range(0, int(math.log(maxDist, 2)) + 1)]]) + ")))]"
 
-	##t += "// the following 4 queries partition the state space and have to add up to the total state count\n"
-	##t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_writing]) + filter(+, P=? [one_is_reading]) + filter(+, P=? [all_are_done])\n"
+	t += "// the following queries partition the state space and have to add up to the total state count\n"
+	t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_done]) + " + " + ".join(["filter(+, P=? [round_%d_one])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
+	t += "filter(+, P=? [one_is_working]) + filter(+, P=? [all_are_done]) + " + " + ".join(["filter(+, P=? [round_%d_all])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
 
 	t += "\n"
 
@@ -302,46 +331,47 @@ def generateQuantitativeProperties(processCount) :
 
 	t += "// sascha queries A-D end\n\n"
 
-	# ### round queries begin
-	t += "// round queries begin\n\n"
+	# ### partition queries "one" begin
+	t += "// partition queries \"one\" begin\n\n"
 
-	queries = {}
-
+	# the following queries partition the state space.
+	# useful for a diagram showing with which percentage we are in which phase at a certain point in time
+	# perhaps as a stacked diagram
+	queries = [
+		#[key, query, comment]
+		["Ap", "time_all_are_working" , "time up to: first finished working and entered"],
+		["Cp", "time_one_is_done"     , "time all are done" ],
+	]
 	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		t += "// (%sr one) and (%sre one) round query\n" % (r, k)
-		t += "R{\"time_one_is_in_round_%d\"}=? [I=time] / base_rate\n" % r
-		t += "R{\"time\"}=? [F all_are_done] - R{\"time_one_is_in_round_%d\"}=? [F all_are_done]\n" % r
-		t += "// (%sr all) and (%sre all) round query\n" % (r, k)
-		t += "R{\"time_all_are_in_round_%d\"}=? [I=time] / base_rate\n" % r
-		t += "R{\"time\"}=? [F all_are_done] - R{\"time_all_are_in_round_%d\"}=? [F all_are_done]\n" % r
+		queries.insert(-1, ["%dp" % r, "time_round_%d_one" % r, "time from the first entered round %d until the first entered round %d" % (r, r+1)])
+	for query in queries :
+		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
+		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[1]
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
 		t += "\n"
 
-	t += "// round queries end\n\n"
-	# ### round queries end
+	t += "// partition queries \"one\" end\n\n"
+	# ### partition queries "one" end
 
-	## ### partition queries begin
-	#t += "// partition queries begin\n\n"
+	# ### partition queries "all" begin
+	t += "// partition queries \"all\" begin\n\n"
 
-	## the following 4 queries partition the state space.
-	## useful for a diagram showing with which percentage we are in which phase at a certain point in time
-	## perhaps as a stacked diagram
-	#queries = {
-	#	#key : [query, comment]
-	#	"Ap" : ["time_all_are_working" , "time up to: first finished working and entered"],
-	#	"Ep" : ["time_one_is_writing"  , "time spent writing"],
-	#	"Fp" : ["time_one_is_reading"  , "time spent reading"],
-	#	"Dp" : ["time_all_are_done"    , "time all are done" ],
-	#}
+	queries = [
+		#[key, query, comment]
+		["Bp", "time_one_is_working" , "time up to: first finished working and entered"],
+		["Dp", "time_all_are_done"   , "time all are done" ],
+	]
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		queries.insert(-1, ["%dp" % r, "time_round_%d_all" % r, "time from the last entered round %d until the last entered round %d" % (r, r+1)])
+	for query in queries :
+		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
+		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[1]
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
+		t += "\n"
 
-	#for k in sorted(queries.keys()) :
-	#	query = queries[k]
-	#	t += "// (%s) and (%se) %s\n" % (k, k, query[1])
-	#	t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[0] # correct
-	#	t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]     # correct
-	#	t += "\n"
 
-	#t += "// partition queries end\n\n"
-	# ### partition queries end
+	t += "// partition queries \"all\" end\n\n"
+	# ### partition queries "all" end
 
 	# ### cumulative queries begin
 	# shows how much time has been spent in different parts of the algorithm
@@ -350,19 +380,21 @@ def generateQuantitativeProperties(processCount) :
 	# in order for cumulative queries to make sense here we have to invert some labels
 	t += "// cumulative queries begin\n\n"
 
-	queries = {
-		#key : [query, comment]
-		"Ac" : ["time_all_are_working" , "time up to: first finished working and entered"],
-		"Bc" : ["time_one_is_working"  , "time up to: last finished working and entered"],
-		"Cc" : ["time_not_one_is_done" , "time up to: first recognized the barrier is full and left"],
-		"Dc" : ["time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
-	}
+	queries = [
+		#[key, query, comment]
+		["Ac", "time_all_are_working" , "time up to: first finished working and entered"],
+		["Bc", "time_one_is_working"  , "time up to: last finished working and entered"],
+		["Cc", "time_not_one_is_done" , "time up to: first recognized the barrier is full and left"],
+		["Dc", "time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
+	]
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		queries.insert(-2, ["%dc" % r, "time_up_to_round_%d_one" % r, "time up to: first entered round %d" % (r+1)])
+		queries.insert(-2, ["%dc" % r, "time_up_to_round_%d_all" % r, "time up to: last entered round %d" % (r+1)])
 
-	for k in sorted(queries.keys()) :
-		query = queries[k]
-		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
-		t += "R{\"%s\"}=? [C<=time]\n" % query[0]
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]
+	for query in queries :
+		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
+		t += "R{\"%s\"}=? [C<=time]\n" % query[1]
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
 		t += "\n"
 
 	t += "// cumulative queries end\n\n"

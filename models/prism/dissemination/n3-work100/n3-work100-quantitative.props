@@ -33,23 +33,45 @@ R{"time"}=? [F all_are_done] - R{"time_all_are_done"}=? [F all_are_done]
 
 // sascha queries A-D end
 
-// round queries begin
+// partition queries "one" begin
 
-// (0r one) and (Dre one) round query
-R{"time_one_is_in_round_0"}=? [I=time] / base_rate
-R{"time"}=? [F all_are_done] - R{"time_one_is_in_round_0"}=? [F all_are_done]
-// (0r all) and (Dre all) round query
-R{"time_all_are_in_round_0"}=? [I=time] / base_rate
-R{"time"}=? [F all_are_done] - R{"time_all_are_in_round_0"}=? [F all_are_done]
+// (Ap) and (Ape) time up to: first finished working and entered
+R{"time_all_are_working"}=? [I=time] / base_rate
+R{"time_all_are_working"}=? [F all_are_done]
 
-// (1r one) and (Dre one) round query
-R{"time_one_is_in_round_1"}=? [I=time] / base_rate
-R{"time"}=? [F all_are_done] - R{"time_one_is_in_round_1"}=? [F all_are_done]
-// (1r all) and (Dre all) round query
-R{"time_all_are_in_round_1"}=? [I=time] / base_rate
-R{"time"}=? [F all_are_done] - R{"time_all_are_in_round_1"}=? [F all_are_done]
+// (0p) and (0pe) time from the first entered round 0 until the first entered round 1
+R{"time_round_0_one"}=? [I=time] / base_rate
+R{"time_round_0_one"}=? [F all_are_done]
 
-// round queries end
+// (1p) and (1pe) time from the first entered round 1 until the first entered round 2
+R{"time_round_1_one"}=? [I=time] / base_rate
+R{"time_round_1_one"}=? [F all_are_done]
+
+// (Cp) and (Cpe) time all are done
+R{"time_one_is_done"}=? [I=time] / base_rate
+R{"time_one_is_done"}=? [F all_are_done]
+
+// partition queries "one" end
+
+// partition queries "all" begin
+
+// (Bp) and (Bpe) time up to: first finished working and entered
+R{"time_one_is_working"}=? [I=time] / base_rate
+R{"time_one_is_working"}=? [F all_are_done]
+
+// (0p) and (0pe) time from the last entered round 0 until the last entered round 1
+R{"time_round_0_all"}=? [I=time] / base_rate
+R{"time_round_0_all"}=? [F all_are_done]
+
+// (1p) and (1pe) time from the last entered round 1 until the last entered round 2
+R{"time_round_1_all"}=? [I=time] / base_rate
+R{"time_round_1_all"}=? [F all_are_done]
+
+// (Dp) and (Dpe) time all are done
+R{"time_all_are_done"}=? [I=time] / base_rate
+R{"time_all_are_done"}=? [F all_are_done]
+
+// partition queries "all" end
 
 // cumulative queries begin
 
@@ -60,6 +82,22 @@ R{"time_all_are_working"}=? [F all_are_done]
 // (Bc) and (Bce) time up to: last finished working and entered
 R{"time_one_is_working"}=? [C<=time]
 R{"time_one_is_working"}=? [F all_are_done]
+
+// (0c) and (0ce) time from the first entered round 0 until the first entered round 1
+R{"time_round_0_one"}=? [C<=time]
+R{"time_round_0_one"}=? [F all_are_done]
+
+// (0c) and (0ce) time from the last entered round 0 until the last entered round 1
+R{"time_round_0_all"}=? [C<=time]
+R{"time_round_0_all"}=? [F all_are_done]
+
+// (1c) and (1ce) time from the first entered round 1 until the first entered round 2
+R{"time_round_1_one"}=? [C<=time]
+R{"time_round_1_one"}=? [F all_are_done]
+
+// (1c) and (1ce) time from the last entered round 1 until the last entered round 2
+R{"time_round_1_all"}=? [C<=time]
+R{"time_round_1_all"}=? [F all_are_done]
 
 // (Cc) and (Cce) time up to: first recognized the barrier is full and left
 R{"time_not_one_is_done"}=? [C<=time]

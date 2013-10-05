@@ -36,7 +36,7 @@ module process_0
     //bar_$fromwhom$_$me$ - an array of bits from whom we will receive
     bar_2_0  : bool             init false;
     bar_1_0  : bool             init false;
-    dist_0   : [1..2]    init 1; // distance
+    dist_0   : [1..2]           init 1; // distance
 
     [work_0]   l_0=l_work                                -> work : (l_0'=l_put);
 
@@ -65,16 +65,12 @@ formula all_are_done                 = l_0=l_done & l_1=l_done & l_2=l_done;
 formula one_is_working               = l_0 = l_work | l_1 = l_work | l_2 = l_work;
 formula all_are_working              = l_0 = l_work & l_1 = l_work & l_2 = l_work;
 
-formula round_0_0          = l_0 > l_work & l_0 < l_done & dist_0 = 1;
-formula round_0_1          = l_1 > l_work & l_1 < l_done & dist_1 = 1;
-formula round_0_2          = l_2 > l_work & l_2 < l_done & dist_2 = 1;
-formula one_is_in_round_0  = round_0_0 | round_0_1 | round_0_2;
-formula all_are_in_round_0 = round_0_0 & round_0_1 & round_0_2;
-formula round_1_0          = l_0 > l_work & l_0 < l_done & dist_0 = 2;
-formula round_1_1          = l_1 > l_work & l_1 < l_done & dist_1 = 2;
-formula round_1_2          = l_2 > l_work & l_2 < l_done & dist_2 = 2;
-formula one_is_in_round_1  = round_1_0 | round_1_1 | round_1_2;
-formula all_are_in_round_1 = round_1_0 & round_1_1 & round_1_2;
+formula round_0_one = !all_are_working & !one_is_done  & (dist_0  = 1 | dist_1  = 1 | dist_2  = 1) & !(round_1_one);
+formula round_0_all = !one_is_working  & !all_are_done & (dist_0 >= 1 & dist_1 >= 1 & dist_2 >= 1) & !(round_1_all);
+
+formula round_1_one = !all_are_working & !one_is_done  & (dist_0  = 2 | dist_1  = 2 | dist_2  = 2);
+formula round_1_all = !one_is_working  & !all_are_done & (dist_0 >= 2 & dist_1 >= 2 & dist_2 >= 2);
+
 
 // *** process labels end ***
 
@@ -85,7 +81,7 @@ module process_1
     //bar_$fromwhom$_$me$ - an array of bits from whom we will receive
     bar_0_1  : bool             init false;
     bar_2_1  : bool             init false;
-    dist_1   : [1..2]    init 1; // distance
+    dist_1   : [1..2]           init 1; // distance
 
     [work_1]   l_1=l_work                                -> work : (l_1'=l_put);
 
@@ -109,7 +105,7 @@ module process_2
     //bar_$fromwhom$_$me$ - an array of bits from whom we will receive
     bar_1_2  : bool             init false;
     bar_0_2  : bool             init false;
-    dist_2   : [1..2]    init 1; // distance
+    dist_2   : [1..2]           init 1; // distance
 
     [work_2]   l_2=l_work                                -> work : (l_2'=l_put);
 
@@ -134,53 +130,61 @@ endmodule
 
 // state rewards
 rewards "time"
-	true : base_rate;
+    true : base_rate;
 endrewards
 
 rewards "time_all_are_working"
-	all_are_working : base_rate;
+    all_are_working : base_rate;
 endrewards
 
 rewards "time_not_all_are_working"
-	!all_are_working : base_rate;
+    all_are_working : base_rate;
 endrewards
 
 rewards "time_one_is_working"
-	one_is_working : base_rate;
+    one_is_working : base_rate;
 endrewards
 
 rewards "time_not_one_is_working"
-	!one_is_working : base_rate;
+    one_is_working : base_rate;
 endrewards
 
 rewards "time_one_is_done"
-	one_is_done : base_rate;
+    one_is_done : base_rate;
 endrewards
 
 rewards "time_not_one_is_done"
-	!one_is_done : base_rate;
+    !one_is_done : base_rate;
 endrewards
 
 rewards "time_not_all_are_done"
-	!all_are_done : base_rate;
+    !all_are_done : base_rate;
 endrewards
 
 rewards "time_all_are_done"
-	all_are_done : base_rate;
-endrewards
-rewards "time_one_is_in_round_0"
-	one_is_in_round_0 : base_rate;
-endrewards
-rewards "time_one_is_in_round_1"
-	one_is_in_round_1 : base_rate;
+    all_are_done : base_rate;
 endrewards
 
-rewards "time_all_are_in_round_0"
-	all_are_in_round_0 : base_rate;
+// round_#_one is the time from one enters a round until one enters the next round
+// correctness queries show how the state space is partitioned
+rewards "time_round_0_one"
+    round_0_one : base_rate;
 endrewards
-rewards "time_all_are_in_round_1"
-	all_are_in_round_1 : base_rate;
+
+rewards "time_round_1_one"
+    round_1_one : base_rate;
 endrewards
+
+// round_#_all is the time from all entered a round until all entered the next round
+// correctness queries show how the state space is partitioned
+rewards "time_round_0_all"
+    round_0_all : base_rate;
+endrewards
+
+rewards "time_round_1_all"
+    round_1_all : base_rate;
+endrewards
+
 
 // *** process rewards end ***
 
