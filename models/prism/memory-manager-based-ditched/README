@@ -1,8 +1,0 @@
-python yaptu/yaptu.py VALUE_COUNT=4 THREAD_COUNT=3 < shared-memory.prism.yaptu > asdf.prism
-
-VALUE_COUNT = data domain size for, this one, variable v
-THREAD_COUNT = thread count
-
-python yaptu/yaptu.py THREAD_COUNT=3 < add-fetch-no-reset.prism.yaptu > asdf.prism
-
-THREAD_COUNT = thread count
