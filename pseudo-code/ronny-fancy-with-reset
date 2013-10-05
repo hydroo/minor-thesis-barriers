@@ -27,9 +27,11 @@ code per thread/process:
   func barrier(bar, delBar) {
     bar[threadIndex] := me;                                              // every thread but me has not yet arrived
 
-    i := threadIndex+1 (mod threadCount)
+    i := threadIndex
     do {
-      while bar[threadIndex]&(2^i) == 1 { i := i + 1 (mod threadCount) } // pick one thread that has not yet arrived
+      do {
+        i := i + 1 (mod threadCount)
+      } while bar[threadIndex]&(2^i) == 1 // pick one thread that has not yet arrived
 
       bar[threadIndex] := bar[threadIndex] | bar[i]                      // pull his data and connect it with ours by logical OR
     } while bar[threadIndex] != full                                     // as long as not everyone arrived

@@ -1352,9 +1352,11 @@ static inline void barrierSuperWasteful5(int threadIndex, int threadCount, Sw5El
 
     __atomic_store_n(&(barrier[threadIndex].m), me, __ATOMIC_RELEASE);
 
-    int i = (threadIndex+1) % threadCount;
+    int i = threadIndex;
     do {
-        while ((__atomic_load_n(&(barrier[threadIndex].m), __ATOMIC_ACQUIRE)&(1<<i)) == 0x1) { i = (i + 1) % threadCount; }
+        do {
+            i = (i + 1) % threadCount;
+        } while ((__atomic_load_n(&(barrier[threadIndex].m), __ATOMIC_ACQUIRE)&(1<<i)) == 0x1);
 
         __atomic_store_n(&(barrier[threadIndex].m), __atomic_load_n(&(barrier[threadIndex].m), __ATOMIC_ACQUIRE) | __atomic_load_n(&(barrier[i].m), __ATOMIC_ACQUIRE), __ATOMIC_RELEASE);
     } while (__atomic_load_n(&(barrier[threadIndex].m), __ATOMIC_ACQUIRE) != fullMask);

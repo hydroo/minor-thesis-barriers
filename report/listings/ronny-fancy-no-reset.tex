@@ -6,15 +6,15 @@ constants:        me := processIndex, meBit := $2^{me}$,
 shared variables: integer barrier[processCount]
 local variables:  integer i
 initialization:   barrier[*] := 0
-                  i := processIndex + 1 (mod ProcessCount)
+                  i := processIndex
 $\listingrule{11.5cm}$
 
 barrier[me] := meBit;
 
 do {
-	while barrier[me] & $2^i$ == 1 {
+	do {
 		i := i + 1 (mod processCount)
-	}
+	} while barrier[me] & $2^i$ == 1
 
 	barrier[me] := barrier[me] | barrier[i]
 } while barrier[me] $\neq$ full

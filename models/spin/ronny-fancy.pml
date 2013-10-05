@@ -27,10 +27,12 @@ proctype p(int threadIndex) {
        if :: bar3[threadIndex] == full ->
 
              bar1[threadIndex] = me;
-             i = (threadIndex + 1) % threadCount;
+             i = threadIndex;
              do :: bar1[threadIndex] != full ->
-                   do :: (bar1[threadIndex]&(1<<i)) == 0 -> break
-                      :: else -> i = (i + 1) % threadCount
+                   do :: i = (i + 1) % threadCount;
+                         if :: (bar1[threadIndex]&(1<<i)) == 0 -> break
+                            :: else -> skip
+                         fi
                    od;
 
                    bar1[threadIndex] = bar1[threadIndex] | bar1[i]
@@ -43,10 +45,12 @@ proctype p(int threadIndex) {
           :: bar1[threadIndex] == full ->
 
              bar2[threadIndex] = me;
-             i = (threadIndex + 1) % threadCount;
+             i = threadIndex;
              do :: bar2[threadIndex] != full ->
-                   do :: (bar2[threadIndex]&(1<<i)) == 0 -> break
-                      :: else -> i = (i + 1) % threadCount
+                   do :: i = (i + 1) % threadCount;
+                         if :: (bar2[threadIndex]&(1<<i)) == 0 -> break
+                            :: else -> skip
+                         fi
                    od;
 
                    bar2[threadIndex] = bar2[threadIndex] | bar2[i]
@@ -59,10 +63,12 @@ proctype p(int threadIndex) {
           :: bar2[threadIndex] == full ->
 
              bar3[threadIndex] = me;
-             i = (threadIndex + 1) % threadCount;
+             i = threadIndex;
              do :: bar3[threadIndex] != full ->
-                   do :: (bar3[threadIndex]&(1<<i)) == 0 -> break
-                      :: else -> i = (i + 1) % threadCount
+                   do :: i = (i + 1) % threadCount;
+                         if :: (bar3[threadIndex]&(1<<i)) == 0 -> break
+                            :: else -> skip
+                         fi
                    od;
 
                    bar3[threadIndex] = bar3[threadIndex] | bar3[i]
