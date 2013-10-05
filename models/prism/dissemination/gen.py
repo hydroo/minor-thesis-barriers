@@ -140,56 +140,40 @@ def generateRewards() :
 
 	s += "// state rewards\n"
 	s += "rewards \"time\"\n"
-	s += "\t" + "true : base_rate;\n"
-	s += "endrewards\n"
-
-	s += "\n"
+	s += "    true : base_rate;\n"
+	s += "endrewards\n\n"
 
 	s += "rewards \"time_all_are_working\"\n"
-	s += "\t" + "all_are_working : base_rate;\n"
-	s += "endrewards\n"
-
-	s += "\n"
+	s += "    all_are_working : base_rate;\n"
+	s += "endrewards\n\n"
 
 	s += "rewards \"time_not_all_are_working\"\n"
-	s += "\t" + "!all_are_working : base_rate;\n"
-	s += "endrewards\n"
-
-	s += "\n"
+	s += "    !all_are_working : base_rate;\n"
+	s += "endrewards\n\n"
 
 	s += "rewards \"time_one_is_working\"\n"
-	s += "\t" + "one_is_working : base_rate;\n"
-	s += "endrewards\n"
-
-	s += "\n"
+	s += "    one_is_working : base_rate;\n"
+	s += "endrewards\n\n"
 
 	s += "rewards \"time_not_one_is_working\"\n"
-	s += "\t" + "!one_is_working : base_rate;\n"
-	s += "endrewards\n"
-
-	s += "\n"
+	s += "    !one_is_working : base_rate;\n"
+	s += "endrewards\n\n"
 
 	s += "rewards \"time_one_is_done\"\n"
-	s += "\t" + "one_is_done : base_rate;\n"
-	s += "endrewards\n"
-
-	s += "\n"
+	s += "    one_is_done : base_rate;\n"
+	s += "endrewards\n\n"
 
 	s += "rewards \"time_not_one_is_done\"\n"
-	s += "\t" + "!one_is_done : base_rate;\n"
-	s += "endrewards\n"
-
-	s += "\n"
+	s += "    !one_is_done : base_rate;\n"
+	s += "endrewards\n\n"
 
 	s += "rewards \"time_not_all_are_done\"\n"
-	s += "\t" + "!all_are_done : base_rate;\n"
-	s += "endrewards\n"
-
-	s += "\n"
+	s += "    !all_are_done : base_rate;\n"
+	s += "endrewards\n\n"
 
 	s += "rewards \"time_all_are_done\"\n"
-	s += "\t" + "all_are_done : base_rate;\n"
-	s += "endrewards\n"
+	s += "    all_are_done : base_rate;\n"
+	s += "endrewards\n\n"
 
 	for r in range(0, int(math.log(maxDist, 2)) + 1) :
 		s += "rewards \"time_one_is_in_round_%d\"\n" % r
