@@ -96,14 +96,17 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 	s += "const l_work   = l_init;\n"
 	s += "const l_write  = 1;\n"
 	s += "const l_search = 2;\n"
-	s += "const l_test   = 3;\n"
-	s += "const l_done   = 4;\n"
+	s += "const l_done   = 3;\n"
 
 	return s
 
 def generateProcess(p, processCount) :
 
 	s = ""
+
+	full = 0
+	for i in range(0, processCount) :
+		full = full | 2**i
 
 	s += "module process_#\n"
 
@@ -123,15 +126,13 @@ def generateProcess(p, processCount) :
 	s += "    // bar_# = bar_# | bar_x. all combinations for all i's\n"
 	s += "    // emulates a foot controlled loop by clevery using +1 and i increment\n"
 	for i in range(0, processCount) :
-		s += "    [search_#]   l_#=l_search & i_#=%d & mod(floor(bar_#/me_bit_%d),2) = 1                        ->  read  : (l_#'=l_search) & (i_#'=mod(i_#+1, process_count));\n" % (i, (i + 1) % processCount)
+		s += "    [search_%d_#] l_#=l_search & i_#=%d & mod(floor(bar_#/me_bit_%d),2) = 1                        ->  read  : (l_#'=l_search) & (i_#'=mod(i_#+1, process_count));\n" % ((i+1) % processCount, i, (i+1) % processCount)
 		for j in range(0, 2**processCount) :
 			for k in range(0, 2**processCount) :
-				s += "    [search_#]   l_#=l_search & i_#=%d & mod(floor(bar_#/me_bit_%d),2) = 0 & bar_#=%2d & bar_%d=%2d  ->  get   : (l_#'=l_test)   & (i_#'=mod(i_#+1, process_count)) & (bar_#'=%d);\n" % (i, (i+1) % processCount, j, (i+1) % processCount, k, j|k)
-
-	s += "\n"
-
-	s += "    [test_#]     l_#=l_test   & bar_# =full -> read : (l_#'=l_done);\n"
-	s += "    [test_#]     l_#=l_test   & bar_#!=full -> read : (l_#'=l_search);\n"
+				if j|k != full :
+					s += "    [search_%d_#] l_#=l_search & i_#=%d & mod(floor(bar_#/me_bit_%d),2) = 0 & bar_#=%2d & bar_%d=%2d  ->  get   : (l_#'=l_search) & (i_#'=mod(i_#+1, process_count)) & (bar_#'=%d);\n" % ((i+1) % processCount, i, (i+1) % processCount, j, (i+1) % processCount, k, j|k)
+				else :
+					s += "    [search_%d_#] l_#=l_search & i_#=%d & mod(floor(bar_#/me_bit_%d),2) = 0 & bar_#=%2d & bar_%d=%2d  ->  get   : (l_#'=l_done)   & (i_#'=mod(i_#+1, process_count)) & (bar_#'=%d);\n" % ((i+1) % processCount, i, (i+1) % processCount, j, (i+1) % processCount, k, j|k)
 
 	s += "\n"
 
