@@ -1,5 +1,7 @@
 \documentclass[a4paper, 10pt]{article}
 
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{cite}
 \usepackage{color}
 	\definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -19,6 +21,7 @@
 		morekeywords={and, boolean, do, else, false, for, if, integer, mod, true, until, wait, while},
 	}
 \usepackage{multirow}
+\usepackage{relsize} % used for larger sum symbols
 \usepackage{setspace}
 \usepackage{url}
 
@@ -638,7 +641,28 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subsubsection{Preliminaries}
 \label{sssec:analysis-modelchecking-preliminaries}
 \begin{itemize}
-	\item as short as possible. Use bai13's preliminaries.
+	\item continuous-time Marcov chains.
+	\item further details in textbooks like \cite{kul95, ks76}
+	\item if $S$ is a finite set then a distribution on $S$ is a function $\nu:S \rightarrow [0,1]$ with $\sum\limits_{s \in S} \nu (s) = 1$. For $U \subseteq S$, $\nu (U)$ is a shortform notation for $\sum\limits_{s \in U} \nu (s)$.
+	\item CTMC tuple $\mathcal{M} = (S, \mathit{Act}, R, \mu)$, where $S$ is a finite state space, $Act$ a finite set of action names and $R$ a function of type $R : S \times \mathit{Act} \times S \rightarrow \mathbb{R}_{\ge 0}$, called the rate matrix of $\mathcal{M}$. $\mu$ is a distribution on $S$ specifying the probabilities for the starting states.
+	\item $s \xrightarrow{\lambda : \alpha} s'$ if $R(s, \alpha, s') = \lambda > 0$ means $\mathcal{M}$ has a transition from $s$ to $s'$ with action label $\alpha$ and rate $\lambda$
+	\item $\lambda$ specifies the rate of the exponential distribution. That is the probability for the transition $s \xrightarrow{\lambda : \alpha} s'$ to be ready for firing some time in the interval $[0,t]$ is $1-e^{- \lambda t}$. The average delay  of this transition is $1 / \lambda$.
+	\item If $R(s, \alpha, s') = 0$ then there is no transition in $\mathcal{M}$ from $s$ to $s'$ via $\alpha$.
+	\item choice between enabled transition is made through the race condition. Thus, the time-abstract probability to fire a particular transition $s \xrightarrow{\lambda : \alpha} s'$ is $P(s, \alpha, s') = \lambda / E(s)$ where E is the exit rate of state s, i.e., the sum of the rates of all outgoing transitions of state s. The probability that $s \xrightarrow{\lambda : \alpha} s'$ will fire within $t$ time units is then $P(s, \alpha, s') \cdot (1 - e^{- E(S) \cdot t})$.
+	\item paths in a CTMC are sequences of consecutive transitions augmented by the time points when they are taken. The quantitative analysis using the logics CSL \cite{assb00, bhhk00} relies on the standard $\sigma$-algebra on infinite paths and probability measures (see e.g. \cite{kul95, ks76}).
+	\item To specify measurable sets of infinite paths, we will use LTL-like notations, such as $\lozenge U$ ("eventually T") where $T \subseteq S$ denotes the set of all infinite paths that contain at least one $T$-State. Similarly , $\mathcal{U}$ denotes the until operator and $\mathcal{U}^{\le t}$ the time-bounded until with time bound $t$.
+	\item Instead of naming states we will oftentimes use state predicates and propositional formulas to describe sets of states. Their meaning will be obvious from the names of the states. (my formulation)
+	\item we will also study reward based properties formalized using the logic CSRL \cite{bhhk00}
+	\item This requires the extension of $\mathcal{M}$ by a reward function $\mathit{rew} : S \rightarrow \mathbb{R}_{\ge 0}$ where $\mathit{rew}$ specifies the reward to be earned per time  unit when staying in state $s$. For finite paths one can then reason about accumulated, reachability and instantaneous rewards.
+	\item Suppose $\pi$ is a finite path where the underlying state sequence is $s_1 s_2 ...s_n$ and let $t_0 = 0$ and $t_i$ the time point where $\pi$ takes the $i$-th transition.
+	\item The accumulated reward of $\pi$ is \\
+		$\mathrm{AccRew}(\pi) = \mathlarger{\sum}\limits_{i=0}^{n-1} (t_{i+1} - t_i) \cdot \mathit{rew}(s_i)$ \\
+	\item The reachability reward is similar to the accumulated reward. It is defined as \\
+		$\mathrm{ReaRew}(\pi, \Phi) = \mathlarger{\sum}\limits_{i=0}^{\mathit{min}\{j | s_j \models \Phi\}-1} (t_{i+1} - t_i) \cdot \mathit{rew}(s_i)$ \\
+		It is the accumulated reward until $s_i \models \Phi$ holds for the first time.
+	\item The instantaneous reward $\mathrm{InsRew}(s) = \sum\limits_{s \in S} Pr_t(s) \cdot rew(s)$, where $Pr_t(s)$ is the probability of being in state $s$ at time $t$. It is the expected reward at time $t$.
+	\item \todo maybe add transition rewards
+	\item in the analysis of the protocols we will for example deal with the reward function that assigns value base\_rate (or 1) to each state. In this case $\mathrm{AccRew}(\lozenge T)$ can be interpreted as the average cycle count to reach $T$.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
