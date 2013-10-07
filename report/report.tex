@@ -634,7 +634,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item introduce layers. Program graphs (vs lower level) vs tools. -- adds structure -- might be nice
 	\item perhaps change structure to separate quantitative and qualitative modelling
-	\item CSL\cite{assb96}, CSRL\cite{bhhk00} (+rewards), SPIN\cite{spin}\cite{hol97}, PRISM\cite{prism}\cite{knp09}
+	\item SPIN\cite{spin}\cite{hol97}, PRISM\cite{prism}\cite{knp09}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
@@ -649,7 +649,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item $\lambda$ specifies the rate of the exponential distribution. That is the probability for the transition $s \xrightarrow{\lambda : \alpha} s'$ to be ready for firing some time in the interval $[0,t]$ is $1-e^{- \lambda t}$. The average delay  of this transition is $1 / \lambda$.
 	\item If $R(s, \alpha, s') = 0$ then there is no transition in $\mathcal{M}$ from $s$ to $s'$ via $\alpha$.
 	\item choice between enabled transition is made through the race condition. Thus, the time-abstract probability to fire a particular transition $s \xrightarrow{\lambda : \alpha} s'$ is $P(s, \alpha, s') = \lambda / E(s)$ where E is the exit rate of state s, i.e., the sum of the rates of all outgoing transitions of state s. The probability that $s \xrightarrow{\lambda : \alpha} s'$ will fire within $t$ time units is then $P(s, \alpha, s') \cdot (1 - e^{- E(S) \cdot t})$.
-	\item paths in a CTMC are sequences of consecutive transitions augmented by the time points when they are taken. The quantitative analysis using the logics CSL \cite{assb00, bhhk00} relies on the standard $\sigma$-algebra on infinite paths and probability measures (see e.g. \cite{kul95, ks76}).
+	\item paths in a CTMC are sequences of consecutive transitions augmented by the time points when they are taken. The quantitative analysis using the logics CSL \cite{assb96, bhhk00} relies on the standard $\sigma$-algebra on infinite paths and probability measures (see e.g. \cite{kul95, ks76}).
 	\item To specify measurable sets of infinite paths, we will use LTL-like notations, such as $\lozenge U$ ("eventually T") where $T \subseteq S$ denotes the set of all infinite paths that contain at least one $T$-State. Similarly , $\mathcal{U}$ denotes the until operator and $\mathcal{U}^{\le t}$ the time-bounded until with time bound $t$.
 	\item Instead of naming states we will oftentimes use state predicates and propositional formulas to describe sets of states. Their meaning will be obvious from the names of the states. (my formulation)
 	\item we will also study reward based properties formalized using the logic CSRL \cite{bhhk00}
