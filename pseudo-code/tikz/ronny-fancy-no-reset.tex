@@ -1,8 +1,3 @@
-%
-% TODO beautify me
-% TODO update me. the prism model collapsed the whole "else -> test" into one transition that is a remote get
-%
-
 \input{pre}
 
 % preamble
@@ -36,18 +31,16 @@
 
 % nodes
 \node [o, below of=pre, draw=none, yshift=-3cm, xshift=-3cm]  (init) {};
-\node [o, below right of=init]                         (1)    {};
-\node [o, below right of=1]                            (2)    {};
-\node [o, below of=2]                                  (3)    {};
-\node [o, below of=3, draw=none]                       (done) {};
+\node [o, below of=init]                                      (1)    {};
+\node [o, below of=1]                                         (2)    {};
+\node [o, below of=2, draw=none]                              (done) {};
 
 %  edges
-\path [->] (init) edge                                       node [left]  {\color{gray}(work period)}                   (1);
-\path [->] (1)    edge                                       node [left]  {barrier[me] := me \color{gray}(local write)} (2);
-\path [->] (2)    edge [loop, distance=1.5cm, out=90, in=35] node [right] {barrier[me]\&2$^i$ = 1 : i := i + 1 (\textbf{mod} nthreads) \color{gray}(local read)} (2);
-\path [->] (2)    edge                   node [right]       {else : barrier[me] := barrier[me] \textbar~barrier[i] \color{gray}(local write + local read + remote read)} (3);
-\path [->] (3)    edge [out=180, in=180] node               {barrier[me] $\ne$ full \color{gray}(local read)}           (2);
-\path [->] (3)    edge                   node               {else}                                                      (done);
+\path [->] (init) edge                                         node [left]  {\color{gray}(work period)}                   (1);
+\path [->] (1)    edge                                         node [left]  {barrier[me] := me \color{gray}(local write)} (2);
+\path [->] (2)    edge [loop, distance=1.5cm, out=45, in=-45]  node [right] {barrier[me]\&2$^i$ = 1 : i := i + 1 (\textbf{mod} nthreads) \color{gray}(local read)} (2);
+\path [->] (2)    edge [loop, distance=1.5cm, out=135, in=225] node [left]  {barrier[me]\&2$^i$ = 0 \textbf{and} barrier[me] \textbar~barrier[i] $\ne$ full : barrier[me] := barrier[me] \textbar~barrier[i] \color{gray}(3 $\times$ local read + local write + remote read)} (2);
+\path [->] (2)    edge []                                      node         {barrier[me]\&2$^i$ = 0 \textbf{and} barrier[me] \textbar~barrier[i] = full : barrier[me] := barrier[me] \textbar~barrier[i] \color{gray}(3 $\times$ local read + local write + remote read)} (done);
 
 \input{post}
 
