@@ -101,9 +101,9 @@ def generateConstants(threadCount, workTicks) :
 	s += "// all names describe the behaviour of the next transition\n"
 	s += "const l_init         = 0;\n"
 	s += "const l_work         = l_init;\n"
-	s += "const l_write        = 2;\n"
-	s += "const l_wait         = 3;\n"
-	s += "const l_done         = 4;\n"
+	s += "const l_write        = 1;\n"
+	s += "const l_wait         = 2;\n"
+	s += "const l_done         = 3;\n"
 
 	return s
 
