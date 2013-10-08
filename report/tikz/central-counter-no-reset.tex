@@ -1,0 +1,15 @@
+\begin{tikzpicture}[node distance = 2.0cm, auto]
+
+% nodes
+\node [o, draw=none] at ( 0 ,  0 ) (init) {};
+\node [o]            at ( 1 , -1 ) (1)    {};
+\node [o]            at ( 2 , -2 ) (2)    {};
+\node [o, draw=none] at ( 3 , -3 ) (done) {};
+
+%  edges
+\path [->] (init) edge                                       node       {$\lambda_{work}$ : --}                        (1)
+           (1)    edge                                       node       {atomic\{barrier := barrier - 1\} \color{gray}(atomic read+write)} (2)
+           (2)    edge [loop, distance=2cm, out=180, in=-90] node[left] {barrier $>$ 0 : -- \color{gray}(shared read)} (2)
+           (2)    edge                                       node       {barrier = 0 : -- \color{gray}(shared read)}   (done);
+
+\end{tikzpicture}

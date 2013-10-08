@@ -384,10 +384,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\caption{Pseudo code of the central counter barrier}
 					\label{fig:central-counter-no-reset}
 				\end{figure}
-
-			\item back-off via a spin-counter $\sim$ 3ms. architecture specific. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping. lowers spincount if core count $<$ thread count.
+			\item explain algorithm in detail here
+			\item is in reality more complex. For example back-off via a spin-counter $\sim$ 3ms. architecture specific. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping. lowers spincount if core count $<$ thread count.
 			\item talk about us assuming core count $>$= thread count. (from don't forget)
-			\item reset built in. last one to enter resets the barrier.
+			\item reset built in. Last one to enter resets the barrier.
 		\end{itemize}
 	\item glibc's\cite{glibc} new pthreads library
 		\begin{itemize}
@@ -732,8 +732,19 @@ I hereby declare that I prepared this thesis independently and without use of to
 \paragraph{Central counter barrier}
 \label{sssec:analysis-modelchecking-modelling-central-counter}
 \begin{itemize}
-	\item Control-flow diagram
-	\item functional model implements reseting and repetition. Three barriers, as described in~\ref{ssec:building-blocks}. (if you did not describe it there you have to do it here)
+	\item Algorithm explained in Section~\ref{sssec:existing-currently-used-shared}
+	\item Control-flow diagram Figure~\ref{fig:central-counter-control-flow}
+		\begin{figure}[htbp]
+			\centering
+			\input{tikz/central-counter-no-reset}
+			\caption{Control-flow diagram of the central counter barrier}
+			\label{fig:central-counter-control-flow}
+		\end{figure}
+	\item rates for reading writing and atomic operations are determined by the module for the shared variable \texttt{barrier}
+	\item the synchronization to the shared variable module is hinted at in grey
+	\item The control flow has been augmented by one rate that the resulting CTMC will use. $\lambda_{work}$ is the work rate, meaning the time spent doing actual work. It is used to add an initial distribution to the model so that we can control how the arrival times of the threads at the barrier are distributed. In particular not all threads arrive at the exact same instant in time at the barrier.
+	\item atomic op in consists of multiple smaller transitions: begin atomic (locks the variable), read barrier, decrement it, write barrier, end atomic (releases the lock).
+	\item the functional model implements resetting and repetition. Three barriers, as described in~\ref{ssec:building-blocks}. (if you did not describe it there, you have to do it here)
 \end{itemize}
 
 %%%%%%%%%%
