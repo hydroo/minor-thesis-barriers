@@ -9,6 +9,7 @@ LISTINGS = \
 
 TIKZ = \
 	tikz/central-counter-no-reset.tex \
+	tikz/dissemination-no-reset.tex \
 	tikz/ronny-simple-no-reset.tex \
 	tikz/shared-memory.tex
 
