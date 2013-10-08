@@ -1,0 +1,22 @@
+%
+% does not 100% reflect the prism model
+%
+
+\begin{tikzpicture}[node distance = 2.0cm, auto]
+
+% nodes
+\node [o, draw=none] at ( 0   ,  0  ) (init) {};
+\node [o]            at ( 1   , -1  ) (1)    {};
+\node [o]            at ( 2   , -2  ) (2)    {};
+\node [o]            at ( 3   , -3  ) (3)    {};
+\node [o, draw=none] at ( 4   , -4  ) (done) {};
+
+%  edges
+\path [->] (init) edge                                      node        {$\lambda_{work}$ : --}                                      (1)
+           (1)    edge                                      node[left]  {barrier[threadIndex] := true \color{gray}(shared write)~~}  (2)
+           (2)    edge [loop, distance=2cm, out=90, in=0] node          {barrier[i] $\ne$ true : i := 0 \color{gray}(shared read)}   (2)
+           (2)    edge                                      node[right] {~~barrier[i] = true : i := i + 1 \color{gray}(shared read)} (3)
+           (3)    edge [out=180, in=-90]                    node[left]  {i $<$ threadCount : --~~}                                   (2)
+           (3)    edge                                      node        {i = threadCount : --}                                       (done);
+
+\end{tikzpicture}
