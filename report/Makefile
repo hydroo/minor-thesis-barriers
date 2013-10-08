@@ -8,6 +8,7 @@ LISTINGS = \
 	listings/ronny-fancy-no-reset.tex
 
 TIKZ = \
+	tikz/central-counter-no-reset.tex \
 	tikz/shared-memory.tex
 
 BIBLIOGRAPHY_SOURCE = bibliography.bib
