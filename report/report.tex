@@ -12,6 +12,7 @@
 \DeclareGraphicsExtensions{.pdf,.png}
 %\usepackage{hyperref}
 \usepackage{latexsym}
+\usepackage[latin1]{inputenc}
 \usepackage{listings}
 	\lstset{
 		frame=single,
@@ -23,11 +24,18 @@
 \usepackage{multirow}
 \usepackage{relsize} % used for larger sum symbols
 \usepackage{setspace}
+\usepackage{tikz}
+	\usetikzlibrary{shapes, arrows, positioning}
+	\tikzstyle{->}   = [draw, -latex']
+	\tikzstyle{o}    = [draw, circle]
+	\tikzstyle{box}  = [draw, rectangle, rounded corners]
 \usepackage{url}
 
 \def \todo{\textbf{\textcolor{yellow}{TODO}}}
 \def \citationneeded{\textbf{\textcolor{yellow}{CITATION NEEDED}}}
 \newcommand{\listingrule}[1]{\rule{#1}{0.4pt}}
+
+\setcounter{secnumdepth}{5}
 
 \title{Development and Analysis of Barrier Protocols}
 \author{Ronny Brendel\\Tutors: Sascha Kl\"uppelholz \& Marcus V\"olp}
@@ -445,7 +453,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item how is resetting handled in currently used barriers?
 			\item switching between barriers using a variable (as in the nmg/ronny barrier - 'left' variable)
-			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset)
+			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset). Describe in pseudo code as well, maybe.
 			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
 		\end{itemize}
 	\item back-off
@@ -678,12 +686,81 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Modelling} %AE: modeling, BE: modelling
 \label{sssec:analysis-modelchecking-modelling}
+\begin{itemize}
+	\item distinct models for both analysis of functional and quantitative properties
+	\item bit shuffling easier to implement in Spin. C-esque style
+	\item resetting and repetition only needed for functional properties
+	\item used Spin for functional properties
+	\item PRISM model more minimized and specialized for model checking our wanted quantitative properties
+	\item CTMCs will be composed of multiple modules.
+	\item synchronization between modules can either be done indirectly through modifying variables in the program graph that another modules uses as well, or using synchronizing actions.
+	\item modules are executed interleaved except if transitions require synchronizing actions. A synchronizing action is an action that can be issued by at least two modules. It can only fire if all modules, that are able to fire this action eventually, are presently in a state where they can fire it. The rate is determined by any one module. For each synchronization action, in our case, only one module will specify a rate for this action.
+	\item This corresponds to the following SOS rules
+	\item If no other modules uses $\alpha$ \\
+		\begin{center}
+			$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s'}{\langle s , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', \overline{x} \rangle}}$}
+		\end{center}
+	\item if $\alpha$ is used by two modules \\
+		\begin{center}
+			$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s', t \xrightarrow{\alpha} t'}{\langle s, t , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', t', \overline{x} \rangle}}$
+		\end{center}
+	\item $\overline{x}$ stands for the tuple of local state of all other modules
+	\item analogous rules can be stated for more than two modules sharing an action.
+\end{itemize}
+
+%%%%%%%%%%
+\paragraph{Shared memory}
+\label{sssec:analysis-modelchecking-modelling-shared-memory}
+\begin{itemize}
+	\item MSI cache model. Most basic way to model cache.
+	\item all synchronization with other modules of a model, for example the actual barrier protocol, is done via synchronizing action labels
+	\item each thread has one such module. It represents a cache line copy and its transition between states triggered by the acting thread or by other threads using the same shared variable.
+	\item CTMC Figure~\ref{fig:shared-memory-control-flow}
+		\begin{figure}[htbp]
+			\centering
+			\input{tikz/shared-memory}
+			\caption{CTMC of a shared memory variable}
+			\label{fig:shared-memory-control-flow}
+		\end{figure}
+	\item additionally atomic. Atomic is like modified. Additionally access of the variable by other threads is postponed until the atomic op is finished
+	\item $\lambda_t$, $\lambda_r$, $\lambda_w$ one cycle, read, write rate. Reciprocal of the number of cycles needed for each of these actions
+	\item solid transitions are issued by a thread itself for example reading or writing the variable
+	\item dashed transition are triggered by another thread through it reading or writing the variable.
+	\item rate is determined by the triggering thread.
+\end{itemize}
+
+\paragraph{Central counter barrier}
+\label{sssec:analysis-modelchecking-modelling-central-counter}
+\begin{itemize}
+	\item Control-flow diagram
+	\item functional model implements reseting and repetition. Three barriers, as described in~\ref{ssec:building-blocks}. (if you did not describe it there you have to do it here)
+\end{itemize}
+
+%%%%%%%%%%
+\paragraph{Ronny simple barrier}
+\label{ssssec:analysis-modelchecking-modelling-ronny-simple}
+\begin{itemize}
+	\item 
+\end{itemize}
+
+%%%%%%%%%%
+\paragraph{Dissemination barrier}
+\label{ssssec:analysis-modelchecking-modelling-dissemination}
+\begin{itemize}
+	\item no special module for distributed memory. Explain why?
+\end{itemize}
+
+%%%%%%%%%%
+\paragraph{Ronny fancy barrier}
+\label{ssssec:analysis-modelchecking-modelling-ronny-fancy}
+\begin{itemize}
+	\item 
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Functional properties}
 \label{sssec:analysis-modelchecking-quality}
 \begin{itemize}
-	\item use Spin
 	\item threads may only exit the barrier if all threads are present
 	\item the protocol must always terminate, or in other words: if all threads are present, they will all exit the barrier in a finite amount of time"
 \end{itemize}
@@ -692,7 +769,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subsubsection{Quantitative Properties}
 \label{sssec:analysis-modelchecking-quantity}
 \begin{itemize}
-	\item use PRISM
 	\item central counter vs ronny simple
 	\item dissemination vs ronny fancy
 \end{itemize}
