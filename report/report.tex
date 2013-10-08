@@ -78,7 +78,7 @@
 %				\item Analyse und Vergleich der drei oben genannten Modelle im Bezug auf die in 3. identifizierten funktionalen sowie quantitativen Eigenschaften in PRISM. Wenn m\"oglich: Erg\"anzung des Performance-Vergleichs der drei Barrieren mittels messbasierter Methoden.
 %			\end{itemize}
 %		\item Zusammenfassung und Ausblick: Diskussion der in 4. gewonnenen Erkenntnisse
-%\end{itemize}
+%\end{enumerate}
 %
 \section*{Task}
 \label{sec:task}
@@ -558,7 +558,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item give an introduction to cache. Factor of 10-100 between cache and main memory access latency. Cache line invalidation and fetching make up most of the time used in such protocols. Thus it's important to look at these.
 	\item PHASES: both algorithms are performed in two phases. A writing phase and a reading phase.
-	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of \mathit{threadCount} in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
+	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $\mathit{threadCount}$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
 	\item The reading phase of the central counter barrier reads a single variable repeatedly. The cache line this variable resides on will be invalidated for each core exactly $\mathit{threadCount} - 1$ times (disregarding outside influences) ((, thus each core fetches the variable at most $\mathit{threadCount} - 1$ times)).
 	\item The reading phase of Ronny's simple barrier needs to read each array element once until it can make a decision whether to leave or repeat the loop. Each array element is invalidated exactly once. Thus each array element, from the viewpoint of one thread, has to be fetched from memory at most twice. From then on it is cached and quickly accessible.
 	\item the central counter barrier has the obvious advantage in this phase. How big this advantage is depends heavily on the underlying hardware. For example if the cache line prefetcher predicts the access pattern of the reading phase of Ronny's simple barrier, those reads can be executed in parallel.
