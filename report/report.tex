@@ -755,16 +755,16 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{ssssec:analysis-modelchecking-modelling-ronny-simple}
 \begin{itemize}
 	\item Algorithm explained in Section~\ref{ssec:new-simple}
-	\item Control-flow diagram Figure~\ref{fig:ronny-simple-control-flow}
+	\item Control flow diagram Figure~\ref{fig:ronny-simple-control-flow}
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/ronny-simple-no-reset}
-			\caption{Control-flow diagram of ronny's simple barrier}
+			\caption{Control flow diagram of ronny's simple barrier}
 			\label{fig:ronny-simple-control-flow}
 		\end{figure}
 	\item each element of the array \texttt{barrier} is located in an own cache line. Therefore each thread has \texttt{threadCount} cache line copy modules, one for each element in the array. In total a CTMC model of this protocol has $\mathtt{threadCount}^2$ cache line copy modules plus $\mathtt{threadCount}$ thread modules.
-	\item As described in the previous section, $\lambda_{work}$ is the work rate and all other rates are determined by the cache line copy modules.
-	\item the functional model implements resetting and repetition using a counter instead of booleans. The general approach is described in Section~\ref{ssec:building-blocks} (if you did not describe it there, you have to do it here)
+	\item As described in the previous paragraph, $\lambda_{work}$ is the work rate and all other rates are determined by the cache line copy modules.
+	\item functional model does resetting and repetition using a counter instead of bools as described in Section~\ref{ssec:building-blocks} (if you did not describe it there, you have to do it here)
 \end{itemize}
 
 %%%%%%%%%%
