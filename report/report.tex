@@ -35,7 +35,7 @@
 \def \citationneeded{\textbf{\textcolor{yellow}{CITATION NEEDED}}}
 \newcommand{\listingrule}[1]{\rule{#1}{0.4pt}}
 
-\setcounter{secnumdepth}{5}
+%\setcounter{secnumdepth}{5}
 
 \title{Development and Analysis of Barrier Protocols}
 \author{Ronny Brendel\\Tutors: Sascha Kl\"uppelholz \& Marcus V\"olp}
@@ -643,7 +643,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item introduce layers. Program graphs (vs lower level) vs tools. -- adds structure -- might be nice
 	\item perhaps change structure to separate quantitative and qualitative modelling
-	\item SPIN\cite{spin}\cite{hol97}, PRISM\cite{prism}\cite{knp09}
+	\item SPIN\cite{spin, hol97}, PRISM\cite{prism, knp09}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
@@ -689,13 +689,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sssec:analysis-modelchecking-modelling}
 \begin{itemize}
 	\item distinct models for both analysis of functional and quantitative properties
-	\item bit shuffling easier to implement in Spin. C-esque style
-	\item resetting and repetition only needed for functional properties
-	\item used Spin for functional properties
-	\item PRISM model more minimized and specialized for model checking our wanted quantitative properties
-	\item CTMCs will be composed of multiple modules.
+	\item because resetting and repetition only needed for functional properties + we can save state space by stripping the model of unnecessary information for the quantitative analysis
+	\item ordinary (non-stochastic) transition systems for function models and CTMCs for quantitative models
+	\item Spin\cite{spin, hol97} for model checking functional properties
+	\item PRISM\cite{prism, knp09} for quantitative analysis
+	\item The CTMCs of the protocols will be composed of multiple modules.
 	\item synchronization between modules can either be done indirectly through modifying variables in the program graph that another modules uses as well, or using synchronizing actions.
-	\item modules are executed interleaved except if transitions require synchronizing actions. A synchronizing action is an action that can be issued by at least two modules. It can only fire if all modules, that are able to fire this action eventually, are presently in a state where they can fire it. The rate is determined by any one module. For each synchronization action, in our case, only one module will specify a rate for this action.
+	\item composed modules are executed interleaved except if transitions require synchronizing actions. A synchronizing action is an action that can be issued by at least two modules. A transition with such an action can only fire if all modules, that are able to fire this action eventually, are presently in a state where they can fire it. The rate of such a transition is determined by any one module. For each synchronization action, in our case, only one module will specify a rate for this action.
 	\item This corresponds to the following SOS rules
 	\item If no other modules uses $\alpha$ \\
 		\begin{center}
