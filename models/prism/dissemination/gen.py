@@ -3,7 +3,7 @@
 import math
 import sys
 
-def generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks, debug) :
+def generateModel(processCount, workTicks, putTicks, debug) :
 
 	s = "" # model
 	t = "" # correctness props
@@ -11,7 +11,7 @@ def generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putT
 	s += "ctmc\n"
 	s += "\n"
 
-	s += generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks)
+	s += generateConstants(processCount, workTicks, putTicks)
 	s += "\n"
 
 	s += "// *** main process begin ***\n"
@@ -46,7 +46,7 @@ def generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putT
 
 	return s, t
 
-def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks) :
+def generateConstants(processCount, workTicks, putTicks) :
 
 	s = ""
 
@@ -57,9 +57,6 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 	s += "\n"
 
 	s += "const work_ticks  = " + str(workTicks)  + ";\n"
-	s += "const read_ticks  = " + str(readTicks)  + ";\n"
-	s += "const write_ticks = " + str(writeTicks) + ";\n"
-	s += "const get_ticks   = " + str(getTicks)   + ";\n"
 	s += "const put_ticks   = " + str(putTicks)   + ";\n"
 
 	s += "\n"
@@ -68,9 +65,6 @@ def generateConstants(processCount, workTicks, readTicks, writeTicks, getTicks, 
 	s += "const double base_rate = 1000.0;\n"
 	s += "const double tick      = base_rate / 1.0;\n"
 	s += "const double work      = tick / work_ticks;\n"
-	s += "const double read      = tick / read_ticks;\n"
-	s += "const double write     = tick / write_ticks;\n"
-	s += "const double get       = tick / get_ticks;\n"
 	s += "const double put       = tick / put_ticks;\n"
 
 	s += "\n"
@@ -114,11 +108,11 @@ def generateProcess(p, processCount) :
 
 	for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
 		if dist != maxDist :
-			s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> read : (l_#'=l_put) & (dist_#'=dist_#*2);\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
+			s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> tick : (l_#'=l_put) & (dist_#'=dist_#*2);\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
 		else :
-			s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> read : (l_#'=l_done);\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
+			s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> tick : (l_#'=l_done);\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
 
-		s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_# != true -> read : true;\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
+		s += "    [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_# != true -> tick : true;\n" % (((p-dist) % processCount), dist, ((p-dist) % processCount))
 
 	s += "\n"
 	s += "    [done_#]   l_#=l_done                                ->        true;\n"
@@ -437,9 +431,6 @@ helpMessage = \
   -h, --help              print help message
   -n <nr>                 set process count
   --work  <ticks>         set tick count for a work period        [default 1]
-  --read  <ticks>         set tick count for a local read         [default 1]
-  --write <ticks>         set tick count for a local write        [default 1]
-  --get   <ticks>         set tick count for a remote read (get)  [default 100]
   --put   <ticks>         set tick count for a remote write (put) [default 100]
 
   --debug                                                         [default False]
@@ -451,9 +442,6 @@ if __name__ == "__main__":
 	filePrefix = modelFileName = correctnessPropertiesFileName = ""
 
 	workTicks  = 1
-	readTicks  = 1
-	writeTicks = 1
-	getTicks   = 100
 	putTicks   = 100
 	debug = False
 
@@ -467,15 +455,6 @@ if __name__ == "__main__":
 			i += 1
 		elif sys.argv[i] == "--work":
 			workTicks = int(sys.argv[i+1])
-			i += 1
-		elif sys.argv[i] == "--read":
-			readTicks = int(sys.argv[i+1])
-			i += 1
-		elif sys.argv[i] == "--write":
-			writeTicks = int(sys.argv[i+1])
-			i += 1
-		elif sys.argv[i] == "--get":
-			getTicks = int(sys.argv[i+1])
 			i += 1
 		elif sys.argv[i] == "--put":
 			putTicks = int(sys.argv[i+1])
@@ -501,15 +480,12 @@ if __name__ == "__main__":
 
 	assert processCount >= 2
 	assert workTicks   >= 1
-	assert readTicks   >= 1
-	assert writeTicks  >= 1
-	assert getTicks    >= 1
 	assert putTicks    >= 1
 
 	modelString = ""
 	correctnessPropertiesString = ""
 
-	modelString, correctnessPropertiesString = generateModel(processCount, workTicks, readTicks, writeTicks, getTicks, putTicks, debug)
+	modelString, correctnessPropertiesString = generateModel(processCount, workTicks, putTicks, debug)
 
 	correctnessPropertiesString  = generateCorrectnessProperties(processCount)
 
