@@ -8,7 +8,7 @@
 %  edges
 \path [->] (init) edge                  node [below left] {$\lambda_{work}$ : --} (1)
 
-           (1)    edge node [below right] {$\lambda_t$ dist $\ge$ processCount} (done)
+           (1)    edge node [below right] {$\lambda_t$ : dist $\ge$ processCount} (done)
 
            (1)    edge [out=-45, in=45] node [right, align=left] {$\lambda_{p}$ : dist $<$ processCount : \\ barrier[to][processIndex] := true} (2)
 
