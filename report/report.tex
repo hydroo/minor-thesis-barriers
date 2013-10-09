@@ -773,21 +773,19 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item no special module for distributed memory, since all variables are independently stored in the local memory of each process. There is no influence that copies data between processes other then the running program itself.
 	\item Algorithm explained in Section~\ref{sssec:existing-currently-used-distributed}
-	\item Control-flow diagram augmented with rates: Figure~\ref{fig:dissemination-control-flow}
+	\item Control flow diagram augmented with rates: Figure~\ref{fig:dissemination-control-flow}
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/dissemination-no-reset}
-			\caption{Augmented Control-flow diagram of the dissemination barrier}
+			\caption{Augmented Control flow diagram of the dissemination barrier}
 			\label{fig:dissemination-control-flow}
 		\end{figure}
-	\item As described in Section~\ref{sssec:analysis-modelchecking-modelling-central-counter} $\lambda_{work}$ is the work rate.
-	\item $\lambda_t$ is the rate for one CPU cycle
-	\item $\lambda_r$ is the rate for a local read
-	\item $\lambda_p$ is the rate for a remote write, usually called \textit{put}
-	\item usually we want $\lambda_t = \lambda_r$ and $\lambda_p \gg \lambda_r$
+	\item As in the two previous paragraphs $\lambda_{work}$ is the work rate.
+	\item we assume all local operations to be much quicker than remote operations. Therefore we assign the rate $\lambda_t$ (one CPU cycle) to local operations, and $\lambda_p$ to remote write (put) operations.
+	\item one could make this more fine grained by introducing separate rates for local reading and writing.
 	\item \texttt{to} is a shorthand for \texttt{processIndex + dist (mod processCount)} and \texttt{from}, as expected, for \texttt{processIndex - dist (mod processCount)}
-	\item \todo talk about synchronization between processes in the CTMC
-	\item the functional model implements resetting and repetition using a counter instead of booleans. The general approach is described in Section~\ref{ssec:building-blocks} (if you did not describe it there, you have to do it here)
+	\item In the CTMC model, resulting from this control flow diagram, a put onto a remote process is represented as a synchronized action, so the target process stores the new value in its CTMC module.
+	\item functional model does resetting and repetition with a counter instead of bools as described in Section~\ref{ssec:building-blocks}.
 \end{itemize}
 
 %%%%%%%%%%
