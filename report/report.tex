@@ -713,9 +713,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 \paragraph{Shared memory}
 \label{sssec:analysis-modelchecking-modelling-shared-memory}
 \begin{itemize}
-	\item MSI cache model. Most basic way to model cache.
-	\item all synchronization with other modules of a model, for example the actual barrier protocol, is done via synchronizing action labels
-	\item each thread has one such module. It represents a cache line copy and its transition between states triggered by the acting thread or by other threads using the same shared variable.
+	\item shared memory variable encapsulated in own CTMC modules. We identify a variable with the cache line it resides on.
+	\item each thread has one copy of such a cache line.
+	\item synchronization between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronizing actions
+	\item we use an MSI cache model extended by support for atomic operations. MSI model is the most basic cache model
+	\item A cache line copy can be on one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but zero or more other threads have a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the variable cannot be accessed by other threads. Figure~\ref{fig:shared-memory-control-flow} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
 	\item CTMC Figure~\ref{fig:shared-memory-control-flow}
 		\begin{figure}[htbp]
 			\centering
@@ -723,10 +725,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\caption{CTMC of a shared memory variable}
 			\label{fig:shared-memory-control-flow}
 		\end{figure}
-	\item additionally atomic. Atomic is like modified. Additionally access of the variable by other threads is postponed until the atomic op is finished
-	\item $\lambda_t$, $\lambda_r$, $\lambda_w$ one cycle, read, write rate. Reciprocal of the number of cycles needed for each of these actions
-	\item solid transitions are issued by a thread itself for example reading or writing the variable
-	\item dashed transition are triggered by another thread through it reading or writing the variable.
+	\item explanation of the MSI protocol: For example if a core reads a variable, it first needs to make sure that all other cores take notice and change its cache line copy state to shared in case it was modified before. After this the core fetches the cache line, marks its copy shared and continues reading the variable.
+	\item taken from complex-lab, rephrase: The timings of shared read and shared write are as follows. A read on a modified or shared variable does not imply any extra work. It can immediately use the cached data. Therefore we consider this operation instantaneous. If a read is done on an invalid copy, it has to first fetch an up-to-date copy of the cache line and make sure all other cores are notified before it can proceed. This usually takes around 50 CPU cycles. A write on a modified variable is instantaneous, since all other cores do not have an up-to-date copy and therefore do not have to be notified. If the cache line in question is in a shared or invalid state, we first have to wait until all other cores follow the request to invalidate their copies of the cache line. After this we can safely mark our copy modified and write to it. This operation usually takes around 100 cycles.
+	\item taken from complex-lab, rephrase: The number of cycles these operations take is strongly dependent on the CPU itself. For the CTMC model we assume a cache read to use 50 cycles and a cache write to use 100 cycles. The rates of the transitions corresponding to the described events is then the reciprocal of the cycle time: 1, $\frac{1}{50}$ or $\frac{1}{100}$.
+	\item $\lambda_t$, $\lambda_r$, $\lambda_w$, $\lambda_a$ one cycle (also called tick), read, write, atomic\_begin rate. Reciprocal of the average number of cycles needed for each of these actions
 	\item rate is determined by the triggering thread.
 \end{itemize}
 
