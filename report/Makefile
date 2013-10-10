@@ -11,6 +11,7 @@ TIKZ = \
 	tikz/central-counter-no-reset.tex \
 	tikz/dissemination-no-reset.tex \
 	tikz/ronny-simple-no-reset.tex \
+	tikz/ronny-fancy-no-reset.tex \
 	tikz/shared-memory.tex
 
 BIBLIOGRAPHY_SOURCE = bibliography.bib
