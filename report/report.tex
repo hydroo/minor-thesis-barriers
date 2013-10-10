@@ -842,9 +842,52 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%
 \paragraph{Identification and formalisation}
 \label{ssssec:analysis-modelchecking-quantitative-properties-identification}
+\begin{itemize}
+	\item which parameters to variate
+		\begin{itemize}
+			\item thread count : limiting factor for model checking. Few can be checked. The more the better. Barriers are not as interesting for small thread counts, because codes that use low thread numbers spend few time in the barrier. Higher numbers of threads increase synchronization cost and better algorithms make a bigger difference.
+			\item work rate
+				\begin{itemize}
+					\item influence of more or less delay between arrivals of threads
+					\item how exactly? : 0 - 100000 in log 10 step? Or evenly spread steps? A very large one would be nice to see the influence of the actual barrier algorithm decrease.
+					\item perhaps only look at expected values to make the diagram 2 dimensional.
+				\end{itemize}
+		\end{itemize}
+	\item properties for all protocols
+		\begin{itemize}
+			\item interesting points in time
+				\begin{itemize}
+					\item (A) first entered the barrier
+					\item (B) last entered the barrier
+					\item (C) first left the barrier
+					\item (D) last left the barrier
+				\end{itemize}
+		\end{itemize}
+	\item shared memory only
+		\begin{itemize}
+			\item time spent writing vs reading
+		\end{itemize}
+	\item distributed memory only
+		\begin{itemize}
+			\item progress
+			\item number of remote transfers as another performance measure
+		\end{itemize}
+\end{itemize}
 
 %%%%%%%%%%
 \paragraph{Results}
+	\begin{itemize}
+		\item central counter vs ronny's simple
+			\begin{itemize}
+				\item expected time (last in - last out) (x: threads, y: expected time)
+				\item expected time (first out - last out) (x: threads, y: expected time)
+			\end{itemize}
+		\item dissemination vs ronny's fancy
+			\begin{itemize}
+				\item expected time (last in - last out) (x: threads, y: expected time)
+				\item expected time (first out - last out) (x: threads, y: expected time)
+			\end{itemize}
+	\end{itemize}
 \label{ssssec:analysis-modelchecking-quantitative-properties-results}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
