@@ -792,7 +792,16 @@ I hereby declare that I prepared this thesis independently and without use of to
 \paragraph{Ronny fancy barrier}
 \label{ssssec:analysis-modelchecking-modelling-ronny-fancy}
 \begin{itemize}
-	\item 
+	\item Algorithm explained in Section~\ref{ssec:new-fancy}
+	\item Control flow diagram augmented with rates: Figure~\ref{fig:ronny-fancy-control-flow}
+		\begin{figure}[htbp]
+			\centering
+			\input{tikz/ronny-fancy-no-reset}
+			\caption{Augmented Control flow diagram of ronny's fancy barrier}
+			\label{fig:ronny-fancy-control-flow}
+		\end{figure}
+	\item Rates are like in previous section, except we now use remote read (get) with a rate of $\lambda_g$.
+	\item functional model does resetting and repetition using three barriers as described in~\ref{ssec:building-blocks}.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
