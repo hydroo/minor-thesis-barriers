@@ -771,7 +771,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \paragraph{Dissemination barrier}
 \label{ssssec:analysis-modelchecking-modelling-dissemination}
 \begin{itemize}
-	\item no special module for distributed memory, since all variables are independently stored in the local memory of each process. There is no influence that copies data between processes other then the running program itself.
+	\item no special module for distributed memory, since all variables are independently stored in the local memory of each process. There is no influence that copies data between processes other then the user-specified program itself.
 	\item Algorithm explained in Section~\ref{sssec:existing-currently-used-distributed}
 	\item Control flow diagram augmented with rates: Figure~\ref{fig:dissemination-control-flow}
 		\begin{figure}[htbp]
@@ -781,10 +781,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:dissemination-control-flow}
 		\end{figure}
 	\item As in the two previous paragraphs $\lambda_{work}$ is the work rate.
-	\item we assume all local operations to be much quicker than remote operations. Therefore we assign the rate $\lambda_t$ (one CPU cycle) to local operations, and $\lambda_p$ to remote write (put) operations.
+	\item we assume all local operations to be much quicker, ten to a thousand times, than remote operations. Therefore we assign the rate $\lambda_t$ (one CPU cycle) to local operations. $\lambda_p$, which is assigned to remote write (put) operations, gets a lower rate.
 	\item one could make this more fine grained by introducing separate rates for local reading and writing.
-	\item \texttt{to} is a shorthand for \texttt{processIndex + dist (mod processCount)} and \texttt{from}, as expected, for \texttt{processIndex - dist (mod processCount)}
-	\item In the CTMC model, resulting from this control flow diagram, a put onto a remote process is represented as a synchronized action, so the target process stores the new value in its CTMC module.
+	\item \texttt{to} and \texttt{from} are shorthands for \texttt{processIndex $\pm$ dist (mod processCount)}
+	\item In the CTMC model, resulting from unwinding this control flow diagram, a put onto a remote process is represented as a synchronized action, so the target process stores the new value in its CTMC module.
 	\item functional model does resetting and repetition with a counter instead of bools as described in Section~\ref{ssec:building-blocks}.
 \end{itemize}
 
