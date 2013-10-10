@@ -487,7 +487,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item high-level explanation
 	\item detailed walk through one iteration
 	\item advantage: no atomic ops
-	\item resetting is integrated. Barrier can immediately be repeated.
+	\item resetting is integrated. Needs a little less space than the approaches shown in Section~\ref{ssec:building-blocks}
 	\item Limited to 64 threads in this version. But one can modify the protocol to use an array of bit masks, representing a big bit mask. Updating the bit mask will then only be done on the element where the updating thread is itself located on. This way we only write one 64 bit value which is committed atomically. If we would attempt to write more than one element, we would run into consistency problems. Reading the shared variable will then read the whole array instead.
 \end{itemize}
 
