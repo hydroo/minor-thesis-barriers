@@ -182,6 +182,12 @@ def generateRewards() :
 
 	s += "\n"
 
+	s += "rewards \"time_one_is_writing_inc\"\n"
+	s += "\t" + "one_is_writing_inc : base_rate;\n"
+	s += "endrewards\n"
+
+	s += "\n"
+
 	s += "rewards \"time_one_is_reading\"\n"
 	s += "\t" + "one_is_reading : base_rate;\n"
 	s += "endrewards\n"
@@ -235,6 +241,7 @@ def generateLabels(threadCount) :
 	s += "\n"
 
 	s += "formula one_is_writing               = !all_are_working & (" + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
+	s += "formula one_is_writing_inc           = " + " | ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ";\n"
 	s += "formula all_are_writing              = !one_is_working  & (" + " & ".join([ "l_%d <= l_atomic_end" % i for i in range(0, threadCount)]) + ");\n"
 	s += "formula none_are_writing             = !one_is_writing;\n"
 	#s += "label \"one_is_writing\"               = one_is_writing;\n"
@@ -354,12 +361,11 @@ def generateQuantitativeProperties(threadCount) :
 
 	queries = {
 		#key : [query, comment]
-		"Ac" : ["time_all_are_working" , "time up to: first finished working and entered"],
-		"Bc" : ["time_one_is_working"  , "time up to: last finished working and entered"],
-		"Cc" : ["time_not_one_is_done" , "time up to: first recognized the barrier is full and left"],
-		"Dc" : ["time_not_all_are_done", "time up to: all recognized the barrier is full and left"],
-		"Ec" : ["time_one_is_writing"  , "time spent writing"],
-		"Fc" : ["time_one_is_reading"  , "time spent reading"],
+		"Ac" : ["time_all_are_working"    , "time up to: first finished working and entered"],
+		"Bc" : ["time_one_is_working"     , "time up to: last finished working and entered"],
+		"Cc" : ["time_not_one_is_done"    , "time up to: first recognized the barrier is full and left"],
+		"Dc" : ["time_not_all_are_done"   , "time up to: all recognized the barrier is full and left"],
+		"Ec" : ["time_one_is_writing_inc" , "time up to: no one is writing"],
 	}
 
 	for k in sorted(queries.keys()) :
