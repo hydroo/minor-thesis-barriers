@@ -883,13 +883,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\begin{itemize}
 		\item central counter vs ronny's simple
 			\begin{itemize}
-				\item expected time (last in - last out) (x: threads, y: expected time)
-				\item expected time (first out - last out) (x: threads, y: expected time)
+				\item expected time (last out - last in) (x: threads, y: expected time)
+				\item expected time (last out - first out) (x: threads, y: expected time)
 			\end{itemize}
 		\item dissemination vs ronny's fancy
 			\begin{itemize}
-				\item expected time (last in - last out) (x: threads, y: expected time)
-				\item expected time (first out - last out) (x: threads, y: expected time)
+				\item expected time (last out - last in) (x: threads, y: expected time)
+				\item expected time (last out - first out) (x: threads, y: expected time)
 			\end{itemize}
 	\end{itemize}
 \label{ssssec:analysis-modelchecking-quantitative-properties-results}
@@ -933,6 +933,7 @@ future work:
 	\item model check more and bigger. Symmetry reduction. Partial order reduction.
 	\item model multi layered cache. More realistic. Hardware topology
 	\item implement ronny fancy on RDMA hardware and benchmark against established algorithms
+	\item model ronny fancy and dissemination on shared memory and compare to ronny simple and central counter and reality
 	\item explore variations of ronny's barriers
 		\begin{itemize}
 			\item Ronny's fancy barrier: Try different i increment strategies. Or perhaps randomize the choice of i.
