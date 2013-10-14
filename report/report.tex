@@ -674,7 +674,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		It is the sum, over all states but the last, of the state reward multiplied by the time spent in this state.
 	\item The reachability reward is similar to the accumulated reward. It is defined as
 		\begin{center}
-			$\mathrm{ReaRew}(\pi, \Phi) = \mathlarger{\sum}\limits_{i=0}^{\mathit{min}\{j | s_j \models \Phi~\wedge~0 \le j < n\}-1}} (t_{i+1} - t_i) \cdot \mathit{rew}(s_i)$
+			$\mathrm{ReaRew}(\pi, \Phi) = \mathlarger{\sum}\limits_{i=0}^{\mathit{min}\{j | s_j \models \Phi~\wedge~0 \le j \le n\}-1}} (t_{i+1} - t_i) \cdot \mathit{rew}(s_i)$
 		\end{center}
 		It is the accumulated reward until $s_i \models \Phi$ holds for the first time.
 	\item The instantaneous reward
