@@ -717,6 +717,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sssec:analysis-modelchecking-modelling-shared-memory}
 \begin{itemize}
 	\item todo reason why modelling cache?
+		\begin{itemize}
+			\item memory access determines performance of synchronization protocols
+			\item memory access is cached so that effectively we only deal with cache latency
+		\end{itemize}
 	\item shared memory variable encapsulated in own CTMC modules.
 	\item We identify a variable with the cache line it resides on.
 	\item each thread has one copy of such a cache line.
