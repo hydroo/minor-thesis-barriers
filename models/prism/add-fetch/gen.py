@@ -418,7 +418,7 @@ helpMessage = \
 if __name__ == "__main__":
 
 	threadCount = 0
-	filePrefix = modelFileName = correctnessPropertiesFileName = ""
+	filePrefix = modelFileName = correctnessPropertiesFileName = quantitativePropertiesFileName = ""
 
 	workTicks  = 1
 	readTicks  = 50

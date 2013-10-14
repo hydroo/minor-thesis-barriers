@@ -439,7 +439,7 @@ helpMessage = \
 if __name__ == "__main__":
 
 	processCount = 0
-	filePrefix = modelFileName = correctnessPropertiesFileName = ""
+	filePrefix = modelFileName = correctnessPropertiesFileName = quantitativePropertiesFileName = ""
 
 	workTicks  = 1
 	putTicks   = 100
