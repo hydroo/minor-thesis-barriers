@@ -827,8 +827,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item in this section we will use \emph{thread} and \emph{process} interchangeable, because for the modelling side the wording makes no difference.
 	\item LTL as logic, Spin as model checker
 	\item $T$ is the set of all threads
-	\item $left_t$ is a predicate describing states where thread $t$ has passed the barrier
-	\item $entered_t$ is a predicate describing states where thread $t$ has passed the initial work period
+	\item $left_t$ is a predicate describing all states where thread $t$ has passed the barrier
+	\item $entered_t$ is a predicate describing all states where thread $t$ has passed the initial work period
 	\item \textbf{A:} \emph{a thread may only exit the barrier if all threads have entered it}
 		\begin{center}
 			$\square \big( ~ ( \exists t \in T . \mathit{left_t} ) \implies \forall s \in T. \mathit{entered_s} ~ \big)$
@@ -857,27 +857,16 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item which parameters to variate
 		\begin{itemize}
-			\item thread count : limiting factor for model checking. Few can be checked. The more the better. Barriers are not as interesting for small thread counts, because codes that use low thread numbers spend few time in the barrier. Higher numbers of threads increase synchronization cost and better algorithms make a bigger difference.
-			\item work rate
-				\begin{itemize}
-					\item influence of more or less delay between arrivals of threads
-					\item how exactly? : 0 - 100000 in log 10 step? Or evenly spread steps? A very large one would be nice to see the influence of the actual barrier algorithm decrease.
-					\item perhaps only look at expected values to make the diagram 2 dimensional.
-				\end{itemize}
+			\item thread count. Maximum 4 is considered (maybe more for diss vs fancy). Model checking limitations bla.
+			\item work rate. Variate the distribution of the times the threads enter the barrier.
 		\end{itemize}
 	\item interesting points in time
 		\begin{itemize}
-			\item all protocols
-				\begin{itemize}
-					\item (A) first thread entered the barrier
-					\item (B) last thread entered the barrier
-					\item (C) first thread left the barrier
-					\item (D) last thread left the barrier
-				\end{itemize}
-			\item for central counter and ronny's simple
-				\begin{itemize}
-					\item (E) the last thread finished writing
-				\end{itemize}
+			\item (A) first thread entered the barrier
+			\item (B) last thread entered the barrier
+			\item (C) first thread left the barrier
+			\item (D) last thread left the barrier
+			\item (E) (only for central counter and ronny's simple) the last thread finished writing
 		\end{itemize}
 	\item resulting properties
 		\begin{itemize}
@@ -902,6 +891,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{done\_writing_t} )$
 				\end{center}
+			\item and combinations of these to get measures like (D-B) last in until last out.
 		\end{itemize}
 	\item properties of dissemination and ronny's fancy
 		\begin{itemize}
@@ -913,10 +903,75 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%
 \paragraph{Results}
 	\begin{itemize}
+		\item technical modification of queries to yield cycle counts instead of raw time.
 		\item central counter vs ronny's simple
 			\begin{itemize}
-				\item expected time (last out - last in) (x: threads, y: expected time)
-				\item expected time (last out - first out) (x: threads, y: expected time)
+				\item work = 100. Very Small.
+				\item last to last, last to first Figure~\ref{fig:cs-work-100-B-C-D}
+					\begin{figure}[htbp]
+						\centering
+						\includegraphics[width=8cm]{charts/cs-work-100-B-C-D}
+						\caption{Expected running time of the shared memory barriers}
+						\label{fig:cs-work-100-B-C-D}
+					\end{figure}
+					\begin{itemize}
+						\item similarly fast when considering the last one to finish
+						\item ronny's simple faster for the first one to leave
+					\end{itemize}
+				\item distribution of total time spent: Figure~\ref{fig:cs-work-100-partition}
+					\begin{figure}[htbp]
+						\centering
+						\includegraphics[width=8cm]{charts/cs-work-100-partition}
+						\caption{Distribution of total time spent}
+						\label{fig:cs-work-100-partition}
+					\end{figure}
+					\begin{itemize}
+						\item stacked fashion. Writing starts during one working. Reading starts during writing.
+						\item work is equal for everyone, obviously
+						\item first thread leaves a few cycles after writing is done. Because the last one to write its value will
+							read the completed barrier and immediately leave.
+						\item last thread exits when reading is done. Because when reading is done, we are done.
+						\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
+					\end{itemize}
+				\item reading vs writing: Figure~\ref{fig:cs-work-100-percent}
+					\begin{figure}[htbp]
+						\centering
+						\includegraphics[width=8cm]{charts/cs-work-100-percent}
+						\caption{Percentage of time spent writing vs time spent reading}
+						\label{fig:cs-work-100-percent}
+					\end{figure}
+					\begin{itemize}
+						\item another picture showing writing vs reading.
+						\item atomic ops queue up. Parallel writes do not.
+					\item writing is expected to take less time than shown here, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}}$  time rather than just $1 / \lambda$ for $n$ interleaved modules / concurrent threads
+					\end{itemize}
+				\item work=1000. Still very small.
+				\item last to last, last to first Figure~\ref{fig:cs-work-1000-B-C-D}
+					\begin{figure}[htbp]
+						\centering
+						\includegraphics[width=8cm]{charts/cs-work-1000-B-C-D}
+						\caption{Expected running time of the shared memory barriers with 1,000 cycles work period}
+						\label{fig:cs-work-1000-B-C-D}
+					\end{figure}
+					\begin{itemize}
+						\item very different picture.
+						\item central counter fast in all respects.
+						\item probability of a thread trying to write while no one is writing at the moment increases, due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
+						\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for central counter.
+					\end{itemize}
+				\item percent Figure~\ref{fig:cs-work-1000-percent}
+					\begin{figure}[htbp]
+						\centering
+						\includegraphics[width=8cm]{charts/cs-work-1000-percent}
+						\caption{Percentage of time spent writing vs time spent reading with 1,000 cycles work period}
+						\label{fig:cs-work-1000-percent}
+					\end{figure}
+					\begin{itemize}
+						\item less busy waiting due to larger arrival gaps
+						\item writing time advantage of ronny's simple is diminished.
+						\item ronny's simple waiting time increases linearly with the number of threads (2:77, 3:145, 4:208 cycles)
+					\end{itemize}
+				\item with larger and more realistic, since 1000 cycles is still very few, work periods this problem would increase for low thread counts.
 			\end{itemize}
 		\item dissemination vs ronny's fancy
 			\begin{itemize}
