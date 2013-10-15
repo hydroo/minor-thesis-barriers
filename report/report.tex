@@ -842,6 +842,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Quantitative properties}
 \label{sssec:analysis-modelchecking-quantitative-properties}
+\begin{itemize}
+	\item intro text here
+	\item in this section we will use \emph{thread} and \emph{process} interchangeable, because for the modelling side the wording makes no difference. (same is in section before)
+	\item CSRL as logic, PRISM as model checker
+\end{itemize}
 
 %%%%%%%%%%
 \paragraph{Identification and formalisation}
@@ -857,21 +862,45 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item perhaps only look at expected values to make the diagram 2 dimensional.
 				\end{itemize}
 		\end{itemize}
-	\item properties for all protocols
+	\item interesting points in time
 		\begin{itemize}
-			\item interesting points in time
+			\item all protocols
 				\begin{itemize}
-					\item (A) first entered the barrier
-					\item (B) last entered the barrier
-					\item (C) first left the barrier
-					\item (D) last left the barrier
+					\item (A) first thread entered the barrier
+					\item (B) last thread entered the barrier
+					\item (C) first thread left the barrier
+					\item (D) last thread left the barrier
+				\end{itemize}
+			\item for central counter and ronny's simple
+				\begin{itemize}
+					\item (E) the last thread finished writing
 				\end{itemize}
 		\end{itemize}
-	\item shared memory only
+	\item resulting properties
 		\begin{itemize}
-			\item time spent writing vs reading
+			\item $T$ is the set of all threads
+			\item \textbf{A:} \emph{Average time until the first thread enters the barrier}
+				\begin{center}
+					$\mathrm{ReaRew}(\exists t \in T . \mathit{entered_t} )$
+				\end{center}
+			\item \textbf{B:} \emph{Average time until the last thread enters the barrier}
+				\begin{center}
+					$\mathrm{ReaRew}(\forall t \in T . \mathit{entered_t} )$
+				\end{center}
+			\item \textbf{C:} \emph{Average time until the first thread leaves the barrier}
+				\begin{center}
+					$\mathrm{ReaRew}(\exists t \in T . \mathit{left_t} )$
+				\end{center}
+			\item \textbf{D:} \emph{Average time until the last thread leaves the barrier}
+				\begin{center}
+					$\mathrm{ReaRew}(\forall t \in T . \mathit{left_t} )$
+				\end{center}
+			\item \textbf{E:} \emph{Average time until the last thread finished writing}
+				\begin{center}
+					$\mathrm{ReaRew}(\forall t \in T . \mathit{done\_writing_t} )$
+				\end{center}
 		\end{itemize}
-	\item distributed memory only
+	\item properties of dissemination and ronny's fancy
 		\begin{itemize}
 			\item progress
 			\item number of remote transfers as another performance measure
