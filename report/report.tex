@@ -957,12 +957,16 @@ conclusion:
 	\item ?repeat claim - overarching thesis - present an answer?
 \end{itemize}
 
-future work:
+Future work:
 \begin{itemize}
 	\item "Identify all shortcomings/limitations of your work, and discuss how they could be fixed"
 	\item evaluate back-off strategies. mwait.
 	\item benchmark on Intel system, not only bulldozer. Results might be very different from above benchmarks.
 	\item model check more and bigger. Symmetry reduction. Partial order reduction.
+		\begin{itemize}
+			\item find out at which working period distribution which is better suited. (4 threads in our analysis is nothing)
+		\end{itemize}
+	\item Make the same comparison again, but with energy consumption.
 	\item model multi layered cache. More realistic. Hardware topology
 	\item implement ronny fancy on RDMA hardware and benchmark against established algorithms
 	\item model ronny fancy and dissemination on shared memory and compare to ronny simple and central counter and reality
