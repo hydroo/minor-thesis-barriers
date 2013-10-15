@@ -79,14 +79,14 @@ if __name__ == "__main__":
 	Ec  = 27
 	Ece = 28
 
-	print("# last in until last out")
-	print("# n De-Be")
+	print("#   last-in-until-last out   last-in-until-first-out")
+	print("# n De-Be                    Ce-Be")
 	for n in threadCounts :
 		call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
 		be = float(modelCheck(filePrefix, Be, debug))
 		ce = float(modelCheck(filePrefix, Ce, debug))
 		de = float(modelCheck(filePrefix, De, debug))
-		print(n, "%4.3f %4.3f" % (ce - be, de - be))
+		print(n, "%4.3f %4.3f" % (de - be, ce - be))
 		
 	print("")
 
@@ -98,6 +98,8 @@ if __name__ == "__main__":
 	#	de = float(modelCheck(filePrefix, De, debug))
 	#	print(n, "%.3f" % (de - ce))
 
+	#print("")
+
 	#print("# percentage writing vs reading")
 	#print("# n Epe Fpe")
 	#for n in threadCounts :
@@ -106,6 +108,8 @@ if __name__ == "__main__":
 	#	fpe = float(modelCheck(filePrefix, Fpe, debug))
 	#	sum_ = epe + fpe
 	#	print(n, "%4.3f %4.3f" % (epe / sum_, fpe / sum_))
+
+	#print("")
 
 	#print("# cumulative (stacked diagram)")
 	#print("# n all-work one-works writing reading one-done all-done")
