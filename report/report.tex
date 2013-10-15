@@ -824,18 +824,18 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item in this section we will use \emph{thread} and \emph{process} interchangeable, because for the modelling side the wording makes no difference.
 	\item LTL as logic, Spin as model checker
 	\item $T$ is the set of all threads
-	\item $done_t$ is a predicate describing states where thread $t$ has passed the barrier
-	\item $work\_done_t$ is a predicate describing states where thread $t$ has passed the initial work period
-	\item \textbf{Q1:} ''\emph{a thread may only exit the barrier if all threads have entered it}''
+	\item $left_t$ is a predicate describing states where thread $t$ has passed the barrier
+	\item $entered_t$ is a predicate describing states where thread $t$ has passed the initial work period
+	\item \textbf{A:} \emph{a thread may only exit the barrier if all threads have entered it}
 		\begin{center}
-			$\square \big( ~ ( \exists t \in T . \mathit{done_t} ) \implies \forall s \in T. \mathit{work\_done_s} ~ \big)$
+			$\square \big( ~ ( \exists t \in T . \mathit{left_t} ) \implies \forall s \in T. \mathit{entered_s} ~ \big)$
 		\end{center}
-	\item \textbf{Q2:} ''\emph{if all threads entered the barrier, they will all leave it in a finite amount of time}''
+	\item \textbf{B:} \emph{if all threads entered the barrier, they will all leave it in a finite amount of time}
 		\begin{center}
-			$\square \big( ~(\forall t \in T . \mathit{work\_done_t} ) \implies \forall s \in T. \lozenge \mathit{done_s} ~ \big)$
+			$\square \big( ~(\forall t \in T . \mathit{entered_t} ) \implies \forall s \in T. \lozenge \mathit{left_s} ~ \big)$
 		\end{center}
-	\item Q1 and Q2 are the only two properties a barrier protocol must satisfy
-	\item Q1 could be seen as safety and Q2 as liveness of the protocol
+	\item A and B are the only two properties a barrier protocol must satisfy
+	\item A could be seen as safety and B as liveness of the protocol
 	\item yes it works.
 \end{itemize}
 
