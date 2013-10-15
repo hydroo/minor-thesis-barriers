@@ -8,8 +8,11 @@
 \usepackage{datetime}
 \usepackage{fancyvrb}
 \usepackage{graphicx}
-\graphicspath{{images/}}
-\DeclareGraphicsExtensions{.pdf,.png}
+	\graphicspath{{images/}}
+	\DeclareGraphicsExtensions{.eps, .pdf,.png}
+\usepackage{epstopdf}
+	\DeclareGraphicsRule{.eps}{pdf}{.pdf}{`epstopdf #1}
+	\pdfcompresslevel=9
 %\usepackage{hyperref}
 \usepackage{latexsym}
 \usepackage[latin1]{inputenc}
