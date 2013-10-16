@@ -19,7 +19,9 @@ def generateModel(processCount, workTicks, putTicks, debug) :
 	s += "// * last _# at labels and variables is always the id of the \"owning\" process "
 	s += "//\n"
 	s += "\n"
-	s += "// * not all labels are for sync. but for easier debugging in the simulator: work_*, wait_*, done_*\n"
+	s += "// * no label is for sync. all are for easyier debugging in the simulator\n"
+	s += "\n"
+	s += "// * changing read and write rates does not work anymore because we collapsed some of those transitions (optimization)\n"
 	s += "\n"
 
 	s += generateProcess(0, processCount)
