@@ -92,6 +92,7 @@ def generateConstants(threadCount, workTicks) :
 
 	s += "// rates\n"
 	s += "const double base_rate = 1000.0;\n"            # needed for shared_memory as well
+	s += "const double rare      = tick / 1000000;\n"
 	s += "const double tick      = base_rate / 1.0;\n"   # needed for shared_memory as well
 	s += "const double work      = tick / work_ticks;\n"
 
@@ -129,7 +130,7 @@ def generateThread(p, threadCount) :
 		s += "    [bar_%d_read_#]                l_#=l_wait  & i_# = %d & bar_%d = 1 ->        (i_#' = min(i_# + 1, thread_count));\n" % (i, i, i)
 		s += "    [bar_%d_read_#]                l_#=l_wait  & i_# = %d & bar_%d = 0 ->        (i_#' = 0);\n" % (i, i, i)
 	s += "\n"
-	s += "    [done_#]                      l_#=l_done                        ->        true;\n"
+	s += "    [done_#]                      l_#=l_done                        -> rare : true;\n"
 
 	s += "\n"
 	s += "    // do never trigger the following sync transitions\n"
