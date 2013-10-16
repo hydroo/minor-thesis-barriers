@@ -863,7 +863,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item which parameters to variate
 		\begin{itemize}
-			\item thread count. Maximum 4 is considered (maybe more for diss vs fancy). Model checking limitations bla.
+			\item thread count. Maximum 4 is considered. Model checking limitations bla.
 			\item work rate. Variate the distribution of the times the threads enter the barrier.
 		\end{itemize}
 	\item interesting points in time
@@ -899,10 +899,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\end{center}
 			\item and combinations of these to get measures like (D-B) last in until last out.
 		\end{itemize}
-	\item \todo properties of dissemination and ronny's fancy
+	\item \todo additional properties of dissemination and ronny's fancy
 		\begin{itemize}
-			\item progress
-			\item number of remote transfers as another performance measure
+			\item rounds. one is in round x, but not yet one in the next. all are at least in round x, but not yet all are in the next.
+			\item number of remote transfers. \todo needs transition rewards.
+			\item progress. Number of processes known to have arrived for each process. $\frac{0.. n*(n-1)}{n*(n-1)}$
 		\end{itemize}
 \end{itemize}
 
@@ -984,8 +985,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\begin{itemize}
 				\item \todo expected time (last out - last in) (x: threads, y: expected time)
 				\item \todo expected time (last out - first out) (x: threads, y: expected time)
+				\item number of remote transfers
+				\item progress
 			\end{itemize}
-	\end{itemize}
 \label{ssssec:analysis-modelchecking-quantitative-properties-results}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
