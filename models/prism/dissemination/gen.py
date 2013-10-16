@@ -313,19 +313,6 @@ def generateQuantitativeProperties(processCount) :
 
 	t += "\n"
 
-	diffQueries = [
-		["D", "B", "from last to enter to last to leave"],
-		["D", "C", "from first to leave to last to leave"]
-	]
-
-	for query in diffQueries :
-		q = basicQueries[query[0]]
-		u = basicQueries[query[1]]
-		t += "// (%s-%s)e %s\n" % (query[0], query[1], query[2])
-		# no better than expected value difference is possible at the moment
-		t += "(R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done]) - (R{\"time\"}=? [F all_are_done] - R{\"%s\"}=? [F all_are_done])\n" % (q[0], u[0]) # correct
-		t += "\n"
-
 	t += "// sascha queries A-D end\n\n"
 
 	# ### partition queries "one" begin
