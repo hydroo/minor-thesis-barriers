@@ -56,28 +56,25 @@ if __name__ == "__main__":
 	D   =  7
 	De  =  8
 
-	DBe =  9
-	DCe = 10
+	Ap  =  9
+	Ape = 10
+	Dp  = 11
+	Dpe = 12
+	Ep  = 13
+	Epe = 14
+	Fp  = 15
+	Fpe = 16
 
-	Ap  = 11
-	Ape = 12
-	Dp  = 13
-	Dpe = 14
-	Ep  = 15
-	Epe = 16
-	Fp  = 17
-	Fpe = 18
-
-	Ac  = 19
-	Ace = 20
-	Bc  = 21
-	Bce = 22
-	Cc  = 23
-	Cce = 24
-	Dc  = 25
-	Dce = 26
-	Ec  = 27
-	Ece = 28
+	Ac  = 17
+	Ace = 18
+	Bc  = 19
+	Bce = 20
+	Cc  = 21
+	Cce = 22
+	Dc  = 23
+	Dce = 24
+	Ec  = 25
+	Ece = 26
 
 	print("#   last-in-until-last out   last-in-until-first-out")
 	print("# n De-Be                    Ce-Be")
