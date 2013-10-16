@@ -79,6 +79,7 @@ def generateConstants(processCount, workTicks, getTicks) :
 	s += "// rates\n"
 	s += "const double base_rate = 1000.0;\n"
 	s += "const double tick      = base_rate / 1.0;\n"
+	s += "const double rare      = tick / 1000000;\n"
 	s += "const double work      = tick / work_ticks;\n"
 	s += "const double get       = tick / get_ticks;\n"
 
@@ -127,7 +128,7 @@ def generateProcess(p, processCount) :
 
 	s += "\n"
 
-	s += "    [done_#]     l_#=l_done                 ->        true;\n"
+	s += "    [done_#]     l_#=l_done                 -> rare : true;\n"
 
 	s += "endmodule\n"
 
