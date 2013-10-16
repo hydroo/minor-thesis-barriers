@@ -316,30 +316,6 @@ def generateQuantitativeProperties(threadCount) :
 
 	t += "// sascha queries A-D end\n\n"
 
-	# ### partition queries begin
-	t += "// partition queries begin\n\n"
-
-	# the following 4 queries partition the state space.
-	# useful for a diagram showing with which percentage we are in which phase at a certain point in time
-	# perhaps as a stacked diagram
-	queries = {
-		#key : [query, comment]
-		"Ap" : ["time_all_are_working" , "time up to: first finished working and entered"],
-		"Ep" : ["time_one_is_writing"  , "time spent writing"],
-		"Fp" : ["time_one_is_reading"  , "time spent reading"],
-		"Dp" : ["time_all_are_done"    , "time all are done" ],
-	}
-
-	for k in sorted(queries.keys()) :
-		query = queries[k]
-		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
-		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[0] # correct
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]     # correct
-		t += "\n"
-
-	t += "// partition queries end\n\n"
-	# ### partition queries end
-
 	# ### cumulative queries begin
 	# shows how much time has been spent in different parts of the algorithm
 	# if simulated up to a certain point

@@ -56,25 +56,16 @@ if __name__ == "__main__":
 	D   =  7
 	De  =  8
 
-	Ap  =  9
-	Ape = 10
-	Dp  = 11
-	Dpe = 12
-	Ep  = 13
-	Epe = 14
-	Fp  = 15
-	Fpe = 16
-
-	Ac  = 17
-	Ace = 18
-	Bc  = 19
-	Bce = 20
-	Cc  = 21
-	Cce = 22
-	Dc  = 23
-	Dce = 24
-	Ec  = 25
-	Ece = 26
+	Ac  =  9
+	Ace = 10
+	Bc  = 11
+	Bce = 12
+	Cc  = 13
+	Cce = 14
+	Dc  = 15
+	Dce = 16
+	Ec  = 17
+	Ece = 18
 
 	print("#   last-in-until-last out   last-in-until-first-out")
 	print("# n De-Be                    Ce-Be")
@@ -86,16 +77,6 @@ if __name__ == "__main__":
 		print(n, "%4.3f %4.3f" % (de - be, ce - be))
 		
 	print("")
-
-	#print("# first out until last out")
-	#print("# n De-Ce")
-	#for n in threadCounts :
-	#	call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
-	#	ce = float(modelCheck(filePrefix, Ce, debug))
-	#	de = float(modelCheck(filePrefix, De, debug))
-	#	print(n, "%.3f" % (de - ce))
-
-	#print("")
 
 	#print("# percentage writing vs reading")
 	#print("# n Epe Fpe")

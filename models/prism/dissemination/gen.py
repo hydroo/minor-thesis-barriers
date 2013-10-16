@@ -315,48 +315,6 @@ def generateQuantitativeProperties(processCount) :
 
 	t += "// sascha queries A-D end\n\n"
 
-	# ### partition queries "one" begin
-	t += "// partition queries \"one\" begin\n\n"
-
-	# the following queries partition the state space.
-	# useful for a diagram showing with which percentage we are in which phase at a certain point in time
-	# perhaps as a stacked diagram
-	queries = [
-		#[key, query, comment]
-		["Ap", "time_all_are_working" , "time up to: first finished working and entered"],
-		["Cp", "time_one_is_done"     , "time all are done" ],
-	]
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		queries.insert(-1, ["%dp" % r, "time_round_%d_one" % r, "time from the first entered round %d until the first entered round %d" % (r, r+1)])
-	for query in queries :
-		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
-		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[1]
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
-		t += "\n"
-
-	t += "// partition queries \"one\" end\n\n"
-	# ### partition queries "one" end
-
-	# ### partition queries "all" begin
-	t += "// partition queries \"all\" begin\n\n"
-
-	queries = [
-		#[key, query, comment]
-		["Bp", "time_one_is_working" , "time up to: first finished working and entered"],
-		["Dp", "time_all_are_done"   , "time all are done" ],
-	]
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		queries.insert(-1, ["%dp" % r, "time_round_%d_all" % r, "time from the last entered round %d until the last entered round %d" % (r, r+1)])
-	for query in queries :
-		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
-		t += "R{\"%s\"}=? [I=time] / base_rate\n" % query[1]
-		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
-		t += "\n"
-
-
-	t += "// partition queries \"all\" end\n\n"
-	# ### partition queries "all" end
-
 	# ### cumulative queries begin
 	# shows how much time has been spent in different parts of the algorithm
 	# if simulated up to a certain point
