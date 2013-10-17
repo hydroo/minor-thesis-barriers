@@ -680,12 +680,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 		It is the sum, over all states but the last, of the state reward multiplied by the time spent in this state plus the reward assigned to each transition between all states in $\pi$.
 	\item cumulative reward
 		\begin{center}
-		$\mathrm{CumRew}(\pi, t) = \mathit{Rew}(s_0..s_j)$
+			$\mathrm{CumRew}(\pi, t) = \mathit{Rew}(\pi(s_0:s_j))$
 		\end{center}
-		where $j = min \{ i~|~t_i \ge t \}$
+		where $j = min \{ i~|~t_i \ge t \}$, $\pi(s_0,s_j)$ for the sub path of $\pi$ starting in $s_0$ and ending in $s_j$
 	\item reachability reward
 		\begin{center}
-			$\mathrm{ReaRew}(\pi, \Phi) = \mathit{Rew}(s_0..s_j)$
+			$\mathrm{ReaRew}(\pi, \Phi) = \mathit{Rew}(\pi(s_0:s_j))$
 		\end{center}
 		where $j = min \{ i~|~s_i \models \Phi \}$
 	\item instantaneous reward
