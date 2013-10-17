@@ -42,7 +42,7 @@ def generateModel(processCount, workTicks, getTicks, debug) :
 	s += "// *** process copies end ***\n\n"
 
 	s += "// *** process rewards begin ***\n\n"
-	s += generateRewards()
+	s += generateRewards(processCount)
 	s += "\n"
 	s += "// *** process rewards end ***\n\n"
 
@@ -134,7 +134,7 @@ def generateProcess(p, processCount) :
 
 	return s.replace('#', str(p))
 
-def generateRewards() :
+def generateRewards(processCount) :
 
 	s = ""
 
@@ -173,6 +173,20 @@ def generateRewards() :
 
 	s += "rewards \"time_all_are_done\"\n"
 	s += "    all_are_done : base_rate;\n"
+	s += "endrewards\n\n"
+
+	s += "rewards \"remote_transfer_success\"\n"
+	for i in range(0, processCount) :
+		for j in range(0, processCount) :
+			if i != j :
+				s += "    [search_%d_%d] l_%d=l_search & mod(floor(bar_%d/me_bit_%d),2) = 0 & bar_%d!=0 : 1;\n" % (j, i, i, i, j, j)
+	s += "endrewards\n\n"
+
+	s += "rewards \"remote_transfer_fail\"\n"
+	for i in range(0, processCount) :
+		for j in range(0, processCount) :
+			if i != j :
+				s += "    [search_%d_%d] l_%d=l_search & mod(floor(bar_%d/me_bit_%d),2) = 0 & bar_%d =0 : 1;\n" % (j, i, i, i, j, j)
 	s += "endrewards\n\n"
 
 	return s
@@ -281,6 +295,17 @@ def generateQuantitativeProperties(processCount) :
 
 	t += "// cumulative queries end\n\n"
 	# ### cumulative queries end
+
+	# ### remote transfer queries begin
+	t += "// remote transfer queries begin\n\n"
+
+	t += "//successful remote transfer range between 2*(n-1) = %d and n*(n-1) = %d\n" % (2*(processCount-1), processCount*(processCount-1))
+	t += "R{\"remote_transfer_success\"}=? [F all_are_done]\n"
+	t += "R{\"remote_transfer_fail\"}=? [F all_are_done]\n"
+	t += "\n"
+
+	t += "// remote transfer queries end\n\n"
+	# ### remote transfer queries end
 
 	t += "const double time=ticks/base_rate;\n"
 	t += "const double ticks;\n"
