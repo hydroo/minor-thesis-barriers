@@ -42,7 +42,7 @@ def generateModel(processCount, workTicks, putTicks, debug) :
 	s += "// *** process copies end ***\n\n"
 
 	s += "// *** process rewards begin ***\n\n"
-	s += generateRewards()
+	s += generateRewards(processCount)
 	s += "\n"
 	s += "// *** process rewards end ***\n\n"
 
@@ -129,7 +129,7 @@ def generateProcess(p, processCount) :
 
 	return s.replace('#', str(p))
 
-def generateRewards() :
+def generateRewards(processCount) :
 
 	s = ""
 
