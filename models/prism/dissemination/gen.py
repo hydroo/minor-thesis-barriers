@@ -196,6 +196,13 @@ def generateRewards(processCount) :
 		s += "    up_to_round_%d_all : base_rate;\n" % r
 		s += "endrewards\n\n"
 
+	s += "rewards \"remote_transfer\"\n"
+	for i in range(0, processCount) :
+		for j in [(i + dist) % processCount for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)]] :
+			s += "    [put_%d_%d] true : 1;\n" % (i, j)
+	s += "endrewards\n\n"
+
+
 	return s
 
 def generateLabels(processCount) :
@@ -262,6 +269,13 @@ def generateCorrectnessProperties(processCount) :
 	t += "// the following queries partition the state space and have to add up to the total state count\n"
 	t += "filter(+, P=? [all_are_working]) + filter(+, P=? [one_is_done]) + " + " + ".join(["filter(+, P=? [round_%d_one])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
 	t += "filter(+, P=? [one_is_working]) + filter(+, P=? [all_are_done]) + " + " + ".join(["filter(+, P=? [round_%d_all])" % r for r in range(0, int(math.log(maxDist, 2)) + 1)]) + "\n"
+
+	t += "\n"
+
+	remoteTransferCount = processCount * math.ceil(math.log(processCount, 2))
+
+	t += "// number of remote transfers is fixed to n*ceil(log2(n)) = %d\n" % remoteTransferCount
+	t += "R{\"remote_transfer\"}<=%d [F all_are_done] & R{\"remote_transfer\"}>=%d [F all_are_done]\n" % (remoteTransferCount, remoteTransferCount)
 
 	t += "\n"
 
