@@ -879,6 +879,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item (C) first thread left the barrier
 			\item (D) last thread left the barrier
 			\item (E) (only for central counter and ronny's simple) the last thread finished writing
+			\item (R$i$) (only for dissemination) last process left round $i$, i.e. entered round $i+1$. The current round of process is determined through the variable $\mathit{dist}$. $\mathit{round} = 1 + \log_2 \mathtt{dist}$.
 		\end{itemize}
 	\item resulting properties
 		\begin{itemize}
@@ -903,98 +904,215 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{done\_writing_t} )$
 				\end{center}
+			\item \textbf{R$i$:} \emph{Average time until the last thread left round $i$}
+				\begin{center}
+					$\mathrm{ReaRew}(\forall t \in T . \mathit{left\_round_{i,t}} )$
+				\end{center}
 			\item and combinations of these to get measures like (D-B) last in until last out.
 		\end{itemize}
-	\item \todo additional properties of dissemination and ronny's fancy
+	\item additional properties of dissemination and ronny's fancy
 		\begin{itemize}
-			\item rounds. one is in round x, but not yet one in the next. all are at least in round x, but not yet all are in the next.
-			\item number of remote transfers. \todo needs transition rewards.
-			\item progress. Number of processes known to have arrived for each process. $\frac{0.. n*(n-1)}{n*(n-1)}$
+			\item number of remote transfers.
+				\begin{center}
+					$\mathrm{ReaRew}(\forall t \in T . \mathit{left_t} )$
+				\end{center}
+				Instead of using 1 as a state reward, as in the previous queries, we will use 1 as a transition reward for transitions that represent remote transfer operations.
 		\end{itemize}
 \end{itemize}
 
 %%%%%%%%%%
 \paragraph{Evaluation}
-	\begin{itemize}
-		\item technical modification of queries to yield cycle counts instead of raw time.
-		\item central counter vs ronny's simple
-			\begin{itemize}
-				\item work = 100. Very Small.
-				\item last to last, last to first Figure~\ref{fig:cs-work-100-B-C-D}
-					\begin{figure}[htbp]
-						\centering
-						\includegraphics[width=8cm]{charts/cs-work-100-B-C-D}
-						\caption{Expected running time of the shared memory barriers}
-						\label{fig:cs-work-100-B-C-D}
-					\end{figure}
-					\begin{itemize}
-						\item similarly fast when considering the last one to finish
-						\item ronny's simple faster for the first one to leave
-					\end{itemize}
-				\item distribution of total time spent: Figure~\ref{fig:cs-work-100-partition}
-					\begin{figure}[htbp]
-						\centering
-						\includegraphics[width=8cm]{charts/cs-work-100-partition}
-						\caption{Distribution of total time spent}
-						\label{fig:cs-work-100-partition}
-					\end{figure}
-					\begin{itemize}
-						\item stacked fashion. Writing starts during one working. Reading starts during writing.
-						\item work is equal for everyone, obviously
-						\item first thread leaves a few cycles after writing is done. Because the last one to write its value will
-							read the completed barrier and immediately leaves.
-						\item last thread exits when reading is done. Because when reading is done, we are done.
-						\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
-						\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
-					\end{itemize}
-				\item reading vs writing: Figure~\ref{fig:cs-work-100-percent}
-					\begin{figure}[htbp]
-						\centering
-						\includegraphics[width=8cm]{charts/cs-work-100-percent}
-						\caption{Percentage of time spent writing vs time spent reading}
-						\label{fig:cs-work-100-percent}
-					\end{figure}
-					\begin{itemize}
-						\item another picture showing writing vs reading.
-						\item atomic ops queue up. Parallel writes do not.
-						\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
-					\end{itemize}
-				\item work=1000. Still very small.
-				\item last to last, last to first Figure~\ref{fig:cs-work-1000-B-C-D}
-					\begin{figure}[htbp]
-						\centering
-						\includegraphics[width=8cm]{charts/cs-work-1000-B-C-D}
-						\caption{Expected running time of the shared memory barriers with 1,000 cycles work period}
-						\label{fig:cs-work-1000-B-C-D}
-					\end{figure}
-					\begin{itemize}
-						\item very different picture.
-						\item central counter faster in all respects.
-						\item probability of a thread trying to write while no one is writing at the moment increases, due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
-						\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for central counter.
-					\end{itemize}
-				\item percent Figure~\ref{fig:cs-work-1000-percent}
-					\begin{figure}[htbp]
-						\centering
-						\includegraphics[width=8cm]{charts/cs-work-1000-percent}
-						\caption{Percentage of time spent writing vs time spent reading with 1,000 cycles work period}
-						\label{fig:cs-work-1000-percent}
-					\end{figure}
-					\begin{itemize}
-						\item less busy waiting due to larger arrival gaps
-						\item writing time advantage of ronny's simple is diminished.
-						\item ronny's simple reading time increases linearly with the number of threads (2:77, 3:148, 4:218 cycles). Expectation is ~50 across all thread counts in reality.
-					\end{itemize}
-				\item with larger and more realistic, since 1000 cycles is still very few, work periods this yields a series of writing operations for both algorithms, and a little more time spent reading for ronny's simple barrier.
-			\end{itemize}
-		\item dissemination vs ronny's fancy
-			\begin{itemize}
-				\item \todo expected time (last out - last in) (x: threads, y: expected time)
-				\item \todo expected time (last out - first out) (x: threads, y: expected time)
-				\item number of remote transfers
-				\item progress
-			\end{itemize}
 \label{ssssec:analysis-modelchecking-quantitative-properties-results}
+\begin{itemize}
+	\item technical modification of queries to yield cycle counts instead of raw time.
+\end{itemize}
+
+%%%%%
+\subparagraph{Shared memory barriers}
+\label{sssssec:analysis-modelchecking-quantitative-properties-results-shared}
+\begin{itemize}
+	\item work = 100. Very Small.
+	\item last to last, last to first Figure~\ref{fig:cs-work-100-B-C-D}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/cs-work-100-B-C-D}
+			\caption{Expected running time of the shared memory barriers}
+			\label{fig:cs-work-100-B-C-D}
+		\end{figure}
+		\begin{itemize}
+			\item similarly fast when considering the last one to finish
+			\item ronny's simple faster for the first one to leave
+		\end{itemize}
+	\item distribution of total time spent: Figure~\ref{fig:cs-work-100-partition}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/cs-work-100-partition}
+			\caption{Distribution of total time spent}
+			\label{fig:cs-work-100-partition}
+		\end{figure}
+		\begin{itemize}
+			\item stacked fashion. Writing starts during one working. Reading starts during writing.
+			\item work is equal for everyone, obviously
+			\item first thread leaves a few cycles after writing is done. Because the last one to write its value will
+				read the completed barrier and immediately leaves.
+			\item last thread exits when reading is done. Because when reading is done, we are done.
+			\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
+			\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
+		\end{itemize}
+	\item reading vs writing: Figure~\ref{fig:cs-work-100-percent}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/cs-work-100-percent}
+			\caption{Percentage of time spent writing vs time spent reading}
+			\label{fig:cs-work-100-percent}
+		\end{figure}
+		\begin{itemize}
+			\item another picture showing writing vs reading.
+			\item atomic ops queue up. Parallel writes do not.
+			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
+		\end{itemize}
+	\item work=1000. Still very small.
+	\item last to last, last to first Figure~\ref{fig:cs-work-1000-B-C-D}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/cs-work-1000-B-C-D}
+			\caption{Expected running time of the shared memory barriers with 1,000 cycles work period}
+			\label{fig:cs-work-1000-B-C-D}
+		\end{figure}
+		\begin{itemize}
+			\item very different picture.
+			\item central counter faster in all respects.
+			\item probability of a thread trying to write while no one is writing at the moment increases, due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
+			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for central counter.
+		\end{itemize}
+	\item percent Figure~\ref{fig:cs-work-1000-percent}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/cs-work-1000-percent}
+			\caption{Percentage of time spent writing vs time spent reading with 1,000 cycles work period}
+			\label{fig:cs-work-1000-percent}
+		\end{figure}
+		\begin{itemize}
+			\item less busy waiting due to larger arrival gaps
+			\item writing time advantage of ronny's simple is diminished.
+			\item ronny's simple reading time increases linearly with the number of threads (2:77, 3:148, 4:218 cycles). Expectation is ~50 across all thread counts in reality.
+		\end{itemize}
+	\item with larger and more realistic, since 1000 cycles is still very few, work periods this yields a series of writing operations for both algorithms, and a little more time spent reading for ronny's simple barrier.
+\end{itemize}
+
+%%%%%
+\subparagraph{Distributed memory barriers}
+\label{sssssec:analysis-modelchecking-quantitative-properties-results-distributed}
+\begin{itemize}
+	\item work = 100. Very Small.
+	\item last to last, last to first Figure~\ref{fig:df-work-100-B-C-D}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/df-work-100-B-C-D}
+			\caption{Expected running time of the distributed memory barriers}
+			\label{fig:df-work-100-B-C-D}
+		\end{figure}
+		\begin{itemize}
+			\item rf: first one to leave unrealistic. CTMC semantics.
+			\item dissemination quicker for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
+			\item values within expectation
+			\item ronny's fancy is quicker
+		\end{itemize}
+	\item distribution of total time spent: Figure~\ref{fig:df-work-100-partition}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/df-work-100-partition}
+			\caption{Distribution of total time spent}
+			\label{fig:df-work-100-partition}
+		\end{figure}
+		\begin{itemize}
+			\item similar picture including work period
+		\end{itemize}
+	\item dissemination: distribution of total time spent: Figure~\ref{fig:d-work-100-partition}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/d-work-100-partition}
+			\caption{Distribution of total time spent}
+			\label{fig:d-work-100-partition}
+		\end{figure}
+		\begin{itemize}
+			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds (can be observed in Figure~\ref{fig:df-work-100-B-C-D} as well.
+			\item unfavourable for non-power-of-two processes counts
+			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. Can be seen as resource conflicts for remote transfers. Realistic.
+		\end{itemize}
+	\item progress problem of the dissemination barrier: Figure~\ref{fig:d-work-1000-partition}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/d-work-1000-partition}
+			\caption{Distribution of total time spent}
+			\label{fig:d-work-1000-partition}
+		\end{figure}
+		\begin{itemize}
+			\item overhead per round dependent on process count as explained in Section~\ref{sssec:analysis-general-distributed}
+			\item ronny's fancy cannot be modelled for this process count. Would look better since only $\mathit{processCount}$ concurrent reads are needed to complete the barrier and, not multiple rounds with waiting in between.
+		\end{itemize}
+	\item number of remote transfers
+		\begin{itemize}
+			\item fixed for dissemination as explained in Section~\ref{sssec:analysis-general-distributed}. $n \cdot \lceil \log _2~n \rceil$
+			\item between $2 \cdot (n-1)$ and $n \cdot (n-1)$. 2*(n-1) practically never happens because the access pattern of the algorithm doesn't do it.
+			\item hard to estimate, because the randomness of the system defines this number.
+			\item work=100. Figure~\ref{fig:df-transfers-100}
+				\begin{figure}[htbp]
+					\centering
+					\begin{tabular}{r | r | r r}
+						              & Threads & (Xs) Successful Xfers & (Xf) Failed Xfers \\
+						\hline
+						Dissemination & 2       & 2                     &                   \\
+						              & 3       & 6                     &                   \\
+						              & 4       & 8                     &                   \\
+						\hline
+						Ronny's Fancy & 2       & 2                     & 0.99              \\
+						              & 3       & 4.74                  & 1.73              \\
+						              & 4       & 7.98                  & 2.44              \\
+					\end{tabular}
+					\caption{Number of transfers}
+					\label{fig:df-transfers-100}
+				\end{figure}
+				\begin{itemize}
+					\item ronny fancy worse than dissemination. Might get better at 5+ processes, because of the $\lceil \log_2 n \rceil$ stuff. Can't be model checked.
+				\end{itemize}
+			\item work=1000. Figure~\ref{fig:df-transfers-1000}
+				\begin{figure}[htbp]
+					\centering
+					\begin{tabular}{r | r r}
+						Threads & (Xs) Successful Xfers & (Xf) Failed Xfers \\
+						\hline
+						2       & 2                     & 9.9               \\
+						3       & 4.95                  & 22.89             \\
+						4       & 8.78                  & 38.05             \\
+					\end{tabular}
+					\caption{Ronny's fancy number of transfers}
+					\label{fig:df-transfers-1000}
+				\end{figure}
+				\begin{itemize}
+					\item not a lot different.
+					\item back-off strategies could be used, if the lost band-width / latency is important. But might not and is therefore ok.
+				\end{itemize}
+			\item work=1000000. Figure~\ref{fig:df-transfers-1000000}
+				\begin{figure}[htbp]
+					\centering
+					\begin{tabular}{r | r r}
+						Threads & (Xs) Successful Xfers \\
+						\hline
+						2       & 1.96                  \\
+						3       & 4.8                   \\
+						4       & 8.72                  \\
+					\end{tabular}
+					\caption{Ronny's fancy number of transfers}
+					\label{fig:df-transfers-1000000}
+				\end{figure}
+				\begin{itemize}
+					\item serial arrival of all.
+					\item 1 $<->$ 2, 3 $<-$ 1, 2 $<-$ 3, 1 $<-$ 3 = 5 messages
+					\item 1 $<-$ 2, 1 $<-$ 3, 2 $<-$ 1, 3 $<-$ 1 = 4 messages, unlikely
+				\end{itemize}
+		\end{itemize}
+\end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Measurement}

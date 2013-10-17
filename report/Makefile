@@ -5,7 +5,13 @@ CHARTS = \
 	charts/cs-work-100-partition.eps \
 	charts/cs-work-100-percent.eps \
 	charts/cs-work-1000-B-C-D.eps \
-	charts/cs-work-1000-percent.eps
+	charts/cs-work-1000-percent.eps \
+	\
+	charts/df-work-100-B-C-D.eps \
+	charts/df-work-100-partition.eps \
+	\
+	charts/d-work-100-partition.eps \
+	charts/d-work-1000-partition.eps
 
 LISTINGS = \
 	listings/central-counter-no-reset.tex \
