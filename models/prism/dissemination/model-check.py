@@ -107,8 +107,8 @@ if __name__ == "__main__":
 	#print("")
 
 	#print("# cumulative one (stacked diagram)")
-	#print("# n all-work   [rounds-all]+   all-done")
-	#print("# n Ac         [Race]+         Dc")
+	#print("# n all-work   one-works   [rounds-all]+   all-done")
+	#print("# n Ac         Bc          [Race]+         Dc")
 	#for n in threadCounts :
 	#	off = 4*math.ceil(math.log(n, 2))
 	#	lastRound = math.ceil(math.log(n, 2)) - 1
@@ -127,10 +127,10 @@ if __name__ == "__main__":
 	#	cce = float(modelCheck(filePrefix, Cce + off, debug))
 	#	dce = float(modelCheck(filePrefix, Dce + off, debug))
 	#	
-	#	print(n, "%4.3f   " % ace, end="")
+	#	print(n, "%4.3f    %4.3f  " % (ace, bce-ace), end="")
 	#	for r in range(0, math.ceil(math.log(n, 2))) :
 	#		if r == 0:
-	#			print("%4.3f   " % (ra[r] - ace), end="")
+	#			print("%4.3f   " % (ra[r] - bce), end="")
 	#		else :
 	#			print("%4.3f   " % (ra[r] - ra[r-1]), end="")
 	#	print("%4.3f" % (dce - ra[lastRound]))
