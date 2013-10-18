@@ -569,10 +569,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Central counter vs Ronny's simple barrier}
+\paragraph{Shared memory barriers}
 \label{sssec:analysis-general-shared}
 \begin{itemize}
-	\item give an introduction to cache. Factor of 10-100 between cache and main memory access latency. Cache line invalidation and fetching make up most of the time used in such protocols. Thus it's important to look at these.
+	\item ref algorithms
+	\item make sure that people understand it is about shared read/write, not local variables.
 	\item PHASES: both algorithms are performed in two phases. A writing phase and a reading phase.
 	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $\mathit{threadCount}$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
 	\item The reading phase of the central counter barrier reads a single variable repeatedly. The cache line this variable resides on will be invalidated for each core exactly $\mathit{threadCount} - 1$ times (disregarding outside influences) ((, thus each core fetches the variable at most $\mathit{threadCount} - 1$ times)).
@@ -583,9 +584,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Dissemination vs Ronny's fancy barrier}
+\paragraph{Distributed memory barriers}
 \label{sssec:analysis-general-distributed}
 \begin{itemize}
+	\item ref algorithms
 	\item For the dissemination barrier the number of remote writes is exactly $n \cdot \lceil \log _2~n \rceil$ -- $n$ processes times $\lceil \log _2~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is $2 \cdot (n-1)$ writes in $2 \cdot  \lceil \log _2~n \rceil$ rounds. Add picture about the minimum. (a linear and a tree-esque).
 	\item Reading is only done locally.
 
@@ -595,12 +597,14 @@ I hereby declare that I prepared this thesis independently and without use of to
 %  ^                 |
 %  +-----------------+                      round (3)
 
-	\item Ronny's fancy barrier needs between $2 \cdot (n-1)$ and $n \cdot (n-1)$ successful (non-zero) remote reads. Writing is only done locally.
+	\item Ronny's fancy barrier needs between $2 \cdot (n-1)$ and $n \cdot (n-1)$ successful (non-zero) remote reads. Writing is only done locally. (perhaps add picture of n*(n-1), n*(n-1) might also be completely wrong)
+	\item failed remote gets. Maybe give a rough estimate of the lost bandwidth.
 	\item dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the dissemination barrier waits for its designated communication partner.
-	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $\lfloor \log _2~n \rfloor$ to $\lfloor \log _2~n \rfloor + 1$ the number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where dissemination has jumps at power of two core counts. (elaborate? Since we do not benchmark and we probably won't model check larger numbers, we won't be able to quantify this). Benchmarks on shared memory have shown this to be true. (perhaps future work?: A way to mitigate this would be to reduce the number of processes executing the additional round to as few as possible and then do a normal power-of-2 dissemination barrier)
+	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
 	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. In principle for both algorithms $\lceil \log _2~n \rceil$ bits per process suffice. The dissemination variant shown in Figure~\ref{fig:dissemination-no-reset} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item talk about the progress problem when one process is missing.
 		\begin{itemize}
+			\item \todo needs work and a picture
 			\item number of blocked processes doubles each round.
 			\item each one of these blocked processes then needs to finish the still to do rounds until the protocol succeeds
 
@@ -648,7 +652,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subsection{Model checking}
 \label{ssec:analysis-modelchecking}
 \begin{itemize}
-	\item introduce layers. Program graphs (vs lower level) vs tools. -- adds structure -- might be nice
 	\item SPIN\cite{spin, hol97}, PRISM\cite{prism, knp09}
 \end{itemize}
 
@@ -694,7 +697,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{center}
 		where $\pi_i(t)$ is the probability of being in state $s_i$ at time $t$
 	\item the extension of these functions from paths to states and models is done the usual way and can be found in \cite{bhhk03}
-	\item in the analysis of the protocols we will for example deal with the reward function that assigns value \texttt{base\_rate} (or 1) to each state. In this case $\mathrm{ReaRew}(T)$ can be interpreted as the average cycle count to reach $T$.
+	\item in the analysis of the protocols we will for example deal with the state reward function that assigns value 1 to each state. In this case $\mathrm{ReaRew}(T)$ can be interpreted as the average cycle count to reach $T$.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
@@ -735,9 +738,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item shared memory variable encapsulated in own CTMC modules.
 	\item We identify a variable with the cache line it resides on.
 	\item each thread has one copy of such a cache line.
-	\item synchronization between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronizing actions. The triggering thread of a cache operation determines the rate of the operation.
+	\item synchronization between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronizing actions. The triggering thread of a cache operation determines the rate of the operation. For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between the two states. Either action might trigger a transition between these two states.
 	\item we use an MSI cache coherency protocol extended by support for atomic operations. MSI model is the most basic cache model and explanations on it can readily be found online\cite{msi}.
-	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but zero or more other threads have a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked. Figure~\ref{fig:shared-memory-control-flow} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
+	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but other threads may a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked from access through other modules. Figure~\ref{fig:shared-memory-control-flow} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
 	\item CTMC Figure~\ref{fig:shared-memory-control-flow}
 		\begin{figure}[htbp]
 			\centering
@@ -769,7 +772,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item rates for reading writing and atomic operations are determined by the module for the shared variable \texttt{barrier}
 	\item the synchronization to the shared variable module is hinted at in grey
 	\item The control flow has been augmented by one rate that the resulting CTMC will use. $\lambda_{work}$ is the work rate, meaning the time spent doing actual work. It is used to add an initial distribution to the model so that we can control how the arrival times of the threads at the barrier are distributed. In particular not all threads arrive at the exact same instant in time at the barrier, which is an extreme case.
-	\item atomic op consists of multiple smaller transitions: begin atomic (locks the variable), read barrier, decrement it, write barrier, end atomic (releases the lock).
+	\item atomic op consists of multiple smaller transitions: begin atomic (locks the variable), read, decrement, write, end atomic (releases the lock).
 	\item functional model does resetting and repetition. Three barriers, as described in~\ref{ssec:building-blocks}. (if you did not describe it there, you have to do it here)
 \end{itemize}
 
@@ -840,7 +843,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item LTL as logic, Spin as model checker
 	\item $T$ is the set of all threads
 	\item $left_t$ is a predicate describing all states where thread $t$ has passed the barrier
-	\item $entered_t$ is a predicate describing all states where thread $t$ has passed the initial work period
+	\item $entered_t$ is a predicate describing all states where thread $t$ has passed the initial work period and therefore entered the barrier.
 	\item \textbf{A:} \emph{a thread may only exit the barrier if all threads have entered it}
 		\begin{center}
 			$\square \big( ~ ( \exists t \in T . \mathit{left_t} ) \implies \forall s \in T. \mathit{entered_s} ~ \big)$
@@ -850,7 +853,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			$\square \big( ~(\forall t \in T . \mathit{entered_t} ) \implies \forall s \in T. \lozenge \mathit{left_s} ~ \big)$
 		\end{center}
 	\item A and B are the only two properties a barrier protocol must satisfy
-	\item A could be seen as safety and B as liveness of the protocol
+	\item A could be seen as safety and B as liveness of a barrier protocol
 	\item yes it works.
 \end{itemize}
 
@@ -908,6 +911,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{left\_round_{i,t}} )$
 				\end{center}
+			\item where the predicates have the obvious meaning, and the reward function $\mathit{rew}$ assigns 1 to each state.
 			\item and combinations of these to get measures like (D-B) last in until last out.
 		\end{itemize}
 	\item additional properties of dissemination and ronny's fancy
@@ -924,7 +928,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \paragraph{Evaluation}
 \label{ssssec:analysis-modelchecking-quantitative-properties-results}
 \begin{itemize}
-	\item technical modification of queries to yield cycle counts instead of raw time.
+	\item 
 \end{itemize}
 
 %%%%%
@@ -1013,7 +1017,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:df-work-100-B-C-D}
 		\end{figure}
 		\begin{itemize}
-			\item rf: first one to leave unrealistic. CTMC semantics.
+			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC semantics.
 			\item dissemination quicker for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
 			\item values within expectation
 			\item ronny's fancy is quicker
@@ -1037,7 +1041,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 		\begin{itemize}
 			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds (can be observed in Figure~\ref{fig:df-work-100-B-C-D} as well.
-			\item unfavourable for non-power-of-two processes counts
+			\item unfavourable for non-power-of-two processes counts. Ref to Section~\ref{sssec:analysis-general-distributed}
 			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. Can be seen as resource conflicts for remote transfers. Realistic.
 		\end{itemize}
 	\item progress problem of the dissemination barrier: Figure~\ref{fig:d-work-1000-partition}
@@ -1091,7 +1095,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\end{figure}
 				\begin{itemize}
 					\item not a lot different.
-					\item back-off strategies could be used, if the lost band-width / latency is important. But might not and is therefore ok.
+					\item back-off strategies could be used, if one would want to save the lost bandwidth and latency. But might not and is therefore ok. (maybe give rough calculation in which order of magnitude this loss is. Perhaps rather in the general properties section and reference it here)
 				\end{itemize}
 			\item work=1000000. Figure~\ref{fig:df-transfers-1000000}
 				\begin{figure}[htbp]
@@ -1110,6 +1114,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item serial arrival of all.
 					\item 1 $<->$ 2, 3 $<-$ 1, 2 $<-$ 3, 1 $<-$ 3 = 5 messages
 					\item 1 $<-$ 2, 1 $<-$ 3, 2 $<-$ 1, 3 $<-$ 1 = 4 messages, unlikely
+					\item number of failed transfers is very high ofc.
 				\end{itemize}
 		\end{itemize}
 \end{itemize}
@@ -1163,7 +1168,7 @@ Future work:
 	\item explore variations of ronny's barriers
 		\begin{itemize}
 			\item Ronny's fancy barrier: Try different i increment strategies. Or perhaps randomize the choice of i.
-			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}.
+			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}. AND this way one might be able to avoid failed remote operations entirely and keep busy waiting local.
 		\end{itemize}
 \end{itemize}
 
