@@ -8,13 +8,13 @@
 %  edges
 \path [->] (init) edge                  node [below left] {$\lambda_{work}$ : --} (1)
 
-           (1)    edge node [below right] {$\lambda_t$ : dist $\ge$ processCount} (done)
+           (1)    edge node [below right] {$\lambda_c$ : dist $\ge$ processCount} (done)
 
            (1)    edge [out=-45, in=45] node [right, align=left] {$\lambda_p$ : dist $<$ processCount : \\ barrier[to][me] := true} (2)
 
 
-           (2)    edge [loop, distance=2cm, out=315, in=225] node[below] {$\lambda_t$ : barrier[me][from] $\ne$ true} (2)
+           (2)    edge [loop, distance=2cm, out=315, in=225] node[below] {$\lambda_c$ : barrier[me][from] $\ne$ true} (2)
 
-           (2)    edge [out=135, in=225] node[left, align=right]  {$\lambda_t$ : barrier[me][from] = true : \\ dist := dist $\cdot$ 2} (1);
+           (2)    edge [out=135, in=225] node[left, align=right]  {$\lambda_c$ : barrier[me][from] = true : \\ dist := dist $\cdot$ 2} (1);
 
 \end{tikzpicture}

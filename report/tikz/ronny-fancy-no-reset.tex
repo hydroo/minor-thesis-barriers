@@ -15,15 +15,15 @@
 \path [->]
   (init) edge                                      node [above right]             {$\lambda_{work}$ : --}                     (1)
 
-  (1)    edge                                      node [below left]              {$\lambda_t$ : barrier[me] := meBit}        (2)
+  (1)    edge                                      node [below left]              {$\lambda_c$ : barrier[me] := meBit}        (2)
 
-  (2)    edge [loop, distance=2cm, out=90, in=0] node [above right, align=left] {$\lambda_t$ : barrier[me]\&2$^i$ = 1 : \\ i := i + 1 (\textbf{mod} processCount)} (2)
+  (2)    edge [loop, distance=2cm, out=90, in=0] node [above right, align=left] {$\lambda_c$ : barrier[me]\&2$^i$ = 1 : \\ i := i + 1 (\textbf{mod} processCount)} (2)
 
   (2)    edge [out=-30, in=120] node [right above, pos=0.7, align=left] {$\lambda_g$ : barrier[me]\&2$^i$ = 0 : \\ barrier[me] := barrier[me] \textbar~barrier[i] } (3)
 
-  (3)    edge [out=150, in=300]                    node [left below, align=right]  {$\lambda_t$ : barrier[me] $\ne$ full : \\ i := i + 1 (\textbf{mod} processCount)} (2)
+  (3)    edge [out=150, in=300]                    node [left below, align=right]  {$\lambda_c$ : barrier[me] $\ne$ full : \\ i := i + 1 (\textbf{mod} processCount)} (2)
 
-  (3)    edge []                                   node [above right, align=left] {$\lambda_t$ : barrier[me] = full : --}     (done);
+  (3)    edge []                                   node [above right, align=left] {$\lambda_c$ : barrier[me] = full : --}     (done);
 
 
 \end{tikzpicture}
