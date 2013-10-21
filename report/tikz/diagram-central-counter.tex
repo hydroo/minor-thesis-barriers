@@ -1,0 +1,34 @@
+%\begin{tikzpicture}[node distance = 2.0cm, auto]
+\begin{tikzpicture}[]
+
+\node [draw=none]        (a)  {Atomic decrement:};
+\node [o,   below of=a]  (0a) {0};
+\node [o,   right of=0a] (1a) {1};
+\node [o,   right of=1a] (2a) {2};
+\node [o,   right of=2a] (3a) {3};
+\node [o,   right of=3a] (4a) {4};
+\node [box, below of=2a] (Va) {barrier};
+
+\path [<->] (0a) edge (Va)
+            (1a) edge (Va)
+            (2a) edge (Va)
+            (3a) edge (Va)
+            (4a) edge (Va);
+
+\node [draw=none, below of=0a]     (middle) {};
+
+\node [draw=none, below of=middle] (b)      {Repeatedly read:};
+\node [o,   below of=b]            (0b)     {0};
+\node [o,   right of=0b]           (1b)     {1};
+\node [o,   right of=1b]           (2b)     {2};
+\node [o,   right of=2b]           (3b)     {3};
+\node [o,   right of=3b]           (4b)     {4};
+\node [box, below of=2b]           (Vb)     {barrier};
+
+\path [->] (Vb) edge (0b)
+           (Vb) edge (1b)
+           (Vb) edge (2b)
+           (Vb) edge (3b)
+           (Vb) edge (4b);
+
+\end{tikzpicture}

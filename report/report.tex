@@ -30,8 +30,9 @@
 \usepackage{tikz}
 	\usetikzlibrary{shapes, arrows, positioning}
 	\tikzstyle{->}   = [draw, -latex']
+	\tikzstyle{<->}  = [draw, latex'-latex']
 	\tikzstyle{o}    = [draw, circle]
-	\tikzstyle{box}  = [draw, rectangle, rounded corners]
+	\tikzstyle{box}  = [draw, rectangle]
 \usepackage{url}
 
 \def \todo{\textbf{\textcolor{yellow}{TODO}}}
@@ -390,6 +391,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\input{listings/central-counter}
 					\caption{Pseudo code of the central counter barrier}
 					\label{fig:pseudo-code-central-counter}
+				\end{figure}
+			\item Figure~\ref{fig:diagram-central-counter}
+				\begin{figure}[htbp]
+					\centering
+					\input{tikz/diagram-central-counter}
+					\caption{Diagram of the phases of central counter barrier}
+					\label{fig:diagram-central-counter}
 				\end{figure}
 			\item explain algorithm in detail here
 			\item is in reality more complex. For example back-off via a spin-counter $\sim$ 3ms. architecture specific. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping. lowers spincount if core count $<$ thread count.
