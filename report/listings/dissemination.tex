@@ -8,7 +8,7 @@ local variables:  integer dist
 initialization:   barrier[*][*] := false
 $\listingrule{11.8cm}$
 
-for dist := 1; dist < processCount; dist := dist $\times$ 2 {
+for dist := 1; dist < processCount; dist := dist $\cdot$ 2 {
 	to   := (me + dist) (mod processCount)
 	from := (me - dist) (mod processCount)
 	
