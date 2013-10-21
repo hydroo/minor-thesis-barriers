@@ -29,7 +29,7 @@
 \usepackage{setspace}
 \usepackage{tikz}
 	\usetikzlibrary{shapes, arrows, positioning}
-	\tikzstyle{-}    = [draw, latex']
+	\tikzstyle{-}    = [draw]
 	\tikzstyle{->}   = [draw, -latex']
 	\tikzstyle{<->}  = [draw, latex'-latex']
 	\tikzstyle{o}    = [draw, circle]
@@ -105,7 +105,7 @@
 				\item Analysis and comparison of the three above-mentioned models, regarding the functional as well as quantitative properties identified in 3., using PRISM. If possible: complement the performance evaluation of the three barriers using measurement-based methods.
 			\end{itemize}
 		\item Summary and outlook: Discussion of the insights gained in 4.
-\end{itemize}
+\end{enumerate}
 
 \pagebreak
 \newpage \thispagestyle{empty} \mbox{}
@@ -730,12 +730,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item synchronization between modules on the CTMC level is done via synchronizing actions.
 	\item composed modules are executed interleaved except if transitions require synchronizing actions. A synchronizing action is an action that can be issued by at least two modules. A transition with such an action can only fire if all modules, that are able to fire this action eventually, are presently in a state where they can fire it. The rate of such a transition is determined by any one module. For each synchronization action, in our case, only one module will specify a rate for this action.
 	\item This corresponds to the following SOS rules
-	\item If no other module uses the action $\alpha$ \\
+	\item If no other module uses the action $\alpha$
 		\begin{center}
-			$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s'}{\langle s , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', \overline{x} \rangle}}$}
+			$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s'}{\langle s , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', \overline{x} \rangle}}$
 		\end{center}
 	\item $\overline{x}$ stands for the tuple of local state of all other modules
-	\item if $\alpha$ is used by two modules \\
+	\item if $\alpha$ is used by two modules
 		\begin{center}
 			$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s', t \xrightarrow{\alpha} t'}{\langle s, t , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', t', \overline{x} \rangle}}$
 		\end{center}

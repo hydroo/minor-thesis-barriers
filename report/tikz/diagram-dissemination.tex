@@ -12,7 +12,7 @@
 \clip (-0.5cm,0) rectangle (7.5cm,-6cm);
 
 % round 1
-\node [   left of=0a , draw=none ] (07a);
+\node [   left of=0a , draw=none ] (07a) {};
 \node [o, right of=0a            ]  (1a) {1};
 \node [o, right of=1a            ]  (2a) {2};
 \node [o, right of=2a            ]  (3a) {3};
@@ -20,7 +20,7 @@
 \node [o, right of=4a            ]  (5a) {5};
 \node [o, right of=5a            ]  (6a) {6};
 \node [o, right of=6a            ]  (7a) {7};
-\node [o, right of=7a, draw=none ] (70a);
+\node [o, right of=7a, draw=none ] (70a) {};
 
 \path [->] (07a) edge [distance=0.2cm]  (0a)
             (0a) edge [distance=0.2cm]  (1a)
@@ -33,8 +33,8 @@
 \path [-]   (7a) edge [distance=0.2cm] (70a);
 
 % round 2
-\node [   left of=0b , draw=none ] (07b);
-\node [   left of=07b, draw=none ] (06b);
+\node [   left of=0b , draw=none ] (07b) {};
+\node [   left of=07b, draw=none ] (06b) {};
 \node [o, right of=0b            ]  (1b) {1};
 \node [o, right of=1b            ]  (2b) {2};
 \node [o, right of=2b            ]  (3b) {3};
@@ -42,8 +42,8 @@
 \node [o, right of=4b            ]  (5b) {5};
 \node [o, right of=5b            ]  (6b) {6};
 \node [o, right of=6b            ]  (7b) {7};
-\node [o, right of=7b, draw=none ] (70b);
-\node [o, right of=70b, draw=none] (71b);
+\node [o, right of=7b, draw=none ] (70b) {};
+\node [o, right of=70b, draw=none] (71b) {};
 
 \path [->] (06b) edge [distance=0.6cm]                 (0b)
            (07b) edge [distance=0.6cm,out=-45,in=225]  (1b)
@@ -57,10 +57,10 @@
             (7b) edge [distance=0.6cm,out=-45,in=225] (71b);
 
 %round 3
-\node [   left of=0c , draw=none ] (07c);
-\node [   left of=07c, draw=none ] (06c);
-\node [   left of=06c, draw=none ] (05c);
-\node [   left of=05c, draw=none ] (04c);
+\node [   left of=0c , draw=none ] (07c) {};
+\node [   left of=07c, draw=none ] (06c) {};
+\node [   left of=06c, draw=none ] (05c) {};
+\node [   left of=05c, draw=none ] (04c) {};
 \node [o, right of=0c            ]  (1c) {1};
 \node [o, right of=1c            ]  (2c) {2};
 \node [o, right of=2c            ]  (3c) {3};
@@ -68,10 +68,10 @@
 \node [o, right of=4c            ]  (5c) {5};
 \node [o, right of=5c            ]  (6c) {6};
 \node [o, right of=6c            ]  (7c) {7};
-\node [   right of=7c , draw=none] (70c);
-\node [   right of=70c, draw=none] (71c);
-\node [   right of=71c, draw=none] (72c);
-\node [   right of=72c, draw=none] (73c);
+\node [   right of=7c , draw=none] (70c) {};
+\node [   right of=70c, draw=none] (71c) {};
+\node [   right of=71c, draw=none] (72c) {};
+\node [   right of=72c, draw=none] (73c) {};
 
 \path [->] (04c) edge [distance=0.8cm]  (0c)
            (05c) edge [distance=0.8cm,out=-45,in=225]  (1c)

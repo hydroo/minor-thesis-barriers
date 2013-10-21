@@ -1,5 +1,5 @@
-\begin{minipage}
-\centering
+\begin{center}
+\begin{minipage}{\textwidth}
 \begin{lstlisting}[mathescape, linewidth=11.5cm]
 constants:        me := processIndex, meBit := $2^{me}$,
                   full := $\sum_{i=0}^{\mathit{processCount}-1}2^i$
@@ -14,9 +14,10 @@ barrier[me] := meBit;
 do {
 	do {
 		i := i + 1 (mod processCount)
-	} while barrier[me] & $2^i$ = 1
+	} while barrier[me] \& $2^i$ = 1
 
 	barrier[me] := barrier[me] | barrier[i]
 } while barrier[me] $\neq$ full
 \end{lstlisting}
 \end{minipage}
+\end{center}

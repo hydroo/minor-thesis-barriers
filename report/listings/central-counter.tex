@@ -1,5 +1,5 @@
-\begin{minipage}
-\centering
+\begin{center}
+\begin{minipage}{\textwidth}
 \begin{lstlisting}[mathescape, linewidth=10.4cm]
 shared variables: integer barrier := threadCount
 $\listingrule{10.4cm}$
@@ -9,3 +9,4 @@ atomic{barrier := barrier - 1}
 wait until barrier = 0
 \end{lstlisting}
 \end{minipage}
+\end{center}
