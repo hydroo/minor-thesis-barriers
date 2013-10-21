@@ -21,6 +21,7 @@ LISTINGS = \
 	listings/ronny-fancy.tex
 
 TIKZ = \
+	tikz/diagram-central-counter.tex \
 	tikz/model-central-counter.tex \
 	tikz/model-dissemination.tex \
 	tikz/model-ronny-simple.tex \
