@@ -29,6 +29,7 @@
 \usepackage{setspace}
 \usepackage{tikz}
 	\usetikzlibrary{shapes, arrows, positioning}
+	\tikzstyle{-}    = [draw, latex']
 	\tikzstyle{->}   = [draw, -latex']
 	\tikzstyle{<->}  = [draw, latex'-latex']
 	\tikzstyle{o}    = [draw, circle]
@@ -434,13 +435,20 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
 			\item architecture specific for infiband. e.g. dissemination using RMA \cite{hoefler2006a}
-			\item Figure~\ref{fig:pseudo-code-dissemination}
 			\item state that we use an RMA representation of the algorithm. Maybe state why. Writing is sending. Reading is Receiving so to speak.
+			\item Figure~\ref{fig:pseudo-code-dissemination}
 				\begin{figure}[htbp]
 					\centering
 					\input{listings/dissemination}
 					\caption{Pseudo code of the dissemination barrier}
 					\label{fig:pseudo-code-dissemination}
+				\end{figure}
+			\item Figure~\ref{fig:diagram-dissemination}
+				\begin{figure}[htbp]
+					\centering
+					\input{tikz/diagram-dissemination}
+					\caption{Diagram of the rounds of the dissemination barrier}
+					\label{fig:diagram-dissemination}
 				\end{figure}
 			\item explain algorithm in detail here
 			\item things to explain
