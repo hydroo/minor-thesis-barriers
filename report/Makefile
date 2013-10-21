@@ -14,18 +14,18 @@ CHARTS = \
 	charts/d-work-1000-partition.eps
 
 LISTINGS = \
-	listings/central-counter-no-reset.tex \
-	listings/dissemination-no-reset.tex \
-	listings/nmg-ronny-with-reset.tex \
-	listings/ronny-simple-no-reset.tex \
-	listings/ronny-fancy-no-reset.tex
+	listings/central-counter.tex \
+	listings/dissemination.tex \
+	listings/nmg-ronny.tex \
+	listings/ronny-simple.tex \
+	listings/ronny-fancy.tex
 
 TIKZ = \
-	tikz/central-counter-no-reset.tex \
-	tikz/dissemination-no-reset.tex \
-	tikz/ronny-simple-no-reset.tex \
-	tikz/ronny-fancy-no-reset.tex \
-	tikz/shared-memory.tex
+	tikz/model-central-counter.tex \
+	tikz/model-dissemination.tex \
+	tikz/model-ronny-simple.tex \
+	tikz/model-ronny-fancy.tex \
+	tikz/model-shared-memory.tex
 
 BIBLIOGRAPHY_SOURCE = bibliography.bib
 

@@ -384,12 +384,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/futex.h (cpu_relax)
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/wait.h
 			\item central counter barrier with atomic add and fetch
-			\item Figure~\ref{fig:central-counter-no-reset}
+			\item Figure~\ref{fig:pseudo-code-central-counter}
 				\begin{figure}[htbp]
 					\centering
-					\input{listings/central-counter-no-reset}
+					\input{listings/central-counter}
 					\caption{Pseudo code of the central counter barrier}
-					\label{fig:central-counter-no-reset}
+					\label{fig:pseudo-code-central-counter}
 				\end{figure}
 			\item explain algorithm in detail here
 			\item is in reality more complex. For example back-off via a spin-counter $\sim$ 3ms. architecture specific. futexes\cite{franke2002}. kernel based mutexes. wait queues. sleeping. lowers spincount if core count $<$ thread count.
@@ -426,13 +426,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
 			\item architecture specific for infiband. e.g. dissemination using RMA \cite{hoefler2006a}
-			\item Figure~\ref{fig:dissemination-no-reset}
+			\item Figure~\ref{fig:pseudo-code-dissemination}
 			\item state that we use an RMA representation of the algorithm. Maybe state why. Writing is sending. Reading is Receiving so to speak.
 				\begin{figure}[htbp]
 					\centering
-					\input{listings/dissemination-no-reset}
+					\input{listings/dissemination}
 					\caption{Pseudo code of the dissemination barrier}
-					\label{fig:dissemination-no-reset}
+					\label{fig:pseudo-code-dissemination}
 				\end{figure}
 			\item explain algorithm in detail here
 			\item things to explain
@@ -482,13 +482,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{ssec:new-nmg}
 \begin{itemize}
 	\item original idea by Nicholas Mc Guire was given to me in a private communique.
-	\item modification of the original protocol resulted in Figure~\ref{fig:nmg-ronny-with-reset}
+	\item modification of the original protocol resulted in Figure~\ref{fig:pseudo-code-nmg-ronny}
 	\item first appearance in bre13\cite{bre13}. Slight modification since then "remembers others" considered here. Don't explain in detail what the modification is and does, since the reader has no knowledge of the previous version and I don't want to explain all of it.
 		\begin{figure}[htbp]
 			\centering
-			\input{listings/nmg-ronny-with-reset}
+			\input{listings/nmg-ronny}
 			\caption{Pseudo code of Mc Guire/Ronny's barrier}
-			\label{fig:nmg-ronny-with-reset}
+			\label{fig:pseudo-code-nmg-ronny}
 		\end{figure}
 	\item high-level explanation
 	\item detailed walk through one iteration
@@ -503,12 +503,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item new and shiny. Read mostly, write exactly once. In contrast to Mc Guire/Ronny's barrier.
 	\item How did I come up with the idea?
-	\item Figure~\ref{fig:ronny-simple-no-reset}
+	\item Figure~\ref{fig:pseudo-code-ronny-simple}
 		\begin{figure}[htbp]
 			\centering
-			\input{listings/ronny-simple-no-reset}
+			\input{listings/ronny-simple}
 			\caption{Pseudo code of Ronny's simple barrier}
-			\label{fig:ronny-simple-no-reset}
+			\label{fig:pseudo-code-ronny-simple}
 		\end{figure}
 	\item explanation here.
 	\item one array element per cache line to avoid false sharing\cite{falsesharing}
@@ -527,12 +527,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well. Similar to the "remember others" modification of the Mc Guire/Ronny barrier.
 	\item evaluation has shown that cache latency is so low, that the additional computation this mechanism introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
-	\item Figure~\ref{fig:ronny-fancy-no-reset}
+	\item Figure~\ref{fig:pseudo-code-ronny-fancy}
 		\begin{figure}[htbp]
 			\centering
-			\input{listings/ronny-fancy-no-reset}
+			\input{listings/ronny-fancy}
 			\caption{Pseudo code of Ronny's fancy barrier}
-			\label{fig:ronny-fancy-no-reset}
+			\label{fig:pseudo-code-ronny-fancy}
 		\end{figure}
 	\item each array element is located in the memory of the respective process.
 	\item Only the own element is written. Only remote reading.
@@ -552,8 +552,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
 	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the central counter barrier, whereas Ronny's simple barrier shows promise. Therefore we restrict our attention to the latter.
-	\item For the shared memory case the central counter barrier (Figure~\ref{fig:central-counter-no-reset} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:ronny-simple-no-reset} in Section~\ref{ssec:new-simple}).
-	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:dissemination-no-reset} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:ronny-fancy-no-reset} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
+	\item For the shared memory case the central counter barrier (Figure~\ref{fig:pseudo-code-central-counter} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudo-code-ronny-simple} in Section~\ref{ssec:new-simple}).
+	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:pseudo-code-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudo-code-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
 	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{sssec:existing-means-distributed}. But it is of course possible to implement such an algorithm using lower level APIs, for example the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis.
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
 	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{ssec:building-blocks}
@@ -601,7 +601,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item failed remote gets. Maybe give a rough estimate of the lost bandwidth.
 	\item dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the dissemination barrier waits for its designated communication partner.
 	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
-	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. In principle for both algorithms $\lceil \log _2~n \rceil$ bits per process suffice. The dissemination variant shown in Figure~\ref{fig:dissemination-no-reset} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
+	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. In principle for both algorithms $\lceil \log _2~n \rceil$ bits per process suffice. The dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item talk about the progress problem when one process is missing.
 		\begin{itemize}
 			\item \todo needs work and a picture
@@ -740,13 +740,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item each thread has one copy of such a cache line.
 	\item synchronization between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronizing actions. The triggering thread of a cache operation determines the rate of the operation. For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between the two states. Either action might trigger a transition between these two states.
 	\item we use an MSI cache coherency protocol extended by support for atomic operations. MSI model is the most basic cache model and explanations on it can readily be found online\cite{msi}.
-	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but other threads may a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked from access through other modules. Figure~\ref{fig:shared-memory-control-flow} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
-	\item CTMC Figure~\ref{fig:shared-memory-control-flow}
+	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but other threads may a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked from access through other modules. Figure~\ref{fig:model-shared-memory} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
+	\item CTMC Figure~\ref{fig:model-shared-memory}
 		\begin{figure}[htbp]
 			\centering
-			\input{tikz/shared-memory}
+			\input{tikz/model-shared-memory}
 			\caption{CTMC of a shared memory variable}
-			\label{fig:shared-memory-control-flow}
+			\label{fig:model-shared-memory}
 		\end{figure}
 	\item For example if a core reads a variable, it first needs to make sure that all other cores take notice and change its cache line copy state to shared in case it was modified before. After this the core fetches the cache line, marks its copy shared and continues reading the variable.
 	\item taken from complex-lab, rephrase: The timings of shared read and shared write are as follows. A read on a modified or shared variable does not imply any extra work. It can immediately use the cached data. Therefore we consider this operation instantaneous. If a read is done on an invalid copy, it has to first fetch an up-to-date copy of the cache line and make sure all other cores are notified before it can proceed. This usually takes around 50 CPU cycles. A write on a modified variable is instantaneous, since all other cores do not have an up-to-date copy and therefore do not have to be notified. If the cache line in question is in a shared or invalid state, we first have to wait until all other cores follow the request to invalidate their copies of the cache line. After this we can safely mark our copy modified and write to it. This operation usually takes around 100 cycles.
@@ -762,12 +762,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
 	\item Algorithm explained in Section~\ref{sssec:existing-currently-used-shared}
-	\item Control flow diagram Figure~\ref{fig:central-counter-control-flow}
+	\item Control flow diagram Figure~\ref{fig:model-central-counter}
 		\begin{figure}[htbp]
 			\centering
-			\input{tikz/central-counter-no-reset}
+			\input{tikz/model-central-counter}
 			\caption{Control flow diagram of the central counter barrier}
-			\label{fig:central-counter-control-flow}
+			\label{fig:model-central-counter}
 		\end{figure}
 	\item rates for reading writing and atomic operations are determined by the module for the shared variable \texttt{barrier}
 	\item the synchronization to the shared variable module is hinted at in grey
@@ -782,12 +782,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
 	\item Algorithm explained in Section~\ref{ssec:new-simple}
-	\item Control flow diagram Figure~\ref{fig:ronny-simple-control-flow}
+	\item Control flow diagram Figure~\ref{fig:model-ronny-simple}
 		\begin{figure}[htbp]
 			\centering
-			\input{tikz/ronny-simple-no-reset}
+			\input{tikz/model-ronny-simple}
 			\caption{Control flow diagram of ronny's simple barrier}
-			\label{fig:ronny-simple-control-flow}
+			\label{fig:model-ronny-simple}
 		\end{figure}
 	\item each element of the array \texttt{barrier} is located in an own cache line. Therefore each thread has \texttt{threadCount} cache line copy modules, one for each element in the array. In total a CTMC model of this protocol has $\mathtt{threadCount}^2$ cache line copy modules plus $\mathtt{threadCount}$ thread modules.
 	\item As described in the previous paragraph, $\lambda_{work}$ is the work rate and all other rates are determined by the cache line copy modules.
@@ -802,12 +802,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item repeat variables and initial configuration from the algorithm box
 	\item no special module for distributed memory, since all variables are independently stored in the local memory of each process. There is no influence that copies data between processes other then the user-specified program itself.
 	\item Algorithm explained in Section~\ref{sssec:existing-currently-used-distributed}
-	\item Control flow diagram augmented with rates: Figure~\ref{fig:dissemination-control-flow}
+	\item Control flow diagram augmented with rates: Figure~\ref{fig:model-dissemination}
 		\begin{figure}[htbp]
 			\centering
-			\input{tikz/dissemination-no-reset}
+			\input{tikz/model-dissemination}
 			\caption{Augmented Control flow diagram of the dissemination barrier}
-			\label{fig:dissemination-control-flow}
+			\label{fig:model-dissemination}
 		\end{figure}
 	\item As in the two previous paragraphs $\lambda_{work}$ is the work rate.
 	\item we assume all local operations to be much quicker, ten to a thousand times, than remote operations. Therefore we assign the rate $\lambda_c$ (one CPU cycle) to local operations. $\lambda_p$, which is assigned to remote write (put) operations, is assigned a rate of $\frac{1}{100}$. This value is, like the shared memory rates, hardware-dependent. For simplicity's sake we assume a remote transfer to take 100 cycles.
@@ -823,12 +823,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
 	\item Algorithm explained in Section~\ref{ssec:new-fancy}
-	\item Control flow diagram augmented with rates: Figure~\ref{fig:ronny-fancy-control-flow}
+	\item Control flow diagram augmented with rates: Figure~\ref{fig:model-ronny-fancy}
 		\begin{figure}[htbp]
 			\centering
-			\input{tikz/ronny-fancy-no-reset}
+			\input{tikz/model-ronny-fancy}
 			\caption{Augmented Control flow diagram of ronny's fancy barrier}
-			\label{fig:ronny-fancy-control-flow}
+			\label{fig:model-ronny-fancy}
 		\end{figure}
 	\item Rates are like in previous section, except we now use remote read (get) with a rate of $\lambda_g = \frac{1}{100}$.
 	\item functional model does resetting and repetition using three barriers as described in~\ref{ssec:building-blocks}.
