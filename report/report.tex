@@ -1136,18 +1136,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Measurement}
-\label{ssec:analysis-measurement}
-\begin{itemize}
-	\item revisit: http://www.cse.unsw.edu.au/~gernot/benchmarking-crimes.html
-	\item don't just give averages. Give at least the standard deviation of benchmarks, too.
-	\item give a baseline measurement. Maybe this is possible. The theoretically fastest barrier with instant synchronization. Use the arrival times. Take the maximum. (this should work, shouldn't it?)
-	\item central counter vs ronny simple
-	\item do not do dissemination vs ronny fancy
-	\item ?rapl?
-\end{itemize}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Discussion}
 \label{ssec:analysis-discussion}
 \begin{itemize}
@@ -1171,6 +1159,7 @@ conclusion:
 Future work:
 \begin{itemize}
 	\item "Identify all shortcomings/limitations of your work, and discuss how they could be fixed"
+	\item implement distributed memory barriers. Make measurements of ronny's fancy vs dissemination.
 	\item evaluate back-off strategies. mwait.
 	\item benchmark on Intel system, not only bulldozer. Results might be very different from above benchmarks.
 	\item model check more and bigger. Symmetry reduction. Partial order reduction.
