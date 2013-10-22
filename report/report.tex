@@ -964,7 +964,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 				read the completed barrier and immediately leaves.
 			\item last thread exits when reading is done. Because when reading is done, we are done.
 			\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
-			\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
+			\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
 		\end{itemize}
 	\item reading vs writing: Figure~\ref{fig:cs-work-100-percent}
 		\begin{figure}[htbp]
