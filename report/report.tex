@@ -178,7 +178,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item use the inherent randomness\cite{mcg09}, induced by caching, scheduling, randomness (ECC, flash access e.g.) at hardware level (jitter), or short: complexity of today's computer systems, in order to view concurrent accesses as really random. Thus we are able to apply probabilistic algorithms and analyse these algorithms using tools of probability theory.
 			\item design algorithms that have sufficiently high probability of success and tolerate faulty behaviour.
 			\item build them so that on average, or in their intended use case, they perform better than their deterministic counterparts, where better might e.g. be faster, more energy efficient, resource preserving.
-			\item data on the success is still rare, but it seems to be promising approach
+			\item It seems to be a promising approach
 			\item barriers can be improved. One possible way is through pW/CS.
 		\end{itemize}
 	\item how do we gather data on these algorithms to build confidence that they work properly, i.e. satisfy certain properties? And get a feeling for how they perform?
@@ -222,7 +222,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Shared memory}
+\subsubsection{Shared memory systems}
 \label{sssec:existing-means-shared}
 \begin{itemize}
 	\item normal load/store.
@@ -236,7 +236,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Distributed memory}
+\subsubsection{Distributed memory systems}
 \label{sssec:existing-means-distributed}
 \begin{itemize}
 	\item categories
@@ -259,8 +259,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item needs hardware support.
 					\item less management overhead, better latency and throughput than message passing. Less buffering. Ideally no buffering - so called Zero-copy operations.
 					\item distinction between coherent and non-coherent
-					\item (a) coherent - remotely updated memory will be visible to the remote end eventually
-					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote end.
+					\item (a) coherent - remotely updated memory will be visible to the remote peer eventually
+					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote peer.
 				\end{itemize}
 			\item hardware support here is usual business e.g. Earth Simulator\cite{earthsimulator}, IBM Blue Gene/L\cite{bluegenel}, IBM Blue Gene/Q\cite{bluegeneq}, low-cost custom\cite{hoefler2006b}
 			\item lossy communication e.g.
@@ -328,7 +328,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item active vs passive target communication (\cite{mpi3} page 437~)
 					\item MPI\_Win\_Fence. Active target communication. Is a collective over all window group members. All outstanding RMA requests between group members will be finished. Implies a barrier.
 					\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: active target communication. Similar to fence, but allows to specify the sync partners, and distinguishes between "command-issuing" and "remotely-accessed" processes.
-					\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: Passive target communication. No explicit participation of remote end in synchronization
+					\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: Passive target communication. No explicit participation of remote peer in synchronization
 					\item MPI\_Flush*: Passive target communication. Completes outstanding RMA calls, issued by the caller, at origin and a specifiable target before returning (or only at the origin).
 					\item MPI\_Sync: Passive target communication. Used to synchronize the public and private part of the window in the separated model.
 				\end{itemize}
@@ -464,7 +464,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item resetting:
 		\begin{itemize}
 			\item how is resetting handled in currently used barriers?
-			\item switching between barriers using a variable (as in the nmg/ronny barrier - 'left' variable)
+			\item integrated in the barrier ''self-resetting''
 			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset). Describe in pseudo code as well, maybe.
 			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
 		\end{itemize}
@@ -482,12 +482,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item \todo elegantly transition to Ronny's fancy barrier (distributed memory case). Suddenly talking about processes and remote/local memory is bad.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Mc Guire/Ronny}
+\subsection{Mc~Guire/Ronny barrier}
 \label{ssec:new-nmg}
 \begin{itemize}
 	\item original idea by Nicholas Mc Guire was given to me in a private communique.
 	\item modification of the original protocol resulted in Figure~\ref{fig:pseudo-code-nmg-ronny}
-	\item first appearance in bre13\cite{bre13}. Slight modification since then "remembers others" considered here. Don't explain in detail what the modification is and does, since the reader has no knowledge of the previous version and I don't want to explain all of it.
+	\item first appearance in \cite{bre13}. Slight modification since then "remembers others" considered here. Don't explain in detail what the modification is and does, since the reader has no knowledge of the previous version and I don't want to explain all of it.
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/nmg-ronny}
@@ -529,7 +529,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subsection{Ronny's fancy barrier}
 \label{ssec:new-fancy}
 \begin{itemize}
-	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well. Similar to the "remember others" modification of the Mc Guire/Ronny barrier.
+	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well.
 	\item evaluation has shown that cache latency is so low, that the additional computation this mechanism introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
 	\item Figure~\ref{fig:pseudo-code-ronny-fancy}
 		\begin{figure}[htbp]
@@ -540,13 +540,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 	\item each array element is located in the memory of the respective process.
 	\item Only the own element is written. Only remote reading.
-	\item When a process reads remotely he is informed of other processes, the remote end knows, have arrived.
+	\item When a process reads remotely he is informed of other processes, the remote peer knows, have arrived.
 	\item probabilistic runtime. Depending on circumstances the protocol will finish in more or less steps (or perhaps successful non-zero reads). It is not predetermined what is communicated and with whom.
-	\item We will quantify this effect in Section~\ref{sec:analysis}.
 	\item advantage: no atomic ops. The writing does not have to be atomic, since processes only write to local memory, and no inconsistent data can be read since 64 bit reads and writes are atomic.
 	\item more computational overhead (bit shuffling) for less communication.
 	\item discuss resetting through triple barrier. Perhaps, briefly hint that this kind of resetting can be added to any barrier (perhaps add a listing how this would look like (the spin model should have it, or one of the pseudo code files)), more on this in the section on the orthogonal design of barriers.
-	\item restricted to 64 threads. An extension to arrays of bit masks, similar to the Mc Guire/Ronny barrier, should not pose a problem.
+	\item restricted to 64 threads. An extension to arrays of bit masks, similar to the Mc Guire/Ronny barrier is possible.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -555,12 +554,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
-	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the central counter barrier, whereas Ronny's simple barrier shows promise. Therefore we restrict our attention to the latter.
+	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the central counter barrier, whereas Ronny's simple and fancy barrier show promise. Therefore we restrict our attention to the latter.
 	\item For the shared memory case the central counter barrier (Figure~\ref{fig:pseudo-code-central-counter} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudo-code-ronny-simple} in Section~\ref{ssec:new-simple}).
 	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:pseudo-code-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudo-code-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
 	\item we will not implement, nor measure the performance of both distributed memory protocols -- because Ronny's barrier cannot easily be implemented due to MPI restrictions explained in Section~\ref{sssec:existing-means-distributed}. But it is of course possible to implement such an algorithm using lower level APIs, for example the Mellanox InfiniBand-Verbs API~\cite{mellanox}. Doing so goes beyond the scope of this thesis.
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
-	\item We ignore the topic of resetting barriers as well, as introducing a resetting scheme alters the protocol only in a minuscule way. And the simplicity and reduced model size is much more appreciable than the benefit of addressing this minor concern in the analysis. -- we will come back to resetting again in Section~\ref{ssec:building-blocks}
 	\item The analysis is split into three parts: general properties, measurement and model checking.
 \end{itemize}
 
@@ -576,13 +574,14 @@ I hereby declare that I prepared this thesis independently and without use of to
 \paragraph{Shared memory barriers}
 \label{sssec:analysis-general-shared}
 \begin{itemize}
+	\item don't talk cache specifics, because we have not given an introduction to MSI. Express yourself in simple terms.
 	\item ref algorithms
 	\item make sure that people understand it is about shared read/write, not local variables.
 	\item PHASES: both algorithms are performed in two phases. A writing phase and a reading phase.
 	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $\mathit{threadCount}$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
 	\item The reading phase of the central counter barrier reads a single variable repeatedly. The cache line this variable resides on will be invalidated for each core exactly $\mathit{threadCount} - 1$ times (disregarding outside influences) ((, thus each core fetches the variable at most $\mathit{threadCount} - 1$ times)).
 	\item The reading phase of Ronny's simple barrier needs to read each array element once until it can make a decision whether to leave or repeat the loop. Each array element is invalidated exactly once. Thus each array element, from the viewpoint of one thread, has to be fetched from memory at most twice. From then on it is cached and quickly accessible.
-	\item the central counter barrier has the obvious advantage in this phase. How big this advantage is depends heavily on the underlying hardware. For example if the cache line prefetcher predicts the access pattern of the reading phase of Ronny's simple barrier, those reads can be executed in parallel.
+	\item the central counter barrier has the obvious advantage in this phase. How big this advantage is depends heavily on the underlying hardware. For example if the cache line prefetcher predicts the access pattern of the reading phase of Ronny's simple barrier, those reads can be executed in parallel. (Vorsicht. Evtl weglassen)
 	\item The central counter barrier is quicker during busy waiting, whereas Ronny's simple barrier performs well during writing. We attempt to quantify this behaviour using benchmarks and model checking in the following subsections.
 	\item MEMORY: the central counter barrier needs a logarithmic amount of memory in the number of threads (i.e. 64 bits, for up to $2^{64}$ threads), whereas Ronny's simple barrier needs a linear amount -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes. This looks like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only about 32KiB of memory would be used. 64 bytes per thread. Furthermore one thread team needs only one barrier and repeat it. There would be no benefit in allocating the memory for more than one.
 \end{itemize}
@@ -605,7 +604,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item failed remote gets. Maybe give a rough estimate of the lost bandwidth.
 	\item dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the dissemination barrier waits for its designated communication partner.
 	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
-	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. In principle for both algorithms $\lceil \log _2~n \rceil$ bits per process suffice. The dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
+	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item talk about the progress problem when one process is missing.
 		\begin{itemize}
 			\item \todo needs work and a picture
@@ -734,7 +733,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \paragraph{Shared memory}
 \label{sssec:analysis-modelchecking-modelling-shared-memory}
 \begin{itemize}
-	\item todo reason why modelling cache?
+	\item todo reason why modelling cache? (very short. Has been mentioned above)
 		\begin{itemize}
 			\item memory access determines performance of synchronization protocols
 			\item memory access is cached so that effectively we only deal with cache latency
@@ -743,7 +742,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item We identify a variable with the cache line it resides on.
 	\item each thread has one copy of such a cache line.
 	\item synchronization between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronizing actions. The triggering thread of a cache operation determines the rate of the operation. For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between the two states. Either action might trigger a transition between these two states.
-	\item we use an MSI cache coherency protocol extended by support for atomic operations. MSI model is the most basic cache model and explanations on it can readily be found online\cite{msi}.
+	\item we use an MSI cache coherency protocol extended by support for atomic operations. MSI model is a basic cache model and explanations on it can readily be found online\cite{msi}.
 	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but other threads may a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked from access through other modules. Figure~\ref{fig:model-shared-memory} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
 	\item CTMC Figure~\ref{fig:model-shared-memory}
 		\begin{figure}[htbp]
@@ -1186,6 +1185,5 @@ Future work:
 \nocite{*} % insert not cited references
 \bibliographystyle{abbrv}
 \bibliography{bibliography}{}
-
 
 \end{document}
