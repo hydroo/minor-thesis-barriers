@@ -2,16 +2,16 @@
 \begin{minipage}{\textwidth}
 \begin{lstlisting}[mathescape, linewidth=12.1cm]
 constants:        meBit:=$2^\mathit{threadIndex}$, full:=$\sum_{i=0}^{\mathit{threadCount}-1}2^i$
+local variables:  integer copy
 shared variables: integer entry := 0, integer exit := 0,
                   boolean left := false
-local variables:  integer copy
 $\listingrule{12.1cm}$
 
 if left = false {
 
 	do {
-		copy := (copy \& $\sim$meBit) | entry
-		if copy \& meBit = 0 {
+		copy := (copy $\&$ $\sim$meBit) | entry
+		if copy $\&$ meBit = 0 {
 			copy  := copy | meBit
 			entry := copy
 		}
@@ -23,8 +23,8 @@ if left = false {
 } else if left = true {
 
 	do {
-		copy := (copy \& $\sim$meBit) | exit
-		if copy \& meBit = 0 {
+		copy := (copy $\&$ $\sim$meBit) | exit
+		if copy $\&$ meBit = 0 {
 			copy := copy | meBit
 			exit := copy
 		}

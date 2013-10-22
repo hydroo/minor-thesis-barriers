@@ -14,7 +14,7 @@ barrier[me] := meBit;
 do {
 	do {
 		i := i + 1 (mod processCount)
-	} while barrier[me] \& $2^i$ = 1
+	} while barrier[me] $\&$ $2^i$ = 1
 
 	barrier[me] := barrier[me] | barrier[i]
 } while barrier[me] $\neq$ full
