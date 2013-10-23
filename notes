@@ -1,3 +1,33 @@
+--- 13-10-23 ---
+
+  * 2.5Ghz. Thus: 1 Watt = 0.4nJ/Cycle (1 cycle = 0.4ns)
+
+  * measured:
+    constant = sleep + uncore = 11W
+    waitspin = 1:16W 2:22W
+    cc barrier = 2:18W
+    rs barrier = 2:24W
+
+  * extrapolation:
+    waitspin = +5W per core (+uncore)
+    cc +4W per core (+uncore)
+    rs +6W per core (+uncore)
+
+  * expected model checking results:
+    threads | cc (W) (nJ/cycle) | rs (W) (nJ/cycle)
+    --------+-------------------+------------------
+          2 |    19  7.6        |    23  9.2
+          3 |    23  9.2        |    29  11.6
+          4 |    27  10.8       |    35  14.0
+          5 |    31  12.4       |
+          6 |    35  14.0       |
+          7 |    39  15.6       |
+          8 |    43  17.2       |
+
+    (Joule (W*s) will look better for rs)
+
+  NOTE: these numbers are ridiculous, but I need some point of reference for model checking
+
 --- 13-10-22 ---
 
   reference for energy rates (Core i5-2520M , 2.50GHz):
