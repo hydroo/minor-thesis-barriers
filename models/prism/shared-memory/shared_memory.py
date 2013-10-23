@@ -93,13 +93,25 @@ def generateVariable(name, typee, init, values, threadCount, debug, generateLabe
 	s += "endmodule\n"
 	s += "\n"
 
+	# formulas
+	for p in range(0, threadCount) :
+		s += "formula var_invalid_#      = ((var_state=someoneIsModified   | var_state=someAreShared) & mod(floor(var_who/me_bit_#),2)=0);\n"
+		s += "formula var_modified_#     =  (var_state=someoneIsModified   & var_who=me_bit_#);\n"
+		s += "formula var_atomic_op_#    =  (var_state=someoneDoesAtomicOp & var_who=me_bit_#);\n"
+		s += "formula var_shared_#       =  (var_state=someAreShared       & mod(floor(var_who/me_bit_#),2)=1);\n"
+		s += "formula var_local_read_#   = var_modified_# | var_atomic_op_# | var_shared_#;\n"
+		s += "formula var_local_write_#  = var_modified_# | var_atomic_op_#;\n"
+		s += "formula var_shared_read_#  = !var_local_read_#;\n"
+		s += "formula var_shared_write_# = !var_local_write_#;\n"
+		s = s.replace('#', str(p))
+
 	# labels
 	if generateLabels:
 		for p in range(0, threadCount) :
-			s += "label \"var_invalid_#\"   = ((var_state=someoneIsModified   | var_state=someAreShared) & mod(floor(var_who/me_bit_#),2)=0);\n"
-			s += "label \"var_modified_#\"  =  (var_state=someoneIsModified   & var_who=me_bit_#);\n"
-			s += "label \"var_atomic_op_#\" =  (var_state=someoneDoesAtomicOp & var_who=me_bit_#);\n"
-			s += "label \"var_shared_#\"    =  (var_state=someAreShared       & mod(floor(var_who/me_bit_#),2)=1);\n"
+			s += "label \"var_invalid_#\"   = var_invalid_#;\n"
+			s += "label \"var_modified_#\"  = var_modified_#;\n"
+			s += "label \"var_atomic_op_#\" = var_atomic_op_#;\n"
+			s += "label \"var_shared_#\"    = var_shared_#;\n"
 			s = s.replace('#', str(p))
 
 	# correctness props
