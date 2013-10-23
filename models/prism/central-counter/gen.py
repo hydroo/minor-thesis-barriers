@@ -71,7 +71,7 @@ def generateModel(threadCount, workTicks, readTicks, writeTicks, debug) :
 	s += "// *** thread copies end ***\n\n"
 
 	s += "// *** thread rewards begin ***\n\n"
-	s += generateRewards()
+	s += generateRewards(threadCount)
 	s += "\n"
 	s += "// *** thread rewards end ***\n\n"
 
@@ -143,7 +143,7 @@ def generateThread(p, threadCount) :
 
 	return s.replace('#', str(p))
 
-def generateRewards() :
+def generateRewards(threadCount) :
 	s = ""
 
 	s += "// state rewards\n"
@@ -216,6 +216,60 @@ def generateRewards() :
 	s += "rewards \"time_all_are_done\"\n"
 	s += "\t" + "all_are_done : base_rate;\n"
 	s += "endrewards\n"
+
+	s += "\n" + operationRewards("all_are_working", threadCount)
+
+	s += "\n" + operationRewards("one_is_working", threadCount)
+
+	s += "\n" + operationRewards("not_one_is_done", threadCount)
+
+	s += "\n" + operationRewards("not_all_are_done", threadCount)
+
+	s += "\n" + operationRewards("one_is_writing_inc", threadCount)
+
+	return s
+
+def operationRewards(guard, threadCount) :
+
+	s = ""
+
+	if guard.startswith("not_") :
+		guardName = "!" + guard[4:]
+	else :
+		guardName = guard
+	localRewardName = "local_operations_" + guard
+	sharedRewardName = "shared_operations_" + guard
+
+	s += "rewards \"%s\"\n" % localRewardName
+	for p in range(0, threadCount) :
+		s += "    [bar_read_%d]          %s & bar_local_read_%d  : %d;\n" % (p, guardName, p, 1)
+		s += "    [bar_atomic_begin_%d]  %s & bar_local_write_%d : %d;\n" % (p, guardName, p, 1)
+		for q in range(0, threadCount) :
+			s += "    [bar_set_to_%d_%d]      %s & bar_local_write_%d : %d;\n" % (q, p, guardName, p, 1)
+	s += "endrewards\n"
+
+	s += "rewards \"%s\"\n" % sharedRewardName
+	for p in range(0, threadCount) :
+		s += "    [bar_read_%d]          %s & bar_shared_read_%d  : %d;\n" % (p, guardName, p, 1)
+		s += "    [bar_atomic_begin_%d]  %s & bar_shared_write_%d : %d;\n" % (p, guardName, p, 1)
+	s += "endrewards\n"
+
+	# module thread_#
+	#     [work_#]             l_#=l_work                -> work : (l_#'=l_atomic_begin)  # (local ops:0, shared ops:0)
+	#
+	#     [bar_atomic_begin_#] l_#=l_atomic_begin        ->        (l_#'=l_read)          # (0, 1)
+	#
+	#     [bar_read_#]         l_#=l_read                ->        (l_#'=l_write)         # (0, 1)
+	#
+	#     [bar_set_to_..._#]   l_#=l_write      & bar =... ->      (l_#'=l_atomic_end)    # (1, 0) only happens locally anyways
+	#
+	#     [bar_atomic_end_#]   l_#=l_atomic_end          ->        (l_#'=l_wait)          # (0, 0)
+	#
+	#     [bar_read_#]         l_#=l_wait       & bar!=0 ->        true                   # (0, 1)
+	#     [bar_read_#]         l_#=l_wait       & bar =0 ->        (l_#'=l_done)          # (0, 1)
+	#
+	#     [done_#]             l_#=l_done                -> rare : true                   # (0, 0)
+	# endmodule
 
 	return s
 
@@ -341,6 +395,33 @@ def generateQuantitativeProperties(threadCount) :
 
 	t += "// cumulative queries end\n\n"
 	# ### cumulative queries end
+
+	# ### operation counting queries begin
+	t += "// operation countingqueries begin\n\n"
+
+	queries = {
+		#key : [query, comment]
+		"Al" : ["local_operations_all_are_working"     , "local operations up to: first finished working and entered"],
+		"Bl" : ["local_operations_one_is_working"      , "local operations up to: last finished working and entered"],
+		"Cl" : ["local_operations_not_one_is_done"     , "local operations up to: first recognized the barrier is full and left"],
+		"Dl" : ["local_operations_not_all_are_done"    , "local operations up to: all recognized the barrier is full and left"],
+		"El" : ["local_operations_one_is_writing_inc"  , "local operations up to: no one is writing"],
+		"As" : ["shared_operations_all_are_working"    , "shared operations up to: first finished working and entered"],
+		"Bs" : ["shared_operations_one_is_working"     , "shared operations up to: last finished working and entered"],
+		"Cs" : ["shared_operations_not_one_is_done"    , "shared operations up to: first recognized the barrier is full and left"],
+		"Ds" : ["shared_operations_not_all_are_done"   , "shared operations up to: all recognized the barrier is full and left"],
+		"Es" : ["shared_operations_one_is_writing_inc" , "shared operations up to: no one is writing"],
+	}
+
+	for k in sorted(queries.keys()) :
+		query = queries[k]
+		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
+		t += "R{\"%s\"}=? [C<=time]\n" % query[0]
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]
+		t += "\n"
+
+	t += "// operation counting queries end\n\n"
+	# ### operation counting queries end
 
 	t += "const double time=ticks/base_rate;\n"
 	t += "const double ticks;\n"
