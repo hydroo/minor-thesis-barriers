@@ -12,7 +12,8 @@
     # measurement t   1 wallSecs 10.781, totalPower 19.537 W
     # measurement t   2 wallSecs 11.667, totalPower 28.019 W
     add-fetch-barrier     t   2, reps  116442000, wallSecs 10.176 sec, totalPower 18.196 W, cycles/reps 218.485, nJ/reps 1590.208
-    add-fetch-wait-spin   t   1, wallSecs 10.000 sec, totalPower 16.428 W
+    add-fetch-wait-spin   t   1, wallSecs 10.000 sec, totalPower 15.907 W
+    add-fetch-wait-spin   t   2, wallSecs 10.028 sec, totalPower 21.894 W
     add-fetch-contested   t   2, reps  196608000, wallSecs 11.144 sec, totalPower 16.125 W, cycles/reps 141.707, nJ/reps 914.036
     add-fetch-uncontested t   2, reps 1413120000, wallSecs 10.939 sec, totalPower 20.350 W, cycles/reps 19.352, nJ/reps 157.528
     super-wasteful-2      t   2, reps  240615000, wallSecs 10.916 sec, totalPower 23.646 W, cycles/reps 113.423, nJ/reps 1072.795
@@ -30,9 +31,10 @@
     add-fetch-barrier     t   2, reps  111837000, wallSecs 3.871 sec, totalPower 18.593 W, cycles/reps 86.541, nJ/reps 643.630
     add-fetch-barrier     t   3, reps   29397000, wallSecs 4.000 sec, totalPower 20.740 W, cycles/reps 340.168, nJ/reps 2822.072
     add-fetch-barrier     t   4, reps   22038000, wallSecs 4.000 sec, totalPower 21.930 W, cycles/reps 453.746, nJ/reps 3980.237
-    add-fetch-wait-spin   t   1, wallSecs 3.000 sec, totalPower 16.851 W
-    add-fetch-wait-spin   t   2, wallSecs 3.000 sec, totalPower 22.434 W
-    add-fetch-wait-spin   t   3, wallSecs 3.005 sec, totalPower 22.591 W
+    add-fetch-wait-spin   t   1, wallSecs 3.002 sec, totalPower 16.074 W
+    add-fetch-wait-spin   t   2, wallSecs 3.000 sec, totalPower 21.846 W
+    add-fetch-wait-spin   t   3, wallSecs 3.000 sec, totalPower 21.959 W
+    add-fetch-wait-spin   t   4, wallSecs 3.029 sec, totalPower 22.111 W
     add-fetch-contested   t   2, reps   98304000, wallSecs 4.330 sec, totalPower 14.319 W, cycles/reps 110.107, nJ/reps 630.647
     add-fetch-contested   t   3, reps   36864000, wallSecs 4.558 sec, totalPower 16.856 W, cycles/reps 309.081, nJ/reps 2083.914
     add-fetch-contested   t   4, reps   36864000, wallSecs 3.871 sec, totalPower 16.652 W, cycles/reps 262.552, nJ/reps 1748.818
