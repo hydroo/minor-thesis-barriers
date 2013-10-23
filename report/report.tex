@@ -1171,6 +1171,27 @@ Future work:
 \pagebreak
 \section{Appendix}
 \label{sec:appendix}
+\subsection{Energy reference measurement for estimating the model numbers}
+\label{ssec:energy-measurement}
+\begin{itemize}
+    \item \todo
+    % 4W (1.6nJ per cycle) sleep power. 28W (11.2nJ per cycle) maximum power.
+    %
+    % $ sudo ./rapl-benchmark 2 10 --avoid-ht --ghz 2.5 --add-fetch-barrier 2 --add-fetch-wait-spinning 2 --add-fetch-contested 2 --add-fetch-uncontested 2 --super-wasteful-2 2
+    % # measureSleepPowerConsumption:
+    % # measurement t   1 wallSecs 10.000, totalPower 4.243 W
+    % # measureUncorePowerConsumption:
+    % # measurement t   1 wallSecs 10.781, totalPower 19.537 W
+    % # measurement t   2 wallSecs 11.667, totalPower 28.019 W
+    % add-fetch-barrier     t   2, reps  116442000, wallSecs 10.176 sec, totalPower 18.196 W, cycles/reps 218.485, nJ/reps 1590.208
+    % add-fetch-wait-spin   t   1, wallSecs 10.000 sec, totalPower 15.907 W
+    % add-fetch-wait-spin   t   2, wallSecs 10.028 sec, totalPower 21.894 W
+    % add-fetch-contested   t   2, reps  196608000, wallSecs 11.144 sec, totalPower 16.125 W, cycles/reps 141.707, nJ/reps 914.036
+    % add-fetch-uncontested t   2, reps 1413120000, wallSecs 10.939 sec, totalPower 20.350 W, cycles/reps 19.352, nJ/reps 157.528
+    % super-wasteful-2      t   2, reps  240615000, wallSecs 10.916 sec, totalPower 23.646 W, cycles/reps 113.423, nJ/reps 1072.795
+    % # context t   2, sleepPower 4.242727 W, uncorePower 6.813289 W
+\end{itemize}
+
 \subsection{Raw data of behind figures}
 \begin{itemize}
 	\item \todo
