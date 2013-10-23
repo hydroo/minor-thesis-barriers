@@ -221,6 +221,58 @@ def generateRewards() :
 	s += "\t" + "all_are_done : base_rate;\n"
 	s += "endrewards\n"
 
+	s += "\n" + operationRewards("all_are_working", threadCount)
+
+	s += "\n" + operationRewards("one_is_working", threadCount)
+
+	s += "\n" + operationRewards("not_one_is_done", threadCount)
+
+	s += "\n" + operationRewards("not_all_are_done", threadCount)
+
+	s += "\n" + operationRewards("one_is_writing_inc", threadCount)
+
+	return s
+
+def operationRewards(guard, threadCount) :
+
+	s = ""
+
+	if guard.startswith("not_") :
+		guardName = "!" + guard[4:]
+	else :
+		guardName = guard
+	localRewardName = "local_operations_" + guard
+	sharedRewardName = "shared_operations_" + guard
+
+	s += "rewards \"%s\"\n" % localRewardName
+	for p in range(0, threadCount) :
+		s += "    [bar_%d_set_to_1_%d]            %s & bar_%d_local_write_%d  : %d;\n" % (p, p, guardName, p, p, 1)
+		s += "    [does_i_equal_thread_count_%d] %s                        : %d;\n" % (p, guardName, 1)
+		for q in range(0, threadCount) :
+			s += "    [bar_%d_read_%d]                %s & bar_%d_local_read_%d   : %d;\n" % (q, p, guardName, q, p, 2)
+			s += "    [bar_%d_read_%d]                %s & bar_%d_shared_read_%d  : %d;\n" % (q, p, guardName, q, p, 1)
+	s += "endrewards\n"
+
+	s += "rewards \"%s\"\n" % sharedRewardName
+	for p in range(0, threadCount) :
+		s += "    [bar_%d_set_to_1_%d]            %s & bar_%d_shared_write_%d : %d;\n" % (p, p, guardName, p, p, 1)
+		for q in range(0, threadCount) :
+			s += "    [bar_%d_read_%d]                %s & bar_%d_shared_read_%d  : %d;\n" % (q, p, guardName, q, p, 1)
+	s += "endrewards\n"
+
+	# module thread_#\n"
+	#     [work_#]                      l_#=l_work                        -> work : (l_#'=l_write)    # (local ops: 0, shared ops: 0)
+	#
+	#     [bar_#_set_to_1_#]            l_#=l_write                       ->        (l_#'=l_wait)     # (0, 1)
+	#
+	#     [does_i_equal_thread_count_#] l_#=l_wait  & i_# = thread_count  -> tick : (l_#'=l_done)     # (1, 0)
+	#
+	#     [bar_%d_read_#]               l_#=l_wait  & i_# = %d & bar_%d = 1 ->      (i_#' = ... )     # (1, 1)
+	#     [bar_%d_read_#]               l_#=l_wait  & i_# = %d & bar_%d = 0 ->      (i_#' = 0)        # (1, 1)
+	#
+	#     [done_#]                      l_#=l_done                        -> rare : true;\n"          # (0, 0)
+	# endmodule
+
 	return s
 
 def generateLabels(threadCount) :
@@ -345,6 +397,33 @@ def generateQuantitativeProperties(threadCount) :
 
 	t += "// cumulative queries end\n\n"
 	# ### cumulative queries end
+
+	# ### operation counting queries begin
+	t += "// operation countingqueries begin\n\n"
+
+	queries = {
+		#key : [query, comment]
+		"Al" : ["local_operations_all_are_working"     , "local operations up to: first finished working and entered"],
+		"Bl" : ["local_operations_one_is_working"      , "local operations up to: last finished working and entered"],
+		"Cl" : ["local_operations_not_one_is_done"     , "local operations up to: first recognized the barrier is full and left"],
+		"Dl" : ["local_operations_not_all_are_done"    , "local operations up to: all recognized the barrier is full and left"],
+		"El" : ["local_operations_one_is_writing_inc"  , "local operations up to: no one is writing"],
+		"As" : ["shared_operations_all_are_working"    , "shared operations up to: first finished working and entered"],
+		"Bs" : ["shared_operations_one_is_working"     , "shared operations up to: last finished working and entered"],
+		"Cs" : ["shared_operations_not_one_is_done"    , "shared operations up to: first recognized the barrier is full and left"],
+		"Ds" : ["shared_operations_not_all_are_done"   , "shared operations up to: all recognized the barrier is full and left"],
+		"Es" : ["shared_operations_one_is_writing_inc" , "shared operations up to: no one is writing"],
+	}
+
+	for k in sorted(queries.keys()) :
+		query = queries[k]
+		t += "// (%s) and (%se) %s\n" % (k, k, query[1])
+		t += "R{\"%s\"}=? [C<=time]\n" % query[0]
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[0]
+		t += "\n"
+
+	t += "// operation counting queries end\n\n"
+	# ### operation counting queries end
 
 	t += "const double time=ticks/base_rate;\n"
 	t += "const double ticks;\n"
