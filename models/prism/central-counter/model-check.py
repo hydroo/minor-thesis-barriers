@@ -26,7 +26,7 @@ def readResults() :
 	return s
 
 def modelCheck(filePrefix, propertyNr, debug=False) :
-	call("prism %s %s -exportresults %s -prop %d -maxiters 1000000" % (modelFileName(filePrefix), quantitativePropertiesFileName(filePrefix), "model-check.tmp", propertyNr), debug)
+	call("prism %s %s -exportresults %s -prop %d -maxiters 1000000 -cuddmaxmem 4194304" % (modelFileName(filePrefix), quantitativePropertiesFileName(filePrefix), "model-check.tmp", propertyNr), debug)
 	s = readResults()
 	return s[1].replace('\n', '')
 
