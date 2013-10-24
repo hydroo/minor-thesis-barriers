@@ -131,6 +131,9 @@ if __name__ == "__main__":
 
 	baseNanoJoulePerCycle = basePower / ghz
 
+	nanoJoulePerLocalOperation = 2    # choosen through measuring and modelling work=10 cycles and looking at the numbers
+	nanoJoulePerSharedOperation = 200 # super shitty estimate
+
 	for work in works :
 
 		print("# work=%d" % work)
@@ -167,8 +170,6 @@ if __name__ == "__main__":
 
 			#print(" ", n, "%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f      %5.0f %5.0f %7.0f" % (ale, ase, ble, bse, ele, ese, cle, cse , dle, dse, djReferenceCc, djReferenceRs, djBase))
 
-			nanoJoulePerLocalOperation = 2    # choosen through measuring and modelling work=10 cycles and looking at the numbers
-			nanoJoulePerSharedOperation = 200 # super shitty estimate
 
 			aj = ale*nanoJoulePerLocalOperation + ase*nanoJoulePerSharedOperation + ace*baseNanoJoulePerCycle
 			bj = ble*nanoJoulePerLocalOperation + bse*nanoJoulePerSharedOperation + bce*baseNanoJoulePerCycle
