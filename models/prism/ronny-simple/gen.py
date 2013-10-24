@@ -247,10 +247,9 @@ def operationRewards(guard, threadCount) :
 	s += "rewards \"%s\"\n" % localRewardName
 	for p in range(0, threadCount) :
 		s += "    [bar_%d_set_to_1_%d]            %s & bar_%d_local_write_%d  : %d;\n" % (p, p, guardName, p, p, 1)
-		s += "    [does_i_equal_thread_count_%d] %s                        : %d;\n" % (p, guardName, 1)
+		s += "    [does_i_equal_thread_count_%d] %s                        : %d;\n" % (p, guardName, 0)
 		for q in range(0, threadCount) :
-			s += "    [bar_%d_read_%d]                %s & bar_%d_local_read_%d   : %d;\n" % (q, p, guardName, q, p, 2)
-			s += "    [bar_%d_read_%d]                %s & bar_%d_shared_read_%d  : %d;\n" % (q, p, guardName, q, p, 1)
+			s += "    [bar_%d_read_%d]                %s & bar_%d_local_read_%d   : %d;\n" % (q, p, guardName, q, p, 1)
 	s += "endrewards\n"
 
 	s += "rewards \"%s\"\n" % sharedRewardName
@@ -265,10 +264,10 @@ def operationRewards(guard, threadCount) :
 	#
 	#     [bar_#_set_to_1_#]            l_#=l_write                       ->        (l_#'=l_wait)     # (0, 1)
 	#
-	#     [does_i_equal_thread_count_#] l_#=l_wait  & i_# = thread_count  -> tick : (l_#'=l_done)     # (1, 0)
+	#     [does_i_equal_thread_count_#] l_#=l_wait  & i_# = thread_count  -> tick : (l_#'=l_done)     # (0, 0)
 	#
-	#     [bar_%d_read_#]               l_#=l_wait  & i_# = %d & bar_%d = 1 ->      (i_#' = ... )     # (1, 1)
-	#     [bar_%d_read_#]               l_#=l_wait  & i_# = %d & bar_%d = 0 ->      (i_#' = 0)        # (1, 1)
+	#     [bar_%d_read_#]               l_#=l_wait  & i_# = %d & bar_%d = 1 ->      (i_#' = ... )     # (0, 1)
+	#     [bar_%d_read_#]               l_#=l_wait  & i_# = %d & bar_%d = 0 ->      (i_#' = 0)        # (0, 1)
 	#
 	#     [done_#]                      l_#=l_done                        -> rare : true;\n"          # (0, 0)
 	# endmodule
