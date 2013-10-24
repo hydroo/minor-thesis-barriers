@@ -44,8 +44,8 @@ if __name__ == "__main__":
 	debug=False
 	
 	filePrefix = "model-check"
-	threadCounts = [2, 3, 4]
-	work = 10
+	threadCounts = [4, 3, 2]
+	works = [10, 100, 1000]
 
 	A   =  1
 	Ae  =  2
@@ -131,49 +131,52 @@ if __name__ == "__main__":
 
 	baseNanoJoulePerCycle = basePower / ghz
 
-	print("# work=%d" % work)
-	#print("# operations (absolute values)")
-	#print("# n     Al     As|    Bl     Bs|    El     Es|    Cl     Cs|    Dl     Ds      Cc-nJ Rs-nJ base-nJ")
-	#print("#                                                                              w/o Base-nJ     ")
-	print("# energy (absolute values in nJ)")
-	print("# n      A      B      E      C      D")
-	for n in threadCounts :
-		call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
-		ale = float(modelCheck(filePrefix, Ale, debug))
-		ble = float(modelCheck(filePrefix, Ble, debug))
-		ele = float(modelCheck(filePrefix, Ele, debug))
-		cle = float(modelCheck(filePrefix, Cle, debug))
-		dle = float(modelCheck(filePrefix, Dle, debug))
+	for work in works :
 
-		ase = float(modelCheck(filePrefix, Ase, debug))
-		bse = float(modelCheck(filePrefix, Bse, debug))
-		ese = float(modelCheck(filePrefix, Ese, debug))
-		cse = float(modelCheck(filePrefix, Cse, debug))
-		dse = float(modelCheck(filePrefix, Dse, debug))
+		print("# work=%d" % work)
+		#print("# operations (absolute values)")
+		#print("# n     Al     As|    Bl     Bs|    El     Es|    Cl     Cs|    Dl     Ds      Cc-nJ Rs-nJ base-nJ")
+		#print("#                                                                              w/o Base-nJ     ")
+		print("# energy (absolute values in micro Joule)")
+		print("# n      A      B      E      C      D")
+		for n in threadCounts :
+			call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
+			ale = float(modelCheck(filePrefix, Ale, debug))
+			ble = float(modelCheck(filePrefix, Ble, debug))
+			ele = float(modelCheck(filePrefix, Ele, debug))
+			cle = float(modelCheck(filePrefix, Cle, debug))
+			dle = float(modelCheck(filePrefix, Dle, debug))
 
-		ace = float(modelCheck(filePrefix, Ace, debug))
-		bce = float(modelCheck(filePrefix, Bce, debug))
-		ece = float(modelCheck(filePrefix, Ece, debug))
-		cce = float(modelCheck(filePrefix, Cce, debug))
-		dce = float(modelCheck(filePrefix, Dce, debug))
+			ase = float(modelCheck(filePrefix, Ase, debug))
+			bse = float(modelCheck(filePrefix, Bse, debug))
+			ese = float(modelCheck(filePrefix, Ese, debug))
+			cse = float(modelCheck(filePrefix, Cse, debug))
+			dse = float(modelCheck(filePrefix, Dse, debug))
 
-		nanoJoulePerCycleCc = (perThreadPowerCc*n) / ghz
-		nanoJoulePerCycleRs = (perThreadPowerRs*n) / ghz
-		djBase = dce * baseNanoJoulePerCycle
-		djReferenceCc = dce * (nanoJoulePerCycleCc)
-		djReferenceRs = dce * (nanoJoulePerCycleRs)
+			ace = float(modelCheck(filePrefix, Ace, debug))
+			bce = float(modelCheck(filePrefix, Bce, debug))
+			ece = float(modelCheck(filePrefix, Ece, debug))
+			cce = float(modelCheck(filePrefix, Cce, debug))
+			dce = float(modelCheck(filePrefix, Dce, debug))
 
-		#print(" ", n, "%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f      %5.0f %5.0f %7.0f" % (ale, ase, ble, bse, ele, ese, cle, cse , dle, dse, djReferenceCc, djReferenceRs, djBase))
+			nanoJoulePerCycleCc = (perThreadPowerCc*n) / ghz
+			nanoJoulePerCycleRs = (perThreadPowerRs*n) / ghz
+			djBase = dce * baseNanoJoulePerCycle
+			djReferenceCc = dce * (nanoJoulePerCycleCc)
+			djReferenceRs = dce * (nanoJoulePerCycleRs)
 
-		nanoJoulePerLocalOperation = 2    # choosen through measuring and modelling work=10 cycles and looking at the numbers
-		nanoJoulePerSharedOperation = 200 # super shitty estimate
+			#print(" ", n, "%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f      %5.0f %5.0f %7.0f" % (ale, ase, ble, bse, ele, ese, cle, cse , dle, dse, djReferenceCc, djReferenceRs, djBase))
 
-		aj = ale*nanoJoulePerLocalOperation + ase*nanoJoulePerSharedOperation + ace*baseNanoJoulePerCycle
-		bj = ble*nanoJoulePerLocalOperation + bse*nanoJoulePerSharedOperation + bce*baseNanoJoulePerCycle
-		ej = ele*nanoJoulePerLocalOperation + ese*nanoJoulePerSharedOperation + ece*baseNanoJoulePerCycle
-		cj = cle*nanoJoulePerLocalOperation + cse*nanoJoulePerSharedOperation + cce*baseNanoJoulePerCycle
-		dj = dle*nanoJoulePerLocalOperation + dse*nanoJoulePerSharedOperation + dce*baseNanoJoulePerCycle
+			nanoJoulePerLocalOperation = 2    # choosen through measuring and modelling work=10 cycles and looking at the numbers
+			nanoJoulePerSharedOperation = 200 # super shitty estimate
 
-		print(" ", n, "%6.0f %6.0f %6.0f %6.0f %6.0f" % (aj, bj-aj, ej-bj, cj-ej , dj-cj))
+			aj = ale*nanoJoulePerLocalOperation + ase*nanoJoulePerSharedOperation + ace*baseNanoJoulePerCycle
+			bj = ble*nanoJoulePerLocalOperation + bse*nanoJoulePerSharedOperation + bce*baseNanoJoulePerCycle
+			ej = ele*nanoJoulePerLocalOperation + ese*nanoJoulePerSharedOperation + ece*baseNanoJoulePerCycle
+			cj = cle*nanoJoulePerLocalOperation + cse*nanoJoulePerSharedOperation + cce*baseNanoJoulePerCycle
+			dj = dle*nanoJoulePerLocalOperation + dse*nanoJoulePerSharedOperation + dce*baseNanoJoulePerCycle
+
+			#print(" ", n, "%6.0f %6.0f %6.0f %6.0f %6.0f" % (aj, bj-aj, ej-bj, cj-ej , dj-cj))
+			print(" ", n, "%6.3f %6.3f %6.3f %6.3f %6.3f" % (aj / 1000.0, (bj-aj) / 1000.0, (ej-bj) / 1000.0, (cj-ej) / 1000.0 , (dj-cj) / 1000.0))
 
 	finalize(debug)
