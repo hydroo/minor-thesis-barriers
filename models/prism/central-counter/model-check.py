@@ -159,11 +159,11 @@ if __name__ == "__main__":
 			cce = float(modelCheck(filePrefix, Cce, debug))
 			dce = float(modelCheck(filePrefix, Dce, debug))
 
-			nanoJoulePerCycleCc = (perThreadPowerCc*n) / ghz
-			nanoJoulePerCycleRs = (perThreadPowerRs*n) / ghz
-			djBase = dce * baseNanoJoulePerCycle
-			djReferenceCc = dce * (nanoJoulePerCycleCc)
-			djReferenceRs = dce * (nanoJoulePerCycleRs)
+			#nanoJoulePerCycleCc = (perThreadPowerCc*n) / ghz
+			#nanoJoulePerCycleRs = (perThreadPowerRs*n) / ghz
+			#djBase = dce * baseNanoJoulePerCycle
+			#djReferenceCc = dce * (nanoJoulePerCycleCc)
+			#djReferenceRs = dce * (nanoJoulePerCycleRs)
 
 			#print(" ", n, "%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f|%6.1f %6.1f      %5.0f %5.0f %7.0f" % (ale, ase, ble, bse, ele, ese, cle, cse , dle, dse, djReferenceCc, djReferenceRs, djBase))
 
