@@ -183,38 +183,77 @@ if __name__ == "__main__":
 	#		#print(" ", n, "%6.0f %6.0f %6.0f %6.0f %6.0f" % (aj, bj-aj, ej-bj, cj-ej , dj-cj))
 	#		print(" ", n, "%6.3f %6.3f %6.3f %6.3f %6.3f" % (aj / 1000.0, (bj-aj) / 1000.0, (ej-bj) / 1000.0, (cj-ej) / 1000.0 , (dj-cj) / 1000.0))
 
+	#print("")
+
+	#for work in works :
+	#	print("# work=%d" % work)
+	#	print("# n cycle  power (Watt)")
+	#	for n in threadCounts :
+	#		call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
+	#		dce = float(modelCheck(filePrefix, Dce, None, debug))
+	#		dle = float(modelCheck(filePrefix, Dle, None, debug))
+	#		dse = float(modelCheck(filePrefix, Dse, None, debug))
+	#		startCycle = 0
+	#		endCycle   = dce
+	#		step       = (int((endCycle - startCycle) / 10**math.floor((math.log(endCycle - startCycle, 10)))) * 10**math.floor((math.log(endCycle - startCycle, 10)))) / 10
+	#		#print (startCycle, endCycle, step)
+
+	#		djLast = 0.0
+	#		i = startCycle
+	#		while i <= endCycle :
+
+	#			dl = float(modelCheck(filePrefix, Dl, i, debug))
+	#			ds = float(modelCheck(filePrefix, Ds, i, debug))
+
+	#			dj = dl*nanoJoulePerLocalOperation + ds*nanoJoulePerSharedOperation + i*baseNanoJoulePerCycle
+
+	#			print(" ", n, "%5d" % i, "%6.3f" % ((dj - djLast) / (step / ghz)))
+
+	#			i += step
+	#			djLast = dj
+
+	#		overall = (dle*nanoJoulePerLocalOperation + dse*nanoJoulePerSharedOperation + dce*baseNanoJoulePerCycle) / (dce / ghz)
+
+	#		print(" ", n, "overall %6.3f" % overall)
+
+	#print("")
+
 	for work in works :
 		print("# work=%d" % work)
-		print("# n cycle  power (Watt)")
+		print("# energy (Watt per phase)")
+		print("# n      D      C      E      B      A overall")
 		for n in threadCounts :
 			call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
-			dce = float(modelCheck(filePrefix, Dce, None, debug))
+			ale = float(modelCheck(filePrefix, Ale, None, debug))
+			ble = float(modelCheck(filePrefix, Ble, None, debug))
+			ele = float(modelCheck(filePrefix, Ele, None, debug))
+			cle = float(modelCheck(filePrefix, Cle, None, debug))
 			dle = float(modelCheck(filePrefix, Dle, None, debug))
+
+			ase = float(modelCheck(filePrefix, Ase, None, debug))
+			bse = float(modelCheck(filePrefix, Bse, None, debug))
+			ese = float(modelCheck(filePrefix, Ese, None, debug))
+			cse = float(modelCheck(filePrefix, Cse, None, debug))
 			dse = float(modelCheck(filePrefix, Dse, None, debug))
-			startCycle = 0
-			endCycle   = dce
-			step       = (int((endCycle - startCycle) / 10**math.floor((math.log(endCycle - startCycle, 10)))) * 10**math.floor((math.log(endCycle - startCycle, 10)))) / 10
-			#print (startCycle, endCycle, step)
 
-			djLast = 0.0
-			i = startCycle
-			while i <= endCycle :
+			ace = float(modelCheck(filePrefix, Ace, None, debug))
+			bce = float(modelCheck(filePrefix, Bce, None, debug))
+			ece = float(modelCheck(filePrefix, Ece, None, debug))
+			cce = float(modelCheck(filePrefix, Cce, None, debug))
+			dce = float(modelCheck(filePrefix, Dce, None, debug))
 
-				dl = float(modelCheck(filePrefix, Dl, i, debug))
-				ds = float(modelCheck(filePrefix, Ds, i, debug))
+			aj = ale*nanoJoulePerLocalOperation + ase*nanoJoulePerSharedOperation + ace*baseNanoJoulePerCycle
+			bj = ble*nanoJoulePerLocalOperation + bse*nanoJoulePerSharedOperation + bce*baseNanoJoulePerCycle
+			ej = ele*nanoJoulePerLocalOperation + ese*nanoJoulePerSharedOperation + ece*baseNanoJoulePerCycle
+			cj = cle*nanoJoulePerLocalOperation + cse*nanoJoulePerSharedOperation + cce*baseNanoJoulePerCycle
+			dj = dle*nanoJoulePerLocalOperation + dse*nanoJoulePerSharedOperation + dce*baseNanoJoulePerCycle
 
-				dj = dl*nanoJoulePerLocalOperation + ds*nanoJoulePerSharedOperation + i*baseNanoJoulePerCycle
+			aw = (aj)    / ((ace)     / ghz)
+			bw = (bj-aj) / ((bce-ace) / ghz)
+			ew = (ej-bj) / ((ece-bce) / ghz)
+			cw = (cj-ej) / ((cce-ece) / ghz)
+			dw = (dj-cj) / ((dce-cce) / ghz)
 
-				print(" ", n, "%5d" % i, "%6.3f" % ((dj - djLast) / (step / ghz)))
-
-				i += step
-				djLast = dj
-
-			overall = (dle*nanoJoulePerLocalOperation + dse*nanoJoulePerSharedOperation + dce*baseNanoJoulePerCycle) / (dce / ghz)
-
-			print(" ", n, "overall %6.3f" % overall)
-
-
-
+			print(" ", n, "%6.1f %6.1f %6.1f %6.1f %6.1f %7.1f" % (dw, cw, ew, bw, aw, dj / (dce / ghz)))
 
 	finalize(debug)
