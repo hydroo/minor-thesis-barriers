@@ -105,13 +105,12 @@ if __name__ == "__main__":
 	#print("")
 
 	#print("# percentage writing vs reading")
-	#print("# n Epe Fpe")
+	#print("# n   Ece   Dce")
 	#for n in threadCounts :
 	#	call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
-	#	epe = float(modelCheck(filePrefix, Epe, None, debug))
-	#	fpe = float(modelCheck(filePrefix, Fpe, None, debug))
-	#	sum_ = epe + fpe
-	#	print(n, "%4.3f %4.3f" % (epe / sum_, fpe / sum_))
+	#	ece = float(modelCheck(filePrefix, Ece, None, debug))
+	#	dce = float(modelCheck(filePrefix, Dce, None, debug))
+	#	print(n, "%5.2f %5.2f" % (ece / (ece+dce), dce / (ece+dce)))
 
 	#print("")
 
