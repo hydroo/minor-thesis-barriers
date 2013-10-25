@@ -31,6 +31,7 @@
 	\usetikzlibrary{shapes, arrows, positioning}
 	\tikzstyle{-}    = [draw]
 	\tikzstyle{->}   = [draw, -latex']
+	\tikzstyle{<-}   = [draw, latex'-]
 	\tikzstyle{<->}  = [draw, latex'-latex']
 	\tikzstyle{o}    = [draw, circle]
 	\tikzstyle{box}  = [draw, rectangle]
@@ -590,15 +591,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sssec:analysis-general-distributed}
 \begin{itemize}
 	\item ref algorithms
-	\item For the dissemination barrier the number of remote writes is exactly $n \cdot \lceil \log _2~n \rceil$ -- $n$ processes times $\lceil \log _2~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is $2 \cdot (n-1)$ writes in $2 \cdot  \lceil \log _2~n \rceil$ rounds. Add picture about the minimum. (a linear and a tree-esque).
+	\item For the dissemination barrier the number of remote writes is exactly $n \cdot \lceil \log _2~n \rceil$ -- $n$ processes times $\lceil \log _2~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is, illustrated in Figure~\ref{fig:diagram-gather-broadcast}, $2 \cdot (n-1)$ writes in $2 \cdot  \lceil \log _2~n \rceil$ rounds.
+		\begin{figure}[htbp]
+			\centering
+			\input{tikz/diagram-gather-broadcast}
+			\caption{Gather and broadcast}
+			\label{fig:diagram-gather-broadcast}
+		\end{figure}
+
 	\item Reading is only done locally.
-
-%  +--------+        +--------+             round (2)
-%  v        |        v        |
-%  0 <- 1   2 <- 3   4 <- 5   6 <- 7        round (1)
-%  ^                 |
-%  +-----------------+                      round (3)
-
 	\item Ronny's fancy barrier needs between $2 \cdot (n-1)$ and $n \cdot (n-1)$ successful (non-zero) remote reads. Writing is only done locally. (perhaps add picture of n*(n-1), n*(n-1) might also be completely wrong)
 	\item failed remote gets. Maybe give a rough estimate of the lost bandwidth.
 	\item dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the dissemination barrier waits for its designated communication partner.
