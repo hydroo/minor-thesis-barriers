@@ -872,10 +872,18 @@ I hereby declare that I prepared this thesis independently and without use of to
 \paragraph{Identification and formalisation}
 \label{ssssec:analysis-modelchecking-quantitative-properties-identification}
 \begin{itemize}
-	\item which parameters to variate
+	\item interesting values to query for
 		\begin{itemize}
-			\item thread count. Maximum 4 is considered. Model checking limitations bla.
-			\item work rate. Variate the distribution of the times the threads enter the barrier.
+			\item time: unit: cycles. srew 1.
+			\item energy consumption: unit: Joule, and rate of energy consumption : Joule per second = Watt. (assume 2.5ghz. W (nJ/ns) = 2.5 * nJ/cycle)
+				\begin{itemize}
+					\item trew shared memory operations = 200nJ
+					\item trew cached shared memory operation = 2nJ
+					\item trew any other operation = 0nJ
+					\item baseline of 11W
+					\item \todo where to put how i got these numbers? reference measurement on core i5-2520M (2.5ghz). Trying to fit number of shared/local operations to measurements.
+				\end{itemize}
+			\item (diss, ronny's fancy) number of remote transfers. trew for remote operations = 1.
 		\end{itemize}
 	\item interesting points in time
 		\begin{itemize}
@@ -889,40 +897,37 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item resulting properties
 		\begin{itemize}
 			\item $T$ is the set of all threads
-			\item \textbf{A:} \emph{Average time until the first thread enters the barrier}
+			\item \textbf{A:} \emph{Average reward until the first thread enters the barrier}
 				\begin{center}
 					$\mathrm{ReaRew}(\exists t \in T . \mathit{entered_t} )$
 				\end{center}
-			\item \textbf{B:} \emph{Average time until the last thread enters the barrier}
+			\item \textbf{B:} \emph{Average reward until the last thread enters the barrier}
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{entered_t} )$
 				\end{center}
-			\item \textbf{C:} \emph{Average time until the first thread leaves the barrier}
+			\item \textbf{C:} \emph{Average reward until the first thread leaves the barrier}
 				\begin{center}
 					$\mathrm{ReaRew}(\exists t \in T . \mathit{left_t} )$
 				\end{center}
-			\item \textbf{D:} \emph{Average time until the last thread leaves the barrier}
+			\item \textbf{D:} \emph{Average reward until the last thread leaves the barrier}
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{left_t} )$
 				\end{center}
-			\item \textbf{E:} \emph{Average time until the last thread finished writing}
+			\item \textbf{E:} \emph{Average reward until the last thread finished writing}
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{done\_writing_t} )$
 				\end{center}
-			\item \textbf{R$i$:} \emph{Average time until the last thread left round $i$}
+			\item \textbf{R$i$:} \emph{Average reward until the last thread left round $i$}
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{left\_round_{i,t}} )$
 				\end{center}
 			\item where the predicates have the obvious meaning, and the reward function $\mathit{rew}$ assigns 1 to each state.
 			\item and combinations of these to get measures like (D-B) last in until last out.
 		\end{itemize}
-	\item additional properties of dissemination and ronny's fancy
+	\item which parameters to variate
 		\begin{itemize}
-			\item number of remote transfers.
-				\begin{center}
-					$\mathrm{ReaRew}(\forall t \in T . \mathit{left_t} )$
-				\end{center}
-				Instead of using 1 as a state reward, as in the previous queries, we will use 1 as a transition reward for transitions that represent remote transfer operations.
+			\item thread count. Maximum 4 is almost always considered. Model checking limitations bla.
+			\item work rate. Variate the distribution of the times the threads enter the barrier.
 		\end{itemize}
 \end{itemize}
 
