@@ -115,17 +115,18 @@ if __name__ == "__main__":
 
 	#print("")
 
-	#print("# cumulative (stacked diagram)")
-	#print("# n all-work one-works writing reading one-done all-done")
-	#print("# n Ac       Bc        Ec      Fc      Cc       Dc")
-	#for n in threadCounts :
-	#	call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
-	#	ace = float(modelCheck(filePrefix, Ace, None, debug))
-	#	bce = float(modelCheck(filePrefix, Bce, None, debug))
-	#	ece = float(modelCheck(filePrefix, Ece, None, debug))
-	#	cce = float(modelCheck(filePrefix, Cce, None, debug))
-	#	dce = float(modelCheck(filePrefix, Dce, None, debug))
-	#	print(n, "%4.3f %4.3f %4.3f %4.3f %4.3f %4.3f" % (ace, bce-ace, ece-bce, 0 , dce-ece, 0))
+	for work in works :
+		print("# work=%d" % work)
+		print("# cumulative (stacked diagram)")
+		print("# n       Ac       Bc       Ec       Cc       Dc")
+		for n in threadCounts :
+			call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
+			ace = float(modelCheck(filePrefix, Ace, None, debug))
+			bce = float(modelCheck(filePrefix, Bce, None, debug))
+			ece = float(modelCheck(filePrefix, Ece, None, debug))
+			cce = float(modelCheck(filePrefix, Cce, None, debug))
+			dce = float(modelCheck(filePrefix, Dce, None, debug))
+			print(" ", n, "%8.3f %8.3f %8.3f %8.3f %8.3f" % (ace, bce-ace, ece-bce, cce-ece , dce-cce))
 
 	#print("")
 
@@ -218,42 +219,42 @@ if __name__ == "__main__":
 
 	#print("")
 
-	for work in works :
-		print("# work=%d" % work)
-		print("# energy (Watt per phase)")
-		print("# n      D      C      E      B      A overall")
-		for n in threadCounts :
-			call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
-			ale = float(modelCheck(filePrefix, Ale, None, debug))
-			ble = float(modelCheck(filePrefix, Ble, None, debug))
-			ele = float(modelCheck(filePrefix, Ele, None, debug))
-			cle = float(modelCheck(filePrefix, Cle, None, debug))
-			dle = float(modelCheck(filePrefix, Dle, None, debug))
+	#for work in works :
+	#	print("# work=%d" % work)
+	#	print("# energy (Watt per phase)")
+	#	print("# n      D      C      E      B      A overall")
+	#	for n in threadCounts :
+	#		call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
+	#		ale = float(modelCheck(filePrefix, Ale, None, debug))
+	#		ble = float(modelCheck(filePrefix, Ble, None, debug))
+	#		ele = float(modelCheck(filePrefix, Ele, None, debug))
+	#		cle = float(modelCheck(filePrefix, Cle, None, debug))
+	#		dle = float(modelCheck(filePrefix, Dle, None, debug))
 
-			ase = float(modelCheck(filePrefix, Ase, None, debug))
-			bse = float(modelCheck(filePrefix, Bse, None, debug))
-			ese = float(modelCheck(filePrefix, Ese, None, debug))
-			cse = float(modelCheck(filePrefix, Cse, None, debug))
-			dse = float(modelCheck(filePrefix, Dse, None, debug))
+	#		ase = float(modelCheck(filePrefix, Ase, None, debug))
+	#		bse = float(modelCheck(filePrefix, Bse, None, debug))
+	#		ese = float(modelCheck(filePrefix, Ese, None, debug))
+	#		cse = float(modelCheck(filePrefix, Cse, None, debug))
+	#		dse = float(modelCheck(filePrefix, Dse, None, debug))
 
-			ace = float(modelCheck(filePrefix, Ace, None, debug))
-			bce = float(modelCheck(filePrefix, Bce, None, debug))
-			ece = float(modelCheck(filePrefix, Ece, None, debug))
-			cce = float(modelCheck(filePrefix, Cce, None, debug))
-			dce = float(modelCheck(filePrefix, Dce, None, debug))
+	#		ace = float(modelCheck(filePrefix, Ace, None, debug))
+	#		bce = float(modelCheck(filePrefix, Bce, None, debug))
+	#		ece = float(modelCheck(filePrefix, Ece, None, debug))
+	#		cce = float(modelCheck(filePrefix, Cce, None, debug))
+	#		dce = float(modelCheck(filePrefix, Dce, None, debug))
 
-			aj = ale*nanoJoulePerLocalOperation + ase*nanoJoulePerSharedOperation + ace*baseNanoJoulePerCycle
-			bj = ble*nanoJoulePerLocalOperation + bse*nanoJoulePerSharedOperation + bce*baseNanoJoulePerCycle
-			ej = ele*nanoJoulePerLocalOperation + ese*nanoJoulePerSharedOperation + ece*baseNanoJoulePerCycle
-			cj = cle*nanoJoulePerLocalOperation + cse*nanoJoulePerSharedOperation + cce*baseNanoJoulePerCycle
-			dj = dle*nanoJoulePerLocalOperation + dse*nanoJoulePerSharedOperation + dce*baseNanoJoulePerCycle
+	#		aj = ale*nanoJoulePerLocalOperation + ase*nanoJoulePerSharedOperation + ace*baseNanoJoulePerCycle
+	#		bj = ble*nanoJoulePerLocalOperation + bse*nanoJoulePerSharedOperation + bce*baseNanoJoulePerCycle
+	#		ej = ele*nanoJoulePerLocalOperation + ese*nanoJoulePerSharedOperation + ece*baseNanoJoulePerCycle
+	#		cj = cle*nanoJoulePerLocalOperation + cse*nanoJoulePerSharedOperation + cce*baseNanoJoulePerCycle
+	#		dj = dle*nanoJoulePerLocalOperation + dse*nanoJoulePerSharedOperation + dce*baseNanoJoulePerCycle
 
-			aw = (aj)    / ((ace)     / ghz)
-			bw = (bj-aj) / ((bce-ace) / ghz)
-			ew = (ej-bj) / ((ece-bce) / ghz)
-			cw = (cj-ej) / ((cce-ece) / ghz)
-			dw = (dj-cj) / ((dce-cce) / ghz)
+	#		aw = (aj)    / ((ace)     / ghz)
+	#		bw = (bj-aj) / ((bce-ace) / ghz)
+	#		ew = (ej-bj) / ((ece-bce) / ghz)
+	#		cw = (cj-ej) / ((cce-ece) / ghz)
+	#		dw = (dj-cj) / ((dce-cce) / ghz)
 
-			print(" ", n, "%6.1f %6.1f %6.1f %6.1f %6.1f %7.1f" % (dw, cw, ew, bw, aw, dj / (dce / ghz)))
+	#		print(" ", n, "%6.1f %6.1f %6.1f %6.1f %6.1f %7.1f" % (dw, cw, ew, bw, aw, dj / (dce / ghz)))
 
 	finalize(debug)
