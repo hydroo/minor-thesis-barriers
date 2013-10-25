@@ -954,13 +954,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item similarly fast when considering the last one to finish
 			\item ronny's simple faster for the first one to leave
 		\end{itemize}
-	\item distribution of total time spent: Figure~\ref{fig:cs-time-work-100-partition}
+	\item distribution of total time spent: Figure~\ref{fig:cs-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=8cm]{charts/cs-time-work-100-partition}
-			\caption{Distribution of total time spent}
-			\label{fig:cs-time-work-100-partition}
+			\includegraphics[width=8cm]{charts/cs-energy-work-100-partition}
+			\caption{Distribution of total time spent and energy consumed}
+			\label{fig:cs-work-100-partition}
 		\end{figure}
+		time
 		\begin{itemize}
 			\item stacked fashion. Writing starts during one working. Reading starts during writing.
 			\item work is equal for everyone, obviously
@@ -969,6 +971,27 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item last thread exits when reading is done. Because when reading is done, we are done.
 			\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
 			\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
+		\end{itemize}
+		energy
+		\begin{itemize}
+			\item similar to time
+			\item ronny's simple needs more energy. Because it performs more shared memory actions and more local operations in the same amount of time. Doesn't wait for atomic ops as central counter is.
+			\item central counter's energy scales similarly to time.
+			\item amount of energy for ronny's simple grows faster than time needed. 2 to 4. Double energy. Less than double time.
+			\item ronny's simple spends considerable energy from the last commitment to first leaving the barrier. Obvious why from the algorithms. (and same as time)
+		\end{itemize}
+	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-energy-work-100-phases}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/cs-energy-work-100-phases}
+			\caption{Power consumption rate per phase}
+			\label{fig:cs-energy-work-100-phases}
+		\end{figure}
+		\begin{itemize}
+			\item (A) all working has 11W - the baseline.
+			\item overall low for central counter (16-18.3W), ronny's simple (19.4 - 30.6)
+			\item no one left: cc: high because very short, rs: high because many shared reads across many threads.
+			\item one left similar because cc: one or zero shared reads, rs: few shared reads, many local reads.
 		\end{itemize}
 	\item reading vs writing: Figure~\ref{fig:cs-time-work-100-percent}
 		\begin{figure}[htbp]
@@ -995,6 +1018,33 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item central counter faster in all respects.
 			\item probability of a thread trying to write while no one is writing at the moment increases, due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
 			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for central counter.
+		\end{itemize}
+	\item distribution of total time spent: Figure~\ref{fig:cs-work-1000-partition}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/cs-time-work-1000-partition}
+			\includegraphics[width=8cm]{charts/cs-energy-work-1000-partition}
+			\caption{Distribution of total time spent and energy consumed}
+			\label{fig:cs-work-1000-partition}
+		\end{figure}
+		time
+		\begin{itemize}
+			\item as expected
+		\end{itemize}
+		energy
+		\begin{itemize}
+			\item why does the writing phase for ronny's simple take more energy with more threads? Should be even with central counter shouldn't it?
+		\end{itemize}
+	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-energy-work-1000-phases}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/cs-energy-work-1000-phases}
+			\caption{Power consumption rate per phase}
+			\label{fig:cs-energy-work-1000-phases}
+		\end{figure}
+		\begin{itemize}
+			\item more even. (1) longer work period. (2) cc and rs use similarly many shared and local operations (due to busy waiting) in the reading phase ((D) one left). Energy usage is dominated by busy waiting of threads.
+			\item ronny's simple can catch up considerably. (cc:14.6-20.9, rs:15.3-23.5)
 		\end{itemize}
 	\item percent Figure~\ref{fig:cs-time-work-1000-percent}
 		\begin{figure}[htbp]
