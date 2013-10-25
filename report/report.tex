@@ -607,47 +607,103 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item talk about the progress problem when one process is missing.
 		\begin{itemize}
-			\item \todo needs work and a picture
-			\item number of blocked processes doubles each round.
+			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}
+			\item suppose process 4 has not entered the barrier.
+			\item Figure~\ref{fig:diagram-dissemination-progress}
+				\begin{figure}[htbp]
+					\centering
+					\input{tikz/diagram-dissemination-progress}
+					\caption{Progress through the rounds of the dissemination barrier}
+					\label{fig:diagram-dissemination-progress}
+				\end{figure}
+			\item number of blocked processes doubles each round. (same for non-power of two process counts)
 			\item each one of these blocked processes then needs to finish the still to do rounds until the protocol succeeds
-
-% normal:
-%  phase 1:  0 -> 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 0
-%  phase 2:  0 ------> 2 ------> 4 ------> 6 ------> 0
-%                 1 ------> 3 ------> 5 ------> 7 ------> 1
-%  phase 3:  0 ----------------> 4 ----------------> 0
-%                 1 ----------------> 5 ----------------> 1
-%                      2 ----------------> 6 ----------------> 2
-%                           3 ----------------> 7 ----------------> 3
-%
-%  now suppose one process (e.g. 4) has not yet arrived
-%
-%  phase 1:  0 --> 1 ---> 2 ---> 3 --> (4) -x> 5 ---> 6 ---> 7 ---> 0
-%  phase 2:  0 ---------> 2  --------> (4) -----x---> 6 ----------> 0
-%                  1  ---------> 3 ---------> (5) ----x----> 7 --------> 1
-%  phase 3:  0 ----------------------> (4) -----------x-----------> 0
-%                 1 ------------------------> (5) -----------x----------> 1
-%                        2 ------------------------> (6) ----------x----------> 2
-%                               3 ------------------------> (7) ---------x---------> 3
-%
-%  who knows whom while process 4 is missing:
-%   =round 1=           =round 2=           =round 3=           =the best possible outcome=
-%   7 know themselves     + 4 new               + 0 new               maximum would be 49
-%   + 6 new                                     total is 17
-%   0: 0           7    0: 0         6 7    0: 0         6 7    0: 0 1 2 3   5 6 7
-%   1: 0 1              1: 0 1         7    1: 0 1         7    1: 0 1 2 3   5 6 7
-%   2:   1 2            2: 0 1 2            2: 0 1 2            2: 0 1 2 3   5 6 7
-%   3:     2 3          3:   1 2 3          3:     2 3          3: 0 1 2 3   5 6 7
-%   5:         5        5:         5        5:         5        5: 0 1 2 3   5 6 7
-%   6:         5 6      6:         5 6      6:         5 6      6: 0 1 2 3   5 6 7
-%   7:           6 7    7:           6 7    7:           6 7    7: 0 1 2 3   5 6 7
-%
-% maximum progress is ~2*n of a maximum of (n-1)*(n-1). (Perhaps find out the exact formulas)
-%
-% another advantage is that: when the last process arrives he will fetch all processes in one go
-%
-			\item non-power of 2 process counts: The number of blocked processes still doubles per round. The ratio of who is blocked in what round is thus worse than in the power of 2 case.
-			\item quantification of these effects is done in the model checking chapter (both number of messages and the progress problem!). And mention here that you will do it. (if not beware of talking about it here!)
+			\item who knows of whose arrival Figure~\ref{fig:table-dissemination-progress}
+				\begin{figure}[htbp]
+					\centering
+					\begin{minipage}[b]{0.4\linewidth}
+						\textbf{After round 1:} \\
+						$(n-1) + (n-1) = 14$ \\
+						\vspace{-0.1cm} \\
+						\resizebox{5cm}{!}{
+							\begin{tabular}{c | c c c c c c c c}
+								  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
+								\hline
+								0 & $\times$ &          &          &          &         &          &          & $\times$ \\
+								1 & $\times$ & $\times$ &          &          &         &          &          &          \\
+								2 &          & $\times$ & $\times$ &          &         &          &          &          \\
+								3 &          &          & $\times$ & $\times$ &         &          &          &          \\
+								4 &          &          &          & $\times$ &         &          &          &          \\
+								5 &          &          &          &          &         & $\times$ &          &          \\
+								6 &          &          &          &          &         & $\times$ & $\times$ &          \\
+								7 &          &          &          &          &         &          & $\times$ & $\times$ \\
+							\end{tabular}
+						}
+					\end{minipage}
+					\begin{minipage}[b]{0.4\linewidth}
+						\textbf{After round 2:} \\
+						$14 + 6 \cdot 2 = 26$ \\
+						\vspace{-0.1cm} \\
+						\resizebox{5cm}{!}{
+							\begin{tabular}{c | c c c c c c c c}
+								  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
+								\hline
+								0 & $\times$ &          &          &          &   & $\times$ & $\times$ & $\times$ \\
+								1 & $\times$ & $\times$ &          &          &   &          & $\times$ & $\times$ \\
+								2 & $\times$ & $\times$ & $\times$ &          &   &          &          & $\times$ \\
+								3 & $\times$ & $\times$ & $\times$ & $\times$ &   &          &          &          \\
+								4 &          & $\times$ & $\times$ & $\times$ &   &          &          &          \\
+								5 &          &          & $\times$ & $\times$ &   & $\times$ &          &          \\
+								6 &          &          &          &          &   & $\times$ & $\times$ &          \\
+								7 &          &          &          &          &   &          & $\times$ & $\times$ \\
+							\end{tabular}
+						}
+					\end{minipage}
+					\begin{minipage}[b]{0.4\linewidth}
+						\vspace{0.3cm}
+						\textbf{After round 3}: \\
+						$26 + 4 \cdot 4 = 44$ \\
+						\vspace{-0.1cm} \\
+						\resizebox{5cm}{!}{
+							\begin{tabular}{c | c c c c c c c c}
+								  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
+								\hline
+								0 & $\times$ &          &          &          &        & $\times$ & $\times$ & $\times$ \\
+								1 & $\times$ & $\times$ &          &          &        &          & $\times$ & $\times$ \\
+								2 & $\times$ & $\times$ & $\times$ &          &        &          &          & $\times$ \\
+								3 & $\times$ & $\times$ & $\times$ & $\times$ &        &          &          &          \\
+								4 & $\times$ & $\times$ & $\times$ & $\times$ &        & $\times$ & $\times$ & $\times$ \\
+								5 & $\times$ & $\times$ & $\times$ & $\times$ &        & $\times$ & $\times$ & $\times$ \\
+								6 & $\times$ & $\times$ & $\times$ &          &        & $\times$ & $\times$ & $\times$ \\
+								7 & $\times$ & $\times$ & $\times$ & $\times$ &        &          & $\times$ & $\times$ \\
+							\end{tabular}
+						}
+					\end{minipage}
+					\begin{minipage}[b]{0.4\linewidth}
+						\vspace{0.3cm}
+						\textbf{Best possible:} \\
+						$n \cdot (n-1) = 56$ \\
+						\vspace{-0.1cm} \\
+						\resizebox{5cm}{!}{
+							\begin{tabular}{c | c c c c c c c c}
+								  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
+								\hline
+								0 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+								1 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+								2 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+								3 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+								4 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+								5 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+								6 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+								7 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+							\end{tabular}
+						}
+					\end{minipage}
+					\caption{Which process knows of which other's arrival}
+					\label{fig:table-dissemination-progress}
+				\end{figure}
+			\item ronny's fancy does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to one more successful remote read. Those can be done in parallel.
+			\item quantifying this effect will be done in the following section.
 		\end{itemize}
 \end{itemize}
 
