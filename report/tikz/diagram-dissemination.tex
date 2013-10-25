@@ -2,12 +2,13 @@
 \begin{tikzpicture}[]
 
 %pivotal nodes
-\node [draw=none                 ]   (a) {Round 1:};
-\node [o, below of=a             ]  (0a) {0};
-\node [below of=0a, draw=none    ]   (b) {Round 2:};
-\node [o, below of=b             ]  (0b) {0};
-\node [below of=0b, draw=none    ]   (c) {Round 3:};
-\node [o, below of=c             ]  (0c) {0};
+\node [o, below of=xxx]  (0a) {0};
+\path (0a) ++(-90:1.4cm) node [draw, circle, node] (0b) {0};
+\path (0b) ++(-90:1.8cm) node [draw, circle, node] (0c) {0};
+
+\path (0a) ++(180:1.4cm) node [node] (xa) {Round 1:};
+\path (0b) ++(180:1.4cm) node [node] (xb) {Round 2:};
+\path (0c) ++(180:1.4cm) node [node] (xc) {Round 3:};
 
 \clip (-0.5cm,0) rectangle (7.5cm,-6cm);
 
