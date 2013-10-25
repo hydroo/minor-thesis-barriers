@@ -943,23 +943,23 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-shared}
 \begin{itemize}
 	\item work = 100. Very Small.
-	\item last to last, last to first Figure~\ref{fig:cs-work-100-B-C-D}
+	\item last to last, last to first Figure~\ref{fig:cs-time-work-100-B-C-D}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/cs-work-100-B-C-D}
+			\includegraphics[width=8cm]{charts/cs-time-work-100-B-C-D}
 			\caption{Expected running time of the shared memory barriers}
-			\label{fig:cs-work-100-B-C-D}
+			\label{fig:cs-time-work-100-B-C-D}
 		\end{figure}
 		\begin{itemize}
 			\item similarly fast when considering the last one to finish
 			\item ronny's simple faster for the first one to leave
 		\end{itemize}
-	\item distribution of total time spent: Figure~\ref{fig:cs-work-100-partition}
+	\item distribution of total time spent: Figure~\ref{fig:cs-time-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/cs-work-100-partition}
+			\includegraphics[width=8cm]{charts/cs-time-work-100-partition}
 			\caption{Distribution of total time spent}
-			\label{fig:cs-work-100-partition}
+			\label{fig:cs-time-work-100-partition}
 		\end{figure}
 		\begin{itemize}
 			\item stacked fashion. Writing starts during one working. Reading starts during writing.
@@ -970,12 +970,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
 			\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
 		\end{itemize}
-	\item reading vs writing: Figure~\ref{fig:cs-work-100-percent}
+	\item reading vs writing: Figure~\ref{fig:cs-time-work-100-percent}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/cs-work-100-percent}
+			\includegraphics[width=8cm]{charts/cs-time-work-100-percent}
 			\caption{Percentage of time spent writing vs time spent reading}
-			\label{fig:cs-work-100-percent}
+			\label{fig:cs-time-work-100-percent}
 		\end{figure}
 		\begin{itemize}
 			\item another picture showing writing vs reading.
@@ -983,12 +983,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
 		\end{itemize}
 	\item work=1000. Still very small.
-	\item last to last, last to first Figure~\ref{fig:cs-work-1000-B-C-D}
+	\item last to last, last to first Figure~\ref{fig:cs-time-work-1000-B-C-D}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/cs-work-1000-B-C-D}
+			\includegraphics[width=8cm]{charts/cs-time-work-1000-B-C-D}
 			\caption{Expected running time of the shared memory barriers with 1,000 cycles work period}
-			\label{fig:cs-work-1000-B-C-D}
+			\label{fig:cs-time-work-1000-B-C-D}
 		\end{figure}
 		\begin{itemize}
 			\item very different picture.
@@ -996,12 +996,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item probability of a thread trying to write while no one is writing at the moment increases, due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
 			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for central counter.
 		\end{itemize}
-	\item percent Figure~\ref{fig:cs-work-1000-percent}
+	\item percent Figure~\ref{fig:cs-time-work-1000-percent}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/cs-work-1000-percent}
+			\includegraphics[width=8cm]{charts/cs-time-work-1000-percent}
 			\caption{Percentage of time spent writing vs time spent reading with 1,000 cycles work period}
-			\label{fig:cs-work-1000-percent}
+			\label{fig:cs-time-work-1000-percent}
 		\end{figure}
 		\begin{itemize}
 			\item less busy waiting due to larger arrival gaps
@@ -1016,12 +1016,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-distributed}
 \begin{itemize}
 	\item work = 100. Very Small.
-	\item last to last, last to first Figure~\ref{fig:df-work-100-B-C-D}
+	\item last to last, last to first Figure~\ref{fig:df-time-work-100-B-C-D}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/df-work-100-B-C-D}
+			\includegraphics[width=8cm]{charts/df-time-work-100-B-C-D}
 			\caption{Expected running time of the distributed memory barriers}
-			\label{fig:df-work-100-B-C-D}
+			\label{fig:df-time-work-100-B-C-D}
 		\end{figure}
 		\begin{itemize}
 			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC semantics.
@@ -1029,34 +1029,34 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item values within expectation
 			\item ronny's fancy is quicker
 		\end{itemize}
-	\item distribution of total time spent: Figure~\ref{fig:df-work-100-partition}
+	\item distribution of total time spent: Figure~\ref{fig:df-time-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/df-work-100-partition}
+			\includegraphics[width=8cm]{charts/df-time-work-100-partition}
 			\caption{Distribution of total time spent}
-			\label{fig:df-work-100-partition}
+			\label{fig:df-time-work-100-partition}
 		\end{figure}
 		\begin{itemize}
 			\item similar picture including work period
 		\end{itemize}
-	\item dissemination: distribution of total time spent: Figure~\ref{fig:d-work-100-partition}
+	\item dissemination: distribution of total time spent: Figure~\ref{fig:d-time-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/d-work-100-partition}
+			\includegraphics[width=8cm]{charts/d-time-work-100-partition}
 			\caption{Distribution of total time spent}
-			\label{fig:d-work-100-partition}
+			\label{fig:d-time-work-100-partition}
 		\end{figure}
 		\begin{itemize}
-			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds (can be observed in Figure~\ref{fig:df-work-100-B-C-D} as well.
+			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds (can be observed in Figure~\ref{fig:df-time-work-100-B-C-D} as well.
 			\item unfavourable for non-power-of-two processes counts. Ref to Section~\ref{sssec:analysis-general-distributed}
 			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. Can be seen as resource conflicts for remote transfers. Realistic.
 		\end{itemize}
-	\item progress problem of the dissemination barrier: Figure~\ref{fig:d-work-1000-partition}
+	\item progress problem of the dissemination barrier: Figure~\ref{fig:d-time-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/d-work-1000-partition}
+			\includegraphics[width=8cm]{charts/d-time-work-1000-partition}
 			\caption{Distribution of total time spent}
-			\label{fig:d-work-1000-partition}
+			\label{fig:d-time-work-1000-partition}
 		\end{figure}
 		\begin{itemize}
 			\item overhead per round dependent on process count as explained in Section~\ref{sssec:analysis-general-distributed}
