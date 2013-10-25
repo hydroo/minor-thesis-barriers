@@ -29,6 +29,7 @@ LISTINGS = \
 TIKZ = \
 	tikz/diagram-central-counter.tex \
 	tikz/diagram-dissemination.tex \
+	tikz/diagram-gather-broadcast.tex \
 	tikz/model-central-counter.tex \
 	tikz/model-dissemination.tex \
 	tikz/model-ronny-simple.tex \

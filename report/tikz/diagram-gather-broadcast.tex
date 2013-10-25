@@ -1,0 +1,95 @@
+\begin{tikzpicture}[]
+
+%pivotal nodes
+\node [               draw=none  ]   (a) {};
+\node [left of=a     ,draw=none,distance=2cm  ]  (ya) {\textbf{Gather:}};
+\node [o, below of=a,            ]  (0a) {0};
+\node [o, below of=0a            ]  (0b) {0};
+\node [o, below of=0b            ]  (0c) {0};
+\node [below of=0c   , draw=none ]   (d) {};
+\node [left of=d     , draw=none ]  (yd) {\textbf{Broadcast:}};
+\node [o, below of=d             ]  (0d) {0};
+\node [o, below of=0d            ]  (0e) {0};
+\node [o, below of=0e            ]  (0f) {0};
+
+% gather 1
+\path (0a) ++(180:1.2cm) node [node] (xa) {Round 1:};
+\node [o, right of=0a            ]  (1a) {1};
+\node [o, right of=1a            ]  (2a) {2};
+\node [o, right of=2a            ]  (3a) {3};
+\node [o, right of=3a            ]  (4a) {4};
+\node [o, right of=4a            ]  (5a) {5};
+\node [o, right of=5a            ]  (6a) {6};
+\node [o, right of=6a            ]  (7a) {7};
+
+\path [<-] (0a) edge (1a)
+           (2a) edge (3a)
+           (4a) edge (5a)
+           (6a) edge (7a);
+
+% gather 2
+\path (0b) ++(180:1.2cm) node [node] (xb) {Round 2:};
+\node [o, right of=0b,draw=none  ]  (1b) {};
+\node [o, right of=1b            ]  (2b) {2};
+\node [o, right of=2b,draw=none  ]  (3b) {};
+\node [o, right of=3b            ]  (4b) {4};
+\node [o, right of=4b,draw=none  ]  (5b) {};
+\node [o, right of=5b            ]  (6b) {6};
+\node [o, right of=6b,draw=none  ]  (7b) {};
+
+\path [<-] (0b) edge (2b)
+           (4b) edge (6b);
+
+% gather 3
+\path (0c) ++(180:1.2cm) node [node] (xc) {Round 3:};
+\node [o, right of=0c,draw=none  ]  (1c) {};
+\node [o, right of=1c,draw=none  ]  (2c) {};
+\node [o, right of=2c,draw=none  ]  (3c) {};
+\node [o, right of=3c            ]  (4c) {4};
+\node [o, right of=4c,draw=none  ]  (5c) {};
+\node [o, right of=5c,draw=none  ]  (6c) {};
+\node [o, right of=6c,draw=none  ]  (7c) {};
+
+\path [<-] (0c) edge (4c);
+
+% broadcast 1
+\path (0d) ++(180:1.2cm) node [node] (xd) {Round 1:};
+\node [o, right of=0d,draw=none  ]  (1d) {};
+\node [o, right of=1d,draw=none  ]  (2d) {};
+\node [o, right of=2d,draw=none  ]  (3d) {};
+\node [o, right of=3d            ]  (4d) {4};
+\node [o, right of=4d,draw=none  ]  (5d) {};
+\node [o, right of=5d,draw=none  ]  (6d) {};
+\node [o, right of=6d,draw=none  ]  (7d) {};
+
+\path [->] (0d) edge (4d);
+
+% broadcast 2
+\path (0e) ++(180:1.2cm) node [node] (xe) {Round 2:};
+\node [o, right of=0e,draw=none  ]  (1e) {};
+\node [o, right of=1e            ]  (2e) {2};
+\node [o, right of=2e,draw=none  ]  (3e) {};
+\node [o, right of=3e            ]  (4e) {4};
+\node [o, right of=4e,draw=none  ]  (5e) {};
+\node [o, right of=5e            ]  (6e) {6};
+\node [o, right of=6e,draw=none  ]  (7e) {};
+
+\path [->] (0e) edge (2e)
+           (4e) edge (6e);
+
+% broadcast 3
+\path (0f) ++(180:1.2cm) node [node] (xf) {Round 3:};
+\node [o, right of=0f            ]  (1f) {1};
+\node [o, right of=1f            ]  (2f) {2};
+\node [o, right of=2f            ]  (3f) {3};
+\node [o, right of=3f            ]  (4f) {4};
+\node [o, right of=4f            ]  (5f) {5};
+\node [o, right of=5f            ]  (6f) {6};
+\node [o, right of=6f            ]  (7f) {7};
+
+\path [->] (0f) edge (1f)
+           (2f) edge (3f)
+           (4f) edge (5f)
+           (6f) edge (7f);
+
+\end{tikzpicture}
