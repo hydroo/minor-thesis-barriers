@@ -1117,7 +1117,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subparagraph{Distributed memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-distributed}
 \begin{itemize}
-	\item work = 100. Very Small.
+	\item work = 100
 	\item last to last, last to first Figure~\ref{fig:df-time-work-100-B-C-D}
 		\begin{figure}[htbp]
 			\centering
@@ -1153,7 +1153,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item unfavourable for non-power-of-two processes counts. Ref to Section~\ref{sssec:analysis-general-distributed}
 			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. Can be seen as resource conflicts for remote transfers. Realistic.
 		\end{itemize}
-	\item progress problem of the dissemination barrier: Figure~\ref{fig:d-time-work-1000-partition}
+	\item progress problem of the dissemination barrier: Figure~\ref{fig:df-time-work-1000-partition}, Figure~\ref{fig:d-time-work-1000-partition}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/df-time-work-1000-partition}
+			\caption{Distribution of total time spent}
+			\label{fig:df-time-work-1000-partition}
+		\end{figure}
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=8cm]{charts/d-time-work-1000-partition}
@@ -1161,13 +1167,16 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:d-time-work-1000-partition}
 		\end{figure}
 		\begin{itemize}
-			\item overhead per round dependent on process count as explained in Section~\ref{sssec:analysis-general-distributed}
-			\item ronny's fancy cannot be modelled for this process count. Would look better since only $\mathit{processCount}$ concurrent reads are needed to complete the barrier and, not multiple rounds with waiting in between.
+			\item emulated by work rate $1/1000$
+			\item dissemination has to wait for each round to finish before making more progress
+			\item ronny's fancy is considerably faster for process counts above 2
+			\item ronny's fancy cannot be modelled for process counts that are needed to quantify this properly. Model checking restrictions.
+			\item a third round adds about 200 more cycles to the runtime
 		\end{itemize}
 	\item number of remote transfers
 		\begin{itemize}
 			\item fixed for dissemination as explained in Section~\ref{sssec:analysis-general-distributed}. $n \cdot \lceil \log _2~n \rceil$
-			\item between $2 \cdot (n-1)$ and $n \cdot (n-1)$. 2*(n-1) practically never happens because the access pattern of the algorithm doesn't do it.
+			\item between $2 \cdot (n-1)$ and $n \cdot (n-1)$. Both practically never happens because the access pattern of the algorithm.
 			\item hard to estimate, because the randomness of the system defines this number.
 			\item work=100. Figure~\ref{fig:df-transfers-100}
 				\begin{figure}[htbp]
