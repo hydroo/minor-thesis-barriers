@@ -172,20 +172,6 @@ def generateRewards(processCount) :
 	s += "    all_are_done : base_rate;\n"
 	s += "endrewards\n\n"
 
-	s += "// round_#_one is the time from one enters a round until one enters the next round\n"
-	s += "// correctness queries show how the state space is partitioned\n"
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		s += "rewards \"time_round_%d_one\"\n" % r
-		s += "    round_%d_one : base_rate;\n" % r
-		s += "endrewards\n\n"
-
-	s += "// round_#_all is the time from all entered a round until all entered the next round\n"
-	s += "// correctness queries show how the state space is partitioned\n"
-	for r in range(0, int(math.log(maxDist, 2)) + 1) :
-		s += "rewards \"time_round_%d_all\"\n" % r
-		s += "    round_%d_all : base_rate;\n" % r
-		s += "endrewards\n\n"
-
 	for r in range(0, int(math.log(maxDist, 2)) + 1) :
 		s += "rewards \"time_up_to_round_%d_one\"\n" % r
 		s += "    up_to_round_%d_one : base_rate;\n" % r
