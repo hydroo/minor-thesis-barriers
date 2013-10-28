@@ -951,7 +951,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item (B) last thread entered the barrier
 			\item (C) first thread left the barrier
 			\item (D) last thread left the barrier
-			\item (E) (only for central counter and ronny's simple) the last thread finished writing
+			\item (W) (only for central counter and ronny's simple) the last thread finished writing
 			\item (R$i$) (only for dissemination) last process left round $i$, i.e. entered round $i+1$. The current round of process is determined through the variable $\mathit{dist}$. $\mathit{round} = 1 + \log_2 \mathit{dist}$.
 		\end{itemize}
 	\item resulting properties
@@ -973,7 +973,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{left_t} )$
 				\end{center}
-			\item \textbf{E:} \emph{Average reward until the last thread finished writing}
+			\item \textbf{W:} \emph{Average reward until the last thread finished writing}
 				\begin{center}
 					$\mathrm{ReaRew}(\forall t \in T . \mathit{done\_writing_t} )$
 				\end{center}
