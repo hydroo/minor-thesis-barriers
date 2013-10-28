@@ -188,8 +188,62 @@ def generateRewards(processCount) :
 			s += "    [put_%d_%d] true : 1;\n" % (i, j)
 	s += "endrewards\n\n"
 
+	s += "\n" + operationRewards("all_are_working", processCount)
+
+	s += "\n" + operationRewards("one_is_working", processCount)
+
+	s += "\n" + operationRewards("not_one_is_done", processCount)
+
+	s += "\n" + operationRewards("not_all_are_done", processCount)
+
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		s += "\n" + operationRewards("up_to_round_%d_one" % r, processCount)
+		s += "\n" + operationRewards("up_to_round_%d_all" % r, processCount)
 
 	return s
+
+def operationRewards(guard, processCount) :
+
+	s = ""
+
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
+
+	if guard.startswith("not_") :
+		guardName = "!" + guard[4:]
+	else :
+		guardName = guard
+	localRewardName = "local_operations_" + guard
+	remoteRewardName = "remote_operations_" + guard
+
+	s += "rewards \"%s\"\n" % localRewardName
+	for p in range(0, processCount) :
+		for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
+			s += "    [wait_%d_%d] %s  : 1;\n" % ((p-dist) % processCount, p, guardName)
+	s += "endrewards\n"
+
+	s += "rewards \"%s\"\n" % remoteRewardName
+	for p in range(0, processCount) :
+		for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
+			s += "    [put_%d_%d] %s : 1;\n" % (p, (p + dist) % processCount, guardName)
+	s += "endrewards\n"
+
+	# module process_#                                                                                     # (local ops, remote ops)
+	#
+	# [put_#_%d]  l_#=l_put  & dist_# = %d                   -> put  : (l_#'=l_wait)                       # (0, 1)
+	#
+	#if dist != maxDist :
+	# [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> tick : (l_#'=l_put) & (dist_#'=dist_#*2)  # (1, 0)
+	#else
+	# [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> tick : (l_#'=l_done)                      # (1, 0)
+	#
+	# [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_# != true -> tick : true                               # (1, 0)
+	#
+	# [done_#]   l_#=l_done                                -> rare : true                                  # (0, 0)
+	#
+	# endmodule
+
+	return s
+
 
 def generateLabels(processCount) :
 
@@ -337,6 +391,35 @@ def generateQuantitativeProperties(processCount) :
 
 	t += "// cumulative queries end\n\n"
 	# ### cumulative queries end
+
+	# ### operation counting queries begin
+	t += "// operation countingqueries begin\n\n"
+
+	queries = [
+		#[key, query, comment]
+		["Al", "local_operations_all_are_working"     , "local operations up to: first finished working and entered"],
+		["Ar", "remote_operations_all_are_working"    , "remote operations up to: first finished working and entered"],
+		["Bl", "local_operations_one_is_working"      , "local operations up to: last finished working and entered"],
+		["Br", "remote_operations_one_is_working"     , "remote operations up to: last finished working and entered"],
+		["Cl", "local_operations_not_one_is_done"     , "local operations up to: first recognized the barrier is full and left"],
+		["Cr", "remote_operations_not_one_is_done"    , "remote operations up to: first recognized the barrier is full and left"],
+		["Dl", "local_operations_not_all_are_done"    , "local operations up to: all recognized the barrier is full and left"],
+		["Dr", "remote_operations_not_all_are_done"   , "remote operations up to: all recognized the barrier is full and left"],
+	]
+	for r in range(0, int(math.log(maxDist, 2)) + 1) :
+		queries.append(["%dol" % r, "local_operations_up_to_round_%d_one" % r, "time up to: first entered round %d" % (r+1)])
+		queries.append(["%dor" % r, "remote_operations_up_to_round_%d_one" % r, "time up to: first entered round %d" % (r+1)])
+		queries.append(["%dal" % r, "local_operations_up_to_round_%d_all" % r, "time up to: last entered round %d" % (r+1)])
+		queries.append(["%dar" % r, "remote_operations_up_to_round_%d_all" % r, "time up to: last entered round %d" % (r+1)])
+
+	for query in queries :
+		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
+		t += "R{\"%s\"}=? [C<=time]\n" % query[1]
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
+		t += "\n"
+
+	t += "// operation counting queries end\n\n"
+	# ### operation counting queries end
 
 	t += "const double time=ticks/base_rate;\n"
 	t += "const double ticks;\n"
