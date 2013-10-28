@@ -1002,7 +1002,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subparagraph{Shared memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-shared}
 \begin{itemize}
-	\item work = 100. Very Small.
+	\item work = 100. Assume that barriers arrive within about 150 cycles of each other. Very small.
 	\item last to last, last to first Figure~\ref{fig:cs-time-work-100-B-C-D}
 		\begin{figure}[htbp]
 			\centering
@@ -1014,7 +1014,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item similarly fast when considering the last one to finish
 			\item ronny's simple faster for the first one to leave
 		\end{itemize}
-	\item distribution of total time spent: Figure~\ref{fig:cs-work-100-partition}
+	\item distribution of total time and energy spent: Figure~\ref{fig:cs-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=8cm]{charts/cs-time-work-100-partition}
@@ -1022,23 +1022,23 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\caption{Distribution of total time spent and energy consumed}
 			\label{fig:cs-work-100-partition}
 		\end{figure}
-		time
+	\item time
 		\begin{itemize}
-			\item stacked fashion. Writing starts during one working. Reading starts during writing.
-			\item work is equal for everyone, obviously
-			\item first thread leaves a few cycles after writing is done. Because the last one to write its value will
-				read the completed barrier and immediately leaves.
+			\item stacked fashion. Including the time of the previous bar.
+			\item work is equal for everyone, because the distribution is the same for all.
+			\item first thread leaves a few cycles after writing is done. Because the last one to write its value will likely immediately read the completed barrier and leave.
 			\item last thread exits when reading is done. Because when reading is done, we are done.
 			\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
 			\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
+			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
 		\end{itemize}
-		energy
+	\time energy
 		\begin{itemize}
 			\item similar to time
-			\item ronny's simple needs more energy. Because it performs more shared memory actions and more local operations in the same amount of time. Doesn't wait for atomic ops as central counter is.
+			\item ronny's simple needs more energy. Because it performs more shared memory actions and more local operations in the same amount of time. Doesn't wait for atomic ops as central counter does.
 			\item central counter's energy scales similarly to time.
 			\item amount of energy for ronny's simple grows faster than time needed. 2 to 4. Double energy. Less than double time.
-			\item ronny's simple spends considerable energy from the last commitment to first leaving the barrier. Obvious why from the algorithms. (and same as time)
+			\item ronny's simple spends considerable energy from the last commitment to first leaving the barrier.
 		\end{itemize}
 	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-energy-work-100-phases}
 		\begin{figure}[htbp]
@@ -1048,10 +1048,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:cs-energy-work-100-phases}
 		\end{figure}
 		\begin{itemize}
+			\item same partitioning as the previous figure.
 			\item (A) all working has 11W - the baseline.
 			\item overall low for central counter (16-18.3W), ronny's simple (19.4 - 30.6)
-			\item no one left: cc: high because very short, rs: high because many shared reads across many threads.
-			\item one left similar because cc: one or zero shared reads, rs: few shared reads, many local reads.
+			\item writing considerably higher for rs, because quicker and more shared memory operations.
+			\item no one left: cc: high because very very short, rs: high because many shared reads across many threads.
+			\item one left similar because cc: shared reads, rs: shared reads, and local reads.
 		\end{itemize}
 	\item reading vs writing: Figure~\ref{fig:cs-time-work-100-percent}
 		\begin{figure}[htbp]
@@ -1061,9 +1063,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:cs-time-work-100-percent}
 		\end{figure}
 		\begin{itemize}
-			\item another picture showing writing vs reading.
+			\item writing is until (A) to (W). Reading is from (W) to (D).
 			\item atomic ops queue up. Parallel writes do not.
-			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
 		\end{itemize}
 	\item work=1000. Still very small.
 	\item last to last, last to first Figure~\ref{fig:cs-time-work-1000-B-C-D}
@@ -1079,7 +1080,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item probability of a thread trying to write while no one is writing at the moment increases, due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
 			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for central counter.
 		\end{itemize}
-	\item distribution of total time spent: Figure~\ref{fig:cs-work-1000-partition}
+	\item distribution of total time and energy spent: Figure~\ref{fig:cs-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=8cm]{charts/cs-time-work-1000-partition}
@@ -1087,13 +1088,16 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\caption{Distribution of total time spent and energy consumed}
 			\label{fig:cs-work-1000-partition}
 		\end{figure}
-		time
+		\begin{itemize}
+			\item Excluding (A) and (B) since they are large in comparison to the barrier
+		\end{itemize}
+	\item time
 		\begin{itemize}
 			\item as expected
 		\end{itemize}
-		energy
+	\item energy
 		\begin{itemize}
-			\item why does the writing phase for ronny's simple take more energy with more threads? Should be even with central counter shouldn't it?
+			\item writing is constant across multiple threads because the atomic op forbids reading the variable thus there is few busy waiting, whereas ronny's simple is constantly polling. And the amount increases with increasing thread count.
 		\end{itemize}
 	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-energy-work-1000-phases}
 		\begin{figure}[htbp]
@@ -1105,18 +1109,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item more even. (1) longer work period. (2) cc and rs use similarly many shared and local operations (due to busy waiting) in the reading phase ((D) one left). Energy usage is dominated by busy waiting of threads.
 			\item ronny's simple can catch up considerably. (cc:14.6-20.9, rs:15.3-23.5)
-		\end{itemize}
-	\item percent Figure~\ref{fig:cs-time-work-1000-percent}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=8cm]{charts/cs-time-work-1000-percent}
-			\caption{Percentage of time spent writing vs time spent reading with 1,000 cycles work period}
-			\label{fig:cs-time-work-1000-percent}
-		\end{figure}
-		\begin{itemize}
-			\item less busy waiting due to larger arrival gaps
-			\item writing time advantage of ronny's simple is diminished.
-			\item ronny's simple reading time increases linearly with the number of threads (2:77, 3:148, 4:218 cycles). Expectation is ~50 across all thread counts in reality.
 		\end{itemize}
 	\item with larger and more realistic, since 1000 cycles is still very few, work periods this yields a series of writing operations for both algorithms, and a little more time spent reading for ronny's simple barrier.
 \end{itemize}
