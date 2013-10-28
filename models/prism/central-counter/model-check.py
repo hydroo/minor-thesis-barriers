@@ -104,13 +104,18 @@ if __name__ == "__main__":
 	#
 	#print("")
 
-	#print("# percentage writing vs reading")
-	#print("# n   Ece   Dce")
-	#for n in threadCounts :
-	#	call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
-	#	ece = float(modelCheck(filePrefix, Ece, None, debug))
-	#	dce = float(modelCheck(filePrefix, Dce, None, debug))
-	#	print(n, "%5.2f %5.2f" % (ece / (ece+dce), dce / (ece+dce)))
+	#for work in works :
+	#	print("# percentage writing vs reading")
+	#	print("# n   Ece   Dce")
+	#	for n in threadCounts :
+	#		call("./gen.py -n %d --work %d %s" % (n, work, filePrefix))
+	#		ace = float(modelCheck(filePrefix, Ace, None, debug))
+	#		ece = float(modelCheck(filePrefix, Ece, None, debug))
+	#		dce = float(modelCheck(filePrefix, Dce, None, debug))
+	#		d = dce - ece
+	#		e = ece - ace
+
+	#		print(n, "%5.2f %5.2f" % (e/(e+d), d/(e+d)))
 
 	#print("")
 
