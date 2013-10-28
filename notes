@@ -47,6 +47,8 @@
     add-fetch-contested   t   2, reps  196608000, wallSecs 11.144 sec, totalPower 16.125 W, cycles/reps 141.707, nJ/reps 914.036
     add-fetch-uncontested t   2, reps 1413120000, wallSecs 10.939 sec, totalPower 20.350 W, cycles/reps 19.352, nJ/reps 157.528
     super-wasteful-2      t   2, reps  240615000, wallSecs 10.916 sec, totalPower 23.646 W, cycles/reps 113.423, nJ/reps 1072.795
+    super-wasteful-5      t   2, reps  642219000, wallSecs 11.000 sec, totalPower 25.691 W, cycles/reps 42.819, nJ/reps 440.031
+    dissemination         t   2, reps  195345000, wallSecs 11.000 sec, totalPower 24.501 W, cycles/reps 140.777, nJ/reps 1379.690
     # context t   2, sleepPower 4.242727 W, uncorePower 6.813289 W
 
 
@@ -77,6 +79,9 @@
     super-wasteful-5      t   2, reps  293178000, wallSecs 4.000 sec, totalPower 20.450 W, cycles/reps 34.108, nJ/reps 278.999
     super-wasteful-5      t   3, reps   90966000, wallSecs 4.000 sec, totalPower 27.119 W, cycles/reps 109.930, nJ/reps 1192.463
     super-wasteful-5      t   4, reps   82884000, wallSecs 4.000 sec, totalPower 28.272 W, cycles/reps 120.647, nJ/reps 1364.384
+    dissemination         t   2, reps  104778000, wallSecs 3.966 sec, totalPower 19.617 W, cycles/reps 94.633, nJ/reps 742.578
+    dissemination         t   3, reps   34200000, wallSecs 4.000 sec, totalPower 25.304 W, cycles/reps 292.387, nJ/reps 2959.420
+    dissemination         t   4, reps   29499000, wallSecs 4.000 sec, totalPower 27.806 W, cycles/reps 339.000, nJ/reps 3770.535
     # context t   4, sleepPower 4.092123 W, uncorePower 12.752734 W
 
 --- 13-10-05 ---
