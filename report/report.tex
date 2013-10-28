@@ -605,19 +605,21 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the dissemination barrier waits for its designated communication partner.
 	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
 	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
-	\item talk about the progress problem when one process is missing.
+	\item the progress problem
 		\begin{itemize}
-			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}
-			\item suppose process 4 has not entered the barrier.
-			\item Figure~\ref{fig:diagram-dissemination-progress}
+			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}. All processes arrive timely.
+			\item more normal that one or more processes are missing.
+			\item how much progress can a barrier make while not all processes have arrived?
+			\item suppose process 4 has not entered. Modified diagram of the progress through the rounds: Figure~\ref{fig:diagram-dissemination-progress}
 				\begin{figure}[htbp]
 					\centering
 					\input{tikz/diagram-dissemination-progress}
 					\caption{Progress through the rounds of the dissemination barrier}
 					\label{fig:diagram-dissemination-progress}
 				\end{figure}
-			\item number of blocked processes doubles each round. (same for non-power of two process counts)
-			\item each one of these blocked processes then needs to finish the still to do rounds until the protocol succeeds
+			\item process 4 does not notify process 5, therefore in the next round process 5 cannot notify process 7 and so on.
+			\item number of blocked processes doubles each round.
+			\item once process 4 arrives each one of these blocked processes then needs to finish the still to do rounds until the protocol succeeds
 			\item who knows of whose arrival Figure~\ref{fig:table-dissemination-progress}
 				\begin{figure}[htbp]
 					\centering
@@ -702,7 +704,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\caption{Which process knows of which other's arrival}
 					\label{fig:table-dissemination-progress}
 				\end{figure}
-			\item ronny's fancy does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to one more successful remote read. Those can be done in parallel.
+			\item all this is also true for non-power of two process counts.
+			\item ronny's fancy does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to do one more successful remote read. Those can be done in parallel.
 			\item quantifying this effect will be done in the following section.
 		\end{itemize}
 \end{itemize}
