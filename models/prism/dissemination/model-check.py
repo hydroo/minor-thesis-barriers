@@ -213,7 +213,7 @@ if __name__ == "__main__":
 
 	#		#print(" ", n, "%8.2f %7.2f %8.2f %7.2f %8.2f %7.2f %8.2f %7.2f" % (ale, are, ble-ale, bre-are, cle-ble, cre-bre, dle-cle, dre-cre))
 	#		#print(" ", n, "%6.2f %6.2f %6.2f %6.2f" % (aj, bj-aj, cj-bj, dj-cj))
-	#		print(" ", n, "%6.2f %6.2f %6.2f %6.2f %8.2f" % (aw, bw, cw, dw, ))
+	#		print(" ", n, "%6.2f %6.2f %6.2f %6.2f %8.2f" % (aw, bw, cw, dw, overallw))
 
 	#print("")
 
