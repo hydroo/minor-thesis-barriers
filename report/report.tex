@@ -940,6 +940,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item trew shared memory operations = 200nJ
 					\item trew cached shared memory operation = 2nJ
 					\item trew any other operation = 0nJ
+					\item for dist: remote 200nJ, local memory op = 2nJ, others none
 					\item baseline of 11W
 					\item \todo where to put how i got these numbers? reference measurement on core i5-2520M (2.5ghz). Trying to fit number of shared/local operations to measurements.
 				\end{itemize}
@@ -1131,47 +1132,92 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item values within expectation
 			\item ronny's fancy is quicker
 		\end{itemize}
-	\item distribution of total time spent: Figure~\ref{fig:df-time-work-100-partition}
+	\item distribution of total time spent: Figure~\ref{fig:df-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=8cm]{charts/df-time-work-100-partition}
-			\caption{Distribution of total time spent}
-			\label{fig:df-time-work-100-partition}
+			\includegraphics[width=8cm]{charts/df-energy-work-100-partition}
+			\caption{Distribution of total time and energy spent}
+			\label{fig:df-work-100-partition}
 		\end{figure}
 		\begin{itemize}
-			\item similar picture including work period
+			\item \todo
 		\end{itemize}
-	\item dissemination: distribution of total time spent: Figure~\ref{fig:d-time-work-100-partition}
+	\item dissemination: distribution of total time spent: Figure~\ref{fig:d-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=8cm]{charts/d-time-work-100-partition}
+			\includegraphics[width=8cm]{charts/d-energy-work-100-partition}
 			\caption{Distribution of total time spent for the dissemination barrier}
-			\label{fig:d-time-work-100-partition}
+			\label{fig:d-work-100-partition}
 		\end{figure}
 		\begin{itemize}
 			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds (can be observed in Figure~\ref{fig:df-time-work-100-B-C-D} as well.
 			\item unfavourable for non-power-of-two processes counts. Ref to Section~\ref{sssec:analysis-general-distributed}
 			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. Can be seen as resource conflicts for remote transfers. Realistic.
 		\end{itemize}
-	\item progress problem of the dissemination barrier: Figure~\ref{fig:df-time-work-1000-partition}, Figure~\ref{fig:d-time-work-1000-partition}
+	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-100}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/df-power-work-100}
+			\caption{Power consumption rate per phase}
+			\label{fig:df-power-work-100}
+		\end{figure}
+		\begin{itemize}
+			\item \todo
+		\end{itemize}
+	\item rate of power consumption dissemination only: Figure~\ref{fig:d-power-work-100}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/d-power-work-100}
+			\caption{Power consumption rate per phase}
+			\label{fig:d-power-work-100}
+		\end{figure}
+		\begin{itemize}
+			\item \todo
+		\end{itemize}
+	\item work=1000
+	\item distribution of total time spent: Figure~\ref{fig:df-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=8cm]{charts/df-time-work-1000-partition}
+			\includegraphics[width=8cm]{charts/df-energy-work-1000-partition}
 			\caption{Distribution of total time spent}
-			\label{fig:df-time-work-1000-partition}
+			\label{fig:df-work-1000-partition}
 		\end{figure}
+		\begin{itemize}
+			\item \todo
+		\end{itemize}
+	\item dissemination: distribution of total time spent: Figure~\ref{fig:d-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=8cm]{charts/d-time-work-1000-partition}
+			\includegraphics[width=8cm]{charts/d-energy-work-1000-partition}
 			\caption{Distribution of total time spent for the dissemination barrier}
-			\label{fig:d-time-work-1000-partition}
+			\label{fig:d-work-1000-partition}
 		\end{figure}
 		\begin{itemize}
-			\item emulated by work rate $1/1000$
-			\item dissemination has to wait for each round to finish before making more progress
-			\item ronny's fancy is considerably faster for process counts above 2
-			\item ronny's fancy cannot be modelled for process counts that are needed to quantify this properly. Model checking restrictions.
-			\item a third round adds about 200 more cycles to the runtime
+			\item \todo
+		\end{itemize}
+	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-1000}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/df-power-work-1000}
+			\caption{Power consumption rate per phase}
+			\label{fig:df-power-work-1000}
+		\end{figure}
+		\begin{itemize}
+			\item \todo
+		\end{itemize}
+	\item rate of power consumption dissemination only: Figure~\ref{fig:d-power-work-1000}
+		\begin{figure}[htbp]
+			\centering
+			\includegraphics[width=8cm]{charts/d-power-work-1000}
+			\caption{Power consumption rate per phase}
+			\label{fig:d-power-work-1000}
+		\end{figure}
+		\begin{itemize}
+			\item \todo
 		\end{itemize}
 	\item number of remote transfers
 		\begin{itemize}
