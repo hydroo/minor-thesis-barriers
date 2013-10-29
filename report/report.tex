@@ -1119,42 +1119,43 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-distributed}
 \begin{itemize}
 	\item work = 100
-	\item last to last, last to first Figure~\ref{fig:df-time-work-100-B-C-D}
+	\item distribution of total time spent and total energy consumed: Figure~\ref{fig:df-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/df-time-work-100-B-C-D}
-			\caption{Expected running time of the distributed memory barriers}
-			\label{fig:df-time-work-100-B-C-D}
-		\end{figure}
-		\begin{itemize}
-			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC semantics.
-			\item dissemination quicker for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
-			\item values within expectation
-			\item ronny's fancy is quicker
-		\end{itemize}
-	\item distribution of total time spent: Figure~\ref{fig:df-work-100-partition}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=8cm]{charts/df-time-work-100-partition}
-			\includegraphics[width=8cm]{charts/df-energy-work-100-partition}
-			\caption{Distribution of total time and energy spent}
+			\begin{minipage}[b]{0.54\linewidth}
+				\includegraphics[height=4.6cm]{charts/df-time-work-100-partition}
+			\end{minipage}
+			\begin{minipage}[b]{0.42\linewidth}
+				\includegraphics[height=4.6cm]{charts/df-energy-work-100-partition}
+			\end{minipage}
+			\caption{Distribution of total time spent and energy consumed}
 			\label{fig:df-work-100-partition}
 		\end{figure}
 		\begin{itemize}
-			\item \todo
+			\item ronny's fancy is quicker for process counts over two
+			\item dissemination quicker for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
+			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC semantics.
+			\item more time between first and last to leave.
+			\item last and first exit at almost the same time for dissemination. Explain probably not because boring.
+			\item energy consumption similar to time spent in proportion
 		\end{itemize}
-	\item dissemination: distribution of total time spent: Figure~\ref{fig:d-work-100-partition}
+	\item dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/d-time-work-100-partition}
-			\includegraphics[width=8cm]{charts/d-energy-work-100-partition}
-			\caption{Distribution of total time spent for the dissemination barrier}
+			\begin{minipage}[b]{0.42\linewidth}
+				\includegraphics[height=4.3cm]{charts/d-time-work-100-partition}
+			\end{minipage}
+			\begin{minipage}[b]{0.54\linewidth}
+				\includegraphics[height=4.3cm]{charts/d-energy-work-100-partition}
+			\end{minipage}
+			\caption{Distribution of total time spent and energy consumed for the dissemination barrier}
 			\label{fig:d-work-100-partition}
 		\end{figure}
 		\begin{itemize}
-			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds (can be observed in Figure~\ref{fig:df-time-work-100-B-C-D} as well.
+			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds.
 			\item unfavourable for non-power-of-two processes counts. Ref to Section~\ref{sssec:analysis-general-distributed}
-			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. Can be seen as resource conflicts for remote transfers. Realistic.
+			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. Can be seen as resource conflicts for remote transfers.
+			\item energy consumption increase per round a bit larger than runtime increase, because more remote and local operations are being issued.
 		\end{itemize}
 	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-100}
 		\begin{figure}[htbp]
@@ -1164,40 +1165,47 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:df-power-work-100}
 		\end{figure}
 		\begin{itemize}
-			\item \todo
+			\item overall relatively similar between the two algorithms
+			\item largely because the comparing to the rewards given for operations the amount of energy consumed is similar.
+			\item dissemination issues less remote operations, but due to local wait spinning a lot of local operations, ronny's fancy on the other hand polls remotely.
+			\item in the last phase ronny's fancy draws less power because it takes a lot more time for a little more energy to be consumed.
+			\item overall ronny's fancy performs a bit better.
 		\end{itemize}
-	\item rate of power consumption dissemination only: Figure~\ref{fig:d-power-work-100}
+	\item longer work period. work=1000
+	\item distribution of total time spent and energy consumed: Figure~\ref{fig:df-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/d-power-work-100}
-			\caption{Power consumption rate per phase}
-			\label{fig:d-power-work-100}
-		\end{figure}
-		\begin{itemize}
-			\item \todo
-		\end{itemize}
-	\item work=1000
-	\item distribution of total time spent: Figure~\ref{fig:df-work-1000-partition}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/df-time-work-1000-partition}
-			\includegraphics[width=10cm]{charts/df-energy-work-1000-partition}
-			\caption{Distribution of total time spent}
+			\begin{minipage}[b]{0.54\linewidth}
+				\includegraphics[height=4.6cm]{charts/df-time-work-1000-partition}
+			\end{minipage}
+			\begin{minipage}[b]{0.42\linewidth}
+				\includegraphics[height=4.6cm]{charts/df-energy-work-1000-partition}
+			\end{minipage}
+			\caption{Distribution of total time spent and energy consumed}
 			\label{fig:df-work-1000-partition}
 		\end{figure}
 		\begin{itemize}
-			\item \todo
+			\item excluding (A) and (B) because long.
+			\item first one to leave for rf unrealistic as in Figure~\ref{fig:df-work-100-partition}
+			\item serialization of arrivals makes the CTMC effect (slight increase in per round time with more processes) for dissemination go away
+			\item \todo talk about progress problem
 		\end{itemize}
-	\item dissemination: distribution of total time spent: Figure~\ref{fig:d-work-1000-partition}
+	\item dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=10cm]{charts/d-time-work-1000-partition}
-			\includegraphics[width=10cm]{charts/d-energy-work-1000-partition}
-			\caption{Distribution of total time spent for the dissemination barrier}
+			\begin{minipage}[b]{0.42\linewidth}
+				\includegraphics[height=4.3cm]{charts/d-time-work-1000-partition}
+			\end{minipage}
+			\begin{minipage}[b]{0.54\linewidth}
+				\includegraphics[height=4.3cm]{charts/d-energy-work-1000-partition}
+			\end{minipage}
+			\caption{Distribution of total time spent and energy consumed for the dissemination barrier}
 			\label{fig:d-work-1000-partition}
 		\end{figure}
 		\begin{itemize}
-			\item \todo
+			\item as expected
+			\item serialization makes the additional cost per round almost constant
+			\item energy increases with more processes because one more remote operation are issued per round
 		\end{itemize}
 	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-1000}
 		\begin{figure}[htbp]
@@ -1207,17 +1215,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:df-power-work-1000}
 		\end{figure}
 		\begin{itemize}
-			\item \todo
-		\end{itemize}
-	\item rate of power consumption dissemination only: Figure~\ref{fig:d-power-work-1000}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/d-power-work-1000}
-			\caption{Power consumption rate per phase}
-			\label{fig:d-power-work-1000}
-		\end{figure}
-		\begin{itemize}
-			\item \todo
+			\item overall power consumption very similar because of the 1000 cycle work rate
+			\item everything else similar to Figure~\ref{fig:df-power-work-100}
 		\end{itemize}
 	\item number of remote transfers
 		\begin{itemize}
