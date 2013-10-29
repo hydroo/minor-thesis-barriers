@@ -13,7 +13,7 @@
 \node [o, below of=0e            ]  (0f) {0};
 
 % gather 1
-\path (0a) ++(180:1.2cm) node [node] (xa) {Round 1:};
+\path (0a) ++(180:1.2cm) node []    (xa) {Round 1:};
 \node [o, right of=0a            ]  (1a) {1};
 \node [o, right of=1a            ]  (2a) {2};
 \node [o, right of=2a            ]  (3a) {3};
@@ -28,7 +28,7 @@
            (6a) edge (7a);
 
 % gather 2
-\path (0b) ++(180:1.2cm) node [node] (xb) {Round 2:};
+\path (0b) ++(180:1.2cm) node []    (xb) {Round 2:};
 \node [o, right of=0b,draw=none  ]  (1b) {};
 \node [o, right of=1b            ]  (2b) {2};
 \node [o, right of=2b,draw=none  ]  (3b) {};
@@ -41,7 +41,7 @@
            (4b) edge (6b);
 
 % gather 3
-\path (0c) ++(180:1.2cm) node [node] (xc) {Round 3:};
+\path (0c) ++(180:1.2cm) node []    (xc) {Round 3:};
 \node [o, right of=0c,draw=none  ]  (1c) {};
 \node [o, right of=1c,draw=none  ]  (2c) {};
 \node [o, right of=2c,draw=none  ]  (3c) {};
@@ -53,7 +53,7 @@
 \path [<-] (0c) edge (4c);
 
 % broadcast 1
-\path (0d) ++(180:1.2cm) node [node] (xd) {Round 1:};
+\path (0d) ++(180:1.2cm) node []    (xd) {Round 1:};
 \node [o, right of=0d,draw=none  ]  (1d) {};
 \node [o, right of=1d,draw=none  ]  (2d) {};
 \node [o, right of=2d,draw=none  ]  (3d) {};
@@ -65,7 +65,7 @@
 \path [->] (0d) edge (4d);
 
 % broadcast 2
-\path (0e) ++(180:1.2cm) node [node] (xe) {Round 2:};
+\path (0e) ++(180:1.2cm) node []    (xe) {Round 2:};
 \node [o, right of=0e,draw=none  ]  (1e) {};
 \node [o, right of=1e            ]  (2e) {2};
 \node [o, right of=2e,draw=none  ]  (3e) {};
@@ -78,7 +78,7 @@
            (4e) edge (6e);
 
 % broadcast 3
-\path (0f) ++(180:1.2cm) node [node] (xf) {Round 3:};
+\path (0f) ++(180:1.2cm) node []    (xf) {Round 3:};
 \node [o, right of=0f            ]  (1f) {1};
 \node [o, right of=1f            ]  (2f) {2};
 \node [o, right of=2f            ]  (3f) {3};

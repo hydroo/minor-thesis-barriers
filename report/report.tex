@@ -1032,7 +1032,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
 			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
 		\end{itemize}
-	\time energy
+	\item energy
 		\begin{itemize}
 			\item similar to time
 			\item ronny's simple needs more energy. Because it performs more shared memory actions and more local operations in the same amount of time. Doesn't wait for atomic ops as central counter does.
