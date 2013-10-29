@@ -2,9 +2,10 @@ IMAGES =
 
 CHARTS = \
 	charts/cs-energy-work-100-partition.eps \
-	charts/cs-energy-work-100-phases.eps \
 	charts/cs-energy-work-1000-partition.eps \
-	charts/cs-energy-work-1000-phases.eps \
+	\
+	charts/cs-power-work-100.eps \
+	charts/cs-power-work-1000.eps \
 	\
 	charts/cs-time-work-100-B-C-D.eps \
 	charts/cs-time-work-100-partition.eps \

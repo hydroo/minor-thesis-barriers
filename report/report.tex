@@ -1040,12 +1040,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item amount of energy for ronny's simple grows faster than time needed. 2 to 4. Double energy. Less than double time.
 			\item ronny's simple spends considerable energy from the last commitment to first leaving the barrier.
 		\end{itemize}
-	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-energy-work-100-phases}
+	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-power-work-100}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/cs-energy-work-100-phases}
+			\includegraphics[width=8cm]{charts/cs-power-work-100}
 			\caption{Power consumption rate per phase}
-			\label{fig:cs-energy-work-100-phases}
+			\label{fig:cs-power-work-100}
 		\end{figure}
 		\begin{itemize}
 			\item same partitioning as the previous figure.
@@ -1099,12 +1099,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item writing is constant across multiple threads because the atomic op forbids reading the variable thus there is few busy waiting, whereas ronny's simple is constantly polling. And the amount increases with increasing thread count.
 		\end{itemize}
-	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-energy-work-1000-phases}
+	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-power-work-1000}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=8cm]{charts/cs-energy-work-1000-phases}
+			\includegraphics[width=8cm]{charts/cs-power-work-1000}
 			\caption{Power consumption rate per phase}
-			\label{fig:cs-energy-work-1000-phases}
+			\label{fig:cs-power-work-1000}
 		\end{figure}
 		\begin{itemize}
 			\item more even. (1) longer work period. (2) cc and rs use similarly many shared and local operations (due to busy waiting) in the reading phase ((D) one left). Energy usage is dominated by busy waiting of threads.
