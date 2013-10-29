@@ -189,6 +189,54 @@ def generateRewards(processCount) :
 				s += "    [search_%d_%d] l_%d=l_search & mod(floor(bar_%d/me_bit_%d),2) = 0 & bar_%d =0 : 1;\n" % (j, i, i, i, j, j)
 	s += "endrewards\n\n"
 
+	s += "\n" + operationRewards("all_are_working", processCount)
+
+	s += "\n" + operationRewards("one_is_working", processCount)
+
+	s += "\n" + operationRewards("not_one_is_done", processCount)
+
+	s += "\n" + operationRewards("not_all_are_done", processCount)
+
+	return s
+
+def operationRewards(guard, processCount) :
+
+	s = ""
+
+	maxDist = 2**math.floor(math.log(processCount-1, 2))
+
+	if guard.startswith("not_") :
+		guardName = "!" + guard[4:]
+	else :
+		guardName = guard
+	localRewardName = "local_operations_" + guard
+	remoteRewardName = "remote_operations_" + guard
+
+	s += "rewards \"%s\"\n" % localRewardName
+	for p in range(0, processCount) :
+		s += "    [work_%d]     %s  : %d;\n" % (p, guardName, 1)
+		for q in range(0, processCount) :
+			s += "    [search_%d_%d] %s  : %d;\n" % (q, p, guardName, 1)
+	s += "endrewards\n"
+
+	s += "rewards \"%s\"\n" % remoteRewardName
+	for p in range(0, processCount) :
+		for i in range(0, processCount) :
+			if (i+1) % processCount != p :
+				s += "    [search_%d_%d] i_%d=%d & mod(floor(bar_%d/me_bit_%d),2) = 0 & %s : %d;\n" % ((i+1) % processCount, p, p, i, p, (i+1) % processCount, guardName, 1)
+	s += "endrewards\n"
+
+	# module process_#
+	#    [work_#]      l_#=l_work  -> work  : (l_#'=l_search) & (bar_#'=me_bit_#)                          #(local op: 1, remote op: 0)
+
+	# for i in range(0, processCount) :
+	#    [search_%d_#] l_#=l_search & bar_# has  me_bit_%d      ->  tick : (l_#'=l_search) & (i_#'=i_#+1 % process_count))      #(1, 0)
+	#    [search_%d_#] l_#=l_search & bar_# !has me_bit_%d ...  ->  get  : (l_#'=l_search) & (i_#'=i_#+1 % process_count)) ...  #(1, 1)
+	#    [search_%d_#] l_#=l_search & bar_# !has me_bit_%d ...  ->  get  : (l_#'=l_done)   & (i_#'=i_#+1 % process_count)) ...  #(1, 1)
+
+	#     [done_#]     l_#=l_done                               -> rare : true                                                  #(0, 0)
+	# endmodule
+
 	return s
 
 def generateLabels(processCount) :
@@ -306,6 +354,30 @@ def generateQuantitativeProperties(processCount) :
 
 	t += "// remote transfer queries end\n\n"
 	# ### remote transfer queries end
+
+	# ### operation counting queries begin
+	t += "// operation countingqueries begin\n\n"
+
+	queries = [
+		#[key, query, comment]
+		["Al", "local_operations_all_are_working"     , "local operations up to: first finished working and entered"],
+		["Ar", "remote_operations_all_are_working"    , "remote operations up to: first finished working and entered"],
+		["Bl", "local_operations_one_is_working"      , "local operations up to: last finished working and entered"],
+		["Br", "remote_operations_one_is_working"     , "remote operations up to: last finished working and entered"],
+		["Cl", "local_operations_not_one_is_done"     , "local operations up to: first recognized the barrier is full and left"],
+		["Cr", "remote_operations_not_one_is_done"    , "remote operations up to: first recognized the barrier is full and left"],
+		["Dl", "local_operations_not_all_are_done"    , "local operations up to: all recognized the barrier is full and left"],
+		["Dr", "remote_operations_not_all_are_done"   , "remote operations up to: all recognized the barrier is full and left"],
+	]
+
+	for query in queries :
+		t += "// (%s) and (%se) %s\n" % (query[0], query[0], query[2])
+		t += "R{\"%s\"}=? [C<=time]\n" % query[1]
+		t += "R{\"%s\"}=? [F all_are_done]\n" % query[1]
+		t += "\n"
+
+	t += "// operation counting queries end\n\n"
+	# ### operation counting queries end
 
 	t += "const double time=ticks/base_rate;\n"
 	t += "const double ticks;\n"
