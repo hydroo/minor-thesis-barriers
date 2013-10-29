@@ -44,7 +44,6 @@ if __name__ == "__main__":
 	debug=False
 	
 	filePrefix = "model-check"
-	# 4th threads doesn't work, but it works in the guy. god knows why.
 	threadCounts = [3, 2]
 	work = 100
 
