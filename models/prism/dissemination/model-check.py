@@ -211,8 +211,8 @@ if __name__ == "__main__":
 	#		dw       = ((dj-cj) * 1000.0) / ((dce-cce) / ghz)
 	#		overallw = ( dj     * 1000.0) / ( dce      / ghz)
 
-	#		#print(" ", n, "%8.2f %7.2f %8.2f %7.2f %8.2f %7.2f %8.2f %7.2f" % (ale, are, ble, bre, cle, cre, dle, dre))
-	#		#print(" ", n, "%6.2f %6.2f %6.2f %6.2f" % (aj, bj, cj, dj))
+	#		#print(" ", n, "%8.2f %7.2f %8.2f %7.2f %8.2f %7.2f %8.2f %7.2f" % (ale, are, ble-ale, bre-are, cle-ble, cre-bre, dle-cle, dre-cre))
+	#		#print(" ", n, "%6.2f %6.2f %6.2f %6.2f" % (aj, bj-aj, cj-bj, dj-cj))
 	#		print(" ", n, "%6.2f %6.2f %6.2f %6.2f %8.2f" % (aw, bw, cw, dw, ))
 
 	#print("")
