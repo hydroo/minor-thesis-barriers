@@ -13,9 +13,21 @@ CHARTS = \
 	charts/cs-time-work-1000-B-C-D.eps \
 	charts/cs-time-work-1000-partition.eps \
 	\
+	charts/df-energy-work-100-partition.eps \
+	charts/df-energy-work-1000-partition.eps \
+	\
+	charts/df-power-work-100.eps \
+	charts/df-power-work-1000.eps \
+	\
 	charts/df-time-work-100-B-C-D.eps \
 	charts/df-time-work-100-partition.eps \
 	charts/df-time-work-1000-partition.eps \
+	\
+	charts/d-energy-work-100-partition.eps \
+	charts/d-energy-work-1000-partition.eps \
+	\
+	charts/d-power-work-100.eps \
+	charts/d-power-work-1000.eps \
 	\
 	charts/d-time-work-100-partition.eps \
 	charts/d-time-work-1000-partition.eps
