@@ -218,18 +218,18 @@ def operationRewards(guard, processCount) :
 	s += "rewards \"%s\"\n" % localRewardName
 	for p in range(0, processCount) :
 		for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
-			s += "    [wait_%d_%d] %s  : 1;\n" % ((p-dist) % processCount, p, guardName)
+			s += "    [wait_%d_%d] %s  : %d;\n" % ((p-dist) % processCount, p, guardName, 1)
 	s += "endrewards\n"
 
 	s += "rewards \"%s\"\n" % remoteRewardName
 	for p in range(0, processCount) :
 		for dist in [2**x for x in range(0, int(math.log(maxDist, 2)) + 1)] :
-			s += "    [put_%d_%d] %s : 1;\n" % (p, (p + dist) % processCount, guardName)
+			s += "    [put_%d_%d] %s : %d;\n" % (p, (p + dist) % processCount, guardName, 1)
 	s += "endrewards\n"
 
 	# module process_#                                                                                     # (local ops, remote ops)
 	#
-	# [put_#_%d]  l_#=l_put  & dist_# = %d                   -> put  : (l_#'=l_wait)                       # (0, 1)
+	# [put_#_%d]  l_#=l_put  & dist_# = %d                    -> put  : (l_#'=l_wait)                      # (0, 1)
 	#
 	#if dist != maxDist :
 	# [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_#  = true -> tick : (l_#'=l_put) & (dist_#'=dist_#*2)  # (1, 0)
@@ -238,12 +238,11 @@ def operationRewards(guard, processCount) :
 	#
 	# [wait_%d_#] l_#=l_wait & dist_# = %d & bar_%d_# != true -> tick : true                               # (1, 0)
 	#
-	# [done_#]   l_#=l_done                                -> rare : true                                  # (0, 0)
+	# [done_#]   l_#=l_done                                   -> rare : true                               # (0, 0)
 	#
 	# endmodule
 
 	return s
-
 
 def generateLabels(processCount) :
 
