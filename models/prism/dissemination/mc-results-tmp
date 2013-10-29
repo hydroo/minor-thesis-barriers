@@ -10,7 +10,7 @@
   2     0.00    0.00    50.00    0.50   151.00    2.00   152.00    2.00
 
 # work=100
-# micro Joule per phase accumulated
+# micro Joule per phase ABSOLUTE!
 # n      A      B      C      D
   8   0.06   3.94  10.01  13.03
   7   0.06   3.37   8.63  11.65
@@ -43,7 +43,7 @@
   2     0.00    0.00   909.09    0.91  1010.09    2.00  1011.09    2.00
 
 # work=1000
-# micro Joule per phase accumulated
+# micro Joule per phase ABSOLUTE!
 # n      A      B      C      D
   8   0.55  39.44  43.63  46.47
   7   0.63  33.71  37.46  40.25
