@@ -137,6 +137,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \pagenumbering{arabic}
 \section{Don't forget}
 \begin{itemize}
+	\item maybe increase font size in charts
 	\item "don't overuse passive voice"
 	\item explain use of 'thread' and 'process'. Probably in Section~\ref{ssec:existing-means}, when explaining the distinction between shared and distributed memory.
 	\item be very aware where you use thread and process, and make sure the reader understands when the distinction does not matter
@@ -1133,10 +1134,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 		\begin{itemize}
 			\item ronny's fancy is quicker for process counts over two
-			\item dissemination quicker for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
+			\item dissemination finishes 23 cycles earlier than ronny's fancy for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
 			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC semantics.
 			\item more time between first and last to leave.
-			\item last and first exit at almost the same time for dissemination. Explain probably not because boring.
+			\item last and first exit at almost the same time for dissemination, because when the second arrives and writes his part into the remote peers memory both will quickly exit. This cannot happen for processes since when the first leaves there might still be pending remote writes.
 			\item energy consumption similar to time spent in proportion
 		\end{itemize}
 	\item dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-100-partition}
@@ -1152,10 +1153,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:d-work-100-partition}
 		\end{figure}
 		\begin{itemize}
-			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds.
+			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds. During those rounds remote writes are issued concurrently.
 			\item unfavourable for non-power-of-two processes counts. Ref to Section~\ref{sssec:analysis-general-distributed}
-			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. Can be seen as resource conflicts for remote transfers.
-			\item energy consumption increase per round a bit larger than runtime increase, because more remote and local operations are being issued.
+			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. This behaviour is realistic, because resource contention for remote writes and + non-uniform distribution durations for those writes, but we didn't specifically model this.
+			\item energy consumption increase per round a bit larger than runtime increase. This is partly because more remote operations are issued as described in Section~\ref{ssssec:analysis-modelchecking-modelling-dissemination}. And partly because one more process is locally spinning before entering a new round.
 		\end{itemize}
 	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-100}
 		\begin{figure}[htbp]
@@ -1165,11 +1166,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:df-power-work-100}
 		\end{figure}
 		\begin{itemize}
-			\item overall relatively similar between the two algorithms
-			\item largely because the comparing to the rewards given for operations the amount of energy consumed is similar.
+			\item All phases except the last are very similar.
+			\item largely because comparing number of local and remote operations issued to the rewards given for these operations the amount of energy consumed is expected to be similar.
 			\item dissemination issues less remote operations, but due to local wait spinning a lot of local operations, ronny's fancy on the other hand polls remotely.
 			\item in the last phase ronny's fancy draws less power because it takes a lot more time for a little more energy to be consumed.
-			\item overall ronny's fancy performs a bit better.
+			\item overall ronny's fancy performs slightly better.
 		\end{itemize}
 	\item longer work period. work=1000
 	\item distribution of total time spent and energy consumed: Figure~\ref{fig:df-work-1000-partition}
@@ -1187,8 +1188,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item excluding (A) and (B) because long.
 			\item first one to leave for rf unrealistic as in Figure~\ref{fig:df-work-100-partition}
-			\item serialization of arrivals makes the CTMC effect (slight increase in per round time with more processes) for dissemination go away
-			\item \todo talk about progress problem
 		\end{itemize}
 	\item dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-1000-partition}
 		\begin{figure}[htbp]
@@ -1204,8 +1203,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 		\begin{itemize}
 			\item as expected
-			\item serialization makes the additional cost per round almost constant
-			\item energy increases with more processes because one more remote operation are issued per round
+			\item In comparison to Figure~\ref{fig:d-work-100-partition} there is almost no additional time cost per process associated. CTMC semantic effect diminishes because the remote writes in the rounds are approximately serial. Therefore a write is oftentimes activatable at the same time as other processes are repeatedly executing local reads. The expected time such a write takes is then $\approx 100$ CPU cycles.
+			\item the durations for the rounds are related to the progress explanation in Section~\ref{sssec:analysis-general-distributed}. When the last process arrives at the barrier, exactly one remote write is needed to finish round one, two more writes are needed to finish round two and four writes are needed to finish the third round. Therefore, and because of CTMC interleaving semantics, approximately 100, 150 and 183 cycles are needed to finish rounds one, two and three.
+			\item Energy usage increases with each additional progress for the same reasons as in Figure~\ref{fig:d-work-100-partition}
+			\item progress problem.
+			\item there is a fixed cost for each additional round in the dissemination barrier.
+			\item due to model checking limitations (a very large state space), we cannot quantify beyond four processes, i.e. two rounds.
+			\item as shown in Figure~\ref{fig:d-work-1000-partition} is indeed quicker.
+			\item in relation to the results from work period 100, ronny's fancy could not increase its headway at work period 1000.
+			\item this does not necessarily mean that the progress problem does not exist. It might for example mean that ronny's fancy does not handle this situation as efficiently as we expected or that it did better than we expected for the 100 cycle work period case. Either way it is definitely possible to be generally faster than the dissemination barrier is for this scenario.
 		\end{itemize}
 	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-1000}
 		\begin{figure}[htbp]
@@ -1215,13 +1221,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:df-power-work-1000}
 		\end{figure}
 		\begin{itemize}
-			\item overall power consumption very similar because of the 1000 cycle work rate
-			\item everything else similar to Figure~\ref{fig:df-power-work-100}
+			\item overall power consumption slightly lower because of the 1000 cycle work period.
+			\item everything else similar to Figure~\ref{fig:df-power-work-100}.
 		\end{itemize}
 	\item number of remote transfers
 		\begin{itemize}
+			\item remote transfer is a generic term including remote reads and remote writes.
 			\item fixed for dissemination as explained in Section~\ref{sssec:analysis-general-distributed}. $n \cdot \lceil \log _2~n \rceil$
-			\item between $2 \cdot (n-1)$ and $n \cdot (n-1)$. Both practically never happens because the access pattern of the algorithm.
+			\item number of successful transfers (transfers that read from an arrived processes) between $2 \cdot (n-1)$ and $n \cdot (n-1)$. Both practically never happen because randomness and access pattern.
+			\item failed transfers (transfers where you read from a not yet arrived process).
 			\item hard to estimate, because the randomness of the system defines this number.
 			\item work=100. Figure~\ref{fig:df-transfers-100}
 				\begin{figure}[htbp]
@@ -1241,7 +1249,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\label{fig:df-transfers-100}
 				\end{figure}
 				\begin{itemize}
-					\item ronny fancy worse than dissemination. Might get better at 5+ processes, because of the $\lceil \log_2 n \rceil$ stuff. Can't be model checked.
+					\item as expected ronny's fancy issues more remote transactions than the dissemination barrier.
+					\item it is still relatively low.
+					\item especially the number of failed remote accesses is low in comparison to the number of successful ones.
+					\item For process count 5, and other non-power of two process counts the situation might turn out better for ronny's fancy, because of the additional rounds and thus additional transfers needed.
 				\end{itemize}
 			\item work=1000. Figure~\ref{fig:df-transfers-1000}
 				\begin{figure}[htbp]
