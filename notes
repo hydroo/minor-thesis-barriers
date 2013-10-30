@@ -1,3 +1,11 @@
+--- 13-10-30 ---
+
+  Why am I exclusively using expected values:
+   * easier to understand. Exponential distributions are hard.
+   * only way to do stacked bar charts, because subtracting distributions doesn't work (y=%, x=time would a be very different kind of chart)
+   * I tried it and it was less insightful than the bar charts I've later created
+   * quick test showed that variance on ronny's barriers seems not to be higher than the central counter and dissemination
+
 --- 13-10-23 ---
 
   * 2.5Ghz. Thus: 1 Watt = 0.4nJ/Cycle (1 cycle = 0.4ns)
