@@ -722,11 +722,10 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subsubsection{Preliminaries}
 \label{sssec:analysis-modelchecking-preliminaries}
 \begin{itemize}
-	\item \todo cut out what is not needed in the following sections (like time bounded eventually, or immediate rewards, etc)
 	\item continuous-time Markov chains.
 	\item further details in textbooks like \cite{kul95, ks76}
 	\item if $S$ is a finite set, then a distribution on $S$ is a function $\nu:S \rightarrow [0,1]$ with $\sum\limits_{s \in S} \nu (s) = 1$. For $U \subseteq S$, $\nu (U)$ is a shortform notation for $\sum\limits_{s \in U} \nu (s)$.
-	\item CTMC tuple $\mathcal{M} = (S, \mathit{Act}, R, \mu)$, where $S$ is a finite state space, $Act$ a finite set of action names and $R$ a function of type $S \times \mathit{Act} \times S \rightarrow \mathbb{R}_{\ge 0}$, called the rate matrix of $\mathcal{M}$. $\mu$ is a distribution on $S$ specifying the probabilities for the initial states.
+	\item CTMC tuple $\mathcal{M} = (S, \mathit{Act}, R, \mu)$, where $S$ is a finite set of states, $Act$ a finite set of action names and $R$ a function of type $S \times \mathit{Act} \times S \rightarrow \mathbb{R}_{\ge 0}$, called the rate matrix of $\mathcal{M}$. $\mu$ is a distribution on $S$ specifying the probabilities for the initial states.
 	\item $s \xrightarrow{\lambda : \alpha} s'$ if $R(s, \alpha, s') = \lambda > 0$ means $\mathcal{M}$ has a transition from $s$ to $s'$ with action label $\alpha$ and rate $\lambda$
 	\item $\lambda$ specifies the rate of the exponential distribution. That is the probability for the transition $s \xrightarrow{\lambda : \alpha} s'$ to be ready for firing some time in the interval $[0,t]$ is $1-e^{- \lambda t}$. The average delay  of this transition is $1 / \lambda$.
 	\item If $R(s, \alpha, s') = 0$ then there is no transition in $\mathcal{M}$ from $s$ to $s'$ via $\alpha$.
@@ -736,8 +735,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item To specify measurable sets of infinite paths, we will use an LTL-like notation, such as $\lozenge T$ ("eventually T") where $T \subseteq S$ denotes the set of all infinite paths that contain at least one $T$-State. $\lozenge^{\le t}$ is the time-bounded eventually with time bound $t$. Similarly, $\mathcal{U}$ denotes the until operator and $\mathcal{U}^{\le t}$ the time-bounded until with time bound $t$.
 	\item Instead of naming states we will oftentimes use state predicates and propositional formulas to describe sets of states. Their meaning will be obvious from the context. (my formulation)
 	\item we will also study reward based properties formalized using the logic CSRL \cite{bhhk00, knp07}
-	\item This requires the extension of $\mathcal{M}$ by two reward functions. $\mathit{srew} : S \rightarrow \mathbb{R}_{\ge 0}$ specifies the reward to be earned per time  unit when staying in state $s$. $\mathit{trew} : S \times S \rightarrow \mathbb{R}_{\ge 0}$ assigns a reward to each transition between two states regardless of rates.
-	\item For finite paths one can then reason about cumulative, reachability and instantaneous rewards.
+	\item This requires the extension of $\mathcal{M}$ by two reward functions. $\mathit{srew} : S \rightarrow \mathbb{R}_{\ge 0}$ specifies the reward to be earned per time  unit when staying in state $s$. $\mathit{trew} : S \times S \rightarrow \mathbb{R}_{\ge 0}$ assigns a reward to each transition between two states regardless of rates, and transition labels.
+	\item For finite paths one can then reason about cumulative and reachability and rewards.
 	\item Suppose $\pi$ is a finite path where the underlying state sequence is $s_1 s_2 ...s_n$ and let $t_0 = 0$ and $t_i$ the time point where $\pi$ takes the $i$-th transition.
 	\item The accumulated reward of $\pi$ is
 		\begin{center}
@@ -754,13 +753,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 			$\mathrm{ReaRew}(\pi, \Phi) = \mathit{Rew}(\pi(s_0:s_j))$
 		\end{center}
 		where $j = min \{ i~|~s_i \models \Phi \}$
-	\item instantaneous reward
-		\begin{center}
-			$\mathrm{InsRew}(\pi , t) = \mathlarger{ \sum }\limits_{i=0}^{n}~\pi_i(t) \cdot srew(s_i)$
-		\end{center}
-		where $\pi_i(t)$ is the probability of being in state $s_i$ at time $t$
-	\item the extension of these functions from paths to states and models is done the usual way and can be found in \cite{bhhk03}
+	\item the extension of these functions from paths to states and models is done the usual way and can, for example, be found in \cite{bhhk03}
 	\item in the analysis of the protocols we will for example deal with the state reward function that assigns value 1 to each state. In this case $\mathrm{ReaRew}(T)$ can be interpreted as the average cycle count to reach $T$.
+	\item We also wish to count remote memory access operations. For this we assign value 1 to each transition that represents such an operation. $\mathrm{ReaRew}(T)$ is then the average number of remote memory access operations issued until reaching $T$.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
