@@ -1004,7 +1004,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subparagraph{Shared memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-shared}
 \begin{itemize}
-	\item work = 100. Assume that barriers arrive within about 150 cycles of each other. Very small.
+	\item work = 100. Expected it takes a thread to arrive at the barrier is 100 cycles.
 	\item last to last, last to first Figure~\ref{fig:cs-time-work-100-B-C-D}
 		\begin{figure}[htbp]
 			\centering
@@ -1031,19 +1031,21 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item time
 		\begin{itemize}
 			\item stacked fashion. Including the time of the previous bar.
-			\item work is equal for everyone, because the distribution is the same for all.
-			\item first thread leaves a few cycles after writing is done. Because the last one to write its value will likely immediately read the completed barrier and leave.
-			\item last thread exits when reading is done. Because when reading is done, we are done.
+			\item the initial work distribution is the same for all processes and protocols. Therefor
+			\item cc: first thread leaves a few cycles after writing is done. Because the last one to write its value will likely immediately read the completed barrier and leave.
+			\item from the moment the first thread leaves, all threads only read. No one writes anymore.
 			\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
-			\item all parts take longer as well, since CTMC semantic makes interleaved transitions get an exit rate of $\lambda / n$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads. Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
+			\item all parts take longer with increasing thread count, since CTMC semantic (described in Section~\ref{sssec:analysis-modelchecking-preliminaries}) makes interleaved transitions get an exit rate of $n \cdot \lambda$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution of all transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads.
+			\item for example the expected number of cycles for the first process to enter is $\approx 100 / n$. The last one is finished working after $\approx$ 150, 183 and 208 cycles, for 2, 3 and 4 processes.
+			\item Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
 			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
 		\end{itemize}
 	\item energy
 		\begin{itemize}
 			\item similar to time
-			\item ronny's simple needs more energy. Because it performs more shared memory actions and more local operations in the same amount of time. Doesn't wait for atomic ops as central counter does.
+			\item ronny's simple needs more energy. Because it performs more shared memory operations and more local operations in the same amount of time, where the central counter barrier spends considerable time waiting for atomic operations to finish.
 			\item central counter's energy scales similarly to time.
-			\item amount of energy for ronny's simple grows faster than time needed. 2 to 4. Double energy. Less than double time.
+			\item amount of energy for ronny's simple grows faster than time needed.
 			\item ronny's simple spends considerable energy from the last commitment to first leaving the barrier.
 		\end{itemize}
 	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-power-work-100}
@@ -1069,7 +1071,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:cs-time-work-100-percent}
 		\end{figure}
 		\begin{itemize}
-			\item writing is until (A) to (W). Reading is from (W) to (D).
+			\item writing is from (A) to (W). Reading is from (W) to (D).
 			\item atomic ops queue up. Parallel writes do not.
 		\end{itemize}
 	\item work=1000. Still very small.
