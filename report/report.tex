@@ -1235,15 +1235,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{figure}[htbp]
 					\centering
 					\begin{tabular}{r | r | r r}
-						              & Threads & (Xs) Successful Xfers & (Xf) Failed Xfers \\
+						              & Threads & Successful transfers & Failed transfers \\
 						\hline
-						Dissemination & 2       & 2                     &                   \\
-						              & 3       & 6                     &                   \\
-						              & 4       & 8                     &                   \\
+						Dissemination & 2       & 2                     &                 \\
+						              & 3       & 6                     &                 \\
+						              & 4       & 8                     &                 \\
 						\hline
-						Ronny's Fancy & 2       & 2                     & 0.99              \\
-						              & 3       & 4.74                  & 1.73              \\
-						              & 4       & 7.98                  & 2.44              \\
+						Ronny's Fancy & 2       & 2                     & 0.99            \\
+						              & 3       & 4.74                  & 1.73            \\
+						              & 4       & 7.98                  & 2.44            \\
 					\end{tabular}
 					\caption{Number of transfers}
 					\label{fig:df-transfers-100}
@@ -1258,37 +1258,19 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{figure}[htbp]
 					\centering
 					\begin{tabular}{r | r r}
-						Threads & (Xs) Successful Xfers & (Xf) Failed Xfers \\
+						Threads & Successful transfers & Failed transfers \\
 						\hline
-						2       & 2                     & 9.9               \\
-						3       & 4.95                  & 22.89             \\
-						4       & 8.78                  & 38.05             \\
+						2       & 2                     & 9.9             \\
+						3       & 4.95                  & 22.89           \\
+						4       & 8.78                  & 38.05           \\
 					\end{tabular}
 					\caption{Ronny's fancy number of transfers}
 					\label{fig:df-transfers-1000}
 				\end{figure}
 				\begin{itemize}
-					\item not a lot different.
-					\item back-off strategies could be used, if one would want to save the lost bandwidth and latency. But might not and is therefore ok. (maybe give rough calculation in which order of magnitude this loss is. Perhaps rather in the general properties section and reference it here)
-				\end{itemize}
-			\item work=1000000. Figure~\ref{fig:df-transfers-1000000}
-				\begin{figure}[htbp]
-					\centering
-					\begin{tabular}{r | r r}
-						Threads & (Xs) Successful Xfers \\
-						\hline
-						2       & 1.96                  \\
-						3       & 4.8                   \\
-						4       & 8.72                  \\
-					\end{tabular}
-					\caption{Ronny's fancy number of transfers}
-					\label{fig:df-transfers-1000000}
-				\end{figure}
-				\begin{itemize}
-					\item serial arrival of all.
-					\item 1 $<->$ 2, 3 $<-$ 1, 2 $<-$ 3, 1 $<-$ 3 = 5 messages
-					\item 1 $<-$ 2, 1 $<-$ 3, 2 $<-$ 1, 3 $<-$ 1 = 4 messages, unlikely
-					\item number of failed transfers is very high ofc.
+					\item number of successful transfers very similar to work=100.
+					\item failed transfers is of course more than before since ronny's fancy is busy waiting on remote memory.
+					\item back-off strategies could be used, if one would want to save the lost bandwidth, latency and energy in exchange for a longer duration of the protocol.
 				\end{itemize}
 		\end{itemize}
 \end{itemize}
