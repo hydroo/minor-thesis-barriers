@@ -1293,7 +1293,23 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item "Show how they support your thesis (or, if they don't, come up with a damned good reason real quick)"
 			\item "It is important to separate objective facts clearly from their discussion"
 		\end{itemize}
-	\item 
+
+	\item all analysed barriers are functionally correct in the sense that they indeed perform a barrier synchronization.
+	\item all shown barriers finish reasonably quick.
+	\item all considered barriers use a reasonable amount of energy.
+
+	\item shared memory
+	\item despite atomic operations the central counter barrier is quick.
+	\item ronny's simple approach to trade less time writing for more time reading does not pay off. Because: (1) in a balanced scenario the time lost due to queuing atomic operations is small. (2) no atomic operations means more busy waiting, thus more energy used.
+	\item ronny's simple performs worse in all considered scenarios.
+
+	\item distributed memory
+	\item ronny's fancy barrier issues not much more remote operations than the dissemination barrier despite busy waiting on remote memory.
+	\item as conjectured in Section~\ref{sssec:analysis-general-distributed} the dissemination barrier wastes substantial time when processes arrive even in small intervals.
+	\item for non-power of two process counts the dissemination barrier wastes substantial time and energy due to its $\lceil \log_2 n \rceil$ number of rounds and $n \cdot \lceil \log_2 n \rceil$ number of remote operations.
+	\item ronny's fancy outperforms the dissemination barrier in all scenarios.
+
+	\item CTMC model checking semantic for interleaving modules is different from the intuitive notion of parallel execution. Therefore one has to exercise caution when interpreting model checking results.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
