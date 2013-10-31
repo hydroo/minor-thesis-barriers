@@ -621,9 +621,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item process 4 does not notify process 5, therefore in the next round process 5 cannot notify process 7 and so on.
 			\item number of blocked processes doubles each round.
 			\item once process 4 arrives each one of these blocked processes then needs to finish the still to do rounds until the protocol succeeds
-			\item who knows of whose arrival Figure~\ref{fig:table-dissemination-progress}
-				\begin{figure}[htbp]
+			\item who knows of whose arrival Figure~\ref{tab:table-dissemination-progress}
+				\begin{table}[htbp]
 					\centering
+					\caption{Which process knows of which other's arrival}
+					\vspace{0.2cm}
 					\begin{minipage}{0.4\linewidth}
 						\textbf{After round 1:} \\
 						$(n-1) + (n-1) = 14$ \\
@@ -702,9 +704,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 							\end{tabular}
 						}
 					\end{minipage}
-					\caption{Which process knows of which other's arrival}
-					\label{fig:table-dissemination-progress}
-				\end{figure}
+					\label{tab:table-dissemination-progress}
+				\end{table}
 			\item for non-power of two process counts the effect worsens. Where for power of two process counts $n-1$ remote writes need to be executed before the barrier is finished, non-power of two process counts need to issue $2^{\lceil \log_2 n \rceil} - 1$ writes.
 			\item ronny's fancy does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to do one more successful remote read. Therefore $n$ remote reads, which can be issued in parallel, are needed to complete the barrier.
 			\item quantifying this effect will be done in the following section.
@@ -1237,9 +1238,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item number of successful transfers (transfers that read from an arrived processes) between $2 \cdot (n-1)$ and $n \cdot (n-1)$. Both practically never happen because randomness and access pattern.
 			\item failed transfers (transfers where you read from a not yet arrived process).
 			\item hard to estimate, because the randomness of the system defines this number.
-			\item work=100. Figure~\ref{fig:df-transfers-100}
-				\begin{figure}[htbp]
+			\item work=100. Figure~\ref{tab:df-transfers-100}
+				\begin{table}[htbp]
 					\centering
+					\caption{Expected number of remote transfers}
+					\vspace{0.2cm}
 					\begin{tabular}{r | r | r r}
 						              & Threads & Successful transfers & Failed transfers \\
 						\hline
@@ -1251,18 +1254,19 @@ I hereby declare that I prepared this thesis independently and without use of to
 						              & 3       & 4.74                  & 1.73            \\
 						              & 4       & 7.98                  & 2.44            \\
 					\end{tabular}
-					\caption{Number of transfers}
-					\label{fig:df-transfers-100}
-				\end{figure}
+					\label{tab:df-transfers-100}
+				\end{table}
 				\begin{itemize}
 					\item as expected ronny's fancy issues more remote transactions than the dissemination barrier.
 					\item it is still relatively low.
 					\item especially the number of failed remote accesses is low in comparison to the number of successful ones.
 					\item For process count 5, and other non-power of two process counts the situation might turn out better for ronny's fancy, because of the additional rounds and thus additional transfers needed.
 				\end{itemize}
-			\item work=1000. Figure~\ref{fig:df-transfers-1000}
-				\begin{figure}[htbp]
+			\item work=1000. Table~\ref{tab:df-transfers-1000}
+				\begin{table}[htbp]
 					\centering
+					\caption{Expected number of remote transfers}
+					\vspace{0.2cm}
 					\begin{tabular}{r | r r}
 						Threads & Successful transfers & Failed transfers \\
 						\hline
@@ -1270,9 +1274,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 						3       & 4.95                  & 22.89           \\
 						4       & 8.78                  & 38.05           \\
 					\end{tabular}
-					\caption{Ronny's fancy number of transfers}
-					\label{fig:df-transfers-1000}
-				\end{figure}
+					\label{tab:df-transfers-1000}
+				\end{table}
 				\begin{itemize}
 					\item number of successful transfers very similar to work=100.
 					\item failed transfers is of course more than before since ronny's fancy is busy waiting on remote memory.
