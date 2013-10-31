@@ -727,27 +727,27 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item if $S$ is a finite set, then a distribution on $S$ is a function $\nu:S \rightarrow [0,1]$ with $\sum\limits_{s \in S} \nu (s) = 1$. For $U \subseteq S$, $\nu (U)$ is a shortform notation for $\sum\limits_{s \in U} \nu (s)$.
 	\item CTMC tuple $\mathcal{M} = (S, \mathit{Act}, R, \mu)$, where $S$ is a finite set of states, $Act$ a finite set of action names and $R$ a function of type $S \times \mathit{Act} \times S \rightarrow \mathbb{R}_{\ge 0}$, called the rate matrix of $\mathcal{M}$. $\mu$ is a distribution on $S$ specifying the probabilities for the initial states.
 	\item $s \xrightarrow{\lambda : \alpha} s'$ if $R(s, \alpha, s') = \lambda > 0$ means $\mathcal{M}$ has a transition from $s$ to $s'$ with action label $\alpha$ and rate $\lambda$
-	\item $\lambda$ specifies the rate of the exponential distribution. That is the probability for the transition $s \xrightarrow{\lambda : \alpha} s'$ to be ready for firing some time in the interval $[0,t]$ is $1-e^{- \lambda t}$. The average delay  of this transition is $1 / \lambda$.
+	\item $\lambda$ specifies the rate of the exponential distribution. That is the probability for the transition $s \xrightarrow{\lambda : \alpha} s'$ to be ready for firing some time in the interval $[0,t]$ is $1-e^{- \lambda t}$. The average delay  of this transition is $\frac{1}{\lambda}$.
 	\item If $R(s, \alpha, s') = 0$ then there is no transition in $\mathcal{M}$ from $s$ to $s'$ via $\alpha$.
-	\item choice between enabled transition is made through the race condition. Thus, the time-abstract probability to fire a particular transition $s \xrightarrow{\lambda : \alpha} s'$ is $P(s, \alpha, s') = \lambda / E(s)$ where $E(s)$ is the exit rate of state $s$, i.e., the sum of the rates of all outgoing transitions of state $s$. The probability that $s \xrightarrow{\lambda : \alpha} s'$ will fire within $t$ time units is then $P(s, \alpha, s') \cdot (1 - e^{- E(s) \cdot t})$.
+	\item choice between enabled transition is made through the race condition. Thus, the time-abstract probability to fire a particular transition $s \xrightarrow{\lambda : \alpha} s'$ is $P(s, \alpha, s') = \frac{\lambda}{E(s)}$ where $E(s)$ is the exit rate of state $s$, i.e., the sum of the rates of all outgoing transitions of state $s$. The probability that $s \xrightarrow{\lambda : \alpha} s'$ will fire within $t$ time units is then $P(s, \alpha, s') \cdot (1 - e^{- E(s) \cdot t})$.
 	\item paths in a CTMC are sequences of consecutive transitions augmented by the time points when they are taken.
 	\item For the analysis of such transition systems we employ the logic CSL \cite{assb96, bhhk00, knp07}. (my formulation)
-	\item To specify measurable sets of infinite paths, we will use an LTL-like notation, such as $\lozenge T$ ("eventually T") where $T \subseteq S$ denotes the set of all infinite paths that contain at least one $T$-State. $\lozenge^{\le t}$ is the time-bounded eventually with time bound $t$. Similarly, $\mathcal{U}$ denotes the until operator and $\mathcal{U}^{\le t}$ the time-bounded until with time bound $t$.
+	\item To specify measurable sets of infinite paths, we will use an LTL-like notation, such as $\lozenge T$ (''eventually T'') and $\square T$ (''always T'') where $T \subseteq S$.
 	\item Instead of naming states we will oftentimes use state predicates and propositional formulas to describe sets of states. Their meaning will be obvious from the context. (my formulation)
 	\item we will also study reward based properties formalized using the logic CSRL \cite{bhhk00, knp07}
-	\item This requires the extension of $\mathcal{M}$ by two reward functions. $\mathit{srew} : S \rightarrow \mathbb{R}_{\ge 0}$ specifies the reward to be earned per time  unit when staying in state $s$. $\mathit{trew} : S \times S \rightarrow \mathbb{R}_{\ge 0}$ assigns a reward to each transition between two states regardless of rates, and transition labels.
+	\item This requires the extension of $\mathcal{M}$ by two reward functions. $\mathit{srew} : S \rightarrow \mathbb{R}$ specifies the reward to be earned per time  unit when staying in state $s$. $\mathit{trew} : S \times S \rightarrow \mathbb{R}$ assigns a reward to each transition between two states regardless of action labels.
 	\item For finite paths one can then reason about cumulative and reachability and rewards.
 	\item Suppose $\pi$ is a finite path where the underlying state sequence is $s_1 s_2 ...s_n$ and let $t_0 = 0$ and $t_i$ the time point where $\pi$ takes the $i$-th transition.
 	\item The accumulated reward of $\pi$ is
 		\begin{center}
 			$\mathit{Rew}(\pi) = \mathlarger{\sum}\limits_{i=0}^{n-1} \big( (t_{i+1} - t_i) \cdot \mathit{srew}(s_i) + \mathit{trew}(s_i, s_{i+1}) \big)$
 		\end{center}
-		It is the sum, over all states but the last, of the state reward multiplied by the time spent in this state plus the reward assigned to each transition between all states in $\pi$.
+		It is the sum, over all states but the last, of the state reward multiplied by the time spent in this state plus the reward assigned to each transition between consecutive states in $\pi$.
 	\item cumulative reward
 		\begin{center}
 			$\mathrm{CumRew}(\pi, t) = \mathit{Rew}(\pi(s_0:s_j))$
 		\end{center}
-		where $j = min \{ i~|~t_i \ge t \}$, $\pi(s_0,s_j)$ for the sub path of $\pi$ starting in $s_0$ and ending in $s_j$
+		where $j = min \{ i~|~t_i \ge t \}$, $\pi(s_0:s_j)$ for the sub path of $\pi$ starting in $s_0$ and ending in $s_j$
 	\item reachability reward
 		\begin{center}
 			$\mathrm{ReaRew}(\pi, \Phi) = \mathit{Rew}(\pi(s_0:s_j))$
@@ -796,7 +796,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item shared memory variable encapsulated in own CTMC modules.
 	\item We identify a variable with the cache line it resides on.
 	\item each thread has one copy of such a cache line.
-	\item synchronization between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronizing actions. The triggering thread of a cache operation determines the rate of the operation. For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between the two states. Either action might trigger a transition between these two states.
+	\item synchronization between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronizing actions. The triggering thread of a cache operation determines the rate of the operation. For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between the two states. Either action can trigger a transition between these two states.
 	\item we use an MSI cache coherency protocol extended by support for atomic operations. MSI model is a basic cache model and explanations on it can readily be found online\cite{msi}.
 	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but other threads may a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked from access through other modules. Figure~\ref{fig:model-shared-memory} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
 	\item CTMC Figure~\ref{fig:model-shared-memory}
@@ -868,7 +868,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:model-dissemination}
 		\end{figure}
 	\item As in the two previous paragraphs $\lambda_{work}$ is the work rate.
-	\item we assume all local operations to be much quicker, ten to a thousand times, than remote operations. Therefore we assign the rate $\lambda_c$ (one CPU cycle) to local operations. $\lambda_p$, which is assigned to remote write (put) operations, is assigned a rate of $\frac{1}{100}$. This value is, like the shared memory rates, hardware-dependent. For simplicity's sake we assume a remote transfer to take 100 cycles.
+	\item we assume all local operations to be much quicker, ten to a thousand times, than remote operations. Therefore we assign the rate $\lambda_c$ (one CPU cycle) to local operations. $\lambda_p$, which is assigned to remote write (put) operations, is assigned a rate of $\frac{1}{100}$. This value is, like the shared memory rates, hardware-dependent. For simplicity's sake we therefore assume a remote transfer to take 100 cycles.
 	\item one could make this more fine grained by introducing separate rates for local reading and writing.
 	\item \texttt{to} and \texttt{from} are shorthands for \texttt{processIndex $\pm$ dist (mod processCount)}
 	\item In the CTMC model, resulting from unwinding this control flow diagram, a put onto a remote process is represented as a synchronized action, so the target process stores the new value in its CTMC module.
@@ -910,7 +910,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{center}
 			$\square \big( ~(\forall t \in T . \mathit{entered_t} ) \implies \forall s \in T. \lozenge \mathit{left_s} ~ \big)$
 		\end{center}
-	\item A and B are the only two properties a barrier protocol must satisfy
+	\item A and B are the two basic properties a barrier protocol must satisfy
 	\item A could be seen as safety and B as liveness of a barrier protocol
 	\item yes it works.
 \end{itemize}
@@ -920,7 +920,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sssec:analysis-modelchecking-quantitative-properties}
 \begin{itemize}
 	\item intro text here
-	\item in this section we will use \emph{thread} and \emph{process} interchangeable, because for the modelling side the wording makes no difference. (same is in section before)
+	\item in this section we will use \emph{thread} and \emph{process} interchangeably, because for the modelling side the wording makes no difference. (same is in section before)
 	\item CSRL as logic, PRISM as model checker
 \end{itemize}
 
@@ -940,7 +940,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item baseline of 11W
 					\item \todo where to put how i got these numbers? reference measurement on core i5-2520M (2.5ghz). Trying to fit number of shared/local operations to measurements.
 				\end{itemize}
-			\item (diss, ronny's fancy) number of remote transfers. trew for remote operations = 1.
+			\item (diss, ronny's fancy) number of remote transfers. trew for remote operations = 1. srew =0.
 		\end{itemize}
 	\item interesting points in time
 		\begin{itemize}
@@ -999,7 +999,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \subparagraph{Shared memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-shared}
 \begin{itemize}
-	\item work = 100. Expected it takes a thread to arrive at the barrier is 100 cycles.
+	\item work = 100. Expected time it takes a thread to arrive at the barrier is 100 cycles.
 	\item last to last, last to first Figure~\ref{fig:cs-time-work-100-B-C-D}
 		\begin{figure}[htbp]
 			\centering
@@ -1008,7 +1008,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\label{fig:cs-time-work-100-B-C-D}
 		\end{figure}
 		\begin{itemize}
-			\item similarly fast when considering the last one to finish
+			\item both barriers similarly fast when considering the last one to finish
 			\item ronny's simple faster for the first one to leave
 		\end{itemize}
 	\item distribution of total time and energy spent: Figure~\ref{fig:cs-work-100-partition}
@@ -1026,12 +1026,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item time
 		\begin{itemize}
 			\item stacked fashion. Including the time of the previous bar.
-			\item the initial work distribution is the same for all processes and protocols. Therefor
+			\item the initial work distribution is the same for all processes and protocols
 			\item cc: first thread leaves a few cycles after writing is done. Because the last one to write its value will likely immediately read the completed barrier and leave.
 			\item from the moment the first thread leaves, all threads only read. No one writes anymore.
 			\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
-			\item all parts take longer with increasing thread count, since CTMC semantic (described in Section~\ref{sssec:analysis-modelchecking-preliminaries}) makes interleaved transitions get an exit rate of $n \cdot \lambda$ for n modules each with rate $\lambda$, so that the expected time of a parallel execution of all transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$  time rather than $1 / \lambda$ for $n$ interleaved modules / concurrent threads.
-			\item for example the expected number of cycles for the first process to enter is $\approx 100 / n$. The last one is finished working after $\approx$ 150, 183 and 208 cycles, for 2, 3 and 4 processes.
+			\item all parts take longer with increasing thread count, since CTMC semantic (described in Section~\ref{sssec:analysis-modelchecking-preliminaries}) makes a transition get an exit rate of the sum of the rates of all enabled transitions.
+			\item in particular, assume you have $n$ interleaved modules (or concurrent threads of execution) where one transition in each module is enabled. The exit rate of the first transition to be triggered is then  $n \cdot \lambda$. The expected time of a parallel execution of all transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ time rather than $\frac{1}{\lambda}$.
+			\item for example the expected number of cycles for the first process to enter is $\approx \frac{100}{n}$. The last one is finished working after $\approx$ 150, 183 and 208 cycles, for two, three and four processes.
 			\item Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
 			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
 		\end{itemize}
@@ -1067,9 +1068,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 		\begin{itemize}
 			\item writing is from (A) to (W). Reading is from (W) to (D).
-			\item atomic ops queue up. Parallel writes do not.
+			\item with increasing thread count there is a shift from writing to reading in execution time.
 		\end{itemize}
-	\item work=1000. Still very small.
+	\item work=1000. Still very small. (According to \cite{rab00} at a barrier each process spends on average 8194 CPU cycles idly\footnote{1813 microseconds accumulated idle time at 450MHz on 99.6 processes})
 	\item last to last, last to first Figure~\ref{fig:cs-time-work-1000-B-C-D}
 		\begin{figure}[htbp]
 			\centering
@@ -1080,7 +1081,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item very different picture.
 			\item central counter faster in all respects.
-			\item probability of a thread trying to write while no one is writing at the moment increases, due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
+			\item probability of a thread trying to write while no one is writing at the moment increases due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
 			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for central counter.
 		\end{itemize}
 	\item distribution of total time and energy spent: Figure~\ref{fig:cs-work-1000-partition}
@@ -1140,7 +1141,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item ronny's fancy is quicker for process counts over two
 			\item dissemination finishes 23 cycles earlier than ronny's fancy for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
-			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC semantics.
+			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC exit rate calculation.
 			\item more time between first and last to leave.
 			\item last and first exit at almost the same time for dissemination, because when the second arrives and writes his part into the remote peers memory both will quickly exit. This cannot happen for processes since when the first leaves there might still be pending remote writes.
 			\item energy consumption similar to time spent in proportion
@@ -1214,7 +1215,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item progress problem.
 			\item there is a fixed cost for each additional round in the dissemination barrier.
 			\item due to model checking limitations (a very large state space), we cannot quantify beyond four processes, i.e. two rounds.
-			\item as shown in Figure~\ref{fig:d-work-1000-partition} is indeed quicker.
+			\item as shown in Figure~\ref{fig:d-work-1000-partition} ronny's fancy is indeed quicker.
 			\item in relation to the results from work period 100, ronny's fancy could not increase its headway at work period 1000.
 			\item this does not necessarily mean that the progress problem does not exist. It might for example mean that ronny's fancy does not handle this situation as efficiently as we expected or that it did better than we expected for the 100 cycle work period case. Either way it is definitely possible to be generally faster than the dissemination barrier is for this scenario.
 		\end{itemize}
