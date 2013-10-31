@@ -380,14 +380,14 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{figure}[htbp]
 					\centering
 					\input{listings/central-counter}
-					\caption{Pseudo code of the central counter barrier}
+					\caption{Pseudo code of the Central Counter Barrier}
 					\label{fig:pseudo-code-central-counter}
 				\end{figure}
 			\item Figure~\ref{fig:diagram-central-counter}
 				\begin{figure}[htbp]
 					\centering
 					\input{tikz/diagram-central-counter}
-					\caption{Diagram of the phases of central counter barrier}
+					\caption{The two phases of the Central Counter Barrier}
 					\label{fig:diagram-central-counter}
 				\end{figure}
 			\item explain algorithm in detail here
@@ -430,14 +430,14 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{figure}[htbp]
 					\centering
 					\input{listings/dissemination}
-					\caption{Pseudo code of the dissemination barrier}
+					\caption{Pseudo code of the Dissemination Barrier}
 					\label{fig:pseudo-code-dissemination}
 				\end{figure}
 			\item Figure~\ref{fig:diagram-dissemination}
 				\begin{figure}[htbp]
 					\centering
 					\input{tikz/diagram-dissemination}
-					\caption{Diagram of the rounds of the dissemination barrier}
+					\caption{The rounds of the Dissemination Barrier}
 					\label{fig:diagram-dissemination}
 				\end{figure}
 			\item explain algorithm in detail here
@@ -596,7 +596,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/diagram-gather-broadcast}
-			\caption{Gather and broadcast}
+			\caption{Communication pattern of a basic gather and broadcast barrier}
 			\label{fig:diagram-gather-broadcast}
 		\end{figure}
 
@@ -615,7 +615,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 				\begin{figure}[htbp]
 					\centering
 					\input{tikz/diagram-dissemination-progress}
-					\caption{Progress through the rounds of the dissemination barrier}
+					\caption{Progression through the rounds of the Dissemination Barrier with process four not having entered}
 					\label{fig:diagram-dissemination-progress}
 				\end{figure}
 			\item process 4 does not notify process 5, therefore in the next round process 5 cannot notify process 7 and so on.
@@ -804,7 +804,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/model-shared-memory}
-			\caption{CTMC of a shared memory variable}
+			\caption{CTMC module of a shared memory variable}
 			\label{fig:model-shared-memory}
 		\end{figure}
 	\item For example if a core reads a variable, it first needs to make sure that all other cores take notice and change its cache line copy state to shared in case it was modified before. After this the core fetches the cache line, marks its copy shared and continues reading the variable.
@@ -825,7 +825,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/model-central-counter}
-			\caption{Control flow diagram of the central counter barrier}
+			\caption{Control flow diagram of the Central Counter Barrier}
 			\label{fig:model-central-counter}
 		\end{figure}
 	\item rates for reading writing and atomic operations are determined by the module for the shared variable \texttt{barrier}
@@ -845,7 +845,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/model-ronny-simple}
-			\caption{Control flow diagram of ronny's simple barrier}
+			\caption{Control flow diagram of Ronny's simple barrier}
 			\label{fig:model-ronny-simple}
 		\end{figure}
 	\item each element of the array \texttt{barrier} is located in an own cache line. Therefore each thread has \texttt{threadCount} cache line copy modules, one for each element in the array. In total a CTMC model of this protocol has $\mathtt{threadCount}^2$ cache line copy modules plus $\mathtt{threadCount}$ thread modules.
@@ -865,7 +865,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/model-dissemination}
-			\caption{Augmented Control flow diagram of the dissemination barrier}
+			\caption{Augmented Control flow diagram of the Dissemination Barrier}
 			\label{fig:model-dissemination}
 		\end{figure}
 	\item As in the two previous paragraphs $\lambda_{work}$ is the work rate.
@@ -886,7 +886,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/model-ronny-fancy}
-			\caption{Augmented Control flow diagram of ronny's fancy barrier}
+			\caption{Augmented Control flow diagram of Ronny's fancy barrier}
 			\label{fig:model-ronny-fancy}
 		\end{figure}
 	\item Rates are like in previous section, except we now use remote read (get) with a rate of $\lambda_g = \frac{1}{100}$.
@@ -1005,7 +1005,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=10cm]{charts/cs-time-work-100-B-C-D}
-			\caption{Expected running time of the shared memory barriers}
+			\caption{Expected execution time}
 			\label{fig:cs-time-work-100-B-C-D}
 		\end{figure}
 		\begin{itemize}
@@ -1049,7 +1049,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=10cm]{charts/cs-power-work-100}
-			\caption{Power consumption rate per phase}
+			\caption{Rate of energy consumption for each phase}
 			\label{fig:cs-power-work-100}
 		\end{figure}
 		\begin{itemize}
@@ -1064,7 +1064,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=10cm]{charts/cs-time-work-100-percent}
-			\caption{Percentage of time spent writing vs time spent reading}
+			\caption{Time spent reading versus writing}
 			\label{fig:cs-time-work-100-percent}
 		\end{figure}
 		\begin{itemize}
@@ -1076,7 +1076,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=10cm]{charts/cs-time-work-1000-B-C-D}
-			\caption{Expected running time of the shared memory barriers with 1,000 cycles work period}
+			\caption{Expected execution time}
 			\label{fig:cs-time-work-1000-B-C-D}
 		\end{figure}
 		\begin{itemize}
@@ -1112,7 +1112,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=10cm]{charts/cs-power-work-1000}
-			\caption{Power consumption rate per phase}
+			\caption{Rate of energy consumption for each phase}
 			\label{fig:cs-power-work-1000}
 		\end{figure}
 		\begin{itemize}
@@ -1156,7 +1156,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\begin{minipage}{0.56\linewidth}
 				\includegraphics[height=4.2cm]{charts/d-energy-work-100-partition}
 			\end{minipage}
-			\caption{Distribution of total time spent and energy consumed for the dissemination barrier}
+			\caption{Distribution of total time spent and energy consumed for the Dissemination Barrier}
 			\label{fig:d-work-100-partition}
 		\end{figure}
 		\begin{itemize}
@@ -1169,7 +1169,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=10cm]{charts/df-power-work-100}
-			\caption{Power consumption rate per phase}
+			\caption{Rate of energy consumption for each phase}
 			\label{fig:df-power-work-100}
 		\end{figure}
 		\begin{itemize}
@@ -1205,7 +1205,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\begin{minipage}{0.56\linewidth}
 				\includegraphics[height=4.2cm]{charts/d-energy-work-1000-partition}
 			\end{minipage}
-			\caption{Distribution of total time spent and energy consumed for the dissemination barrier}
+			\caption{Distribution of total time spent and energy consumed for the Dissemination Barrier}
 			\label{fig:d-work-1000-partition}
 		\end{figure}
 		\begin{itemize}
@@ -1224,7 +1224,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{figure}[htbp]
 			\centering
 			\includegraphics[width=10cm]{charts/df-power-work-1000}
-			\caption{Power consumption rate per phase}
+			\caption{Rate of energy consumption for each phase}
 			\label{fig:df-power-work-1000}
 		\end{figure}
 		\begin{itemize}
