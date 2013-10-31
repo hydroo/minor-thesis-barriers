@@ -1323,32 +1323,51 @@ Conclusion:
 			\item condense results into a small passage
 			\item ?repeat claim - overarching thesis - present an answer?
 		\end{itemize}
+	\item maybe say something nice about the background section. Extensive bla. Barrier building blocks bla.
 	\item (overarching (1) barriers can be improved, (2) pW/CS (3) model checking is useful)
-	\item both new barriers presented show promise.
+	\item We presented three new barriers. Two of which show promise.
 	\item To achieve the shown performance, both new barriers do not use a fixed communication pattern, as to today's barrier algorithms do but rely on randomness to yield, on average, better results. This is one of the fundamental principles of pW/CS.
-	\item CTMC model checking semantic for interleaving modules is different from our intuitive notion of parallel execution. Therefore one has to exercise caution when interpreting model checking results. Nevertheless it enabled us to look into barrier algorithms at a more fine-grained level than measurement-based methods could hope to.
+	\item Model checking enabled us to look into barrier algorithms at a more fine-grained level than measurement-based methods could hope to.
 	\item Demonstrated the aptitude of model checking as a method for analysing synchronization protocols and algorithms in general.
 \end{itemize}
 
 Future work:
 \begin{itemize}
-	\item "Identify all shortcomings/limitations of your work, and discuss how they could be fixed"
-	\item implement distributed memory barriers. Make measurements of ronny's fancy vs dissemination.
-	\item evaluate back-off strategies. mwait.
-	\item benchmark on Intel system, not only bulldozer. Results might be very different from above benchmarks.
-	\item model check more and bigger. Symmetry reduction. Partial order reduction.
+	\item meta
 		\begin{itemize}
-			\item find out at which working period distribution which is better suited. (4 threads in our analysis is nothing)
+			\item "Identify all shortcomings/limitations of your work, and discuss how they could be fixed"
 		\end{itemize}
-	\item Make the same comparison again, but with energy consumption.
-	\item model multi layered cache. More realistic. Hardware topology
-	\item implement ronny fancy on RDMA hardware and benchmark against established algorithms
-	\item model ronny fancy and dissemination on shared memory and compare to ronny simple and central counter and reality
-	\item explore variations of ronny's barriers
+	\item measurement
+		\begin{itemize}
+			\item conduct measurements of the shared memory barriers (easy). Preliminary tests show that both ronny's simple and ronny's fancy perform better than model checking suggests.
+			\item implement ronny's fancy on RDMA hardware and benchmark against established algorithms
+		\end{itemize}
+	\item widen focus
+		\begin{itemize}
+			\item evaluate back-off strategies. mwait (wait for a change in a variable. Not polling actively).
+		\end{itemize}
+	\item CTMC exit rate semantic
+		\begin{itemize}
+			\item why is it like that?
+			\item work around it?
+			\item attempt a different semantic.
+			\item try alternative model checking formalisms. Probabilistic Timed Automaton\cite{pta} for example.
+		\end{itemize}
+	\item modelcheck larger: more threads. Symmetry reduction. Partial order reduction. Manual reduction.
+	\item model check more fine-grained
+		\begin{itemize}
+			\item model multi layered cache. More realistic.
+			\item model resource conflict. (We currently assume infinite bandwidth and amount of communication that can take at the same time)
+			\item model topology between processes. Like cores/dies/packages/nodes/blades. Because it influence latency.
+		\end{itemize}
+	\item explore variations of the new barriers
 		\begin{itemize}
 			\item Ronny's fancy barrier: Try different i increment strategies. Or perhaps randomize the choice of i.
 			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}. AND this way one might be able to avoid failed remote operations entirely and keep busy waiting local.
 		\end{itemize}
+	\item misc
+		\item model and measure ronny's fancy and dissemination on shared memory and compare to ronny simple and central counter and reality
+	\item explore variations of ronny's barriers
 \end{itemize}
 
 
