@@ -375,7 +375,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/bar.c
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/futex.h (cpu_relax)
 			% gnu-openmp/gcc-4.8.0/libgomp/config/linux/wait.h
-			\item central counter barrier with atomic add and fetch
+			\item Central Counter Barrier with atomic add and fetch
 			\item Figure~\ref{fig:pseudo-code-central-counter}
 				\begin{figure}[htbp]
 					\centering
@@ -401,7 +401,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			% glibc/nptl/sysdeps/pthread/pthread.h
 			% glibc/nptl/pthread_barrier_*
 			% glibc/nptl/sysdeps/unix/sysv/linux/internaltypes.h
-			\item central counter with locking instead of atomic add-fetch
+			\item Central Counter with locking instead of atomic add-fetch
 			\item back-off through futexes (without spinning before)
 			\item reset handled automatically (upon leaving the barrier every thread increments (atomically) the barrier by 1 so that it is max in the end)
 		\end{itemize}
@@ -420,11 +420,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 			% ompi_coll_tuned_barrier_intra_recursivedoubling,
 			% ompi_coll_tuned_barrier_intra_bruck
 			% ompi/mca/coll/tuned/coll_tuned_decision_fixed.c
-			\item $n \neq 2^k \rightarrow$ dissemination\cite{hensgen1988} using sync sendrecv
+			\item $n \neq 2^k \rightarrow$ Dissemination\cite{hensgen1988} using sync sendrecv
 			\item $n = 2^k \rightarrow$ recursive doubling (explanation e.g. in \cite{hoefler2005})
 			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
-			\item architecture specific for infiband. e.g. dissemination using RMA \cite{hoefler2006a}
+			\item architecture specific for infiband. e.g. Dissemination using RMA \cite{hoefler2006a}
 			\item state that we use an RMA representation of the algorithm. Maybe state why. Writing is sending. Reading is Receiving so to speak.
 			\item Figure~\ref{fig:pseudo-code-dissemination}
 				\begin{figure}[htbp]
@@ -455,7 +455,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			% src/mpi/coll/barrier.c : MPIR_Barrier_intra
 			\item log2 Dissemination with sendrecv. same as openmpi
 		\end{itemize}
-	\item dissemination can also be used for shared memory\cite{hoefler2013}
+	\item Dissemination can also be used for shared memory\cite{hoefler2013}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -522,7 +522,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item do not mention (analysis section instead): in contrast to the central-counter barrier the assignments to shared variables can be done in parallel, since the variables written are not the same, no are they on the same cache line.
 	\item (do not mention. Is in the analysis) many read accesses, but since data is cached upon the first read the latency is only significant once per array element / cache line. i.e. when the thread arrives and writes his array element to be \texttt{true} and when a thread reads it after it has been written by it's owner.
 	\item advantage: no atomic ops
-	\item (do not mention. Is in the analysis) larger memory cost than central counter, Mc Guire/Ronny. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
+	\item (do not mention. Is in the analysis) larger memory cost than Central Counter, Mc Guire/Ronny. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
 	\item The barrier is destructive in the sense that it cannot be executed multiple times in a row. One way to circumvent this is to modify the algorithm to use a repetition counter instead of a boolean (since we have one date per cache line we allocated the space anyways) and keep track of it. The algorithm would then atomically increase the counter instead of the assignment in line 4. We use a 64 bit integer variable for this. It will not overflow over so we don't need to consider this case (If you could run one barrier each clock cycle on a 3GHz machine you would need roughly 200 years to overflow it).
 	\item another small improvement would be to keep track of the first couple of successfully read entries and skip those when repeating the loop. For simplicity's sake and modelling we will not consider this optimization.
 \end{itemize}
@@ -556,9 +556,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 \begin{itemize}
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
-	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the central counter barrier, whereas Ronny's simple and fancy barrier show promise. Therefore we restrict our attention to the latter.
-	\item For the shared memory case the central counter barrier (Figure~\ref{fig:pseudo-code-central-counter} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudo-code-ronny-simple} in Section~\ref{ssec:new-simple}).
-	\item For distributed memory architectures the dissemination barrier (Figure~\ref{fig:pseudo-code-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudo-code-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
+	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the Central Counter Barrier, whereas Ronny's simple and fancy barrier show promise. Therefore we restrict our attention to the latter.
+	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudo-code-central-counter} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudo-code-ronny-simple} in Section~\ref{ssec:new-simple}).
+	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudo-code-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudo-code-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
 	\item The analysis is split into two parts: general properties (bla, perceived without measuring, bla), model checking.
 \end{itemize}
@@ -579,12 +579,12 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item ref algorithms
 	\item make sure that people understand it is about shared read/write, not local variables.
 	\item PHASES: both algorithms are performed in two phases. A writing phase and a reading phase.
-	\item In the writing phase of the central counter barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $\mathit{threadCount}$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
-	\item The reading phase of the central counter barrier reads a single variable repeatedly. The cache line this variable resides on will be invalidated for each core exactly $\mathit{threadCount} - 1$ times (disregarding outside influences) ((, thus each core fetches the variable at most $\mathit{threadCount} - 1$ times)).
+	\item In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $\mathit{threadCount}$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
+	\item The reading phase of the Central Counter Barrier reads a single variable repeatedly. The cache line this variable resides on will be invalidated for each core exactly $\mathit{threadCount} - 1$ times (disregarding outside influences) ((, thus each core fetches the variable at most $\mathit{threadCount} - 1$ times)).
 	\item The reading phase of Ronny's simple barrier needs to read each array element once until it can make a decision whether to leave or repeat the loop. Each array element is invalidated exactly once. Thus each array element, from the viewpoint of one thread, has to be fetched from memory at most twice. From then on it is cached and quickly accessible.
-	\item the central counter barrier has the obvious advantage in this phase. How big this advantage is depends heavily on the underlying hardware. For example if the cache line prefetcher predicts the access pattern of the reading phase of Ronny's simple barrier, those reads can be executed in parallel. (Vorsicht. Evtl weglassen)
-	\item The central counter barrier is quicker during busy waiting, whereas Ronny's simple barrier performs well during writing. We attempt to quantify the effects of this behaviour in the following subsections.
-	\item MEMORY: the central counter barrier needs a logarithmic amount of memory in the number of threads (i.e. 64 bits, for up to $2^{64}$ threads), whereas Ronny's simple barrier needs a linear amount -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes. This looks like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only about 32KiB of memory would be used. 64 bytes per thread. Furthermore one thread team needs only one barrier and repeat it. There would be no benefit in allocating the memory for more than one.
+	\item the Central Counter Barrier has the obvious advantage in this phase. How big this advantage is depends heavily on the underlying hardware. For example if the cache line prefetcher predicts the access pattern of the reading phase of Ronny's simple barrier, those reads can be executed in parallel. (Vorsicht. Evtl weglassen)
+	\item The Central Counter Barrier is quicker during busy waiting, whereas Ronny's simple barrier performs well during writing. We attempt to quantify the effects of this behaviour in the following subsections.
+	\item MEMORY: the Central Counter barrier needs a logarithmic amount of memory in the number of threads (i.e. 64 bits, for up to $2^{64}$ threads), whereas Ronny's simple barrier needs a linear amount -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes. This looks like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only about 32KiB of memory would be used. 64 bytes per thread. Furthermore one thread team needs only one barrier and repeat it. There would be no benefit in allocating the memory for more than one.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
@@ -592,7 +592,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sssec:analysis-general-distributed}
 \begin{itemize}
 	\item ref algorithms
-	\item For the dissemination barrier the number of remote writes is exactly $n \cdot \lceil \log _2~n \rceil$ -- $n$ processes times $\lceil \log _2~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is, illustrated in Figure~\ref{fig:diagram-gather-broadcast}, $2 \cdot (n-1)$ writes in $2 \cdot  \lceil \log _2~n \rceil$ rounds.
+	\item For the Dissemination Barrier the number of remote writes is exactly $n \cdot \lceil \log _2~n \rceil$ -- $n$ processes times $\lceil \log _2~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is, illustrated in Figure~\ref{fig:diagram-gather-broadcast}, $2 \cdot (n-1)$ writes in $2 \cdot  \lceil \log _2~n \rceil$ rounds.
 		\begin{figure}[htbp]
 			\centering
 			\input{tikz/diagram-gather-broadcast}
@@ -603,9 +603,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item Reading is only done locally.
 	\item Ronny's fancy barrier needs between $2 \cdot (n-1)$ and $n \cdot (n-1)$ successful (non-zero) remote reads. Writing is only done locally. (perhaps add picture of n*(n-1), n*(n-1) might also be completely wrong)
 	\item failed remote gets. Maybe give a rough estimate of the lost bandwidth.
-	\item dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the dissemination barrier waits for its designated communication partner.
-	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
-	\item MEMORY: The memory requirements of the dissemination barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
+	\item Dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the Dissemination Barrier waits for its designated communication partner.
+	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where Dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
+	\item MEMORY: The memory requirements of the Dissemination Barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The Dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item the progress problem
 		\begin{itemize}
 			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}. All processes arrive timely.
@@ -816,7 +816,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%
-\paragraph{Central counter barrier}
+\paragraph{Central Counter Barrier}
 \label{sssec:analysis-modelchecking-modelling-central-counter}
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
@@ -855,7 +855,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 \end{itemize}
 
 %%%%%%%%%%
-\paragraph{Dissemination barrier}
+\paragraph{Dissemination Barrier}
 \label{ssssec:analysis-modelchecking-modelling-dissemination}
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
@@ -949,8 +949,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item (B) last thread entered the barrier
 			\item (C) first thread left the barrier
 			\item (D) last thread left the barrier
-			\item (W) (only for central counter and ronny's simple) the last thread finished writing
-			\item (R$i$) (only for dissemination) last process left round $i$, i.e. entered round $i+1$. The current round of process is determined through the variable $\mathit{dist}$. $\mathit{round} = 1 + \log_2 \mathit{dist}$.
+			\item (W) (only for Central Counter and ronny's simple) the last thread finished writing
+			\item (R$i$) (only for Dissemination) last process left round $i$, i.e. entered round $i+1$. The current round of process is determined through the variable $\mathit{dist}$. $\mathit{round} = 1 + \log_2 \mathit{dist}$.
 		\end{itemize}
 	\item resulting properties
 		\begin{itemize}
@@ -1030,18 +1030,18 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item the initial work distribution is the same for all processes and protocols
 			\item cc: first thread leaves a few cycles after writing is done. Because the last one to write its value will likely immediately read the completed barrier and leave.
 			\item from the moment the first thread leaves, all threads only read. No one writes anymore.
-			\item writing, as expected, takes longer for central counter and reading takes longer for ronny's simple
+			\item writing, as expected, takes longer for Central Counter and reading takes longer for ronny's simple
 			\item all parts take longer with increasing thread count, since CTMC semantic (described in Section~\ref{sssec:analysis-modelchecking-preliminaries}) makes a transition get an exit rate of the sum of the rates of all enabled transitions.
 			\item in particular, assume you have $n$ interleaved modules (or concurrent threads of execution) where one transition in each module is enabled. The exit rate of the first transition to be triggered is then  $n \cdot \lambda$. The expected time of a parallel execution of all transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ time rather than $\frac{1}{\lambda}$.
 			\item for example the expected number of cycles for the first process to enter is $\approx \frac{100}{n}$. The last one is finished working after $\approx$ 150, 183 and 208 cycles, for two, three and four processes.
-			\item Especially reading for central counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
-			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the central counter barrier.
+			\item Especially reading for Central Counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
+			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the Central Counter Barrier.
 		\end{itemize}
 	\item energy
 		\begin{itemize}
 			\item similar to time
-			\item ronny's simple needs more energy. Because it performs more shared memory operations and more local operations in the same amount of time, where the central counter barrier spends considerable time waiting for atomic operations to finish.
-			\item central counter's energy scales similarly to time.
+			\item ronny's simple needs more energy. Because it performs more shared memory operations and more local operations in the same amount of time, where the Central Counter Barrier spends considerable time waiting for atomic operations to finish.
+			\item Central Counter's energy scales similarly to time.
 			\item amount of energy for ronny's simple grows faster than time needed.
 			\item ronny's simple spends considerable energy from the last commitment to first leaving the barrier.
 		\end{itemize}
@@ -1055,7 +1055,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item same partitioning as the previous figure.
 			\item (A) all working has 11W - the baseline.
-			\item overall low for central counter (16-18.3W), ronny's simple (19.4 - 30.6)
+			\item overall low for Central Counter (16-18.3W), ronny's simple (19.4 - 30.6)
 			\item writing considerably higher for rs, because quicker and more shared memory operations.
 			\item no one left: cc: high because very very short, rs: high because many shared reads across many threads.
 			\item one left similar because cc: shared reads, rs: shared reads, and local reads.
@@ -1081,9 +1081,9 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 		\begin{itemize}
 			\item very different picture.
-			\item central counter faster in all respects.
+			\item Central Counter faster in all respects.
 			\item probability of a thread trying to write while no one is writing at the moment increases due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
-			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for central counter.
+			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for Central Counter.
 		\end{itemize}
 	\item distribution of total time and energy spent: Figure~\ref{fig:cs-work-1000-partition}
 		\begin{figure}[htbp]
@@ -1141,13 +1141,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\end{figure}
 		\begin{itemize}
 			\item ronny's fancy is quicker for process counts over two
-			\item dissemination finishes 23 cycles earlier than ronny's fancy for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
+			\item Dissemination finishes 23 cycles earlier than ronny's fancy for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
 			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC exit rate calculation.
 			\item more time between first and last to leave.
-			\item last and first exit at almost the same time for dissemination, because when the second arrives and writes his part into the remote peers memory both will quickly exit. This cannot happen for processes since when the first leaves there might still be pending remote writes.
+			\item last and first exit at almost the same time for Dissemination, because when the second arrives and writes his part into the remote peers memory both will quickly exit. This cannot happen for processes since when the first leaves there might still be pending remote writes.
 			\item energy consumption similar to time spent in proportion
 		\end{itemize}
-	\item dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-100-partition}
+	\item Dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
 			\begin{minipage}{0.43\linewidth}
@@ -1175,7 +1175,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item All phases except the last are very similar.
 			\item largely because comparing number of local and remote operations issued to the rewards given for these operations the amount of energy consumed is expected to be similar.
-			\item dissemination issues less remote operations, but due to local wait spinning a lot of local operations, ronny's fancy on the other hand polls remotely.
+			\item Dissemination issues less remote operations, but due to local wait spinning a lot of local operations, ronny's fancy on the other hand polls remotely.
 			\item in the last phase ronny's fancy draws less power because it takes a lot more time for a little more energy to be consumed.
 			\item overall ronny's fancy performs slightly better.
 		\end{itemize}
@@ -1196,7 +1196,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item excluding (A) and (B) because long.
 			\item first one to leave for rf unrealistic as in Figure~\ref{fig:df-work-100-partition}
 		\end{itemize}
-	\item dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-1000-partition}
+	\item Dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
 			\begin{minipage}{0.43\linewidth}
@@ -1214,11 +1214,11 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item the durations for the rounds are related to the progress explanation in Section~\ref{sssec:analysis-general-distributed}. When the last process arrives at the barrier, exactly one remote write is needed to finish round one, two more writes are needed to finish round two and four writes are needed to finish the third round. Therefore, and because of CTMC interleaving semantics, approximately 100, 150 and 183 cycles are needed to finish rounds one, two and three.
 			\item Energy usage increases with each additional progress for the same reasons as in Figure~\ref{fig:d-work-100-partition}
 			\item progress problem.
-			\item there is a fixed cost for each additional round in the dissemination barrier.
+			\item there is a fixed cost for each additional round in the Dissemination Barrier.
 			\item due to model checking limitations (a very large state space), we cannot quantify beyond four processes, i.e. two rounds.
 			\item as shown in Figure~\ref{fig:d-work-1000-partition} ronny's fancy is indeed quicker.
 			\item in relation to the results from work period 100, ronny's fancy could not increase its headway at work period 1000.
-			\item this does not necessarily mean that the progress problem does not exist. It might for example mean that ronny's fancy does not handle this situation as efficiently as we expected or that it did better than we expected for the 100 cycle work period case. Either way it is definitely possible to be generally faster than the dissemination barrier is for this scenario.
+			\item this does not necessarily mean that the progress problem does not exist. It might for example mean that ronny's fancy does not handle this situation as efficiently as we expected or that it did better than we expected for the 100 cycle work period case. Either way it is definitely possible to be generally faster than the Dissemination Barrier is for this scenario.
 		\end{itemize}
 	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-1000}
 		\begin{figure}[htbp]
@@ -1234,7 +1234,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item number of remote transfers
 		\begin{itemize}
 			\item remote transfer is a generic term including remote reads and remote writes.
-			\item fixed for dissemination as explained in Section~\ref{sssec:analysis-general-distributed}. $n \cdot \lceil \log _2~n \rceil$
+			\item fixed for Dissemination as explained in Section~\ref{sssec:analysis-general-distributed}. $n \cdot \lceil \log _2~n \rceil$
 			\item number of successful transfers (transfers that read from an arrived processes) between $2 \cdot (n-1)$ and $n \cdot (n-1)$. Both practically never happen because randomness and access pattern.
 			\item failed transfers (transfers where you read from a not yet arrived process).
 			\item hard to estimate, because the randomness of the system defines this number.
@@ -1257,7 +1257,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\label{tab:df-transfers-100}
 				\end{table}
 				\begin{itemize}
-					\item as expected ronny's fancy issues more remote transactions than the dissemination barrier.
+					\item as expected ronny's fancy issues more remote transactions than the Dissemination Barrier.
 					\item it is still relatively low.
 					\item especially the number of failed remote accesses is low in comparison to the number of successful ones.
 					\item For process count 5, and other non-power of two process counts the situation might turn out better for ronny's fancy, because of the additional rounds and thus additional transfers needed.
@@ -1302,15 +1302,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item all considered barriers use a reasonable amount of energy.
 
 	\item shared memory
-	\item despite atomic operations the central counter barrier is quick.
+	\item despite atomic operations the Central Counter barrier is quick.
 	\item ronny's simple approach to trade less time writing for more time reading does not pay off. Because: (1) in a balanced scenario the time lost due to queuing atomic operations is small. (2) no atomic operations means more busy waiting, thus more energy used.
 	\item ronny's simple performs worse in all considered scenarios.
 
 	\item distributed memory
-	\item ronny's fancy barrier issues not much more remote operations than the dissemination barrier despite busy waiting on remote memory.
-	\item as conjectured in Section~\ref{sssec:analysis-general-distributed} the dissemination barrier wastes substantial time when processes arrive even in small intervals.
-	\item for non-power of two process counts the dissemination barrier wastes substantial time and energy due to its $\lceil \log_2 n \rceil$ number of rounds and $n \cdot \lceil \log_2 n \rceil$ number of remote operations.
-	\item ronny's fancy outperforms the dissemination barrier in all scenarios.
+	\item ronny's fancy barrier issues not much more remote operations than the Dissemination barrier despite busy waiting on remote memory.
+	\item as conjectured in Section~\ref{sssec:analysis-general-distributed} the Dissemination barrier wastes substantial time when processes arrive even in small intervals.
+	\item for non-power of two process counts the Dissemination barrier wastes substantial time and energy due to its $\lceil \log_2 n \rceil$ number of rounds and $n \cdot \lceil \log_2 n \rceil$ number of remote operations.
+	\item ronny's fancy outperforms the Dissemination barrier in all scenarios.
 
 	\item CTMC model checking semantic for interleaving modules is different from the intuitive notion of parallel execution. Therefore one has to exercise caution when interpreting model checking results.
 \end{itemize}
@@ -1369,7 +1369,7 @@ Future work:
 			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}. AND this way one might be able to avoid failed remote operations entirely and keep busy waiting local.
 		\end{itemize}
 	\item misc
-		\item model and measure ronny's fancy and dissemination on shared memory and compare to ronny simple and central counter and reality
+		\item model and measure ronny's fancy and Dissemination on shared memory and compare to ronny simple and Central Counter and reality
 	\item explore variations of ronny's barriers
 \end{itemize}
 
