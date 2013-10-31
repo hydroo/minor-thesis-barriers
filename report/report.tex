@@ -684,8 +684,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\end{minipage}
 					\begin{minipage}{0.4\linewidth}
 						\vspace{0.3cm}
-						\textbf{Best possible:} \\
-						$n \cdot (n-1) = 56$ \\
+						\textbf{Ronny's fancy:} \\
+						$(n-1) \cdot (n-1) = 49$ \\
 						\vspace{-0.1cm} \\
 						\resizebox{5cm}{!}{
 							\begin{tabular}{c | c c c c c c c c}
@@ -695,7 +695,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 								1 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
 								2 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
 								3 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
-								4 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+								4 &          &          &          &          &   &          &          &          \\
 								5 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
 								6 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
 								7 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
@@ -705,8 +705,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\caption{Which process knows of which other's arrival}
 					\label{fig:table-dissemination-progress}
 				\end{figure}
-			\item all this is also true for non-power of two process counts.
-			\item ronny's fancy does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to do one more successful remote read. Those can be done in parallel.
+			\item for non-power of two process counts the effect worsens. Where for power of two process counts $n-1$ remote writes need to be executed before the barrier is finished, non-power of two process counts need to issue $2^{\lceil \log_2 n \rceil} - 1$ writes.
+			\item ronny's fancy does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to do one more successful remote read. Therefore $n$ remote reads, which can be issued in parallel, are needed to complete the barrier.
 			\item quantifying this effect will be done in the following section.
 		\end{itemize}
 \end{itemize}
