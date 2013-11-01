@@ -13,7 +13,6 @@
 \usepackage{epstopdf}
 	\DeclareGraphicsRule{.eps}{pdf}{.pdf}{`epstopdf #1}
 	\pdfcompresslevel=9
-\usepackage{hyperref}
 \usepackage{latexsym}
 \usepackage[latin1]{inputenc}
 \usepackage{listings}
@@ -38,6 +37,8 @@
 	\tikzstyle{o}    = [draw, circle]
 	\tikzstyle{box}  = [draw, rectangle]
 \usepackage{url}
+
+\usepackage{hyperref} % should be last usepackage to avoid errors.
 
 \def \todo{\textbf{\textcolor{yellow}{TODO}}}
 \def \citationneeded{\textbf{\textcolor{yellow}{CITATION NEEDED}}}
