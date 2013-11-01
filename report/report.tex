@@ -1336,12 +1336,12 @@ Conclusion:
 			\item condense results into a small passage
 			\item ?repeat claim - overarching thesis - present an answer?
 		\end{itemize}
-	\item maybe say something nice about the background section. Extensive bla. Barrier building blocks bla.
 	\item (overarching (1) barriers can be improved, (2) pW/CS (3) model checking is useful)
-	\item We presented three new barriers. Two of which show promise.
-	\item To achieve the shown performance, both new barriers do not use a fixed communication pattern, as to today's barrier algorithms do but rely on randomness to yield, on average, better results. This is one of the fundamental principles of pW/CS.
+	\item we had an in-depth look at how current barriers work, and by which means barriers can be designed.
+	\item We presented three new barriers, two of which show promise and we therefore conclude that there exists potential to improve barrier protocols.
+	\item To achieve the shown performance, both new barriers do not use a fixed communication pattern, as today's barrier algorithms do, but rely on randomness to yield better results. This is one of the fundamental principles of pW/CS and shows that it is useful.
 	\item Model checking enabled us to look into barrier algorithms at a more fine-grained level than measurement-based methods could hope to.
-	\item Demonstrated the aptitude of model checking as a method for analysing synchronization protocols and algorithms in general.
+	\item We demonstrated the aptitude of model checking as a method for analysing synchronization protocols and algorithms in general.
 \end{itemize}
 
 Future work:
@@ -1352,19 +1352,21 @@ Future work:
 		\end{itemize}
 	\item measurement
 		\begin{itemize}
-			\item conduct measurements of the shared memory barriers (easy). Preliminary tests show that both ronny's simple and ronny's fancy perform better than model checking suggests.
+			\item conduct measurements of the shared memory barriers (easy). Preliminary tests show that both ronny's simple and ronny's fancy perform better than model checking analysis suggests.
 			\item implement ronny's fancy on RDMA hardware and benchmark against established algorithms
 		\end{itemize}
 	\item widen focus
 		\begin{itemize}
-			\item evaluate back-off strategies. mwait (wait for a change in a variable. Not polling actively).
+			\item evaluate back-off strategies. (technical possibilities. Strategies like exponential back-off, linear back-off, etc.)
+			\item mwait (wait for a change in a variable. Not polling actively).
+			\item model and measure dissemination and ronny's fancy for shared memory.
 		\end{itemize}
 	\item CTMC exit rate semantic
 		\begin{itemize}
 			\item why is it like that?
 			\item work around it?
-			\item attempt a different semantic.
-			\item try alternative model checking formalisms. Probabilistic Timed Automaton\cite{pta} for example.
+			\item attempt to invent an variations on the CTMC semantic to suit modelling parallel execution better?
+			\item try alternative model checking formalisms.
 		\end{itemize}
 	\item modelcheck larger: more threads. Symmetry reduction. Partial order reduction. Manual reduction.
 	\item model check more fine-grained
@@ -1379,8 +1381,9 @@ Future work:
 			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}. AND this way one might be able to avoid failed remote operations entirely and keep busy waiting local.
 		\end{itemize}
 	\item misc
-		\item model and measure ronny's fancy and Dissemination on shared memory and compare to ronny simple and Central Counter and reality
-	\item explore variations of ronny's barriers
+		\begin{itemize}
+			\item~
+		\end{itemize}
 \end{itemize}
 
 
