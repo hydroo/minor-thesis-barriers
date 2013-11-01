@@ -68,7 +68,7 @@
     add-fetch-barrier     t   3, reps   87579000, wallSecs 11.000 sec, totalPower 20.809 W, cycles/reps 314.008, nJ/reps 2613.645
     add-fetch-barrier     t   4, reps   62097000, wallSecs 11.000 sec, totalPower 22.064 W, cycles/reps 442.841, nJ/reps 3908.282
     add-fetch-wait-spin   t   1, wallSecs 10.000 sec, totalPower 17.220 W
-    add-fetch-wait-spin   t   2, wallSecs 10.000 sec, totalPower 22.705 W
+    add-fetch-wait-spin   t   2, wallSecs 10.000 sec, totalPower 22.705 W (because the there exist 3 threads 2 of which are spinning)
     add-fetch-wait-spin   t   3, wallSecs 10.000 sec, totalPower 22.890 W
     add-fetch-wait-spin   t   4, wallSecs 10.020 sec, totalPower 22.965 W
     add-fetch-contested   t   2, reps  233472000, wallSecs 11.416 sec, totalPower 14.320 W, cycles/reps 122.237, nJ/reps 700.161
