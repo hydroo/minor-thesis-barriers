@@ -27,6 +27,8 @@
 \usepackage{multirow}
 \usepackage{relsize} % used for larger sum symbols
 \usepackage{setspace}
+%\usepackage{silence}% Filter out unwanted warnings and error messages
+%\WarningFilter{pdftex}{destination with the same}
 \usepackage{tikz}
 	\usetikzlibrary{shapes, arrows, positioning}
 	\tikzstyle{-}    = [draw]
@@ -48,9 +50,8 @@
 
 \begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagenumbering{gobble}
-
 \begin{titlepage}
+\pagenumbering{alph}
 
 \begin{center}
 \includegraphics[width=3cm]{tu-logo}~\\[1cm]
@@ -80,6 +81,8 @@
 \pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\thispagestyle{empty}
+
 %\section*{Aufgabenstellung}
 %\label{sec:task}
 %\begin{enumerate}
@@ -113,6 +116,8 @@
 \pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\thispagestyle{empty}
+
 %\section*{Selbstst\"andigkeitserkl\"arung}
 %\label{sec:integrity}
 %Ich erkl\"are hiermit, dass ich die vorliegende Arbeit selbst\"andig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Die aus fremden Quellen w\"ortlich oder sinngem\"a\ss ~\"ubernommenen Gedanken sind als solche kenntlich gemacht. Ich erkl\"are ferner, dass ich die vorliegende Arbeit an keiner anderen Stelle als Pr\"ufungsarbeit eingereicht habe oder einreichen werde.
@@ -126,6 +131,8 @@ I hereby declare that I prepared this thesis independently and without use of to
 \pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\thispagestyle{empty}
+
 \renewcommand{\contentsname}{Table of contents}
 \tableofcontents
 
