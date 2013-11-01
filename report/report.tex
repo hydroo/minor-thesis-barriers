@@ -5,6 +5,7 @@
 \usepackage{cite}
 \usepackage{color}
 	\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\usepackage{colortbl}
 \usepackage{datetime}
 \usepackage{fancyvrb}
 \usepackage{graphicx}
@@ -950,7 +951,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 					\item trew any other operation = 0nJ
 					\item for dist: remote 200nJ, local memory op = 2nJ, others none
 					\item baseline of 11W
-					\item \todo where to put how i got these numbers? reference measurement on core i5-2520M (2.5ghz). Trying to fit number of shared/local operations to measurements.
+					\item These numbers are a very limited estimate derived from a small reference measurement. The numbers can be found in Section~\ref{ssec:energy-measurement}.
 				\end{itemize}
 			\item (diss, ronny's fancy) number of remote transfers. trew for remote operations = 1. srew =0.
 		\end{itemize}
@@ -1396,57 +1397,82 @@ Future work:
 \section{Appendix}
 \label{sec:appendix}
 \subsection{Energy reference measurement for estimating the model parameters}
+The CPU we used is an Intel\textregistered~Core\texttrademark~i5-2520M clocked at 2.50GHz.
 \label{ssec:energy-measurement}
-\begin{itemize}
-    \item \todo
+\begin{table}[h!]
+	\centering
+	\caption{Reference measurement (without Hyper-Threading)}
+	\vspace{0.2cm}
+	\begin{tabular}{r | r | r r r}
+		                         & Thread & Time     & Energy    & Rate of      \\
+		                         & count  & (Cycles) & consumpt. & energy cons. \\
+		                         &        &          & (nJ)      & (W)          \\
+		\hline
+		Idle                     &        &          &           &  4.0 \\
+		Off-core under load      &        &          &           &  6.8 \\
+		Load                     & 1      &          &           & 19.6 \\
+		                         & 2      &          &           & 28.4 \\
+		Busy waiting             & 1      &          &           & 16.4 \\
+		                         & 2      &          &           & 22.8 \\
+		\hline
+		Add\&fetch (contested)   & 2      &    137.6 &     893.7 & 16.2 \\
+		Add\&fetch (uncontested) & 2      &     19.3 &     158.5 & 20.5 \\
+		Central Counter Barrier  & 2      &    227.4 &    1667.0 & 18.3 \\
+		Ronny's simple barrier   & 2      &    114.0 &    1076.1 & 23.6 \\
+		Dissemination Barrier    & 2      &    144.0 &    1400.3 & 24.3 \\
+		Ronny's fancy barrier    & 2      &     42.1 &     433.4 & 25.7 \\
+	\end{tabular}
+\end{table}
+\begin{table}[h!]
+	\centering
+	\caption{Reference measurement (with Hyper-Threading)}
+	\vspace{0.2cm}
+	\begin{tabular}{r | r | r r r}
+		                          & Thread & Time     & Energy    & Rate of      \\
+		                          & count  & (Cycles) & consumpt. & energy cons. \\
+		                          &        &          & (nJ)      & (W)          \\
+		\hline
+		Idle                      &        &          &           &  4.0 \\
+		\arrayrulecolor{lightgray}\hhline\arrayrulecolor{black}
+		Off-core under load       &        &          &           & 12.6 \\
+		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
+		Load                      & 1      &          &           & 19.6 \\
+		                          & 2      &          &           & 19.7 \\
+		                          & 3      &          &           & 28.0 \\
+		                          & 4      &          &           & 28.3 \\
+		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
+		Busy waiting              & 1      &          &           & 17.2 \\
+		                          & 2      &          &           & 17.5 \\
+		                          & 3      &          &           & 22.9 \\
+		                          & 4      &          &           & 22.9 \\
+		\hline
+		Add\&fetch (contested)    & 2      &    122.2 &     700.2 & 14.3 \\
+		                          & 3      &    136.6 &     903.3 & 16.5 \\
+		                          & 4      &    354.6 &    2349.9 & 16.7 \\
+		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
+		Add\&fetch (unconstested) & 2      &     45.2 &     283.8 & 15.7 \\
+		                          & 3      &     46.9 &     389.0 & 20.7 \\
+		                          & 4      &     47.5 &     396.6 & 20.9 \\
+		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
+		Central Counter Barrier   & 2      &     86.5 &     647.1 & 18.7 \\
+		                          & 3      &    314.0 &    2613.6 & 20.8 \\
+		                          & 3      &    442.8 &    3908.3 & 22.0 \\
+		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
+		Ronny's simple barrier    & 2      &     45.4 &     359.2 & 19.8 \\
+		                          & 3      &    157.8 &    1614.5 & 25.6 \\
+		                          & 4      &    198.3 &    2174.1 & 27.4 \\
+		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
+		Dissemination Barrier     & 2      &     94.4 &     785.3 & 20.8 \\
+		                          & 3      &    297.4 &    3189.0 & 26.8 \\
+		                          & 4      &    337.1 &    3960.3 & 29.4 \\
+		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
+		Ronny's fancy barrier     & 2      &     34.3 &     285.9 & 20.8 \\
+		                          & 3      &    109.1 &    1205.6 & 27.6 \\
+		                          & 4      &    112.1 &    1297.0 & 28.9 \\
+	\end{tabular}
+\end{table}
 
-    % $ sudo ./rapl-benchmark 2 10 --avoid-ht --ghz 2.5 --add-fetch-barrie2 --add-fetch-wait-spinning 2 --add-fetch-contested 2 --add-fetch-uncontested 2 --super-wasteful-2 2 --super-wasteful-5 2 --dissemination 2
-    % # measureSleepPowerConsumption:
-    % # measurement t   1 wallSecs 10.000, totalPower 4.072 W
-    % # measureUncorePowerConsumption:
-    % # measurement t   1 wallSecs 10.750, totalPower 19.620 W
-    % # measurement t   2 wallSecs 10.444, totalPower 28.351 W
-    % add-fetch-barrier     t   2, reps  119793000, wallSecs 10.897 sec, totalPower 18.336 W, cycles/reps 227.416, nJ/reps 1667.958
-    % add-fetch-wait-spin   t   1, wallSecs 10.000 sec, totalPower 16.433 W
-    % add-fetch-contested   t   2, reps  208896000, wallSecs 11.498 sec, totalPower 16.238 W, cycles/reps 137.603, nJ/reps 893.773
-    % add-fetch-uncontested t   2, reps 1363968000, wallSecs 10.551 sec, totalPower 20.499 W, cycles/reps 19.339, nJ/reps 158.572
-    % super-wasteful-2      t   2, reps  240246000, wallSecs 10.951 sec, totalPower 23.608 W, cycles/reps 113.954, nJ/reps 1076.115
-    % super-wasteful-5      t   2, reps  652350000, wallSecs 11.000 sec, totalPower 25.705 W, cycles/reps 42.154, nJ/reps 433.426
-    % dissemination         t   2, reps  190875000, wallSecs 11.000 sec, totalPower 24.299 W, cycles/reps 144.073, nJ/reps 1400.325
-    % # context t   2, sleepPower 4.071633 W, uncorePower 6.817649 W
-
-    % $ sudo ./rapl-benchmark 4 3 --ghz 2.5 --add-fetch-barrier 2 3 4 --add-fetch-wait-spinning 2 3 4 --add-fetch-contested 2 3 4 --add-fetch-uncontested 2 3 4 --super-wasteful-2 2 3 4 --super-wasteful-5 2 3 4 --dissemination 2 3 4
-    % # measureSleepPowerConsumption:
-    % # measurement t   1 wallSecs 3.000, totalPower 4.339 W
-    % # measureUncorePowerConsumption:
-    % # measurement t   1 wallSecs 3.909, totalPower 19.215 W
-    % # measurement t   2 wallSecs 4.378, totalPower 19.394 W
-    % # measurement t   3 wallSecs 4.601, totalPower 27.642 W
-    % # measurement t   4 wallSecs 4.715, totalPower 27.855 W
-    % add-fetch-barrier     t   2, reps  102531000, wallSecs 3.542 sec, totalPower 18.045 W, cycles/reps 86.364, nJ/reps 623.372
-    % add-fetch-barrier     t   3, reps   32001000, wallSecs 4.000 sec, totalPower 19.738 W, cycles/reps 312.493, nJ/reps 2467.180
-    % add-fetch-barrier     t   4, reps   23430000, wallSecs 4.000 sec, totalPower 22.190 W, cycles/reps 426.791, nJ/reps 3788.256
-    % add-fetch-wait-spin   t   1, wallSecs 3.003 sec, totalPower 16.258 W
-    % add-fetch-wait-spin   t   2, wallSecs 3.000 sec, totalPower 22.073 W
-    % add-fetch-wait-spin   t   3, wallSecs 3.000 sec, totalPower 22.320 W
-    % add-fetch-contested   t   2, reps   98304000, wallSecs 4.492 sec, totalPower 13.937 W, cycles/reps 114.242, nJ/reps 636.898
-    % add-fetch-contested   t   3, reps   73728000, wallSecs 3.580 sec, totalPower 15.607 W, cycles/reps 121.408, nJ/reps 757.904
-    % add-fetch-contested   t   4, reps   49152000, wallSecs 4.805 sec, totalPower 15.783 W, cycles/reps 244.376, nJ/reps 1542.782
-    % add-fetch-uncontested t   2, reps  184320000, wallSecs 3.241 sec, totalPower 15.130 W, cycles/reps 43.960, nJ/reps 266.042
-    % add-fetch-uncontested t   3, reps  208896000, wallSecs 4.017 sec, totalPower 20.093 W, cycles/reps 48.079, nJ/reps 386.415
-    % add-fetch-uncontested t   4, reps  208896000, wallSecs 4.024 sec, totalPower 20.119 W, cycles/reps 48.159, nJ/reps 387.554
-    % super-wasteful-2      t   2, reps  211743000, wallSecs 3.832 sec, totalPower 19.056 W, cycles/reps 45.248, nJ/reps 344.903
-    % super-wasteful-2      t   3, reps   63828000, wallSecs 4.000 sec, totalPower 24.727 W, cycles/reps 156.678, nJ/reps 1549.650
-    % super-wasteful-2      t   4, reps   52749000, wallSecs 4.000 sec, totalPower 26.563 W, cycles/reps 189.586, nJ/reps 2014.360
-    % super-wasteful-5      t   2, reps  292824000, wallSecs 3.999 sec, totalPower 19.894 W, cycles/reps 34.144, nJ/reps 271.712
-    % super-wasteful-5      t   3, reps   98991000, wallSecs 4.000 sec, totalPower 26.625 W, cycles/reps 101.015, nJ/reps 1075.792
-    % super-wasteful-5      t   4, reps   69321000, wallSecs 4.000 sec, totalPower 27.765 W, cycles/reps 144.257, nJ/reps 1602.133
-    % dissemination         t   2, reps  106419000, wallSecs 4.000 sec, totalPower 19.790 W, cycles/reps 93.963, nJ/reps 743.823
-    % dissemination         t   3, reps   33657000, wallSecs 4.000 sec, totalPower 25.820 W, cycles/reps 297.105, nJ/reps 3068.488
-    % dissemination         t   4, reps   30573000, wallSecs 4.000 sec, totalPower 28.417 W, cycles/reps 327.081, nJ/reps 3717.831
-    % # context t   4, sleepPower 4.338675 W, uncorePower 11.996751 W
-\end{itemize}
-
+\clearpage
 \subsection{Raw data of behind figures}
 \begin{itemize}
 	\item \todo
