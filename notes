@@ -40,58 +40,53 @@
 
   reference for energy rates (Core i5-2520M , 2.50GHz):
 
-    4W (1.6nJ per cycle) sleep power. 28W (11.2nJ per cycle) maximum power.
-     ->  sleep
-
-    $ sudo ./rapl-benchmark 2 10 --avoid-ht --ghz 2.5 --add-fetch-barrier 2 --add-fetch-wait-spinning 2 --add-fetch-contested 2 --add-fetch-uncontested 2 --super-wasteful-2 2
+    $ sudo ./rapl-benchmark 2 10 --avoid-ht --ghz 2.5 --add-fetch-barrie2 --add-fetch-wait-spinning 2 --add-fetch-contested 2 --add-fetch-uncontested 2 --super-wasteful-2 2 --super-wasteful-5 2 --dissemination 2
     # measureSleepPowerConsumption:
-    # measurement t   1 wallSecs 10.000, totalPower 4.243 W
+    # measurement t   1 wallSecs 10.000, totalPower 4.072 W
     # measureUncorePowerConsumption:
-    # measurement t   1 wallSecs 10.781, totalPower 19.537 W
-    # measurement t   2 wallSecs 11.667, totalPower 28.019 W
-    add-fetch-barrier     t   2, reps  116442000, wallSecs 10.176 sec, totalPower 18.196 W, cycles/reps 218.485, nJ/reps 1590.208
-    add-fetch-wait-spin   t   1, wallSecs 10.000 sec, totalPower 15.907 W
-    add-fetch-wait-spin   t   2, wallSecs 10.028 sec, totalPower 21.894 W
-    add-fetch-contested   t   2, reps  196608000, wallSecs 11.144 sec, totalPower 16.125 W, cycles/reps 141.707, nJ/reps 914.036
-    add-fetch-uncontested t   2, reps 1413120000, wallSecs 10.939 sec, totalPower 20.350 W, cycles/reps 19.352, nJ/reps 157.528
-    super-wasteful-2      t   2, reps  240615000, wallSecs 10.916 sec, totalPower 23.646 W, cycles/reps 113.423, nJ/reps 1072.795
-    super-wasteful-5      t   2, reps  642219000, wallSecs 11.000 sec, totalPower 25.691 W, cycles/reps 42.819, nJ/reps 440.031
-    dissemination         t   2, reps  195345000, wallSecs 11.000 sec, totalPower 24.501 W, cycles/reps 140.777, nJ/reps 1379.690
-    # context t   2, sleepPower 4.242727 W, uncorePower 6.813289 W
+    # measurement t   1 wallSecs 10.750, totalPower 19.620 W
+    # measurement t   2 wallSecs 10.444, totalPower 28.351 W
+    add-fetch-barrier     t   2, reps  119793000, wallSecs 10.897 sec, totalPower 18.336 W, cycles/reps 227.416, nJ/reps 1667.958
+    add-fetch-wait-spin   t   1, wallSecs 10.000 sec, totalPower 16.433 W
+    add-fetch-wait-spin   t   2, wallSecs 10.028 sec, totalPower 22.837 W
+    add-fetch-contested   t   2, reps  208896000, wallSecs 11.498 sec, totalPower 16.238 W, cycles/reps 137.603, nJ/reps 893.773
+    add-fetch-uncontested t   2, reps 1363968000, wallSecs 10.551 sec, totalPower 20.499 W, cycles/reps 19.339, nJ/reps 158.572
+    super-wasteful-2      t   2, reps  240246000, wallSecs 10.951 sec, totalPower 23.608 W, cycles/reps 113.954, nJ/reps 1076.115
+    super-wasteful-5      t   2, reps  652350000, wallSecs 11.000 sec, totalPower 25.705 W, cycles/reps 42.154, nJ/reps 433.426
+    dissemination         t   2, reps  190875000, wallSecs 11.000 sec, totalPower 24.299 W, cycles/reps 144.073, nJ/reps 1400.325
+    # context t   2, sleepPower 4.071633 W, uncorePower 6.817649 W
 
-
-    $ sudo ./rapl-benchmark 4 3 --ghz 2.5 --add-fetch-barrier 2 3 4 --add-fetch-wait-spinning 2 3 4 --add-fetch-contested 2 3 4 --add-fetch-uncontested 2 3 4 --super-wasteful-2 2 3 4 --super-wasteful-5 2 3 4
+    sudo ./rapl-benchmark 4 10 --ghz 2.5 --add-fetch-barrier 2 3 4 --add-fetch-wait-spinning 2 3 4 --add-fetch-contested 2 3 4 --add-fetch-uncontested 2 3 4 --super-wasteful-2 2 3 4 --super-wasteful-5 2 3 4 --dissemination 2 3 4
     # measureSleepPowerConsumption:
-    # measurement t   1 wallSecs 3.000, totalPower 4.092 W
+    # measurement t   1 wallSecs 10.000, totalPower 4.022 W
     # measureUncorePowerConsumption:
-    # measurement t   1 wallSecs 3.927, totalPower 19.678 W
-    # measurement t   2 wallSecs 4.386, totalPower 19.755 W
-    # measurement t   3 wallSecs 4.604, totalPower 27.940 W
-    # measurement t   4 wallSecs 4.761, totalPower 28.178 W
-    add-fetch-barrier     t   2, reps  111837000, wallSecs 3.871 sec, totalPower 18.593 W, cycles/reps 86.541, nJ/reps 643.630
-    add-fetch-barrier     t   3, reps   29397000, wallSecs 4.000 sec, totalPower 20.740 W, cycles/reps 340.168, nJ/reps 2822.072
-    add-fetch-barrier     t   4, reps   22038000, wallSecs 4.000 sec, totalPower 21.930 W, cycles/reps 453.746, nJ/reps 3980.237
-    add-fetch-wait-spin   t   1, wallSecs 3.002 sec, totalPower 16.074 W
-    add-fetch-wait-spin   t   2, wallSecs 3.000 sec, totalPower 21.846 W
-    add-fetch-wait-spin   t   3, wallSecs 3.000 sec, totalPower 21.959 W
-    add-fetch-wait-spin   t   4, wallSecs 3.029 sec, totalPower 22.111 W
-    add-fetch-contested   t   2, reps   98304000, wallSecs 4.330 sec, totalPower 14.319 W, cycles/reps 110.107, nJ/reps 630.647
-    add-fetch-contested   t   3, reps   36864000, wallSecs 4.558 sec, totalPower 16.856 W, cycles/reps 309.081, nJ/reps 2083.914
-    add-fetch-contested   t   4, reps   36864000, wallSecs 3.871 sec, totalPower 16.652 W, cycles/reps 262.552, nJ/reps 1748.818
-    add-fetch-uncontested t   2, reps  184320000, wallSecs 3.379 sec, totalPower 15.729 W, cycles/reps 45.832, nJ/reps 288.361
-    add-fetch-uncontested t   3, reps  208896000, wallSecs 4.021 sec, totalPower 20.544 W, cycles/reps 48.118, nJ/reps 395.410
-    add-fetch-uncontested t   4, reps  208896000, wallSecs 4.004 sec, totalPower 20.552 W, cycles/reps 47.924, nJ/reps 393.973
-    super-wasteful-2      t   2, reps  207018000, wallSecs 3.831 sec, totalPower 19.710 W, cycles/reps 46.264, nJ/reps 364.741
-    super-wasteful-2      t   3, reps   63684000, wallSecs 4.000 sec, totalPower 25.296 W, cycles/reps 157.015, nJ/reps 1588.725
-    super-wasteful-2      t   4, reps   50625000, wallSecs 4.000 sec, totalPower 27.056 W, cycles/reps 197.530, nJ/reps 2137.750
-    super-wasteful-5      t   2, reps  293178000, wallSecs 4.000 sec, totalPower 20.450 W, cycles/reps 34.108, nJ/reps 278.999
-    super-wasteful-5      t   3, reps   90966000, wallSecs 4.000 sec, totalPower 27.119 W, cycles/reps 109.930, nJ/reps 1192.463
-    super-wasteful-5      t   4, reps   82884000, wallSecs 4.000 sec, totalPower 28.272 W, cycles/reps 120.647, nJ/reps 1364.384
-    dissemination         t   2, reps  104778000, wallSecs 3.966 sec, totalPower 19.617 W, cycles/reps 94.633, nJ/reps 742.578
-    dissemination         t   3, reps   34200000, wallSecs 4.000 sec, totalPower 25.304 W, cycles/reps 292.387, nJ/reps 2959.420
-    dissemination         t   4, reps   29499000, wallSecs 4.000 sec, totalPower 27.806 W, cycles/reps 339.000, nJ/reps 3770.535
-    # context t   4, sleepPower 4.092123 W, uncorePower 12.752734 W
-
+    # measurement t   1 wallSecs 10.784, totalPower 19.584 W
+    # measurement t   2 wallSecs 10.964, totalPower 19.709 W
+    # measurement t   3 wallSecs 11.503, totalPower 28.045 W
+    # measurement t   4 wallSecs 12.037, totalPower 28.323 W
+    add-fetch-barrier     t   2, reps  312579000, wallSecs 10.818 sec, totalPower 18.698 W, cycles/reps 86.526, nJ/reps 647.148
+    add-fetch-barrier     t   3, reps   87579000, wallSecs 11.000 sec, totalPower 20.809 W, cycles/reps 314.008, nJ/reps 2613.645
+    add-fetch-barrier     t   4, reps   62097000, wallSecs 11.000 sec, totalPower 22.064 W, cycles/reps 442.841, nJ/reps 3908.282
+    add-fetch-wait-spin   t   1, wallSecs 10.000 sec, totalPower 17.220 W
+    add-fetch-wait-spin   t   2, wallSecs 10.000 sec, totalPower 22.705 W
+    add-fetch-wait-spin   t   3, wallSecs 10.000 sec, totalPower 22.890 W
+    add-fetch-wait-spin   t   4, wallSecs 10.020 sec, totalPower 22.965 W
+    add-fetch-contested   t   2, reps  233472000, wallSecs 11.416 sec, totalPower 14.320 W, cycles/reps 122.237, nJ/reps 700.161
+    add-fetch-contested   t   3, reps  196608000, wallSecs 10.739 sec, totalPower 16.537 W, cycles/reps 136.554, nJ/reps 903.276
+    add-fetch-contested   t   4, reps   86016000, wallSecs 12.202 sec, totalPower 16.566 W, cycles/reps 354.640, nJ/reps 2349.918
+    add-fetch-uncontested t   2, reps  589824000, wallSecs 10.668 sec, totalPower 15.692 W, cycles/reps 45.218, nJ/reps 283.824
+    add-fetch-uncontested t   3, reps  589824000, wallSecs 11.069 sec, totalPower 20.727 W, cycles/reps 46.915, nJ/reps 388.956
+    add-fetch-uncontested t   4, reps  577536000, wallSecs 10.982 sec, totalPower 20.858 W, cycles/reps 47.536, nJ/reps 396.611
+    super-wasteful-2      t   2, reps  602190000, wallSecs 10.924 sec, totalPower 19.802 W, cycles/reps 45.350, nJ/reps 359.206
+    super-wasteful-2      t   3, reps  174303000, wallSecs 11.000 sec, totalPower 25.583 W, cycles/reps 157.773, nJ/reps 1614.520
+    super-wasteful-2      t   4, reps  138690000, wallSecs 11.000 sec, totalPower 27.412 W, cycles/reps 198.278, nJ/reps 2174.050
+    super-wasteful-5      t   2, reps  802119000, wallSecs 11.000 sec, totalPower 20.852 W, cycles/reps 34.284, nJ/reps 285.946
+    super-wasteful-5      t   3, reps  252168000, wallSecs 11.000 sec, totalPower 27.637 W, cycles/reps 109.053, nJ/reps 1205.576
+    super-wasteful-5      t   4, reps  245361000, wallSecs 11.000 sec, totalPower 28.929 W, cycles/reps 112.079, nJ/reps 1296.951
+    dissemination         t   2, reps  291354000, wallSecs 11.000 sec, totalPower 20.799 W, cycles/reps 94.386, nJ/reps 785.269
+    dissemination         t   3, reps   92463000, wallSecs 11.000 sec, totalPower 26.806 W, cycles/reps 297.414, nJ/reps 3189.002
+    dissemination         t   4, reps   81591000, wallSecs 11.000 sec, totalPower 29.374 W, cycles/reps 337.051, nJ/reps 3960.259
+    # context t   4, sleepPower 4.021802 W, uncorePower 12.648925 W
 --- 13-10-05 ---
 
  * ronny fancy seems now faster than ronny simple, due to the recent optimizations
