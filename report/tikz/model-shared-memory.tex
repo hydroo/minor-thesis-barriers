@@ -3,30 +3,30 @@
 % nodes
 \node [o]            at (  0  ,  3   ) (A)    {A};
 \node [o]            at (  0  ,  0   ) (M)    {M};
-\node [o]            at ( -4.0, -4.0 ) (S)    {S};
-\node [o]            at (  4.0, -4.0 ) (I)    {I};
-\node [o, draw=none] at (  5.5, -3.0 ) (init) {};
+\node [o]            at ( -3.7, -3.7 ) (S)    {S};
+\node [o]            at (  3.7, -3.7 ) (I)    {I};
+\node [o, draw=none] at (  5.0, -3.0 ) (init) {};
 
 %  edges
 \path [->]
   (init) edge                                                 node []                     {}                                     (I)
 
-  (A)    edge [in=100, out=260]                               node [left, pos=0.7]        {$\lambda_c : \mathit{atomic\_end}$}   (M)
+  (A)    edge [in=100, out=260]                               node [left       , pos=0.7] {$\lambda_c : \mathit{atomic\_end}$}   (M)
 
-  (M)    edge [in=-80, out=80]                                node [right, pos=0.3]       {$\lambda_c: \mathit{atomic\_begin}$}  (A)
+  (M)    edge [in=-80, out=80]                                node [right      , pos=0.3] {$\lambda_c: \mathit{atomic\_begin}$}  (A)
   (M)    edge [loop, distance=1.2cm, in=-60, out=240]         node [below] {$\lambda_c: \mathit{read} \lor \mathit{write}$}      (M)
-  (M)    edge [dashed, in=90, out=180]                        node [above left, pos=0.2]  {$\mathit{read} \lor \mathit{write}$}  (S)
+  (M)    edge [dashed, in=90, out=180]                        node [above left , pos=0.2] {$\mathit{read} \lor \mathit{write}$}  (S)
   (M)    edge [dashed, in=90, out=0]                          node [above right, pos=0.2] {$\mathit{write}$}                     (I)
 
-  (S)    edge [in=180, out=120]                               node [left]                 {$\lambda_a : \mathit{atomic\_begin}$} (A)
+  (S)    edge [in=180, out=120]                               node [above left , pos=0.7] {$\lambda_a : \mathit{atomic\_begin}$} (A)
   (S)    edge [in=210, out=60]                                node [below right, pos=0.3] {$\lambda_w : \mathit{write}$}         (M)
   (S)    edge [loop, distance=1.2cm, in=220, out=150]         node [left]                 {$\lambda_c : \mathit{read}$}          (S)
   (S)    edge [loop, dashed, distance=1.2cm, in=320, out=250] node [below]                {$\lambda_r : \mathit{read}$}          (S)
   (S)    edge [dashed, in=190, out=-10]                       node [below]                {$write$}                              (I)
 
-  (I)    edge [in=0, out=60]                                  node [right]                {$\lambda_a : \mathit{atomic\_begin}$} (A)
-  (I)    edge [in=-30, out=120]                               node [below left, pos=0.3]  {$\lambda_w : \mathit{write}$}         (M)
+  (I)    edge [in=0, out=60]                                  node [above right,pos=0.7]  {$\lambda_a : \mathit{atomic\_begin}$} (A)
+  (I)    edge [in=-30, out=120]                               node [below left ,pos=0.3]  {$\lambda_w : \mathit{write}$}         (M)
   (I)    edge [in=10, out=170]                                node [above]                {$\lambda_r : \mathit{read}$}          (S)
-  (I)    edge [loop, dashed, distance=1.2cm, in=0, out=-90]   node [below right]          {$\mathit{read} \lor \mathit{write}$}  (I);
+  (I)    edge [loop, dashed, distance=1.2cm, in=0, out=-90]   node [below=0.2cm]          {$\mathit{read} \lor \mathit{write}$}  (I);
 
 \end{tikzpicture}

@@ -8,15 +8,15 @@
 \node [o, draw=none] at ( 0   ,  0  ) (init) {};
 \node [o]            at ( 1   , -1  ) (1)    {};
 \node [o]            at ( 2   , -2  ) (2)    {};
-\node [o]            at ( 3   , -3  ) (3)    {};
-\node [o, draw=none] at ( 4   , -4  ) (done) {};
+\node [o]            at ( 3.2 , -3.2) (3)    {};
+\node [o, draw=none] at ( 4.2 , -4.2) (done) {};
 
 %  edges
-\path [->] (init) edge                                      node        {$\lambda_{work}$ : --}                                      (1)
-           (1)    edge                                      node[left]  {barrier[threadIndex] := true \color{gray}(shared write)~~}  (2)
-           (2)    edge [loop, distance=2cm, out=90, in=0] node          {barrier[i] $\ne$ true : i := 0 \color{gray}(shared read)}   (2)
-           (2)    edge                                      node[right] {~~barrier[i] = true : i := i + 1 \color{gray}(shared read)} (3)
-           (3)    edge [out=180, in=-90]                    node[left]  {i $<$ threadCount : --~~}                                   (2)
-           (3)    edge                                      node        {i = threadCount : --}                                       (done);
+\path [->] (init) edge                   node                          {$\lambda_{work}$ : --}                                       (1)
+           (1)    edge   node [below left, pos=0.1, align=right] {barrier[threadIndex] := true \\ \color{gray}(shared write)}        (2)
+           (2)    edge [loop, distance=1.2cm, out=7, in=107] node [above right] {barrier[i] $\ne$ true : i := 0 \color{gray}(shared read)} (2)
+           (2)    edge [out=-20, in=115] node[right=0.2cm, align=left] {barrier[i] = true : i := i + 1 \\ \color{gray}(shared read)} (3)
+           (3)    edge [out=155, in=-65] node[left=0.2cm]              {i $<$ threadCount : --}                                      (2)
+           (3)    edge                   node                          {i = threadCount : --}                                        (done);
 
 \end{tikzpicture}
