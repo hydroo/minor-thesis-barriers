@@ -17,7 +17,7 @@
 
   (1)    edge                                      node [below left]              {$\lambda_c$ : barrier[me] := meBit}        (2)
 
-  (2)    edge [loop, distance=2cm, out=90, in=0] node [above right, align=left] {$\lambda_c$ : barrier[me]\&2$^i$ = 1 : \\ i := i + 1 (\textbf{mod} processCount)} (2)
+  (2)    edge [loop, distance=1.2cm, out=90, in=0] node [above right, align=left] {$\lambda_c$ : barrier[me]\&2$^i$ = 1 : \\ i := i + 1 (\textbf{mod} processCount)} (2)
 
   (2)    edge [out=-30, in=120] node [above right, pos=0.7, align=left] {$\lambda_g$ : barrier[me]\&2$^i$ = 0 : \\ barrier[me] := barrier[me] \textbar~barrier[i] } (3)
 
