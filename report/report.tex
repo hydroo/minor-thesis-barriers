@@ -478,7 +478,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item resetting:
 		\begin{itemize}
 			\item how is resetting handled in currently used barriers?
-			\item integrated in the barrier ''self-resetting''
+			\item integrated in the barrier ``self-resetting''
 			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset). Describe in pseudo code as well, maybe.
 			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
 		\end{itemize}
@@ -745,7 +745,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item choice between enabled transition is made through the race condition. Thus, the time-abstract probability to fire a particular transition $s \xrightarrow{\lambda : \alpha} s'$ is $P(s, \alpha, s') = \frac{\lambda}{E(s)}$ where $E(s)$ is the exit rate of state $s$, i.e., the sum of the rates of all outgoing transitions of state $s$. The probability that $s \xrightarrow{\lambda : \alpha} s'$ will fire within $t$ time units is then $P(s, \alpha, s') \cdot (1 - e^{- E(s) \cdot t})$.
 	\item paths in a CTMC are sequences of consecutive transitions augmented by the time points when they are taken.
 	\item For the analysis of such transition systems we employ the logic CSL \cite{assb96, bhhk00, knp07}. (my formulation)
-	\item To specify measurable sets of infinite paths, we will use an LTL-like notation, such as $\lozenge T$ (''eventually T'') and $\square T$ (''always T'') where $T \subseteq S$.
+	\item To specify measurable sets of infinite paths, we will use an LTL-like notation, such as $\lozenge T$ (``eventually T'') and $\square T$ (``always T'') where $T \subseteq S$.
 	\item Instead of naming states we will oftentimes use state predicates and propositional formulas to describe sets of states. Their meaning will be obvious from the context. (my formulation)
 	\item we will also study reward based properties formalized using the logic CSRL \cite{bhhk00, knp07}
 	\item This requires the extension of $\mathcal{M}$ by two reward functions. $\mathit{srew} : S \rightarrow \mathbb{R}$ specifies the reward to be earned per time  unit when staying in state $s$. $\mathit{trew} : S \times S \rightarrow \mathbb{R}$ assigns a reward to each transition between two states regardless of action labels.
