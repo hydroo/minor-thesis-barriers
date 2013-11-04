@@ -160,7 +160,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item ?more?
 		\end{itemize}
 	\item mention that we assume atomic read and write at 32/64 bits a piece, when it matters
-	\item explain cores vs processes, threads - we always assume threads, processes $>$= cores. Why. Find an appropriate spot to talk about this. I have marked a good spot in the text in Section~\ref{sssec:existing-currently-used-shared}
+	\item explain cores vs processes, threads - we always assume threads, processes $>$= cores. Why. Find an appropriate spot to talk about this. I have marked a good spot in the text in Section~\ref{sssec:background-currently-used-shared}
 	\item "be forthright about the limitations and assumptions of your design. Also, make sure you justify any shortcuts/limitations convincingly"
 	\item \texttt{me} vs \texttt{threadIndex} / \texttt{processIndex}, make its use coherent
 	\item color use in diagrams should be consistent (same bars should have same color across multiple diagrams)
@@ -217,14 +217,14 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background}
-\label{sec:existing}
+\label{sec:background}
 In this section we will first take look at the tools at our disposal to implement barriers on both shared memory and distributed memory architectures.
 Next we will show which barrier algorithms are used in today's parallel programming frameworks.
 Finally we present a view of the barrier as a modularized algorithm consisting of various independent pieces.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Means to implement barrier protocols}
-\label{ssec:existing-means}
+\label{ssec:background-means}
 A shared memory system consists of a number of processors which are connected to one chunk of memory they all share. Information can be exchanged between processors by simply writing and reading from same memory address, since they all share one address space.
 Desktops, laptops and small to medium servers are typical examples of shared memory systems.
 
@@ -235,7 +235,7 @@ Programming for shared memory and distributed memory architectures is very diffe
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Shared memory systems}
-\label{sssec:existing-means-shared}
+\label{sssec:background-means-shared}
 A parallel program for on a shared memory system consists of multiple threads of execution -- short \emph{threads}.
 
 The straightforward way to share a piece of information between threads is to \emph{load}, \emph{store} data from and to the same address.
@@ -257,7 +257,7 @@ Aside from implementing barriers in software vendors can wire barrier protocols 
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed memory systems}
-\label{sssec:existing-means-distributed}
+\label{sssec:background-means-distributed}
 \begin{itemize}
 	\item categories
 		\begin{itemize}
@@ -376,11 +376,11 @@ Aside from implementing barriers in software vendors can wire barrier protocols 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Currently used barrier protocols}
-\label{ssec:existing-currently-used}
+\label{ssec:background-currently-used}
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Shared memory systems}
-\label{sssec:existing-currently-used-shared}
+\label{sssec:background-currently-used-shared}
 \begin{itemize}
 	\item explain short why only research in glibc and gnu openmp\cite{openmp}. closed source intel, microsoft, portland pgi, pathscale. pthreads und openmp open source und weit verbreitet. ?llvm?
 	\item gnu openmp\cite{gomp}
@@ -427,7 +427,7 @@ Aside from implementing barriers in software vendors can wire barrier protocols 
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed memory systems}
-\label{sssec:existing-currently-used-distributed}
+\label{sssec:background-currently-used-distributed}
 \begin{itemize}
 	\item only MPI implementations. Why has already been explained in Section~\ref{why-only-mpi}.
 	\item only openmpi and mpich. Explain why. (opensource. mpich is base of many others (name them). weit verbreitete implementationen.)
@@ -575,8 +575,8 @@ Aside from implementing barriers in software vendors can wire barrier protocols 
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
 	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the Central Counter Barrier, whereas Ronny's simple and fancy barrier show promise. Therefore we restrict our attention to the latter.
-	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudo-code-central-counter} in Section~\ref{sssec:existing-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudo-code-ronny-simple} in Section~\ref{ssec:new-simple}).
-	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudo-code-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudo-code-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
+	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudo-code-central-counter} in Section~\ref{sssec:background-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudo-code-ronny-simple} in Section~\ref{ssec:new-simple}).
+	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudo-code-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudo-code-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
 	\item The analysis is split into two parts: general properties (bla, perceived without measuring, bla), model checking.
 \end{itemize}
@@ -626,7 +626,7 @@ Aside from implementing barriers in software vendors can wire barrier protocols 
 	\item MEMORY: The memory requirements of the Dissemination Barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The Dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item the progress problem
 		\begin{itemize}
-			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:existing-currently-used-distributed}. All processes arrive timely.
+			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed}. All processes arrive timely.
 			\item more normal that one or more processes are missing.
 			\item how much progress can a barrier make while not all processes have arrived?
 			\item suppose process 4 has not entered. Modified diagram of the progress through the rounds: Figure~\ref{fig:diagram-dissemination-progress}
@@ -838,7 +838,7 @@ Aside from implementing barriers in software vendors can wire barrier protocols 
 \label{sssec:analysis-modelchecking-modelling-central-counter}
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
-	\item Algorithm explained in Section~\ref{sssec:existing-currently-used-shared}
+	\item Algorithm explained in Section~\ref{sssec:background-currently-used-shared}
 	\item Control flow diagram Figure~\ref{fig:model-central-counter}
 		\begin{figure}[htbp]
 			\centering
@@ -878,7 +878,7 @@ Aside from implementing barriers in software vendors can wire barrier protocols 
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
 	\item no special module for distributed memory, since all variables are independently stored in the local memory of each process. There is no influence that copies data between processes other then the user-specified program itself.
-	\item Algorithm explained in Section~\ref{sssec:existing-currently-used-distributed}
+	\item Algorithm explained in Section~\ref{sssec:background-currently-used-distributed}
 	\item Control flow diagram augmented with rates: Figure~\ref{fig:model-dissemination}
 		\begin{figure}[htbp]
 			\centering
