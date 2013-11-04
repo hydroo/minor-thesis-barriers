@@ -236,16 +236,24 @@ Programming for shared memory and distributed memory architectures is very diffe
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Shared memory systems}
 \label{sssec:existing-means-shared}
-\begin{itemize}
-	\item normal load/store.
-	\item atomic ops. An atomic operation is done in one instant without being interrupted by other memory accesses. E.g. add-fetch, compare-swap (is as old as 1970. No citations found. And perhaps not necessary). Never faster than normal read/write. (don't elaborate too much since we want a very high level view of the tools at our disposal)
-	\item weaken consistency model. Consistency models describe restrictions on the order of visibility of memory accesses between multiple threads. In a thread, locally, the order is always the one specified by the program -- sequential. The default on x86 and most restrictive consistency model is sequential consistency. It is defined as follows:
-		\begin{quote}
-			The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program. -- Lamport~\cite{sequentialconsistency}
-		\end{quote}
-		The most prominent weaker memory consistency model is release consistency~\cite{gha90}. Memory accesses appear unordered except so called \emph{release} and \emph{acquire} operations. No memory access that has been issued after an acquire operation is permitted to finish before this acquire operation. No memory access is allowed to finish later than the next release operation. Acquire and release encapsulate the memory accesses in between. Add a figure to explain. Generally speaking, weakening the consistency model gives improved performance, but one must pay attention while implementing concurrent programs, since the globally visible order of memory accesses will be different from the order specified by the source code. Improved performance: less waiting/queuing=more speed of operations, less need for wiring these restrictions in hardware.
-	\item hardware support for barriers rare. Only found example: SGI UV 2000 systems\cite{sgiuv2000}
-\end{itemize}
+A parallel program for on a shared memory system consists of multiple threads of execution -- short \emph{threads}.
+
+The straightforward way to share a piece of information between threads is to \emph{load}, \emph{store} data from and to the same address.
+
+Furthermore most modern processors provide means to execute a small series of computation on one date while making the memory unavailable to other threads. They are called \emph{atomic operations}. Two examples are the \emph{test-and-set} and \emph{add-fetch} instruction. The former stores a value to an address if a given condition is fulfilled, the latter loads a date, adds to it and stores it back.
+
+Without these operations parallel programming is much more difficult and error-prone, since normal load and store can easily cause \emph{race conditions}. This convenience, on the other hand, comes at the cost of additional management overhead for the processor. To date cache coherent shared memory systems are usually limited to 64 threads and less. Some high-performance computing implementations reach numbers of 512 threads. In comparison distributed memory systems can have over a million threads.
+
+The intuitive way memory access concurrently is \emph{sequentially consistent}.
+\begin{quote}
+	\textit{The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.} (Lamport~\cite{sequentialconsistency})
+\end{quote}
+
+Enforcing this intuitive semantic comes at a cost. Modern processors buffer memory access on many levels. To enforce sequential consistency mechanisms to control and circumvent this buffering have to be introduced resulting in more transistors in the processor and higher memory access latency.
+
+If an algorithm is carefully designed, one can weaken the consistency model to gain better performance. One prominent way of such a model is \textit{release consistency}~\cite{gha90}. Memory accesses appears unordered except for so \emph{release} and \emph{acquire} operations. No memory access that has been issued after an acquire operation is permitted to finish before this acquire operation. No memory access is allowed to finish later than the next release operation. Acquire and release encapsulate the memory accesses in between.
+
+Aside from implementing barriers in software vendors can wire barrier protocols into the system's hardware. This is almost never done on shared memory systems. One example for hardware barrier support is the SGI\textregistered UV\texttrademark 2000~\cite{sgiuv2000}, a high-performance shared memory computer.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed memory systems}
