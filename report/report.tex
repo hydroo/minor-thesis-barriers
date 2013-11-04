@@ -258,96 +258,59 @@ Aside from implementing barriers in software vendors can wire barrier protocols 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed memory systems}
 \label{sssec:background-means-distributed}
+A parallel program for a distributed memory architecture consists of multiple \emph{processes}. Each process has its own address space and is therefore unable to share memory with other processes.
+
+First we will give an overview of general ways to implement synchronization primitives on distributed systems. Second we will have a look at one prominent distributed memory programming standard.
+
+One way to exchange information between two processors is via \emph{synchronous message passing}. Two or more processors meet at a point in time until all communicating peers arrived, information is exchanged, and last all processes part and continue their computational tasks. This method requires all involved peers to shake hands. Information is buffered, queued and sent via network.
+
+Another way to approach this is to wait as few as possible, since there is, for example, no need for a sending entity to wait until a receiver arrives. The sender might as well give his information to the communication framework and continue its computational work. This method is called \emph{asynchronous message passing}. Aside from less waiting time, asynchronous message passing incurs a similar overhead as synchronous message passing, because on the communication frame level similar work has to be done. Network channels have to be established, data has to be buffered and hands between peers have to be shaken.
+
+A comparatively recent development is the move to \emph{remote memory access} (RMA). Remote memory access makes a portion of memory available via network so that others can load, store from and to it without actively involving the remote memory's owning processes. It is therefore sometimes called \emph{one-sided communication}. Implementations of RMA oftentimes support atomic operations.
+In order for RMA to be available, the network hardware has to support it. For example InfiniBand~\cite{infiniband} has RMA facilities built in.
+
+Hardware support for remote memory access is widespread especially in high-performance computing. Examples include the Earth Simulator~\cite{earthsimulator}, IBM Blue Gene/L~\cite{bluegenel}, IBM Blue Gene/Q~\cite{bluegeneq} and a low-cost custom system~\cite{hoefler2006b}
+
+Another interesting and seemingly untested approach is to use lossy communication channels for developing synchronization protocols. Hardware is always erroneous -- for example conflicting network packages, dropped packages, corrupted packages or dropped connections happen all the time. To eliminate these errors protocols like the Transmission Control Protocol (TCP) are used amongst other techniques. Reliable protocols such as TCP incur a big performance penalty for transmitting short messages, since the packet size is huge in comparison to the data, each package has to be acknowledged by the receiver and other error checking facilities penalise latency further.
+If one would instead craft algorithms so that it doesn't require a 100\% reliable connection, further performance improvements are conceivable.
+Two ways such algorithms can be the implemented is via the User Datagram Protocol (UDP)~\cite{udp} and InfiniBand's unreliable connections~\cite{infiniband}.
+
+\label{why-only-mpi}
+We will now investigate the facilities the Message Passing Interface (MPI)~\cite{mpi3}, the most prominent high-performance distributed programming interface, provides us to implement barrier protocols. MPI is a standardised, low-level, language-independent and portable interface specification. It is very customizable and supports various modes of operation in order to support many different hardware configurations and allow the user to achieve maximum performance. MPI is widely adopted in high-performance computing (HPC) and scientific computing\cite{mpiadoptiona, mpiadoptionb, mpiadoptionc} and there exists a variety of implementations in all major programming languages.
+
+In our analysis we will only scratch the surface of what the interface has to offer, since diving deep involves lots of details, complicated semantics and many of the details don't matter for our purpose.
+
+MPI supports synchronous message passing via \emph{send} and \emph{receive}. Additionally you can issue a send operation that immediately returns if no receiver is already in place waiting for the sender.
+
+Furthermore MPI facilitates asynchronous message passing. One can send receive messages without blocking and one can test if a message has been successfully transmitted. Synchronous and asynchronous message passing may be mixed. That means one can, for example, issue a non-blocking send that is matched by a blocking receive operation.
+
+Since version 3.0 the MPI standard supports \emph{non-blocking collectives}. Collectives is a collective name for all communication operations where there is a variable number of communicating  peers, like barrier, broadcast, reduce and more.
+Non-blocking collectives allow, in the example of the barrier, to not block at the operation but to register at the barrier upon arrival, and subsequently test the barrier for completion while doing computational work in the meantime.
+This facility is probably not suited to build new barriers on top of it, but is nevertheless an interesting development.
+
+MPI also supports RMA. Although some MPI implementations, for example Open~MPI~\cite{openmpi}, do not support version 3.0 of the specification, we will restrict ourselves to analysing it, because it subsumes the features of version 2.2, it is already a year old and supported by other prominent implementations such as MPICH~\cite{mpich} 3.0 and derivatives like MVAPICH2\cite{mvapich} and Cray MPT\cite{craympt}.
+
+The definition of RMA according to the standard is pretty involvement, and we have to go into a bit more detail now to highlight important points. (mittelguter satz)
+
+To initiate sharing remote memory each participating process issues a collective call to create a \emph{window} of memory to be shared. A window is associated with the group of processes that created it, and through it each participating process exposes a window of local memory to the other peers that can be used for remote memory operations.
+Upon creating a window a number of restrictions regarding the use of the window can be established in order to gain better performance. One can for example lower the memory consistency requirements or guarantee to not use certain operations.
+
+Depending on the underlying hardware and the MPI implementation there are two different memory models. A window may either have the \emph{separate} or the \emph{unified} model. The separate model states that the copy of the remote memory that is visible to the remote peers and the copy that is visible to the local process is not the same and might therefore not automatically update between these two. That means a change by a peer to one process's memory might not be made visible. This process would have to manually update its local copy. In contrast the unified model makes sure that the two copies are eventually updated. Therefore no manual update is necessary. This differentiation is a direct result of trying to support many different hardware configurations. With the upcoming standard 3.1 the user will be able to specify a minimum needed memory model. For now one can only ask the implementation which model is used.
+
+Before going into the details of window synchronisation we have to introduce the concept of \emph{epochs}. An epoch is a period between two window synchronization calls. RMA operations like \emph{put}, \emph{get}, \emph{accumulate} may only be used inside an epoch. Epochs are used to accumulate multiple operations to one larger transfer in order to achieve better efficiency.
+
+MPI differentiates between \emph{active} and \emph{passive} target communication. Active target communication involves both peers being actively involved in windows synchronization, whereas in passive only one side's activity is needed.
+
+One way to synchronize a window is via a \emph{fence} operation. A fence is a collective operation among all window group members that makes sure that all outstanding RMA requests on this window will be finished before the operation returns. It implies a full barrier synchronization.
+
+A more fine-grained instance of active target communication is via the operations \emph{start}, \emph{complete}, \emph{post} and \emph{wait}. The remote memory access calls issuing process calls start to begin his transmission and complete to end it, whereas post and wait are used by the remote command receiving process. Additionally one can specify the processes involved in this synchronization, which do not need to be the whole window group like for fence operations.
+
 \begin{itemize}
-	\item categories
-		\begin{itemize}
-			\item synchronous message passing
-				\begin{itemize}
-					\item high level explanation (wikipedia?)
-					\item relatively large overhead. Queueing. Waiting.
-					\item all communicating partners need to be present at the same time and shake hands.
-				\end{itemize}
-			\item asynchronous message passing
-				\begin{itemize}
-					\item high level explanation (wikipedia?)
-					\item similar overhead as synchronous message passing. not necessarily waiting.
-					\item but partners still need to shake hands for information transfer.
-				\end{itemize}
-			\item remote memory access (RMA)
-				\begin{itemize}
-					\item accessing remote memory through read, write, (atomic operations), without the remote peer being actively involved.
-					\item needs hardware support.
-					\item less management overhead, better latency and throughput than message passing. Less buffering. Ideally no buffering - so called Zero-copy operations.
-					\item distinction between coherent and non-coherent
-					\item (a) coherent - remotely updated memory will be visible to the remote peer eventually
-					\item (b) non-coherent - no guarantee about visibility of remotely updated memory - needs active asking for changes by the remote peer.
-				\end{itemize}
-			\item hardware support here is usual business e.g. Earth Simulator\cite{earthsimulator}, IBM Blue Gene/L\cite{bluegenel}, IBM Blue Gene/Q\cite{bluegeneq}, low-cost custom\cite{hoefler2006b}
-			\item lossy communication e.g.
-				\begin{itemize}
-					\item most of today's synchronization protocols are based on a reliable communication layer e.g. TCP, InfiniBand's~\cite{infiniband} reliable connections. Unreliable communication is often supported though, e.g. UDP~\cite{udp}, InfiniBand's unreliable connections.
-					\item Synchronization protocols for lossy channels could gain performance by performing less checks, like receive acknowledgements.
-				\end{itemize}
-		\end{itemize}
-	\label{why-only-mpi}
-	\item we specifically look at MPI\cite{mpi}. Why only MPI:
-		\begin{itemize}
-			\item standardized
-			\item low-level
-			\item portable, dist and shared mem, MPP, clusters of workstations, and combinations, independent of particular platform features or quantitative differences like latency/bandwidth
-			\item very general and customizable. Supports many modes of operation.
-			\item many implementations of the standard for many programming languages exist
-			\item widely adopted in cluster computing / HPC, scientific computing.~\cite{mpiadoptiona, mpiadoptionb, mpiadoptionc}
-		\end{itemize}
-	\item only scratch surface of MPI, because:
-		\begin{itemize}
-			\item lots of details, because the standard is geared towards generality (supporting many different hardware platforms) and optimizability
-			\item complicated semantics
-			\item many of the details make no difference in protocol design/analysis
-		\end{itemize}
 	\item Don't use any MPI specific names. Keep it high-level
-	\item MPI has synchronous message passing
-		\begin{itemize}
-			\item describe what you can do. How it is used.
-			\item chapter 3.2 in \cite{mpi3}
-			\item MPI\_Ssend, MPI\_Rsend (returns if no receiver is present), MPI\_Recv
-		\end{itemize}
-	\item MPI has asynchronous message passing
-		\begin{itemize}
-			\item describe what you can do. How it is used.
-			\item chapter 3.7 in \cite{mpi3}
-			\item MPI\_Isend, MPI\_Irecv
-			\item MPI\_Wait, MPI\_Test
-			\item MPI\_Cancel
-			\item sync and async message passing can be mixed e.g. MPI\_Isend with a matching MPI\_Recv
-		\end{itemize}
-	\item MPI has asynchronous collectives
-		\begin{itemize}
-			\item chapter 5.12 in \cite{mpi3}
-			\item explain shortly what this is about. You need to explain what collectives are.
-			\item non-blocking collectives are not interesting as a building block for new barriers, because everyone has to take part and no cancellation of anything is possible.
-		\end{itemize}
 	\item MPI has RMA
 		\begin{itemize}
-			\item chapter 11 in \cite{mpi3}
-			\item major changes from MPI 2.2\cite{mpi2} to 3.0\cite{mpi3onesided}
-			\item we only consider MPI 3.0, because: More features. Subsumes MPI 2.2. It is already one year old. It is not yet realized by openmpi, but it is for mpich 3.0 and derivatives such as MVAPICH2\cite{mvapich}, Cray MPT\cite{craympt}
-			\item MPI\_Win\_Create creates a so called 'window' of remotely shared memory among the participating processes. A process group is associated with a window.
-			\item customizable attributes of windows: give the implementation guarantees about not using certain operations, not using certain operations at the same time, lowering memory consistency requirements for certain operations(accumulate).
-			\item MPI\_WIN\_MODEL: explain SEPARATE and UNIFIED. One cannot set the MPI\_WIN\_MODEL to MPI\_WIN\_SEPARATE and MPI\_WIN\_UNIFIED myself. You can only ask for it. It has been proposed for MPI 3.1 to include being able to set a minimum necessary level. Algorithms for separate work on unified as well, but not necessarily the other way round.
-			\item mpich 3.0.4 does MPI\_WIN\_UNIFIED.
-			\item explaining epochs:
-				\begin{itemize}
-					\item an epoch is a period between two window synchronization calls
-					\item rma calls data transfer calls like put, get, accumulate can only be used inside an epoch
-					\item used to accumulate multiple calls etc -$\>$ efficiency
-					\item MPI distinguishes access and exposure epochs, but we ignore these.
-				\end{itemize}
 			\item window sync
 				\begin{itemize}
-					\item active vs passive target communication (\cite{mpi3} page 437~)
-					\item MPI\_Win\_Fence. Active target communication. Is a collective over all window group members. All outstanding RMA requests between group members will be finished. Implies a barrier.
-					\item MPI\_Win\_Start, MPI\_Win\_Complete, MPI\_Win\_Post, and MPI\_Win\_Wait: active target communication. Similar to fence, but allows to specify the sync partners, and distinguishes between "command-issuing" and "remotely-accessed" processes.
 					\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: Passive target communication. No explicit participation of remote peer in synchronization
 					\item MPI\_Flush*: Passive target communication. Completes outstanding RMA calls, issued by the caller, at origin and a specifiable target before returning (or only at the origin).
 					\item MPI\_Sync: Passive target communication. Used to synchronize the public and private part of the window in the separated model.
