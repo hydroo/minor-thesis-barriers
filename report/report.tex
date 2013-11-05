@@ -276,7 +276,6 @@ Another interesting and seemingly untested approach is to use lossy communicatio
 If one would instead craft algorithms so that they don't require a 100\% reliable connection, further performance improvements are conceivable.
 Two ways such algorithms can be the implemented is via the User Datagram Protocol (UDP)~\cite{udp} and InfiniBand's unreliable connections~\cite{infiniband}.
 
-\label{why-only-mpi}
 We will now investigate the facilities the Message Passing Interface (MPI)~\cite{mpi3}, the most prominent high-performance distributed programming interface, provides us to implement barrier protocols. MPI is a standardised, low-level, language-independent and portable interface specification. It is very customizable and supports various modes of operation in order to support many different hardware configurations and allow the user to achieve maximum performance. MPI is widely adopted in high-performance computing (HPC) and scientific computing\cite{mpiadoptiona, mpiadoptionb, mpiadoptionc} and there exist a variety of implementations in all major programming languages.
 
 In our analysis we will only scratch the surface of what the standard offers, since diving deep involves lots of details, complicated semantics and many of the details don't matter for our purpose.
