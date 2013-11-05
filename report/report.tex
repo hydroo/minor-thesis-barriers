@@ -152,7 +152,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 	\item be very aware where you use thread and process, and make sure the reader understands when the distinction does not matter
 	\item make clear what is meant in the listings
 		\begin{itemize}
-			\item C-esque pseudo-code
+			\item C-esque pseudocode
 			\item threadCount/processCount,  threadIndex/processIndex
 			\item the code in the figures is executed on each thread. Each thread has an identifier between 0 and threadCount-1
 			\item \& bit-wise \texttt{AND}, $|$ bit-wise \texttt{OR}, $\sim$ bit-wise \texttt{NOT}
@@ -400,12 +400,12 @@ Having surveyed the tools for implementing synchronization primitives we will no
 			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
 			\item architecture specific for infiband. e.g. Dissemination using RMA \cite{hoefler2006a}
 			\item state that we use an RMA representation of the algorithm. Maybe state why. Writing is sending. Reading is Receiving so to speak.
-			\item Figure~\ref{fig:pseudo-code-dissemination}
+			\item Figure~\ref{fig:pseudocode-dissemination}
 				\begin{figure}[htbp]
 					\centering
 					\input{listings/dissemination}
-					\caption{Pseudo code of the Dissemination Barrier}
-					\label{fig:pseudo-code-dissemination}
+					\caption{Pseudocode of the Dissemination Barrier}
+					\label{fig:pseudocode-dissemination}
 				\end{figure}
 			\item Figure~\ref{fig:diagram-dissemination}
 				\begin{figure}[htbp]
@@ -441,7 +441,7 @@ Having surveyed the tools for implementing synchronization primitives we will no
 		\begin{itemize}
 			\item how is resetting handled in currently used barriers?
 			\item integrated in the barrier ``self-resetting''
-			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset). Describe in pseudo code as well, maybe.
+			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset). Describe in pseudocode as well, maybe.
 			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
 		\end{itemize}
 	\item back-off
@@ -462,13 +462,13 @@ Having surveyed the tools for implementing synchronization primitives we will no
 \label{ssec:new-nmg}
 \begin{itemize}
 	\item original idea by Nicholas Mc Guire was given to me in a private communique.
-	\item modification of the original protocol resulted in Figure~\ref{fig:pseudo-code-nmg-ronny}
+	\item modification of the original protocol resulted in Figure~\ref{fig:pseudocode-nmg-ronny}
 	\item first appearance in \cite{bre13}. Slight modification since then "remembers others" considered here. Don't explain in detail what the modification is and does, since the reader has no knowledge of the previous version and I don't want to explain all of it.
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/nmg-ronny}
-			\caption{Pseudo code of Mc Guire/Ronny's barrier}
-			\label{fig:pseudo-code-nmg-ronny}
+			\caption{Pseudocode of Mc Guire/Ronny's barrier}
+			\label{fig:pseudocode-nmg-ronny}
 		\end{figure}
 	\item high-level explanation
 	\item detailed walk through one iteration
@@ -483,12 +483,12 @@ Having surveyed the tools for implementing synchronization primitives we will no
 \begin{itemize}
 	\item new and shiny. Read mostly, write exactly once. In contrast to Mc Guire/Ronny's barrier.
 	\item How did I come up with the idea?
-	\item Figure~\ref{fig:pseudo-code-ronny-simple}
+	\item Figure~\ref{fig:pseudocode-ronny-simple}
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/ronny-simple}
-			\caption{Pseudo code of Ronny's simple barrier}
-			\label{fig:pseudo-code-ronny-simple}
+			\caption{Pseudocode of Ronny's simple barrier}
+			\label{fig:pseudocode-ronny-simple}
 		\end{figure}
 	\item explanation here.
 	\item one array element per cache line to avoid false sharing\cite{falsesharing}
@@ -507,12 +507,12 @@ Having surveyed the tools for implementing synchronization primitives we will no
 \begin{itemize}
 	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well.
 	\item evaluation has shown that cache latency is so low, that the additional computation this mechanism introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
-	\item Figure~\ref{fig:pseudo-code-ronny-fancy}
+	\item Figure~\ref{fig:pseudocode-ronny-fancy}
 		\begin{figure}[htbp]
 			\centering
 			\input{listings/ronny-fancy}
-			\caption{Pseudo code of Ronny's fancy barrier}
-			\label{fig:pseudo-code-ronny-fancy}
+			\caption{Pseudocode of Ronny's fancy barrier}
+			\label{fig:pseudocode-ronny-fancy}
 		\end{figure}
 	\item each array element is located in the memory of the respective process.
 	\item Only the own element is written. Only remote reading.
@@ -520,7 +520,7 @@ Having surveyed the tools for implementing synchronization primitives we will no
 	\item probabilistic runtime. Depending on circumstances the protocol will finish in more or less steps (or perhaps successful non-zero reads). It is not predetermined what is communicated and with whom.
 	\item advantage: no atomic ops. The writing does not have to be atomic, since processes only write to local memory, and no inconsistent data can be read since 64 bit reads and writes are atomic.
 	\item more computational overhead (bit shuffling) for less communication.
-	\item discuss resetting through triple barrier. Perhaps, briefly hint that this kind of resetting can be added to any barrier (perhaps add a listing how this would look like (the spin model should have it, or one of the pseudo code files)), more on this in the section on the orthogonal design of barriers.
+	\item discuss resetting through triple barrier. Perhaps, briefly hint that this kind of resetting can be added to any barrier (perhaps add a listing how this would look like (the spin model should have it, or one of the pseudocode files)), more on this in the section on the orthogonal design of barriers.
 	\item restricted to 64 threads. An extension to arrays of bit masks, similar to the Mc Guire/Ronny barrier is possible.
 \end{itemize}
 
@@ -531,8 +531,8 @@ Having surveyed the tools for implementing synchronization primitives we will no
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
 	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the Central Counter Barrier, whereas Ronny's simple and fancy barrier show promise. Therefore we restrict our attention to the latter.
-	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudo-code-central-counter} in Section~\ref{sssec:background-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudo-code-ronny-simple} in Section~\ref{ssec:new-simple}).
-	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudo-code-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudo-code-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
+	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudocode-ronny-simple} in Section~\ref{ssec:new-simple}).
+	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudocode-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
 	\item The analysis is split into two parts: general properties (bla, perceived without measuring, bla), model checking.
 \end{itemize}
@@ -579,7 +579,7 @@ Having surveyed the tools for implementing synchronization primitives we will no
 	\item failed remote gets. Maybe give a rough estimate of the lost bandwidth.
 	\item Dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the Dissemination Barrier waits for its designated communication partner.
 	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where Dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
-	\item MEMORY: The memory requirements of the Dissemination Barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The Dissemination variant shown in Figure~\ref{fig:pseudo-code-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
+	\item MEMORY: The memory requirements of the Dissemination Barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item the progress problem
 		\begin{itemize}
 			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed}. All processes arrive timely.
