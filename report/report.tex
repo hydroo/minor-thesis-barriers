@@ -224,11 +224,11 @@ Finally we present a view of the barrier as a modularized algorithm consisting o
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Means to implement barrier protocols}
 \label{ssec:background-means}
-A shared memory system consists of a number of processors which are connected to one chunk of memory they all share. Information can be exchanged between processors by simply writing and reading from same memory address, since they all share one address space.
+A shared memory system consists of a number of processors which are connected to one chunk of memory. Information can be exchanged between processors by simply reading from and writing to the same memory address, since they all share one address space.
 Desktops, laptops and small to medium servers are typical examples of shared memory systems.
 
-Many shared memory systems (called nodes) can be connected via a network to compose a distributed memory system. These systems do not have a global memory, instead each of the nodes has its own private memory. Computation is done locally on each node using only local memory. In order to share information between nodes the network messages need to be exchanged.
-For example large servers and high-performance computers are oftentimes a distributed memory system.
+Many shared memory systems (called nodes) can be connected via a network to compose a distributed memory system. These systems do not have one chunk of global memory, instead each of the nodes has its own private memory. Computation is done locally on each node using only local memory. In order to share information between nodes messages via network need to be exchanged.
+For example large servers and high-performance computers are oftentimes distributed memory systems.
 
 Programming for shared memory and distributed memory architectures is very different. Thus we will subsequently differentiate between these two worlds.
 
