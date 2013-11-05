@@ -373,42 +373,53 @@ The basic barrier algorithm of it is the same as for GNU~OpenMP. One main differ
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed memory systems}
 \label{sssec:background-currently-used-distributed}
+
+In this section we present the barrier algorithms that are used in two major open source MPI implementations, namely Open~MPI~\cite{openmpi} and MPICH~\cite{mpich}. We restrict ourselves to MPI for the same reasons we only considered MPI for analysing in Section~\ref{sssec:background-means-distributed}.
+
+% ompi/mca/coll/tuned/coll_tuned_barrier.c : ompi_coll_tuned_barrier_intra_recursivedoubling, ompi_coll_tuned_barrier_intra_bruck, ompi/mca/coll/tuned/coll_tuned_decision_fixed.c
+Open~MPI distinguishes between process counts that are powers of two and which are not. If it is a power of two a \emph{recursive doubling} barrier is used. A detailed explanation on this protocol can be found in \cite{hoefler2005}. For non-power of two process counts Open~MPI uses the \emph{Dissemination Barrier}~\cite{hensgen1988}.
+
+% text where
+
+\begin{figure}[H]
+	\centering
+	\input{listings/dissemination}
+	\caption{Pseudocode of the Dissemination Barrier}
+	\label{fig:pseudocode-dissemination}
+\end{figure}
+
+% text where
+
+\begin{figure}[H]
+	\centering
+	\input{tikz/diagram-dissemination}
+	\caption{The rounds of the Dissemination Barrier}
+	\label{fig:diagram-dissemination}
+\end{figure}
+
+% text where
+
 \begin{itemize}
-	\item only MPI implementations. Why has already been explained in Section~\ref{why-only-mpi}.
-	\item only openmpi and mpich. Explain why. (opensource. mpich is base of many others (name them). weit verbreitete implementationen.)
-	\item openmpi
+	\item
 		\begin{itemize}
-			\item version 1.7. not yet released.
-			% ompi/mca/coll/tuned/coll_tuned_barrier.c :
-			% ompi_coll_tuned_barrier_intra_recursivedoubling,
-			% ompi_coll_tuned_barrier_intra_bruck
-			% ompi/mca/coll/tuned/coll_tuned_decision_fixed.c
-			\item $n \neq 2^k \rightarrow$ Dissemination\cite{hensgen1988} using sync sendrecv
-			\item $n = 2^k \rightarrow$ recursive doubling (explanation e.g. in \cite{hoefler2005})
-			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
-			\item resetting (in both algorithms) not necessary since sendrecv sets up itself newly everytime.
-			\item architecture specific for infiband. e.g. Dissemination using RMA \cite{hoefler2006a}
-			\item state that we use an RMA representation of the algorithm. Maybe state why. Writing is sending. Reading is Receiving so to speak.
-			\item Figure~\ref{fig:pseudocode-dissemination}
-				\begin{figure}[htbp]
-					\centering
-					\input{listings/dissemination}
-					\caption{Pseudocode of the Dissemination Barrier}
-					\label{fig:pseudocode-dissemination}
-				\end{figure}
-			\item Figure~\ref{fig:diagram-dissemination}
-				\begin{figure}[htbp]
-					\centering
-					\input{tikz/diagram-dissemination}
-					\caption{The rounds of the Dissemination Barrier}
-					\label{fig:diagram-dissemination}
-				\end{figure}
-			\item explain algorithm in detail here
-			\item things to explain
+			\item
 				\begin{itemize}
 					\item each array (first index) is located on the respective process's memory
+					\item Figure~\ref{fig:pseudocode-dissemination} presents a pseudocode listing of the algorithm.
+					\item rounds
+					\item tree esque
+					\item each round the number of messages is the same
+					\item the knowledge of arrived processes doubles for each process each round.
+					\item after $\lceil \log_2 n\rceil$ rounds we are done
+					\item Figure~\ref{fig:diagram-dissemination} shows the communication pattern through the rounds.
 				\end{itemize}
 
+			\item technicalities:
+			\item Dissemination uses sync sendrecv
+			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
+			\item resetting not necessary since sendrecv sets up itself newly everytime.
+			\item architecture specific for infiband. e.g. Dissemination using RMA \cite{hoefler2006a}
+			\item state that we use an RMA representation of the algorithm. Maybe state why. Writing is sending. Reading is Receiving so to speak.
 		\end{itemize}
 	\item mpich
 		\begin{itemize}
@@ -416,9 +427,9 @@ The basic barrier algorithm of it is the same as for GNU~OpenMP. One main differ
 			\item many can not be inspected because source is closed
 			\item version 3.0.4. current today
 			% src/mpi/coll/barrier.c : MPIR_Barrier_intra
-			\item log2 Dissemination with sendrecv. same as openmpi
+			\item log2 Dissemination with sendrecv. same as Open~MPI
 		\end{itemize}
-	\item Dissemination can also be used for shared memory\cite{hoefler2013}
+	\item Dissemination is also be used for shared memory\cite{hoefler2013}
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
