@@ -302,39 +302,32 @@ Before going into the details of window synchronisation we have to introduce the
 MPI differentiates between \emph{active} and \emph{passive} target communication. Active target communication involves all peers being actively involved in window synchronization, whereas in passive target communication only one side's activity is required.
 
 One way to synchronize a window is via the \emph{fence} operation. A fence is a collective operation among all window group members that makes sure all outstanding RMA requests on this window are finished before the operation returns. It implies a full barrier synchronization.
+
 A more fine-grained instance of active target communication is via the operations \emph{start}, \emph{complete}, \emph{post} and \emph{wait}. Before issuing any remote access calls the issuing process first has to advertise his intention through the start operation. Once he is finished he will invoke the complete operation to advertise that his transmission is done. The receiving end similarly issues post and wait to expose and synchronise its memory. The command receiving process may still access his window's local memory in the meantime. In contrast to a fence operation one can restrict such a synchronization to arbitrary processes of the window.
 
-\begin{itemize}
-	\item Don't use any MPI specific names. Keep it high-level
-	\item MPI has RMA
-		\begin{itemize}
-			\item window sync
-				\begin{itemize}
-					\item MPI\_WIN\_LOCK, MPI\_WIN\_UNLOCK: Passive target communication. No explicit participation of remote peer in synchronization
-					\item MPI\_Flush*: Passive target communication. Completes outstanding RMA calls, issued by the caller, at origin and a specifiable target before returning (or only at the origin).
-					\item MPI\_Sync: Passive target communication. Used to synchronize the public and private part of the window in the separated model.
-				\end{itemize}
-			\item window sync assertions: NoPrecede, NoSucceed, NoStore, NoPut -$\>$ optimization
-			\item MPI\_Put, MPI\_Get - unordered inside an epoch
-			\item MPI\_Accumulate, MPI\_FetchAndOp, MPI\_CompareAndSwap influenced by specified memory order requirements. default is sequential consistency.
-			\item list cases of undefined(implementation specific) behaviour: chapter 11.3 and 11.7 in \cite{mpi3}
-				\begin{itemize}
-					\item Buffers used in a MPI\_Put call should not be written to until the operation completes
-					\item Buffers used in a MPI\_Get call should not be accessed until the operation completes
-					\item The outcome of remote memory accesses to the same location is undefined. Except of course accumulate.
-					\item concurrent local load/stores and RMA updates to the same location are undefined
-					\item the outcome of a single process issuing multiple puts to the same location within an access epoch is undefined
-					\item State that this makes it very hard to implement less restrictive synchronization primitives because the semantic requirements are already very strong in MPI. Lots of perhaps useless synchronization. Rather than undefined say: any order. Or at least make guarantee for the smallest units that are atomically committed to memory like primitive data types.
-					\item perhaps state that in the following we will not implement, nor measure the performance of distributed memory algorithms. We will only measure shared memory stuff. But the will of course model check all the things.
-				\end{itemize}
-		\end{itemize}
-\end{itemize}
+The \emph{lock} and \emph{unlock} operations facilitate one way of passive target communication. Through these two functions one can block all access to a chunk of remote memory for all other window members. Between lock and unlock the process can then issue remote memory access operations without being interfered.
 
+Another method to synchronize memory passively is through \emph{flush}. A flush makes sure all outstanding RMA calls, issued by the caller, are completed before returning. One can choose if the operations have to be completed only at the issuer's side or on the receivers side as well.
+
+Window synchronization can be optimized through giving the implementation information about which operations are not used during the epoch and what happens before and after this synchronization.
+
+Inside an epoch one may issue remote memory access operations. The two straightforward ones are \emph{put} and \emph{get}. Memory access through put and get appears unordered inside an epoch.
+Furthermore one can use atomic operations like \emph{accumulate}, \emph{fetch-and-op} or \emph{compare-and-swap}, with the intuitive semantic and where \emph{op} is a placeholder for various operations. The default global visibility order of these operations is sequentially consistent. When creating a window one can weaken this by, for example, allowing remote write operations to overtake remote read operations. Any combination of overtaking between reads, writes or between equal operations can be allowed.
+
+Remote memory access in MPI is subject to a number of restrictions:
 \begin{itemize}
-	\item most shared memory barriers rely on atomic operations
-	\item most distributed memory barriers use synchronous message passing. These protocols have been implemented using RMA to improve efficeny, but they still behave exactly as if it was synchronous communication.
-	\item as we will see in the next section
+	\item The buffer supplied to a put call should not be written to until the operation is finished.
+	\item The buffer supplied to a get call should not be accessed to until the operation is finished.
+	\item The outcome of concurrent remote memory access to the same location inside an epoch is undefined.
+	\item The outcome of concurrent local and remote access to the same location inside an epoch is undefined.
+	\item The outcome of a single process issuing multiple put operations to the same location inside an epoch is undefined.
 \end{itemize}
+Therefore the only way to make sure that data is correctly written or read is by isolating access to the same location with costly window synchronization operations.
+Normally a processor commits 32 or 64 bit to main memory atomically, and in the remainder of this thesis we will assume this is the case.
+Therefore these restrictions make sense for buffers at sizes above this, because concurrent memory access of interfering operations might overlap and the outcome is then indeed undefined.
+For amounts of memory below this threshold we wish to have semantics that are more specific. For example if two puts of at most 64 bits are concurrently issued to the same location, the outcome is that of the last put committed. Since this is not the case, MPI's very restrictive RMA semantic makes it unsuitable to implement barrier algorithms, based on pW/CS's non-determinism ideas, on top of it.
+
+Shared memory barriers usually rely on atomic operations. Most distributed memory barriers use synchronous message passing. These protocols have also been implemented using RMA to improve efficiency, but still behave equivalently.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Currently used barrier protocols}
