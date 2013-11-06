@@ -411,7 +411,7 @@ Aside from distributed memory architectures it is possible to implement these pr
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Barrier building blocks}
-\label{ssec:building-blocks}
+\label{ssec:background-building-blocks}
 \begin{itemize}
 	\item latency/computation trade-off
 	\item resetting:
@@ -450,7 +450,7 @@ Aside from distributed memory architectures it is possible to implement these pr
 	\item high-level explanation
 	\item detailed walk through one iteration
 	\item advantage: no atomic ops
-	\item resetting is integrated. Needs a little less space than the approaches shown in Section~\ref{ssec:building-blocks}
+	\item resetting is integrated. Needs a little less space than the approaches shown in Section~\ref{ssec:background-building-blocks}
 	\item Limited to 64 threads in this version. But one can modify the protocol to use an array of bit masks, representing a big bit mask. Updating the bit mask will then only be done on the element where the updating thread is itself located on. This way we only write one 64 bit value which is committed atomically. If we would attempt to write more than one element, we would run into consistency problems. Reading the shared variable will then read the whole array instead.
 \end{itemize}
 
@@ -783,7 +783,7 @@ Aside from distributed memory architectures it is possible to implement these pr
 	\item the synchronization to the shared variable module is hinted at in grey
 	\item The control flow has been augmented by one rate that the resulting CTMC will use. $\lambda_{work}$ is the work rate, meaning the time spent doing actual work. It is used to add an initial distribution to the model so that we can control how the arrival times of the threads at the barrier are distributed. In particular not all threads arrive at the exact same instant in time at the barrier, which is an extreme case.
 	\item atomic op consists of multiple smaller transitions: begin atomic (locks the variable), read, decrement, write, end atomic (releases the lock).
-	\item functional model does resetting and repetition. Three barriers, as described in~\ref{ssec:building-blocks}. (if you did not describe it there, you have to do it here)
+	\item functional model does resetting and repetition. Three barriers, as described in~\ref{ssec:background-building-blocks}. (if you did not describe it there, you have to do it here)
 \end{itemize}
 
 %%%%%%%%%%
@@ -801,7 +801,7 @@ Aside from distributed memory architectures it is possible to implement these pr
 		\end{figure}
 	\item each element of the array \texttt{barrier} is located in an own cache line. Therefore each thread has \texttt{threadCount} cache line copy modules, one for each element in the array. In total a CTMC model of this protocol has $\mathtt{threadCount}^2$ cache line copy modules plus $\mathtt{threadCount}$ thread modules.
 	\item As described in the previous paragraph, $\lambda_{work}$ is the work rate and all other rates are determined by the cache line copy modules.
-	\item functional model does resetting and repetition using a counter instead of bools as described in Section~\ref{ssec:building-blocks} (if you did not describe it there, you have to do it here)
+	\item functional model does resetting and repetition using a counter instead of bools as described in Section~\ref{ssec:background-building-blocks} (if you did not describe it there, you have to do it here)
 	\item functional model splits some of the transitions to allow for more interleaving, thus more errors can be revealed.
 \end{itemize}
 
@@ -824,7 +824,7 @@ Aside from distributed memory architectures it is possible to implement these pr
 	\item one could make this more fine grained by introducing separate rates for local reading and writing.
 	\item \texttt{to} and \texttt{from} are shorthands for \texttt{processIndex $\pm$ dist (mod processCount)}
 	\item In the CTMC model, resulting from unwinding this control flow diagram, a put onto a remote process is represented as a synchronized action, so the target process stores the new value in its CTMC module.
-	\item functional model does resetting and repetition with a counter instead of bools as described in Section~\ref{ssec:building-blocks}.
+	\item functional model does resetting and repetition with a counter instead of bools as described in Section~\ref{ssec:background-building-blocks}.
 \end{itemize}
 
 %%%%%%%%%%
@@ -841,7 +841,7 @@ Aside from distributed memory architectures it is possible to implement these pr
 			\label{fig:model-ronny-fancy}
 		\end{figure}
 	\item Rates are like in previous section, except we now use remote read (get) with a rate of $\lambda_g = \frac{1}{100}$.
-	\item functional model does resetting and repetition using three barriers as described in~\ref{ssec:building-blocks}.
+	\item functional model does resetting and repetition using three barriers as described in~\ref{ssec:background-building-blocks}.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
