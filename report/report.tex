@@ -374,63 +374,40 @@ The basic barrier algorithm of it is the same as for GNU~OpenMP. One main differ
 \subsubsection{Distributed memory systems}
 \label{sssec:background-currently-used-distributed}
 
-In this section we present the barrier algorithms that are used in two major open source MPI implementations, namely Open~MPI~\cite{openmpi} and MPICH~\cite{mpich}. We restrict ourselves to MPI for the same reasons we only considered MPI for analysing in Section~\ref{sssec:background-means-distributed}.
+In this section we present the barrier algorithms that are used in the two major open source MPI implementations, namely Open~MPI~\cite{openmpi} and MPICH~\cite{mpich}. We restrict our analysis to MPI for the same reasons we only considered MPI in Section~\ref{sssec:background-means-distributed}.
 
 % ompi/mca/coll/tuned/coll_tuned_barrier.c : ompi_coll_tuned_barrier_intra_recursivedoubling, ompi_coll_tuned_barrier_intra_bruck, ompi/mca/coll/tuned/coll_tuned_decision_fixed.c
-Open~MPI distinguishes between process counts that are powers of two and which are not. If it is a power of two a \emph{recursive doubling} barrier is used. A detailed explanation on this protocol can be found in \cite{hoefler2005}. For non-power of two process counts Open~MPI uses the \emph{Dissemination Barrier}~\cite{hensgen1988}.
+Open~MPI distinguishes between process counts that are powers of two and which are not. If it is a power of two, a \emph{recursive doubling} barrier is used. A detailed explanation of this protocol can be found in \cite{hoefler2005}. For non-power of two process counts Open~MPI uses the \emph{Dissemination Barrier}, introduced by Hengsen, Finkel and Mamber in 1988~\cite{hensgen1988}.
 
-% text where
+Figure~\ref{fig:pseudocode-dissemination} presents the pseudocode of this algorithm, which is executed on each process individually. A process is identified by its \emph{process index}. For readability we have chosen an RMA-esque representation of the protocol, although it can similarly be implemented using message passing.
+In contrast to the Central Counter Barrier, the Dissemination Barrier uses not only one variable but an array of boolean variables per process involved. Each of these arrays is located in the local memory of its owning process and is initially set to \texttt{false}.
+The protocol is organised in rounds. Each round the distance (variable \texttt{dist}) to the next two partners, to read from and write to, doubles. Process indices  are always calculate modulo the total number of processes to achieve a wraparound. Figure~\ref{fig:diagram-dissemination} illustrates this communication pattern. After $\lceil \log_2 \mathit{processCount} \rceil$ rounds the barrier completes.
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 	\centering
 	\input{listings/dissemination}
 	\caption{Pseudocode of the Dissemination Barrier}
 	\label{fig:pseudocode-dissemination}
 \end{figure}
 
-% text where
-
-\begin{figure}[H]
+\begin{figure}[htbp]
 	\centering
 	\input{tikz/diagram-dissemination}
 	\caption{The rounds of the Dissemination Barrier}
 	\label{fig:diagram-dissemination}
 \end{figure}
 
-% text where
+At first a process notifies the next one that is has arrived at the barrier by setting the variable at index \texttt{me} on the next process to \texttt{true}. Then it waits until the previous one notifies its arrival. When that happens the waiting process enters the next round. It now knows that itself, and the previous process have arrived at the barrier and notifies the process at double the previous distance (2) of its knowledge by setting its boolean variable at the target process to \texttt{true}. Through this communication pattern the number of processes that each process knows have arrived doubles with each round. Thus after $\lceil \log_2 \mathit{processCount} \rceil$ rounds every process knows of the arrival of all others and can therefore leave the barrier.
 
-\begin{itemize}
-	\item
-		\begin{itemize}
-			\item
-				\begin{itemize}
-					\item each array (first index) is located on the respective process's memory
-					\item Figure~\ref{fig:pseudocode-dissemination} presents a pseudocode listing of the algorithm.
-					\item rounds
-					\item tree esque
-					\item each round the number of messages is the same
-					\item the knowledge of arrived processes doubles for each process each round.
-					\item after $\lceil \log_2 n\rceil$ rounds we are done
-					\item Figure~\ref{fig:diagram-dissemination} shows the communication pattern through the rounds.
-				\end{itemize}
+Notifying the next process is done via writing to remote memory, and waiting for notification via wait-spinning on local memory. The number of remote access operations per round is the same as the number of processes involved.
 
-			\item technicalities:
-			\item Dissemination uses sync sendrecv
-			\item back-off hard to determine. probably through OPAL\_THREAD\_(UN)LOCK in the end
-			\item resetting not necessary since sendrecv sets up itself newly everytime.
-			\item architecture specific for infiband. e.g. Dissemination using RMA \cite{hoefler2006a}
-			\item state that we use an RMA representation of the algorithm. Maybe state why. Writing is sending. Reading is Receiving so to speak.
-		\end{itemize}
-	\item mpich
-		\begin{itemize}
-			\item many mpi implementations are based on mpich (e.g. mvapich2, intel mpi, cray mpi,
-			\item many can not be inspected because source is closed
-			\item version 3.0.4. current today
-			% src/mpi/coll/barrier.c : MPIR_Barrier_intra
-			\item log2 Dissemination with sendrecv. same as Open~MPI
-		\end{itemize}
-	\item Dissemination is also be used for shared memory\cite{hoefler2013}
-\end{itemize}
+The actual implementation in Open~MPI uses MPI's \emph{send-receive} operation instead of our version's remote write and local wait-spinning. This operation sends a message and wait for another at the same time. The protocol is not destructive because send and receive do not change the state of the protocol. Therefore no resetting mechanism, as used for the Central Counter Barrier, is need.
+Open~MPI is able to replace this implementation with hardware specific ones, if supported hardware is detected. For example InfiniBand uses a variation of the Dissemination Barrier based on RMA\cite{hoefler2006a}.
+
+% src/mpi/coll/barrier.c : MPIR_Barrier_intra
+MPICH version 3.0, which forms the basis of many other prominent MPI implementations like MVAPICH2 and Cray~MPT, implements the same send-receive-based Dissemination Barrier as is used in Open~MPI.
+
+Aside from distributed memory architectures it is possible to implement these protocols for shared memory systems, as has been demonstrated for the Intel~XEON~Phi~\cite{hoefler2013}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Barrier building blocks}
