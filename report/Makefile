@@ -33,7 +33,8 @@ LISTINGS = \
 	listings/dissemination.tex \
 	listings/nmg-ronny.tex \
 	listings/ronny-simple.tex \
-	listings/ronny-fancy.tex
+	listings/ronny-fancy.tex \
+	listings/triple-reset.tex
 
 TIKZ = \
 	tikz/diagram-central-counter.tex \

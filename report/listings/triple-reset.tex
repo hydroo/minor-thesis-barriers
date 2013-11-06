@@ -1,0 +1,22 @@
+\begin{center}
+\begin{minipage}{\textwidth}
+\begin{lstlisting}[mathescape, linewidth=9.4cm]
+shared state:   barrier1, barrier2, barrier3
+initialization: barrier1 := initialized
+                barrier2 := initialized
+                barrier3 := finished
+$\listingrule{9.4cm}$
+
+if barrier3 is finished {
+	use barrier1
+	reset barrier3
+} else if barrier1 is finished {
+	use barrier2
+	reset barrier1
+} else if barrier2 is finished {
+	use barrier3
+	reset barrier2
+}
+\end{lstlisting}
+\end{minipage}
+\end{center}

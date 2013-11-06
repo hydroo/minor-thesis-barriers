@@ -23,7 +23,7 @@
 		numbers=left,
 		numberstyle=\small\color{gray},
 		tabsize=4,
-		morekeywords={and, boolean, do, else, false, for, if, integer, mod, true, until, wait, while},
+		morekeywords={and, boolean, do, else, false, finished, for, if, initialized, integer, is, mod, reset, true, until, use, wait, while},
 	}
 \usepackage{multirow}
 \usepackage{relsize} % used for larger sum symbols
@@ -412,19 +412,27 @@ Aside from distributed memory architectures it is possible to implement these pr
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Barrier building blocks}
 \label{ssec:background-building-blocks}
-\begin{itemize}
-	\item latency/computation trade-off
-	\item resetting:
-		\begin{itemize}
-			\item how is resetting handled in currently used barriers?
-			\item integrated in the barrier ``self-resetting''
-			\item use 3 barriers reset barrier x+2 when you finished barrier x. switch between the barriers by checking if barrier x+2 is reset or not (as in central-counter-with-reset). Describe in pseudocode as well, maybe.
-			\item if variable space permits it you can also change the variables to 'counters' and modify all checks to ask for numbers modulo round + a check that you are in the proper round
-		\end{itemize}
-	\item back-off
-	\item thread count $<$= cores, thread count $>$ cores
-	\item combining: we can combine barrier protocols. Explain how. Reap benefits, mitigate shortcomings. Adapt to topology (explain. Node shared mem, internode dist mem., different interconnect topologies) aware.
-\end{itemize}
+During our analysis of general implementation facilities and concrete barrier implementations we observed that one can assemble barriers from orthogonal components.
+
+One independent piece is the employed resetting mechanism. As we have seen for the Central Counter Barrier (Section~\ref{sssec:background-currently-used-shared}) resetting might be achieved through slight modification of the algorithm. This does not work for all protocols, though.
+
+Another possibility is to replace boolean variables, as used in the Dissemination Barrier in Figure~\ref{fig:pseudocode-dissemination}, with a repetition counter. The remote write and wait-spinning condition are then replaced with atomic increment and a test for the correct number of repetitions. The additional amount of memory needed is linear in the number of processes.
+
+A way of resetting that works in all circumstances is to use three distinct barriers and switch cleverly between them. The proposed procedure, to be executed by each process individually, is illustrated in Figure~\ref{fig:pseudocode-triple-reset}. The first two barriers are initialized, whereas the third one is set to the state of a finished barrier. Upon entering the routine one uses the barrier which comes after the currently finished barrier and resets the one which has been finished before. This approach is provably correct, uses triple the amount of memory of a single barrier, and ads minimal computational overhead.
+
+\begin{figure}[htpb]
+	\centering
+	\input{listings/triple-reset}
+	\caption{Pseudocode of the triple barrier reset approach}
+	\label{fig:pseudocode-triple-reset}
+\end{figure}
+
+In order to lower power consumption limiting the amount of busy waiting is important for barrier implementations. Choosing a back-off strategy can be done independently of the used barrier protocol. In almost all cases one wants to take apart the waiting loop and insert a suspension mechanism.
+
+During the first initialisation of the barrier an implementation can decide how to handle the case where the number of threads or processes exceeds the number of physical processor cores. Therefore implementing a solution to this scenario is orthogonal to the other algorithm pieces.
+
+Another useful approach is to assemble multiple different barrier protocols to create a new one. For example assume you have a hardware topology of shared memory nodes which are connected via network. It is conceivable to construct a barrier that executes a Central Counter Barrier on the nodes, and then one process of each node takes part in a Dissemination Barrier. After the Dissemination Barrier is completed the intra-node processes are notified and the assembled barrier completes.
+Through this one can reap the benefits of the best performing barrier on each level of the topology.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Three new barriers}
