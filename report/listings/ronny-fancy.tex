@@ -1,13 +1,13 @@
 \begin{center}
 \begin{minipage}{\textwidth}
-\begin{lstlisting}[mathescape, linewidth=11.5cm]
+\begin{lstlisting}[mathescape, linewidth=10.7cm]
 constants:        me := processIndex, meBit := $2^{me}$,
                   full := $\sum_{i=0}^{\mathit{processCount}-1}2^i$
 shared variables: integer barrier[processCount]
 local variables:  integer i
 initialization:   barrier[*] := 0
                   i := processIndex
-$\listingrule{11.5cm}$
+$\listingrule{10.7cm}$
 
 barrier[me] := meBit;
 
