@@ -253,7 +253,7 @@ Enforcing this intuitive semantic comes at a cost. Modern processors buffer memo
 
 If an algorithm is carefully designed, one can weaken the consistency model to gain better performance. One prominent way of such a model is \textit{release consistency}~\cite{gha90}. Memory access appears unordered except for so called \emph{acquire} and \emph{release} operations. No memory access that has been issued after an acquire operation is permitted to finish before this acquire operation. No memory access is allowed to finish later than the next release operation. Acquire and release encapsulate the memory accesses in between.
 
-Aside from implementing barriers in software vendors can wire barrier protocols into the system's hardware. This is almost never done on shared memory architectures. One example for hardware barrier support is the SGI\textregistered UV\texttrademark 2000~\cite{sgiuv2000}, a high-performance shared memory computer.
+Aside from implementing barriers in software vendors can wire barrier protocols into the system's hardware. This is almost never done on shared memory architectures. One example for hardware barrier support is the SGI~UV~2000~\cite{sgiuv2000}, a high-performance shared memory computer.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed memory systems}
