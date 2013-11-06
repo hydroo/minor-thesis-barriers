@@ -2,16 +2,16 @@
 \begin{tikzpicture}[]
 
 %pivotal nodes
-\node [o, draw=none]                         (xx) {};
-\node [o, below of=xx]                       (0a) {0};
-\path (0a) ++(-90:1.4cm) node [draw, circle] (0b) {0};
-\path (0b) ++(-90:1.8cm) node [draw, circle] (0c) {0};
+\node [o, draw=none]                                 (xx) {};
+\node [o, below of=xx]                               (0a) {0};
+\path (0a) ++(-90:1.4cm) node [draw, circle]         (0b) {0};
+\path (0b) ++(-90:1.8cm) node [draw, circle, dotted] (0c) {0};
 
-\path (0a) ++(180:1.4cm) node []             (xa) {Round 1:};
-\path (0b) ++(180:1.4cm) node []             (xb) {Round 2:};
-\path (0c) ++(180:1.4cm) node []             (xc) {Round 3:};
+\path (0a) ++(180:1.4cm) node []                     (xa) {Round 1:};
+\path (0b) ++(180:1.4cm) node []                     (xb) {Round 2:};
+\path (0c) ++(180:1.4cm) node []                     (xc) {Round 3:};
 
-\clip (-0.5cm,-0.5cm) rectangle (7.5cm,-6cm);
+\clip (-0.5cm,-0.5cm) rectangle (6.5cm,-6cm);
 
 % round 1
 \node [   left of=0a , draw=none ] (07a) {};
@@ -21,8 +21,7 @@
 \node [o, right of=3a, dotted    ]  (4a) {4};
 \node [o, right of=4a            ]  (5a) {5};
 \node [o, right of=5a            ]  (6a) {6};
-\node [o, right of=6a            ]  (7a) {7};
-\node [o, right of=7a, draw=none ] (70a) {};
+\node [o, right of=6a, draw=none ] (60a) {};
 
 \path [->] (07a) edge [distance=0.2cm        ]  (0a)
             (0a) edge [distance=0.2cm        ]  (1a)
@@ -30,62 +29,57 @@
             (2a) edge [distance=0.2cm        ]  (3a)
             (3a) edge [distance=0.2cm        ]  (4a)
             (4a) edge [distance=0.2cm, dotted]  (5a)
-            (5a) edge [distance=0.2cm        ]  (6a)
-            (6a) edge [distance=0.2cm        ]  (7a);
-\path [-]   (7a) edge [distance=0.2cm        ] (70a);
+            (5a) edge [distance=0.2cm        ]  (6a);
+\path [-]   (6a) edge [distance=0.2cm        ] (60a);
 
 % round 2
-\node [   left of=0b , draw=none ] (07b) {};
-\node [   left of=07b, draw=none ] (06b) {};
+\node [   left of=0b , draw=none ] (06b) {};
+\node [   left of=06b, draw=none ] (05b) {};
 \node [o, right of=0b            ]  (1b) {1};
 \node [o, right of=1b            ]  (2b) {2};
 \node [o, right of=2b            ]  (3b) {3};
 \node [o, right of=3b, dotted    ]  (4b) {4};
 \node [o, right of=4b, dotted    ]  (5b) {5};
 \node [o, right of=5b            ]  (6b) {6};
-\node [o, right of=6b            ]  (7b) {7};
-\node [o, right of=7b, draw=none ] (70b) {};
-\node [o, right of=70b, draw=none] (71b) {};
+\node [o, right of=6b, draw=none ] (60b) {};
+\node [o, right of=60b, draw=none] (61b) {};
 
-\path [->] (06b) edge [distance=0.6cm                       ]  (0b)
-           (07b) edge [distance=0.6cm,out=-45,in=225        ]  (1b)
+\path [->] (05b) edge [distance=0.6cm               , dotted]  (0b)
+           (06b) edge [distance=0.6cm,out=-45,in=225        ]  (1b)
             (0b) edge [distance=0.6cm                       ]  (2b)
             (1b) edge [distance=0.6cm,out=-45,in=225        ]  (3b)
             (2b) edge [distance=0.6cm                       ]  (4b)
             (3b) edge [distance=0.6cm,out=-45,in=225        ]  (5b)
-            (4b) edge [distance=0.6cm               , dotted]  (6b)
-            (5b) edge [distance=0.6cm,out=-45,in=225, dotted]  (7b);
-\path [-]   (6b) edge [distance=0.6cm                       ] (70b)
-            (7b) edge [distance=0.6cm,out=-45,in=225        ] (71b);
+            (4b) edge [distance=0.6cm               , dotted]  (6b);
+\path [-]   (5b) edge [distance=0.6cm,out=-45,in=225, dotted] (60b)
+            (6b) edge [distance=0.6cm                       ] (61b);
 
 %round 3
-\node [   left of=0c , draw=none ] (07c) {};
-\node [   left of=07c, draw=none ] (06c) {};
+\node [   left of=0c , draw=none ] (06c) {};
 \node [   left of=06c, draw=none ] (05c) {};
 \node [   left of=05c, draw=none ] (04c) {};
+\node [   left of=04c, draw=none ] (03c) {};
 \node [o, right of=0c            ]  (1c) {1};
 \node [o, right of=1c            ]  (2c) {2};
 \node [o, right of=2c            ]  (3c) {3};
 \node [o, right of=3c, dotted    ]  (4c) {4};
 \node [o, right of=4c, dotted    ]  (5c) {5};
 \node [o, right of=5c, dotted    ]  (6c) {6};
-\node [o, right of=6c, dotted    ]  (7c) {7};
-\node [   right of=7c , draw=none] (70c) {};
-\node [   right of=70c, draw=none] (71c) {};
-\node [   right of=71c, draw=none] (72c) {};
-\node [   right of=72c, draw=none] (73c) {};
+\node [   right of=6c , draw=none] (60c) {};
+\node [   right of=60c, draw=none] (61c) {};
+\node [   right of=61c, draw=none] (62c) {};
+\node [   right of=62c, draw=none] (63c) {};
 
-\path [->] (04c) edge [distance=0.8cm               , dotted]  (0c)
-           (05c) edge [distance=0.8cm,out=-45,in=225, dotted]  (1c)
-           (06c) edge [distance=0.8cm               , dotted]  (2c)
-           (07c) edge [distance=0.8cm,out=-45,in=225, dotted]  (3c)
-            (0c) edge [distance=0.8cm                       ]  (4c)
+\path [->] (03c) edge [distance=0.8cm               , dotted]  (0c)
+           (04c) edge [distance=0.8cm,out=-45,in=225, dotted]  (1c)
+           (05c) edge [distance=0.8cm               , dotted]  (2c)
+           (06c) edge [distance=0.8cm,out=-45,in=225, dotted]  (3c)
+            (0c) edge [distance=0.8cm               , dotted]  (4c)
             (1c) edge [distance=0.8cm,out=-45,in=225        ]  (5c)
-            (2c) edge [distance=0.8cm                       ]  (6c)
-            (3c) edge [distance=0.8cm,out=-45,in=225        ]  (7c);
-\path [-]   (4c) edge [distance=0.8cm               , dotted] (70c)
-            (5c) edge [distance=0.8cm,out=-45,in=225, dotted] (71c)
-            (6c) edge [distance=0.8cm               , dotted] (72c)
-            (7c) edge [distance=0.8cm,out=-45,in=225, dotted] (73c);
+            (2c) edge [distance=0.8cm                       ]  (6c);
+\path [-]   (3c) edge [distance=0.8cm,out=-45,in=225        ] (60c)
+            (4c) edge [distance=0.8cm               , dotted] (61c)
+            (5c) edge [distance=0.8cm,out=-45,in=225, dotted] (62c)
+            (6c) edge [distance=0.8cm               , dotted] (63c);
 
 \end{tikzpicture}
