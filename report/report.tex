@@ -338,11 +338,11 @@ Having surveyed the tools for implementing synchronization primitives we will no
 \subsubsection{Shared memory systems}
 \label{sssec:background-currently-used-shared}
 
-Many prominent implementations of shared memory concurrent programming facilities are part of closed source commercial products, like for example the Intel Composer and Microsoft Visual Studio, and can therefore not be analysed. Therefore we restrict ourselves to examining the GNU~C~Library~\cite{glibc} and GNU~OpenMP~\cite{gomp}.
+Many prominent implementations of shared memory concurrent programming facilities are part of closed source commercial products, like for example Intel Composer and Microsoft Visual Studio, and can therefore not be analysed. Therefore we restrict ourselves to examining the GNU~C~Library~\cite{glibc} and GNU~OpenMP~\cite{gomp}.
 
 % gnu-openmp/gcc-4.8.0/libgomp/libgomp.h, gnu-openmp/gcc-4.8.0/libgomp/barrier.c, gnu-openmp/gcc-4.8.0/libgomp/config/linux/, gnu-openmp/gcc-4.8.0/libgomp/config/linux/bar.h, gnu-openmp/gcc-4.8.0/libgomp/config/linux/bar.c, gnu-openmp/gcc-4.8.0/libgomp/config/linux/futex.h (cpu_relax), gnu-openmp/gcc-4.8.0/libgomp/config/linux/wait.h
-The GNU~OpenMP implementation, included in the GNU Compiler Collection (GCC) version 4.8.0, implements a \emph{Central Counter Barrier}. Figure~\ref{fig:pseudocode-central-counter} describes the algorithm in pseudocode that is executed on each thread taking part in the barrier synchronisation.
-The Central Counter Barrier uses the variable \texttt{barrier} to hold the number of threads that do not yet have arrived at the barrier. Initially it is assigned the number of threads. Upon entering the barrier each thread atomically decrements the variable by one and then waits until the variable reaches zero -- all threads have arrived. After the variable reached zero, all threads will eventually realise the fact and leave the barrier.
+The GNU~OpenMP implementation, included in the GNU Compiler Collection (GCC) version 4.8.0, implements a \emph{Central Counter Barrier}. Figure~\ref{fig:pseudocode-central-counter} describes the algorithm in pseudocode which is executed on each thread taking part in the barrier synchronisation.
+The Central Counter Barrier uses the variable \texttt{barrier} to hold the number of threads that do not yet have arrived at the barrier. Initially it is assigned the number of threads. Upon entering the barrier each thread atomically decrements the variable by one and then waits until it reaches zero -- all threads have arrived. After the variable reaches zero, all threads eventually realise the fact and leave the barrier.
 
 \begin{figure}[H]
 	\centering
@@ -356,19 +356,19 @@ The protocol can be separated into two phases (Figure~\ref{fig:diagram-central-c
 \begin{figure}[H]
 	\centering
 	\input{tikz/diagram-central-counter}
-	\caption{The two phases of the Central Counter Barrier}
+	\caption{Five threads performing the two phases of the Central Counter Barrier}
 	\label{fig:diagram-central-counter}
 \end{figure}
 
-The implementation used in GNU~OpenMP is more involved than the pseudocode in Figure~\ref{fig:pseudocode-central-counter} suggests. For example the algorithm shown here is destructive in the sense that it cannot be repeated, because if the variable is zero at the end, repetition would mean that the variable is negative in the next round, which breaks the protocol. To mitigate this the variable is copied upon first reading it and the last thread to enter resets the shared variable to its initial value.
+The actual implementation in GNU~OpenMP is more involved than the pseudocode in Figure~\ref{fig:pseudocode-central-counter} suggests. For example the algorithm shown here is destructive in the sense that it cannot be repeated, because if the variable is zero at the end, repetition would mean that the variable is negative in the next round, which breaks the protocol. To mitigate this the variable is copied upon first reading it and the last thread to enter resets the shared variable to its initial value.
 
-The loop additionally keeps count of the number of unsuccessful reads. If this count reaches a certain amount an operating system mechanism, called futex\cite{franke2002}, is employed to stop the thread until a later time when the other threads hopefully have arrived. Through this the system avoids unnecessary wait-spinning which would negatively impact power consumption. This counter is architecture specific and set to an equivalent of about 3 milliseconds on GNU/Linux. In case the number of threads is larger than the number of physical cores, i.e. the processor is oversubscribed, the counter is set to a much lower value. This way the operating system scheduler can switch between threads more quickly so that threads that need the time are not blocked by wait-spinning ones.
+The loop additionally keeps count of the number of unsuccessful reads. If this count reaches a certain amount, an operating system mechanism, called futex\cite{franke2002}, is employed to stop the thread until a later time when the other threads hopefully have arrived. Through this back-off mechanism the system avoids unnecessary wait-spinning which would negatively impact power consumption. The threshold of this counter is architecture specific and set to an equivalent of about 3 milliseconds on GNU/Linux. In case the number of threads is larger than the number of physical cores, i.e. the processor is oversubscribed, the counter is set to a much lower value. This way the operating system scheduler can switch between threads more quickly so that threads that need the time are not blocked by wait-spinning ones.
 
-Throughout this thesis we will assume that the thread and process count is at most as high as the number of physical cores in a system, because oversubscription is not meaningful inside a single program and this situation rarely arises.
+Throughout this thesis we will assume that the thread and process count is at most as high as the number of physical processor cores in a system, because oversubscription is not useful inside a single program and this scenario rarely arises.
 
 % glibc/nptl/sysdeps/pthread/pthread.h, glibc/nptl/pthread_barrier_*, glibc/nptl/sysdeps/unix/sysv/linux/internaltypes.h
-The GNU POXIS Threads implementation, called Native POSIX Threads Library (NPTL), is part of the The GNU~C~Library.
-The basic barrier algorithm of it is the same as for GNU~OpenMP. One main differences is that it does not use an atomic operations to decrement the variable, but explicitly locks it to guard from interfering access. Second there is no spin-waiting, but upon arriving at the barrier the thread will immediately suspend, via a futex, and wait to be woken up by the last thread arriving. The third difference is that to reset the barrier each thread atomically increments the barrier variable by one upon leaving.
+The GNU POSIX Threads implementation, called Native POSIX Threads Library (NPTL), is part of the The GNU~C~Library.
+The basic barrier algorithm of it is the same as for GNU~OpenMP. One main differences is that it does not use atomic operations to decrement the variable, but explicitly locks it to guard from interfering access. Second there is no spin-waiting, but upon arriving at the barrier the thread will immediately suspend, via a futex, and wait to be woken up by the last thread arriving. The third difference is that to reset the barrier each thread atomically increments the barrier variable by one upon leaving.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed memory systems}
