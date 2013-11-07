@@ -433,7 +433,7 @@ During the first initialisation of the barrier an implementation can decide how 
 
 Another useful approach is to assemble multiple different barrier protocols to create a new one. For example assume you have a hardware topology of shared memory nodes which are connected via network. It is conceivable to construct a barrier that executes a Central Counter Barrier on each node, and then one process of each node takes part in a Dissemination Barrier. After the Dissemination Barrier is completed the intra-node processes are notified and the assembled barrier completes.
 Through this one can reap the benefits of the best performing barrier on each level of the topology.
-This also make sense if barrier algorithms vary in performance for different numbers of threads or processes.
+This might also make sense if barrier algorithms vary in performance for different numbers of threads or processes.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Three new barriers}
