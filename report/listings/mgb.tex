@@ -1,37 +1,37 @@
 \begin{center}
 \begin{minipage}{\textwidth}
-\begin{lstlisting}[mathescape, linewidth=11.4cm]
-constants:        meBit:=$2^\mathit{threadIndex}$, full:=$\sum_{i=0}^{\mathit{threadCount}-1}2^i$
+\begin{lstlisting}[mathescape, linewidth=11.0cm]
+constants:        me:=$2^\mathit{threadIndex}$, full:=$\sum_{i=0}^{\mathit{threadCount}-1}2^i$
 local variables:  integer copy
-shared variables: integer entry, exit, boolean left
-initialisation:   entry := 0, exit := 0, left := false
-$\listingrule{11.4cm}$
+shared variables: integer first, second, done
+initialisation:   first := 0, second := 0, done := 2
+$\listingrule{11.0cm}$
 
-if left = false {
-
-	do {
-		copy := (copy $\&$ $\sim$meBit) | entry
-		if copy $\&$ meBit = 0 {
-			copy  := copy | meBit
-			entry := copy
-		}
-	} while copy $\neq$ full and left = false
-
-	left := true
-	exit := 0
-
-} else if left = true {
+if done = 2 {
 
 	do {
-		copy := (copy $\&$ $\sim$meBit) | exit
-		if copy $\&$ meBit = 0 {
-			copy := copy | meBit
-			exit := copy
+		copy := (copy $\&$ $\sim$me) | first
+		if copy $\&$ me = 0 {
+			copy  := copy | me
+			first := copy
 		}
-	} while copy $\neq$ full and left = true
+	} while copy $\neq$ full and done = 2
 
-	left  := false
-	entry := 0
+	done := 1
+	second := 0
+
+} else if done = 1 {
+
+	do {
+		copy := (copy $\&$ $\sim$me) | second
+		if copy $\&$ me = 0 {
+			copy := copy | me
+			second := copy
+		}
+	} while copy $\neq$ full and done = 1
+
+	done  := 2
+	first := 0
 }
 \end{lstlisting}
 \end{minipage}
