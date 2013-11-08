@@ -4,7 +4,7 @@
 constants:        me := processIndex
 shared variables: boolean
                   barrier[processCount][processCount]
-local variables:  integer dist
+local variables:  integer dist, to, from
 initialization:   barrier[*][*] := false
 $\listingrule{11.2cm}$
 
