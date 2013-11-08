@@ -441,26 +441,35 @@ This might also make sense if barrier algorithms vary in performance for differe
 \begin{itemize}
 	\item \todo pay attention where to draw the line between this section and the analysis in the next section (perhaps, leave some/most of the analysis for the next section)
 \end{itemize}
-In this section we first present a new variant of a barrier protocol of ours. The second algorithm reverses the core of the central counter barrier. Third we demonstrate a pW/CS-influenced variant of the second barrier.
+In this section we first present a new variation on a barrier protocol of ours. The second algorithm reverses the approach of the Central Counter Barrier. Third we demonstrate a pW/CS-influenced modification of the second barrier.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{MGB Barrier}
 \label{ssec:new-mgb}
-\begin{itemize}
-	\item original idea by Nicholas Mc Guire was given to me in a private communique.
-	\item modification of the original protocol resulted in Figure~\ref{fig:pseudocode-mgb}
-	\item first appearance in \cite{bre13}. Slight modification since then "remembers others" considered here. Don't explain in detail what the modification is and does, since the reader has no knowledge of the previous version and I don't want to explain all of it.
-		\begin{figure}[htbp]
-			\centering
-			\input{listings/mgb}
-			\caption{Pseudocode of MGB Barrier}
-			\label{fig:pseudocode-mgb}
-		\end{figure}
-	\item high-level explanation
-	\item detailed walk through one iteration
-	\item advantage: no atomic ops
-	\item resetting is integrated. Needs a little less space than the approaches shown in Section~\ref{ssec:background-building-blocks}
-	\item Limited to 64 threads in this version. But one can modify the protocol to use an array of bit masks, representing a big bit mask. Updating the bit mask will then only be done on the element where the updating thread is itself located on. This way we only write one 64 bit value which is committed atomically. If we would attempt to write more than one element, we would run into consistency problems. Reading the shared variable will then read the whole array instead.
-\end{itemize}
+The original idea of the following algorithm is part of a private communique between Nicholas Mc~Guire and us. Figure~\ref{fig:pseudocode-mgb} presents the new barrier, which is a variation of the protocol first mentioned in \cite{bre13}. It is intended for shared memory architectures.
+
+\begin{figure}[htbp]
+	\centering
+	\input{listings/mgb}
+	\caption{Pseudocode of the MGB Barrier}
+	\label{fig:pseudocode-mgb}
+\end{figure}
+
+Before going into detail, we first have to repeat some of the notation used in the pseudocode. It borrows from the C programming language. \&, $|$ and $\sim$ are the bitwise \emph{and}-, \emph{or}- and \emph{not}-operator. The constant $\mathit{threadIndex}$ is a thread identifying number between 0 and $\mathit{threadCount}-1$.
+
+The protocol consists of two symmetric sub-barriers. It uses \texttt{done}, a variable which holds the number of the sub-barrier that has been completed, to switch between them.
+Through \texttt{first} and \texttt{second} the barrier keeps track of which threads have arrived.
+The variable \texttt{copy} is a local copy of either first or second.
+A thread commits itself to first or second by setting his respective bit to 1. In the pseudocode we implement this bitset behaviour through integers and working with powers of two. If all threads committed themselves to one of the sub-barriers, it is a full bitset equal to the constant \texttt{full}.
+All threads participating in the barrier synchronization enter the same of the two parts.
+Inside the loops the participants try to synchronize. When successful the barrier is reset through the two subsequent assignments of done and either first or second.
+
+Initially first and second are zero, and done is two. When a thread arrives at the barrier it will enter the upper if branch. It then asks which threads have already arrived, adds himself to the acquired bitset, and stores it back to the variable first.
+He then repeatedly polls first in order to find out if his commitment attempt has been overwritten, i.e. its bit is not set anymore, by another thread's concurrently issued write operation, and secondly to determine whether the barrier is completed. The upper barrier is completed, if either first is full or done is 1. The first thread to realise that first has been set to full will exit the loop, set done to 1 and continue his computational work. Subsequently all other threads eventually leave the barrier.
+When entered again the same procedure is executed in the lower if branch using the variable second instead of first. A third repetition utilises the upper branch again.
+
+In comparison to the Central Counter Barrier this approach does not rely on the existence atomic operations.
+
+The number of threads this protocol supports is limited by the number of bits a processor can atomically commit, which is usually 64 bits. To alleviate this problem one can implement an array-based variant of the protocol. Instead of reading first and second one copies the array element by element. Comparing is done element by element as well. Instead of setting the variable one writes back only the one element where the thread's bit resides on. This way writing still requires only one atomic 64-bit commitment.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Ronny's simple barrier}
