@@ -444,17 +444,17 @@ This might also make sense if barrier algorithms vary in performance for differe
 	\item \todo elegantly transition to Ronny's fancy barrier (distributed memory case). Suddenly talking about processes and remote/local memory is bad.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Mc~Guire/Ronny barrier}
-\label{ssec:new-nmg}
+\subsection{MGB Barrier}
+\label{ssec:new-mgb}
 \begin{itemize}
 	\item original idea by Nicholas Mc Guire was given to me in a private communique.
-	\item modification of the original protocol resulted in Figure~\ref{fig:pseudocode-nmg-ronny}
+	\item modification of the original protocol resulted in Figure~\ref{fig:pseudocode-mgb}
 	\item first appearance in \cite{bre13}. Slight modification since then "remembers others" considered here. Don't explain in detail what the modification is and does, since the reader has no knowledge of the previous version and I don't want to explain all of it.
 		\begin{figure}[htbp]
 			\centering
-			\input{listings/nmg-ronny}
-			\caption{Pseudocode of Mc Guire/Ronny's barrier}
-			\label{fig:pseudocode-nmg-ronny}
+			\input{listings/mgb}
+			\caption{Pseudocode of MGB Barrier}
+			\label{fig:pseudocode-mgb}
 		\end{figure}
 	\item high-level explanation
 	\item detailed walk through one iteration
@@ -467,7 +467,7 @@ This might also make sense if barrier algorithms vary in performance for differe
 \subsection{Ronny's simple barrier}
 \label{ssec:new-simple}
 \begin{itemize}
-	\item new and shiny. Read mostly, write exactly once. In contrast to Mc Guire/Ronny's barrier.
+	\item new and shiny. Read mostly, write exactly once. In contrast to MGB Barrier.
 	\item How did I come up with the idea?
 	\item Figure~\ref{fig:pseudocode-ronny-simple}
 		\begin{figure}[htbp]
@@ -482,7 +482,7 @@ This might also make sense if barrier algorithms vary in performance for differe
 	\item do not mention (analysis section instead): in contrast to the central-counter barrier the assignments to shared variables can be done in parallel, since the variables written are not the same, no are they on the same cache line.
 	\item (do not mention. Is in the analysis) many read accesses, but since data is cached upon the first read the latency is only significant once per array element / cache line. i.e. when the thread arrives and writes his array element to be \texttt{true} and when a thread reads it after it has been written by it's owner.
 	\item advantage: no atomic ops
-	\item (do not mention. Is in the analysis) larger memory cost than Central Counter, Mc Guire/Ronny. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
+	\item (do not mention. Is in the analysis) larger memory cost than Central Counter, MGB. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
 	\item The barrier is destructive in the sense that it cannot be executed multiple times in a row. One way to circumvent this is to modify the algorithm to use a repetition counter instead of a boolean (since we have one date per cache line we allocated the space anyways) and keep track of it. The algorithm would then atomically increase the counter instead of the assignment in line 4. We use a 64 bit integer variable for this. It will not overflow over so we don't need to consider this case (If you could run one barrier each clock cycle on a 3GHz machine you would need roughly 200 years to overflow it).
 	\item another small improvement would be to keep track of the first couple of successfully read entries and skip those when repeating the loop. For simplicity's sake and modelling we will not consider this optimization.
 \end{itemize}
@@ -507,7 +507,7 @@ This might also make sense if barrier algorithms vary in performance for differe
 	\item advantage: no atomic ops. The writing does not have to be atomic, since processes only write to local memory, and no inconsistent data can be read since 64 bit reads and writes are atomic.
 	\item more computational overhead (bit shuffling) for less communication.
 	\item discuss resetting through triple barrier. Perhaps, briefly hint that this kind of resetting can be added to any barrier (perhaps add a listing how this would look like (the spin model should have it, or one of the pseudocode files)), more on this in the section on the orthogonal design of barriers.
-	\item restricted to 64 threads. An extension to arrays of bit masks, similar to the Mc Guire/Ronny barrier is possible.
+	\item restricted to 64 threads. An extension to arrays of bit masks, similar to the MGB Barrier is possible.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -516,7 +516,7 @@ This might also make sense if barrier algorithms vary in performance for differe
 \begin{itemize}
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
-	\item Early evaluations have shown the Mc Guire/Ronny's barrier to perform worse than the Central Counter Barrier, whereas Ronny's simple and fancy barrier show promise. Therefore we restrict our attention to the latter.
+	\item Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas Ronny's simple and fancy barrier show promise. Therefore we restrict our attention to the latter.
 	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudocode-ronny-simple} in Section~\ref{ssec:new-simple}).
 	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudocode-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.

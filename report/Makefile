@@ -31,7 +31,7 @@ CHARTS = \
 LISTINGS = \
 	listings/central-counter.tex \
 	listings/dissemination.tex \
-	listings/nmg-ronny.tex \
+	listings/mgb.tex \
 	listings/ronny-simple.tex \
 	listings/ronny-fancy.tex \
 	listings/triple-reset.tex
