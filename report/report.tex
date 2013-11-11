@@ -381,7 +381,7 @@ Open~MPI distinguishes between process counts that are powers of two and which a
 
 Figure~\ref{fig:pseudocode-dissemination} presents the pseudocode of this algorithm, which is executed on each process individually. A process is identified by its \emph{process index}, which is a number between 0 and $\mathit{processCount} - 1$. For readability reasons we have chosen an RMA-esque representation of the protocol, although it can similarly be implemented using message passing techniques.
 In contrast to the Central Counter Barrier, the Dissemination Barrier uses not only one variable but an array of boolean variables per process involved. Each of these arrays is located in the local memory of its owning process and is initially set to \texttt{false}.
-The protocol is organised in rounds. Each round the distance (variable \texttt{dist}) to the next two partners, to read from and write to, doubles. Process indices  are always calculate modulo the total number of processes to achieve a wraparound. Figure~\ref{fig:diagram-dissemination} illustrates this communication pattern.
+The protocol is organised in rounds. Each round the distance (variable \texttt{dist}) to the next two partners, to read from and write to, doubles. Process indices  are always calculated modulo the total number of processes to achieve a wraparound. Figure~\ref{fig:diagram-dissemination} illustrates this communication pattern.
 
 \begin{figure}[htbp]
 	\centering
