@@ -476,26 +476,27 @@ The number of threads this protocol supports is limited by the number of bits a 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{B1 Barrier}
 \label{ssec:new-b1}
-\begin{itemize}
-	\item new and shiny. Read mostly, write exactly once. In contrast to MGB Barrier.
-	\item How did I come up with the idea?
-	\item Figure~\ref{fig:pseudocode-b1}
-		\begin{figure}[htbp]
-			\centering
-			\input{listings/b1}
-			\caption{Pseudocode of the B1 Barrier}
-			\label{fig:pseudocode-b1}
-		\end{figure}
-	\item explanation here.
-	\item one array element per cache line to avoid false sharing\cite{falsesharing}
-	\item every thread writes into the array element he owns. Indicated by his threadIndex.
-	\item do not mention (analysis section instead): in contrast to the central-counter barrier the assignments to shared variables can be done in parallel, since the variables written are not the same, no are they on the same cache line.
-	\item (do not mention. Is in the analysis) many read accesses, but since data is cached upon the first read the latency is only significant once per array element / cache line. i.e. when the thread arrives and writes his array element to be \texttt{true} and when a thread reads it after it has been written by it's owner.
-	\item advantage: no atomic ops
-	\item (do not mention. Is in the analysis) larger memory cost than Central Counter, MGB. They number of barriers per thread team should be 1 at most, thus the memory overhead is still negligible.
-	\item The barrier is destructive in the sense that it cannot be executed multiple times in a row. One way to circumvent this is to modify the algorithm to use a repetition counter instead of a boolean (since we have one date per cache line we allocated the space anyways) and keep track of it. The algorithm would then atomically increase the counter instead of the assignment in line 4. We use a 64 bit integer variable for this. It will not overflow over so we don't need to consider this case (If you could run one barrier each clock cycle on a 3GHz machine you would need roughly 200 years to overflow it).
-	\item another small improvement would be to keep track of the first couple of successfully read entries and skip those when repeating the loop. For simplicity's sake and modelling we will not consider this optimization.
-\end{itemize}
+
+The following barrier protocol reverses the idea of the Central Counter Barrier (Section~\ref{sssec:background-currently-used-shared}) to use a single global counter that all threads atomically access once and read repeatedly. Instead it uses an array of boolean variables, one element for each thread, which is also accessed differently.
+The algorithm's pseudocode, executed individually on each thread taking part, is depicted in Figure~\ref{fig:pseudocode-b1}.
+
+\begin{figure}[htbp]
+	\centering
+	\input{listings/b1}
+	\caption{Pseudocode of the B1 Barrier}
+	\label{fig:pseudocode-b1}
+\end{figure}
+
+Upon arriving at the barrier a thread registers itself by setting its array element to true. He subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronization.
+
+Similar to the Central Counter Barrier the protocol can be split into two phases (Figure~\ref{fig:diagram-central-counter}).
+The two differences are that, because each thread writes only to its own array element, they don't require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
+
+The Barrier cannot be repeated as is. A way to add resetting to the protocol is by using the repetition counter approach introduced in Section~\ref{ssec:background-building-blocks}. In order to avoid false~sharing~\cite{falsesharing}, which would majorly degrade performance, an actual implementation of the protocol allocates one cache line for each array element. Cache lines are usually 64 bytes large. Therefore transforming the array into an array of counters does not require more memory.
+
+A small improvement to the shown algorithm is to keep track of the first few threads that have successfully arrived. The loop counter is then reset to this number instead of 0.
+
+Since we don't use any central information, this protocol can be implemented for both shared and distributed memory architectures.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{B2 Barrier}
