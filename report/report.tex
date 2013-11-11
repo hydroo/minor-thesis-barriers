@@ -502,25 +502,33 @@ Since we don't use any central information, this protocol can be implemented for
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{B2 Barrier}
 \label{ssec:new-b2}
-\begin{itemize}
-	\item variation of B1 Barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well.
-	\item evaluation has shown that cache latency is so low, that the additional computation this mechanism introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
-	\item Figure~\ref{fig:pseudocode-b2}
-		\begin{figure}[htbp]
-			\centering
-			\input{listings/b2}
-			\caption{Pseudocode of the B2 Barrier}
-			\label{fig:pseudocode-b2}
-		\end{figure}
-	\item each array element is located in the memory of the respective process.
-	\item Only the own element is written. Only remote reading.
-	\item When a process reads remotely he is informed of other processes, the remote peer knows, have arrived.
-	\item probabilistic runtime. Depending on circumstances the protocol will finish in more or less steps (or perhaps successful non-zero reads). It is not predetermined what is communicated and with whom.
-	\item advantage: no atomic ops. The writing does not have to be atomic, since processes only write to local memory, and no inconsistent data can be read since 64 bit reads and writes are atomic.
-	\item more computational overhead (bit shuffling) for less communication.
-	\item discuss resetting through triple barrier. Perhaps, briefly hint that this kind of resetting can be added to any barrier (perhaps add a listing how this would look like (the spin model should have it, or one of the pseudocode files)), more on this in the section on the orthogonal design of barriers.
-	\item restricted to 64 threads. An extension to arrays of bit masks, similar to the MGB Barrier is possible.
-\end{itemize}
+The B2 Barrier is a variation on the previous barrier in which less communication is traded for more computation.
+
+In principle the following protocol can be implemented on both shared and distributed memory architectures. We now switch to a distributed setting, because preliminary analysis showed that the saved memory access cost in comparison to the additional computational overhead favours its use in a distributed scenario.
+
+Figure~\ref{fig:pseudocode-b2} presents the B2 Barrier's RMA-style pseudocode. The notation used in this listing is explained in Section~\ref{ssec:new-mgb}.
+
+\begin{figure}[htbp]
+	\centering
+	\input{listings/b2}
+	\caption{Pseudocode of the B2 Barrier}
+	\label{fig:pseudocode-b2}
+\end{figure}
+
+Each element of the array \texttt{barrier} is a bit set holding the identifying bits of the processes, the owning process knows, have arrived and is located on its own process.
+
+When the first process arrives at the barrier it registers itself by setting its bit in its local array element and then continues to query the remote processes. It only acquires a remote array element, if it did not yet successfully do so, i.e. the remote process's bit is not set in the local bit set. If this is the case, it fetches the remote element and adds it to its own bit set, thus adding the arrival of all processes the remote end knows of to its own knowledge. This process is repeated until the local bit set indicates that all processes arrived.
+
+Comparing this behaviour to the B1 Barrier, a process now locally keeps track of the processes that have arrived and only queries those where the owning process did not yet get an affirmative answer.
+The protocol does not maintain the differentiation between reading and writing phase since it keeps updating its local variable during in the loop.
+
+This protocol writes only locally, and reads only remotely. It does not rely on the existence of atomic operations.
+
+In comparison to other distributed memory barrier protocols, e.g. the Dissemination Barrier (Section~\ref{sssec:background-currently-used-distributed}), the communication pattern is largely random. The order of remote access depends on remote memory access latency, local computation and memory access speed and the exact time of arrival of each process. The effect of all these three factors combined is a practically random communication pattern.
+
+Like the B1 Barrier this protocol is destructive. One can add resetting via the triple barrier method presented in Section~\ref{ssec:background-building-blocks}.
+
+Like the MGB Barrier this protocol is restricted to 64 processes. An extension to arrays of t bit sets can be implemented in the same way as described in Section~\ref{ssec:new-mgb}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Analysis and comparison}
