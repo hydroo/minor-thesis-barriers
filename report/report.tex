@@ -474,17 +474,17 @@ In comparison to the Central Counter Barrier this approach does not rely on the 
 The number of threads this protocol supports is limited by the number of bits a processor can atomically commit, which is usually 64 bits. To alleviate this problem one can implement an array-based variant of the protocol. Instead of reading \texttt{first} and \texttt{second} one copies the array element by element. Comparing is \texttt{done} element by element as well. Instead of setting the variable one writes back only the one element where the thread's bit resides on. This way writing still requires only one atomic 64-bit commitment.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Ronny's simple barrier}
-\label{ssec:new-simple}
+\subsection{B1 Barrier}
+\label{ssec:new-b1}
 \begin{itemize}
 	\item new and shiny. Read mostly, write exactly once. In contrast to MGB Barrier.
 	\item How did I come up with the idea?
-	\item Figure~\ref{fig:pseudocode-ronny-simple}
+	\item Figure~\ref{fig:pseudocode-b1}
 		\begin{figure}[htbp]
 			\centering
-			\input{listings/ronny-simple}
-			\caption{Pseudocode of Ronny's simple barrier}
-			\label{fig:pseudocode-ronny-simple}
+			\input{listings/b1}
+			\caption{Pseudocode of the B1 Barrier}
+			\label{fig:pseudocode-b1}
 		\end{figure}
 	\item explanation here.
 	\item one array element per cache line to avoid false sharing\cite{falsesharing}
@@ -498,17 +498,17 @@ The number of threads this protocol supports is limited by the number of bits a 
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Ronny's fancy barrier}
-\label{ssec:new-fancy}
+\subsection{B2 Barrier}
+\label{ssec:new-b2}
 \begin{itemize}
-	\item variation of Ronny's simple barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well.
+	\item variation of B1 Barrier where not only will the own presence be stored, but the presence of other processes, we know have arrived, as well.
 	\item evaluation has shown that cache latency is so low, that the additional computation this mechanism introduces, makes this algorithm run slower on shared memory systems than the unmodified one. Thus we will now switch to a distributed memory scenario where communication latency is much higher. If we assume RMA for communication we can use the protocol without modification.
-	\item Figure~\ref{fig:pseudocode-ronny-fancy}
+	\item Figure~\ref{fig:pseudocode-b2}
 		\begin{figure}[htbp]
 			\centering
-			\input{listings/ronny-fancy}
-			\caption{Pseudocode of Ronny's fancy barrier}
-			\label{fig:pseudocode-ronny-fancy}
+			\input{listings/b2}
+			\caption{Pseudocode of the B2 Barrier}
+			\label{fig:pseudocode-b2}
 		\end{figure}
 	\item each array element is located in the memory of the respective process.
 	\item Only the own element is written. Only remote reading.
@@ -526,9 +526,9 @@ The number of threads this protocol supports is limited by the number of bits a 
 \begin{itemize}
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
-	\item Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas Ronny's simple and fancy barrier show promise. Therefore we restrict our attention to the latter.
-	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) is pitted against Ronny's simple barrier (Figure~\ref{fig:pseudocode-ronny-simple} in Section~\ref{ssec:new-simple}).
-	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and Ronny's fancy barrier (Figure~\ref{fig:pseudocode-ronny-fancy} in Section~\ref{ssec:new-fancy}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
+	\item Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas the B1 and B2 Barrier show promise. Therefore we restrict our attention to the latter.
+	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) is pitted against B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}).
+	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
 	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
 	\item The analysis is split into two parts: general properties (bla, perceived without measuring, bla), model checking.
 \end{itemize}
@@ -549,12 +549,12 @@ The number of threads this protocol supports is limited by the number of bits a 
 	\item ref algorithms
 	\item make sure that people understand it is about shared read/write, not local variables.
 	\item PHASES: both algorithms are performed in two phases. A writing phase and a reading phase.
-	\item In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand Ronny's simple barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $\mathit{threadCount}$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
+	\item In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand the B1 Barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $\mathit{threadCount}$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
 	\item The reading phase of the Central Counter Barrier reads a single variable repeatedly. The cache line this variable resides on will be invalidated for each core exactly $\mathit{threadCount} - 1$ times (disregarding outside influences) ((, thus each core fetches the variable at most $\mathit{threadCount} - 1$ times)).
-	\item The reading phase of Ronny's simple barrier needs to read each array element once until it can make a decision whether to leave or repeat the loop. Each array element is invalidated exactly once. Thus each array element, from the viewpoint of one thread, has to be fetched from memory at most twice. From then on it is cached and quickly accessible.
-	\item the Central Counter Barrier has the obvious advantage in this phase. How big this advantage is depends heavily on the underlying hardware. For example if the cache line prefetcher predicts the access pattern of the reading phase of Ronny's simple barrier, those reads can be executed in parallel. (Vorsicht. Evtl weglassen)
-	\item The Central Counter Barrier is quicker during busy waiting, whereas Ronny's simple barrier performs well during writing. We attempt to quantify the effects of this behaviour in the following subsections.
-	\item MEMORY: the Central Counter barrier needs a logarithmic amount of memory in the number of threads (i.e. 64 bits, for up to $2^{64}$ threads), whereas Ronny's simple barrier needs a linear amount -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes. This looks like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only about 32KiB of memory would be used. 64 bytes per thread. Furthermore one thread team needs only one barrier and repeat it. There would be no benefit in allocating the memory for more than one.
+	\item The reading phase of the B1 Barrier needs to read each array element once until it can make a decision whether to leave or repeat the loop. Each array element is invalidated exactly once. Thus each array element, from the viewpoint of one thread, has to be fetched from memory at most twice. From then on it is cached and quickly accessible.
+	\item the Central Counter Barrier has the obvious advantage in this phase. How big this advantage is depends heavily on the underlying hardware. For example if the cache line prefetcher predicts the access pattern of the reading phase of the B1 Barrier, those reads can be executed in parallel. (Vorsicht. Evtl weglassen)
+	\item The Central Counter Barrier is quicker during busy waiting, whereas the B1 Barrier barrier performs well during writing. We attempt to quantify the effects of this behaviour in the following subsections.
+	\item MEMORY: the Central Counter barrier needs a logarithmic amount of memory in the number of threads (i.e. 64 bits, for up to $2^{64}$ threads), whereas B1 Barrier needs a linear amount -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes. This looks like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only about 32KiB of memory would be used. 64 bytes per thread. Furthermore one thread team needs only one barrier and repeat it. There would be no benefit in allocating the memory for more than one.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%
@@ -571,11 +571,11 @@ The number of threads this protocol supports is limited by the number of bits a 
 		\end{figure}
 
 	\item Reading is only done locally.
-	\item Ronny's fancy barrier needs between $2 \cdot (n-1)$ and $n \cdot (n-1)$ successful (non-zero) remote reads. Writing is only done locally. (perhaps add picture of n*(n-1), n*(n-1) might also be completely wrong)
+	\item B2 Barrier needs between $2 \cdot (n-1)$ and $n \cdot (n-1)$ successful (non-zero) remote reads. Writing is only done locally. (perhaps add picture of n*(n-1), n*(n-1) might also be completely wrong)
 	\item failed remote gets. Maybe give a rough estimate of the lost bandwidth.
-	\item Dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. Ronny's fancy barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the Dissemination Barrier waits for its designated communication partner.
+	\item Dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. The B2 Barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the Dissemination Barrier waits for its designated communication partner.
 	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where Dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
-	\item MEMORY: The memory requirements of the Dissemination Barrier and Ronny's fancy barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
+	\item MEMORY: The memory requirements of the Dissemination Barrier and the B2 Barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
 	\item the progress problem
 		\begin{itemize}
 			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed}. All processes arrive timely.
@@ -656,7 +656,7 @@ The number of threads this protocol supports is limited by the number of bits a 
 					\end{minipage}
 					\begin{minipage}{0.42\linewidth}
 						\vspace{0.3cm}
-						\textbf{Ronny's fancy:} \\
+						\textbf{B2 Barrier:} \\
 						$(n-1) \cdot (n-1) = 49$ \\
 						\vspace{-0.1cm} \\
 						\resizebox{5cm}{!}{
@@ -677,7 +677,7 @@ The number of threads this protocol supports is limited by the number of bits a 
 					\label{tab:table-dissemination-progress}
 				\end{table}
 			\item for non-power of two process counts the effect worsens. Where for power of two process counts $n-1$ remote writes need to be executed before the barrier is finished, non-power of two process counts need to issue $2^{\lceil \log_2 n \rceil} - 1$ writes.
-			\item ronny's fancy does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to do one more successful remote read. Therefore $n$ remote reads, which can be issued in parallel, are needed to complete the barrier.
+			\item the B2 Barrier does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to do one more successful remote read. Therefore $n$ remote reads, which can be issued in parallel, are needed to complete the barrier.
 			\item quantifying this effect will be done in the following section.
 		\end{itemize}
 \end{itemize}
@@ -806,17 +806,17 @@ The number of threads this protocol supports is limited by the number of bits a 
 \end{itemize}
 
 %%%%%%%%%%
-\paragraph{Ronny's simple barrier}
-\label{ssssec:analysis-modelchecking-modelling-ronny-simple}
+\paragraph{B1 Barrier}
+\label{ssssec:analysis-modelchecking-modelling-b1}
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
-	\item Algorithm explained in Section~\ref{ssec:new-simple}
-	\item Control flow diagram Figure~\ref{fig:model-ronny-simple}
+	\item Algorithm explained in Section~\ref{ssec:new-b1}
+	\item Control flow diagram Figure~\ref{fig:model-b1}
 		\begin{figure}[htbp]
 			\centering
-			\input{tikz/model-ronny-simple}
-			\caption{Control flow diagram of Ronny's simple barrier}
-			\label{fig:model-ronny-simple}
+			\input{tikz/model-b1}
+			\caption{Control flow diagram of the B1 Barrier}
+			\label{fig:model-b1}
 		\end{figure}
 	\item each element of the array \texttt{barrier} is located in an own cache line. Therefore each thread has \texttt{threadCount} cache line copy modules, one for each element in the array. In total a CTMC model of this protocol has $\mathtt{threadCount}^2$ cache line copy modules plus $\mathtt{threadCount}$ thread modules.
 	\item As described in the previous paragraph, $\lambda_{work}$ is the work rate and all other rates are determined by the cache line copy modules.
@@ -847,17 +847,17 @@ The number of threads this protocol supports is limited by the number of bits a 
 \end{itemize}
 
 %%%%%%%%%%
-\paragraph{Ronny fancy barrier}
-\label{ssssec:analysis-modelchecking-modelling-ronny-fancy}
+\paragraph{B2 Barrier}
+\label{ssssec:analysis-modelchecking-modelling-b2}
 \begin{itemize}
 	\item repeat variables and initial configuration from the algorithm box
-	\item Algorithm explained in Section~\ref{ssec:new-fancy}
-	\item Control flow diagram augmented with rates: Figure~\ref{fig:model-ronny-fancy}
+	\item Algorithm explained in Section~\ref{ssec:new-b2}
+	\item Control flow diagram augmented with rates: Figure~\ref{fig:model-b2}
 		\begin{figure}[htbp]
 			\centering
-			\input{tikz/model-ronny-fancy}
-			\caption{Augmented Control flow diagram of Ronny's fancy barrier}
-			\label{fig:model-ronny-fancy}
+			\input{tikz/model-b2}
+			\caption{Augmented Control flow diagram of the B2 Barrier}
+			\label{fig:model-b2}
 		\end{figure}
 	\item Rates are like in previous section, except we now use remote read (get) with a rate of $\lambda_g = \frac{1}{100}$.
 	\item functional model does resetting and repetition using three barriers as described in~\ref{ssec:background-building-blocks}.
@@ -911,7 +911,7 @@ The number of threads this protocol supports is limited by the number of bits a 
 					\item baseline of 11W
 					\item These numbers are a very limited estimate derived from a small reference measurement. The numbers can be found in Section~\ref{ssec:energy-measurement}.
 				\end{itemize}
-			\item (diss, ronny's fancy) number of remote transfers. trew for remote operations = 1. srew =0.
+			\item (diss, B2) number of remote transfers. trew for remote operations = 1. srew =0.
 		\end{itemize}
 	\item interesting points in time
 		\begin{itemize}
@@ -919,7 +919,7 @@ The number of threads this protocol supports is limited by the number of bits a 
 			\item (B) last thread entered the barrier
 			\item (C) first thread left the barrier
 			\item (D) last thread left the barrier
-			\item (W) (only for Central Counter and ronny's simple) the last thread finished writing
+			\item (W) (only for Central Counter and B1) the last thread finished writing
 			\item (R$i$) (only for Dissemination) last process left round $i$, i.e. entered round $i+1$. The current round of process is determined through the variable $\mathit{dist}$. $\mathit{round} = 1 + \log_2 \mathit{dist}$.
 		\end{itemize}
 	\item resulting properties
@@ -971,28 +971,28 @@ The number of threads this protocol supports is limited by the number of bits a 
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-shared}
 \begin{itemize}
 	\item work = 100. Expected time it takes a thread to arrive at the barrier is 100 cycles.
-	\item last to last, last to first Figure~\ref{fig:cs-time-work-100-B-C-D}
+	\item last to last, last to first Figure~\ref{fig:c1-time-work-100-B-C-D}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=10cm]{charts/cs-time-work-100-B-C-D}
+			\includegraphics[width=10cm]{charts/c1-time-work-100-B-C-D}
 			\caption{Expected execution time}
-			\label{fig:cs-time-work-100-B-C-D}
+			\label{fig:c1-time-work-100-B-C-D}
 		\end{figure}
 		\begin{itemize}
 			\item both barriers similarly fast when considering the last one to finish
-			\item ronny's simple faster for the first one to leave
+			\item B1 is faster for the first one to leave
 		\end{itemize}
-	\item distribution of total time and energy spent: Figure~\ref{fig:cs-work-100-partition}
+	\item distribution of total time and energy spent: Figure~\ref{fig:c1-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
 			\begin{minipage}{0.53\linewidth}
-				\includegraphics[height=4.3cm]{charts/cs-time-work-100-partition}
+				\includegraphics[height=4.3cm]{charts/c1-time-work-100-partition}
 			\end{minipage}
 			\begin{minipage}{0.46\linewidth}
-				\includegraphics[height=4.3cm]{charts/cs-energy-work-100-partition}
+				\includegraphics[height=4.3cm]{charts/c1-energy-work-100-partition}
 			\end{minipage}
 			\caption{Distribution of total time spent and energy consumed}
-			\label{fig:cs-work-100-partition}
+			\label{fig:c1-work-100-partition}
 		\end{figure}
 	\item time
 		\begin{itemize}
@@ -1000,72 +1000,72 @@ The number of threads this protocol supports is limited by the number of bits a 
 			\item the initial work distribution is the same for all processes and protocols
 			\item cc: first thread leaves a few cycles after writing is done. Because the last one to write its value will likely immediately read the completed barrier and leave.
 			\item from the moment the first thread leaves, all threads only read. No one writes anymore.
-			\item writing, as expected, takes longer for Central Counter and reading takes longer for ronny's simple
+			\item writing, as expected, takes longer for Central Counter and reading takes longer for the B1 Barrier
 			\item all parts take longer with increasing thread count, since CTMC semantic (described in Section~\ref{sssec:analysis-modelchecking-preliminaries}) makes a transition get an exit rate of the sum of the rates of all enabled transitions.
 			\item in particular, assume you have $n$ interleaved modules (or concurrent threads of execution) where one transition in each module is enabled. The exit rate of the first transition to be triggered is then  $n \cdot \lambda$. The expected time of a parallel execution of all transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ time rather than $\frac{1}{\lambda}$.
 			\item for example the expected number of cycles for the first process to enter is $\approx \frac{100}{n}$. The last one is finished working after $\approx$ 150, 183 and 208 cycles, for two, three and four processes.
 			\item Especially reading for Central Counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
-			\item writing for ronny's simple is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the Central Counter Barrier.
+			\item writing for the B1 Barrier is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the Central Counter Barrier.
 		\end{itemize}
 	\item energy
 		\begin{itemize}
 			\item similar to time
-			\item ronny's simple needs more energy. Because it performs more shared memory operations and more local operations in the same amount of time, where the Central Counter Barrier spends considerable time waiting for atomic operations to finish.
+			\item the B1 Barrier needs more energy. Because it performs more shared memory operations and more local operations in the same amount of time, where the Central Counter Barrier spends considerable time waiting for atomic operations to finish.
 			\item Central Counter's energy scales similarly to time.
-			\item amount of energy for ronny's simple grows faster than time needed.
-			\item ronny's simple spends considerable energy from the last commitment to first leaving the barrier.
+			\item amount of energy for the B1 Barrier grows faster than time needed.
+			\item the B1 Barrier spends considerable energy from the last commitment to first leaving the barrier.
 		\end{itemize}
-	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-power-work-100}
+	\item rate of power consumption per protocol phase: Figure~\ref{fig:c1-power-work-100}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=10cm]{charts/cs-power-work-100}
+			\includegraphics[width=10cm]{charts/c1-power-work-100}
 			\caption{Rate of energy consumption for each phase}
-			\label{fig:cs-power-work-100}
+			\label{fig:c1-power-work-100}
 		\end{figure}
 		\begin{itemize}
 			\item same partitioning as the previous figure.
 			\item (A) all working has 11W - the baseline.
-			\item overall low for Central Counter (16-18.3W), ronny's simple (19.4 - 30.6)
+			\item overall low for Central Counter (16-18.3W), B1 (19.4 - 30.6)
 			\item writing considerably higher for rs, because quicker and more shared memory operations.
 			\item no one left: cc: high because very very short, rs: high because many shared reads across many threads.
 			\item one left similar because cc: shared reads, rs: shared reads, and local reads.
 		\end{itemize}
-	\item reading vs writing: Figure~\ref{fig:cs-time-work-100-percent}
+	\item reading vs writing: Figure~\ref{fig:c1-time-work-100-percent}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=10cm]{charts/cs-time-work-100-percent}
+			\includegraphics[width=10cm]{charts/c1-time-work-100-percent}
 			\caption{Time spent reading versus writing}
-			\label{fig:cs-time-work-100-percent}
+			\label{fig:c1-time-work-100-percent}
 		\end{figure}
 		\begin{itemize}
 			\item writing is from (A) to (W). Reading is from (W) to (D).
 			\item with increasing thread count there is a shift from writing to reading in execution time.
 		\end{itemize}
 	\item work=1000. Still very small. (According to \cite{rab00} at a barrier each process spends on average 8194 CPU cycles idly\footnote{1813 microseconds accumulated idle time at 450MHz on 99.6 processes})
-	\item last to last, last to first Figure~\ref{fig:cs-time-work-1000-B-C-D}
+	\item last to last, last to first Figure~\ref{fig:c1-time-work-1000-B-C-D}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=10cm]{charts/cs-time-work-1000-B-C-D}
+			\includegraphics[width=10cm]{charts/c1-time-work-1000-B-C-D}
 			\caption{Expected execution time}
-			\label{fig:cs-time-work-1000-B-C-D}
+			\label{fig:c1-time-work-1000-B-C-D}
 		\end{figure}
 		\begin{itemize}
 			\item very different picture.
 			\item Central Counter faster in all respects.
-			\item probability of a thread trying to write while no one is writing at the moment increases due to the larger working period distribution. Writes for ronny simple tend to be serialized for the same reason, but ronny's simple still reads longer.
+			\item probability of a thread trying to write while no one is writing at the moment increases due to the larger working period distribution. Writes for the B1 Barrier tend to be serialized for the same reason, but B1 still reads longer.
 			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for Central Counter.
 		\end{itemize}
-	\item distribution of total time and energy spent: Figure~\ref{fig:cs-work-1000-partition}
+	\item distribution of total time and energy spent: Figure~\ref{fig:c1-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
 			\begin{minipage}{0.53\linewidth}
-				\includegraphics[height=4.3cm]{charts/cs-time-work-1000-partition}
+				\includegraphics[height=4.3cm]{charts/c1-time-work-1000-partition}
 			\end{minipage}
 			\begin{minipage}{0.46\linewidth}
-				\includegraphics[height=4.3cm]{charts/cs-energy-work-1000-partition}
+				\includegraphics[height=4.3cm]{charts/c1-energy-work-1000-partition}
 			\end{minipage}
 			\caption{Distribution of total time spent and energy consumed}
-			\label{fig:cs-work-1000-partition}
+			\label{fig:c1-work-1000-partition}
 		\end{figure}
 		\begin{itemize}
 			\item Excluding (A) and (B) since they are large in comparison to the barrier
@@ -1076,20 +1076,20 @@ The number of threads this protocol supports is limited by the number of bits a 
 		\end{itemize}
 	\item energy
 		\begin{itemize}
-			\item writing is constant across multiple threads because the atomic op forbids reading the variable thus there is few busy waiting, whereas ronny's simple is constantly polling. And the amount increases with increasing thread count.
+			\item writing is constant across multiple threads because the atomic op forbids reading the variable thus there is few busy waiting, whereas B1 is constantly polling. And the amount increases with increasing thread count.
 		\end{itemize}
-	\item rate of power consumption per protocol phase: Figure~\ref{fig:cs-power-work-1000}
+	\item rate of power consumption per protocol phase: Figure~\ref{fig:c1-power-work-1000}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=10cm]{charts/cs-power-work-1000}
+			\includegraphics[width=10cm]{charts/c1-power-work-1000}
 			\caption{Rate of energy consumption for each phase}
-			\label{fig:cs-power-work-1000}
+			\label{fig:c1-power-work-1000}
 		\end{figure}
 		\begin{itemize}
 			\item more even. (1) longer work period. (2) cc and rs use similarly many shared and local operations (due to busy waiting) in the reading phase ((D) one left). Energy usage is dominated by busy waiting of threads.
-			\item ronny's simple can catch up considerably. (cc:14.6-20.9, rs:15.3-23.5)
+			\item the B1 Barrier can catch up considerably. (cc:14.6-20.9, rs:15.3-23.5)
 		\end{itemize}
-	\item with larger and more realistic, since 1000 cycles is still very few, work periods this yields a series of writing operations for both algorithms, and a little more time spent reading for ronny's simple barrier.
+	\item with larger and more realistic, since 1000 cycles is still very few, work periods this yields a series of writing operations for both algorithms, and a little more time spent reading for the B1 Barrier.
 \end{itemize}
 
 %%%%%
@@ -1097,21 +1097,21 @@ The number of threads this protocol supports is limited by the number of bits a 
 \label{sssssec:analysis-modelchecking-quantitative-properties-results-distributed}
 \begin{itemize}
 	\item work = 100
-	\item distribution of total time spent and total energy consumed: Figure~\ref{fig:df-work-100-partition}
+	\item distribution of total time spent and total energy consumed: Figure~\ref{fig:d2-work-100-partition}
 		\begin{figure}[htbp]
 			\centering
 			\begin{minipage}{0.54\linewidth}
-				\includegraphics[height=4.3cm]{charts/df-time-work-100-partition}
+				\includegraphics[height=4.3cm]{charts/d2-time-work-100-partition}
 			\end{minipage}
 			\begin{minipage}{0.45\linewidth}
-				\includegraphics[height=4.3cm]{charts/df-energy-work-100-partition}
+				\includegraphics[height=4.3cm]{charts/d2-energy-work-100-partition}
 			\end{minipage}
 			\caption{Distribution of total time spent and energy consumed}
-			\label{fig:df-work-100-partition}
+			\label{fig:d2-work-100-partition}
 		\end{figure}
 		\begin{itemize}
-			\item ronny's fancy is quicker for process counts over two
-			\item Dissemination finishes 23 cycles earlier than ronny's fancy for 2 processes because remote write can be executed during the work period of the other process, whereas ronny's simple still needs to execute 2 remote reads after the last process entered the barrier.
+			\item the B2 Barrier is quicker for process counts over two
+			\item Dissemination finishes 23 cycles earlier than the B2 Barrier for 2 processes because remote write can be executed during the work period of the other process, whereas the B1 Barrier still needs to execute 2 remote reads after the last process entered the barrier.
 			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC exit rate calculation.
 			\item more time between first and last to leave.
 			\item last and first exit at almost the same time for Dissemination, because when the second arrives and writes his part into the remote peers memory both will quickly exit. This cannot happen for processes since when the first leaves there might still be pending remote writes.
@@ -1135,36 +1135,36 @@ The number of threads this protocol supports is limited by the number of bits a 
 			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. This behaviour is realistic, because resource contention for remote writes and + non-uniform distribution durations for those writes, but we didn't specifically model this.
 			\item energy consumption increase per round a bit larger than runtime increase. This is partly because more remote operations are issued as described in Section~\ref{ssssec:analysis-modelchecking-modelling-dissemination}. And partly because one more process is locally spinning before entering a new round.
 		\end{itemize}
-	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-100}
+	\item rate of power consumption per phase: Figure~\ref{fig:d2-power-work-100}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=10cm]{charts/df-power-work-100}
+			\includegraphics[width=10cm]{charts/d2-power-work-100}
 			\caption{Rate of energy consumption for each phase}
-			\label{fig:df-power-work-100}
+			\label{fig:d2-power-work-100}
 		\end{figure}
 		\begin{itemize}
 			\item All phases except the last are very similar.
 			\item largely because comparing number of local and remote operations issued to the rewards given for these operations the amount of energy consumed is expected to be similar.
-			\item Dissemination issues less remote operations, but due to local wait spinning a lot of local operations, ronny's fancy on the other hand polls remotely.
-			\item in the last phase ronny's fancy draws less power because it takes a lot more time for a little more energy to be consumed.
-			\item overall ronny's fancy performs slightly better.
+			\item Dissemination issues less remote operations, but due to local wait spinning a lot of local operations, the B2 Barrier on the other hand polls remotely.
+			\item in the last phase the B2 Barrier draws less power because it takes a lot more time for a little more energy to be consumed.
+			\item overall the B2 Barrier performs slightly better.
 		\end{itemize}
 	\item longer work period. work=1000
-	\item distribution of total time spent and energy consumed: Figure~\ref{fig:df-work-1000-partition}
+	\item distribution of total time spent and energy consumed: Figure~\ref{fig:d2-work-1000-partition}
 		\begin{figure}[htbp]
 			\centering
 			\begin{minipage}{0.54\linewidth}
-				\includegraphics[height=4.3cm]{charts/df-time-work-1000-partition}
+				\includegraphics[height=4.3cm]{charts/d2-time-work-1000-partition}
 			\end{minipage}
 			\begin{minipage}{0.45\linewidth}
-				\includegraphics[height=4.3cm]{charts/df-energy-work-1000-partition}
+				\includegraphics[height=4.3cm]{charts/d2-energy-work-1000-partition}
 			\end{minipage}
 			\caption{Distribution of total time spent and energy consumed}
-			\label{fig:df-work-1000-partition}
+			\label{fig:d2-work-1000-partition}
 		\end{figure}
 		\begin{itemize}
 			\item excluding (A) and (B) because long.
-			\item first one to leave for rf unrealistic as in Figure~\ref{fig:df-work-100-partition}
+			\item first one to leave for rf unrealistic as in Figure~\ref{fig:d2-work-100-partition}
 		\end{itemize}
 	\item Dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-1000-partition}
 		\begin{figure}[htbp]
@@ -1186,20 +1186,20 @@ The number of threads this protocol supports is limited by the number of bits a 
 			\item progress problem.
 			\item there is a fixed cost for each additional round in the Dissemination Barrier.
 			\item due to model checking limitations (a very large state space), we cannot quantify beyond four processes, i.e. two rounds.
-			\item as shown in Figure~\ref{fig:d-work-1000-partition} ronny's fancy is indeed quicker.
-			\item in relation to the results from work period 100, ronny's fancy could not increase its headway at work period 1000.
-			\item this does not necessarily mean that the progress problem does not exist. It might for example mean that ronny's fancy does not handle this situation as efficiently as we expected or that it did better than we expected for the 100 cycle work period case. Either way it is definitely possible to be generally faster than the Dissemination Barrier is for this scenario.
+			\item as shown in Figure~\ref{fig:d-work-1000-partition} the B2 Barrier is indeed quicker.
+			\item in relation to the results from work period 100, the B2 Barrier could not increase its headway at work period 1000.
+			\item this does not necessarily mean that the progress problem does not exist. It might for example mean that the B2 Barrier does not handle this situation as efficiently as we expected or that it did better than we expected for the 100 cycle work period case. Either way it is definitely possible to be generally faster than the Dissemination Barrier is for this scenario.
 		\end{itemize}
-	\item rate of power consumption per phase: Figure~\ref{fig:df-power-work-1000}
+	\item rate of power consumption per phase: Figure~\ref{fig:d2-power-work-1000}
 		\begin{figure}[htbp]
 			\centering
-			\includegraphics[width=10cm]{charts/df-power-work-1000}
+			\includegraphics[width=10cm]{charts/d2-power-work-1000}
 			\caption{Rate of energy consumption for each phase}
-			\label{fig:df-power-work-1000}
+			\label{fig:d2-power-work-1000}
 		\end{figure}
 		\begin{itemize}
 			\item overall power consumption slightly lower because of the 1000 cycle work period.
-			\item everything else similar to Figure~\ref{fig:df-power-work-100}.
+			\item everything else similar to Figure~\ref{fig:d2-power-work-100}.
 		\end{itemize}
 	\item number of remote transfers
 		\begin{itemize}
@@ -1208,7 +1208,7 @@ The number of threads this protocol supports is limited by the number of bits a 
 			\item number of successful transfers (transfers that read from an arrived processes) between $2 \cdot (n-1)$ and $n \cdot (n-1)$. Both practically never happen because randomness and access pattern.
 			\item failed transfers (transfers where you read from a not yet arrived process).
 			\item hard to estimate, because the randomness of the system defines this number.
-			\item work=100. Figure~\ref{tab:df-transfers-100}
+			\item work=100. Figure~\ref{tab:d2-transfers-100}
 				\begin{table}[htbp]
 					\centering
 					\caption{Expected number of remote transfers}
@@ -1220,19 +1220,19 @@ The number of threads this protocol supports is limited by the number of bits a 
 						              & 3       & 6                     &                 \\
 						              & 4       & 8                     &                 \\
 						\hline
-						Ronny's Fancy & 2       & 2                     & 0.99            \\
+						B2 Barrier    & 2       & 2                     & 0.99            \\
 						              & 3       & 4.74                  & 1.73            \\
 						              & 4       & 7.98                  & 2.44            \\
 					\end{tabular}
-					\label{tab:df-transfers-100}
+					\label{tab:d2-transfers-100}
 				\end{table}
 				\begin{itemize}
-					\item as expected ronny's fancy issues more remote transactions than the Dissemination Barrier.
+					\item as expected the B2 Barrier issues more remote transactions than the Dissemination Barrier.
 					\item it is still relatively low.
 					\item especially the number of failed remote accesses is low in comparison to the number of successful ones.
-					\item For process count 5, and other non-power of two process counts the situation might turn out better for ronny's fancy, because of the additional rounds and thus additional transfers needed.
+					\item For process count 5, and other non-power of two process counts the situation might turn out better for the B2 Barrier, because of the additional rounds and thus additional transfers needed.
 				\end{itemize}
-			\item work=1000. Table~\ref{tab:df-transfers-1000}
+			\item work=1000. Table~\ref{tab:d2-transfers-1000}
 				\begin{table}[htbp]
 					\centering
 					\caption{Expected number of remote transfers}
@@ -1244,11 +1244,11 @@ The number of threads this protocol supports is limited by the number of bits a 
 						3       & 4.95                  & 22.89           \\
 						4       & 8.78                  & 38.05           \\
 					\end{tabular}
-					\label{tab:df-transfers-1000}
+					\label{tab:d2-transfers-1000}
 				\end{table}
 				\begin{itemize}
 					\item number of successful transfers very similar to work=100.
-					\item failed transfers is of course more than before since ronny's fancy is busy waiting on remote memory.
+					\item failed transfers is of course more than before since the B2 Barrier is busy waiting on remote memory.
 					\item back-off strategies could be used, if one would want to save the lost bandwidth, latency and energy in exchange for a longer duration of the protocol.
 				\end{itemize}
 		\end{itemize}
@@ -1273,14 +1273,14 @@ The number of threads this protocol supports is limited by the number of bits a 
 
 	\item shared memory
 	\item despite atomic operations the Central Counter barrier is quick.
-	\item ronny's simple approach to trade less time writing for more time reading does not pay off. Because: (1) in a balanced scenario the time lost due to queuing atomic operations is small. (2) no atomic operations means more busy waiting, thus more energy used.
-	\item ronny's simple performs worse in all considered scenarios.
+	\item the B1 Barrier approach to trade less time writing for more time reading does not pay off. Because: (1) in a balanced scenario the time lost due to queuing atomic operations is small. (2) no atomic operations means more busy waiting, thus more energy used.
+	\item the B1 Barrier performs worse in all considered scenarios.
 
 	\item distributed memory
-	\item ronny's fancy barrier issues not much more remote operations than the Dissemination barrier despite busy waiting on remote memory.
+	\item the B2 Barrier issues not much more remote operations than the Dissemination barrier despite busy waiting on remote memory.
 	\item as conjectured in Section~\ref{sssec:analysis-general-distributed} the Dissemination barrier wastes substantial time when processes arrive even in small intervals.
 	\item for non-power of two process counts the Dissemination barrier wastes substantial time and energy due to its $\lceil \log_2 n \rceil$ number of rounds and $n \cdot \lceil \log_2 n \rceil$ number of remote operations.
-	\item ronny's fancy outperforms the Dissemination barrier in all scenarios.
+	\item B2 outperforms the Dissemination barrier in all scenarios.
 
 	\item CTMC model checking semantic for interleaving modules is different from the intuitive notion of parallel execution. Therefore one has to exercise caution when interpreting model checking results.
 \end{itemize}
@@ -1312,14 +1312,14 @@ Future work:
 		\end{itemize}
 	\item measurement
 		\begin{itemize}
-			\item conduct measurements of the shared memory barriers (easy). Preliminary tests show that both ronny's simple and ronny's fancy perform better than model checking analysis suggests.
-			\item implement ronny's fancy on RDMA hardware and benchmark against established algorithms
+			\item conduct measurements of the shared memory barriers (easy). Preliminary tests show that both the B1 and the B2 Barrier perform better than model checking analysis suggests.
+			\item implement the B2 Barrier on RDMA hardware and benchmark against established algorithms
 		\end{itemize}
 	\item widen focus
 		\begin{itemize}
 			\item evaluate back-off strategies. (technical possibilities. Strategies like exponential back-off, linear back-off, etc.)
 			\item mwait (wait for a change in a variable. Not polling actively).
-			\item model and measure dissemination and ronny's fancy for shared memory.
+			\item model and measure dissemination and B2 for shared memory.
 		\end{itemize}
 	\item CTMC exit rate semantic
 		\begin{itemize}
@@ -1337,7 +1337,7 @@ Future work:
 		\end{itemize}
 	\item explore variations of the new barriers
 		\begin{itemize}
-			\item Ronny's fancy barrier: Try different i increment strategies. Or perhaps randomize the choice of i.
+			\item B2: Try different i increment strategies. Or perhaps randomize the choice of i.
 			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}. AND this way one might be able to avoid failed remote operations entirely and keep busy waiting local.
 		\end{itemize}
 	\item misc
@@ -1376,9 +1376,9 @@ The CPU we used is an Intel\textregistered~Core\texttrademark~i5-2520M clocked a
 		Add\&fetch (contested)   & 2      &    137.6 &     893.7 & 16.2 \\
 		Add\&fetch (uncontested) & 2      &     19.3 &     158.5 & 20.5 \\
 		Central Counter Barrier  & 2      &    227.4 &    1667.0 & 18.3 \\
-		Ronny's simple barrier   & 2      &    114.0 &    1076.1 & 23.6 \\
+		B1 Barrier               & 2      &    114.0 &    1076.1 & 23.6 \\
 		Dissemination Barrier    & 2      &    144.0 &    1400.3 & 24.3 \\
-		Ronny's fancy barrier    & 2      &     42.1 &     433.4 & 25.7 \\
+		B2 Barrier               & 2      &     42.1 &     433.4 & 25.7 \\
 	\end{tabular}
 \end{table}
 \begin{table}[htbp]
@@ -1416,7 +1416,7 @@ The CPU we used is an Intel\textregistered~Core\texttrademark~i5-2520M clocked a
 		                          & 3      &    314.0 &    2613.6 & 20.8 \\
 		                          & 3      &    442.8 &    3908.3 & 22.0 \\
 		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
-		Ronny's simple barrier    & 2      &     45.4 &     359.2 & 19.8 \\
+		B1 Barrier                & 2      &     45.4 &     359.2 & 19.8 \\
 		                          & 3      &    157.8 &    1614.5 & 25.6 \\
 		                          & 4      &    198.3 &    2174.1 & 27.4 \\
 		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
@@ -1424,7 +1424,7 @@ The CPU we used is an Intel\textregistered~Core\texttrademark~i5-2520M clocked a
 		                          & 3      &    297.4 &    3189.0 & 26.8 \\
 		                          & 4      &    337.1 &    3960.3 & 29.4 \\
 		\arrayrulecolor{lightgray}\hline\arrayrulecolor{black}
-		Ronny's fancy barrier     & 2      &     34.3 &     285.9 & 20.8 \\
+		B2 Barrier                & 2      &     34.3 &     285.9 & 20.8 \\
 		                          & 3      &    109.1 &    1205.6 & 27.6 \\
 		                          & 4      &    112.1 &    1297.0 & 28.9 \\
 	\end{tabular}
