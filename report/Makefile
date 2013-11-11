@@ -1,26 +1,26 @@
 IMAGES =
 
 CHARTS = \
-	charts/cs-energy-work-100-partition.eps \
-	charts/cs-energy-work-1000-partition.eps \
+	charts/c1-energy-work-100-partition.eps \
+	charts/c1-energy-work-1000-partition.eps \
 	\
-	charts/cs-power-work-100.eps \
-	charts/cs-power-work-1000.eps \
+	charts/c1-power-work-100.eps \
+	charts/c1-power-work-1000.eps \
 	\
-	charts/cs-time-work-100-B-C-D.eps \
-	charts/cs-time-work-100-partition.eps \
-	charts/cs-time-work-100-percent.eps \
-	charts/cs-time-work-1000-B-C-D.eps \
-	charts/cs-time-work-1000-partition.eps \
+	charts/c1-time-work-100-B-C-D.eps \
+	charts/c1-time-work-100-partition.eps \
+	charts/c1-time-work-100-percent.eps \
+	charts/c1-time-work-1000-B-C-D.eps \
+	charts/c1-time-work-1000-partition.eps \
 	\
-	charts/df-energy-work-100-partition.eps \
-	charts/df-energy-work-1000-partition.eps \
+	charts/d2-energy-work-100-partition.eps \
+	charts/d2-energy-work-1000-partition.eps \
 	\
-	charts/df-power-work-100.eps \
-	charts/df-power-work-1000.eps \
+	charts/d2-power-work-100.eps \
+	charts/d2-power-work-1000.eps \
 	\
-	charts/df-time-work-100-partition.eps \
-	charts/df-time-work-1000-partition.eps \
+	charts/d2-time-work-100-partition.eps \
+	charts/d2-time-work-1000-partition.eps \
 	\
 	charts/d-energy-work-100-partition.eps \
 	charts/d-energy-work-1000-partition.eps \
@@ -32,8 +32,8 @@ LISTINGS = \
 	listings/central-counter.tex \
 	listings/dissemination.tex \
 	listings/mgb.tex \
-	listings/ronny-simple.tex \
-	listings/ronny-fancy.tex \
+	listings/b1.tex \
+	listings/b2.tex \
 	listings/triple-reset.tex
 
 TIKZ = \
@@ -43,8 +43,8 @@ TIKZ = \
 	tikz/diagram-gather-broadcast.tex \
 	tikz/model-central-counter.tex \
 	tikz/model-dissemination.tex \
-	tikz/model-ronny-simple.tex \
-	tikz/model-ronny-fancy.tex \
+	tikz/model-b1.tex \
+	tikz/model-b2.tex \
 	tikz/model-shared-memory.tex
 
 BIBLIOGRAPHY_SOURCE = bibliography.bib
