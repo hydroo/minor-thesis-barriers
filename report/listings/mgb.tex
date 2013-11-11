@@ -1,13 +1,13 @@
 \begin{center}
 \begin{minipage}{\textwidth}
-\begin{lstlisting}[mathescape, linewidth=11.0cm]
+\begin{lstlisting}[mathescape, linewidth=11.6cm]
 constants:        me:=$2^\mathit{threadIndex}$, full:=$\sum_{i=0}^{\mathit{threadCount}-1}2^i$
 local variables:  integer copy
-shared variables: integer first, second, done
-initialisation:   first := 0, second := 0, done := 2
-$\listingrule{11.0cm}$
+shared variables: integer first, second, current
+initialisation:   first := 0, second := 0, current := 1
+$\listingrule{11.6cm}$
 
-if done = 2 {
+if current = 1 {
 
 	do {
 		copy := (copy $\&$ $\sim$me) | first
@@ -15,12 +15,12 @@ if done = 2 {
 			copy  := copy | me
 			first := copy
 		}
-	} while copy $\neq$ full and done = 2
+	} while copy $\neq$ full and current = 1
 
-	done   := 1
-	second := 0
+	current := 2
+	second  := 0
 
-} else if done = 1 {
+} else if current = 2 {
 
 	do {
 		copy := (copy $\&$ $\sim$me) | second
@@ -28,10 +28,10 @@ if done = 2 {
 			copy := copy | me
 			second := copy
 		}
-	} while copy $\neq$ full and done = 1
+	} while copy $\neq$ full and current = 2
 
-	done  := 2
-	first := 0
+	current := 1
+	first   := 0
 }
 \end{lstlisting}
 \end{minipage}
