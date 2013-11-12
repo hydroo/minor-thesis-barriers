@@ -515,20 +515,20 @@ Figure~\ref{fig:pseudocode-b2} presents the B2 Barrier's RMA-style pseudocode. T
 	\label{fig:pseudocode-b2}
 \end{figure}
 
-Each element of the array \texttt{barrier} is a bit set holding the identifying bits of the processes, the owning process knows, have arrived and is located on its own process.
+Each array element of \texttt{barrier} is located in the local memory of the process with the matching index. These elements are bit sets representing the knowledge of the owning process about the arrival of others.
 
-When the first process arrives at the barrier it registers itself by setting its bit in its local array element and then continues to query the remote processes. It only acquires a remote array element, if it did not yet successfully do so, i.e. the remote process's bit is not set in the local bit set. If this is the case, it fetches the remote element and adds it to its own bit set, thus adding the arrival of all processes the remote end knows of to its own knowledge. This process is repeated until the local bit set indicates that all processes arrived.
+When the first process arrives at the barrier it registers itself by setting its bit in its local array element and then continues to query the remote processes. It only acquires a remote array element, if it did not yet successfully do so, i.e. the remote process's bit is not set in the local bit set. If this is the case, it fetches the remote element and adds it to its own, thus adding the arrival of all processes the remote end knows about to its own bit set. Querying the other processes is repeated until the bit set indicates that all processes arrived.
 
 Comparing this behaviour to the B1 Barrier, a process now locally keeps track of the processes that have arrived and only queries those where the owning process did not yet get an affirmative answer.
-The protocol does not maintain the differentiation between reading and writing phase since it keeps updating its local variable during in the loop.
+The protocol does not maintain the differentiation between reading and writing phase since it keeps updating its local variable during the loop.
 
 This protocol writes only locally, and reads only remotely. It does not rely on the existence of atomic operations.
 
-In comparison to other distributed memory barrier protocols, e.g. the Dissemination Barrier (Section~\ref{sssec:background-currently-used-distributed}), the communication pattern is largely random. The order of remote access depends on remote memory access latency, local computation and memory access speed and the exact time of arrival of each process. The effect of all these three factors combined is a practically random communication pattern.
+In comparison to other distributed memory barrier protocols, e.g. the Dissemination Barrier (Section~\ref{sssec:background-currently-used-distributed}), the communication pattern is largely random. The order of remote access depends on remote memory access latency, local computation and memory access speed, the exact time of arrival of each process and operating system influences like scheduling. The effect of these factors combined makes the order of communication practically random.
 
 Like the B1 Barrier this protocol is destructive. One can add resetting via the triple barrier method presented in Section~\ref{ssec:background-building-blocks}.
 
-Like the MGB Barrier this protocol is restricted to 64 processes. An extension to arrays of t bit sets can be implemented in the same way as described in Section~\ref{ssec:new-mgb}.
+Like the MGB Barrier this protocol is restricted to 64 processes. An extension to arrays of bit sets can be implemented in the same way as described in Section~\ref{ssec:new-mgb}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Analysis and comparison}
