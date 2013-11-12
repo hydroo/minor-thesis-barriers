@@ -488,7 +488,7 @@ The algorithm's pseudocode, executed individually on each thread taking part, is
 	\label{fig:pseudocode-b1}
 \end{figure}
 
-Upon arriving at the barrier a thread registers itself by setting its array element to true. He subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronization.
+Initially each array element is false. Upon arriving at the barrier a thread registers itself by setting its array element to true. He subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronization.
 
 Similar to the Central Counter Barrier the protocol can be split into two phases (Figure~\ref{fig:diagram-central-counter}).
 The two differences are that, because each thread writes only to its own array element, they don't require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
