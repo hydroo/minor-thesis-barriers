@@ -180,13 +180,13 @@ I hereby declare that I prepared this thesis independently and without use of to
 		\begin{itemize}
 			\item HLRS, year 2000
 			\item many calls,
-			\item 5.3\% of all time spent inside MPI calls, 0.7\% of all CPU time, estimated 1.6\% of the barrier execution time is actual synchronization, 100\% minus 1.6\% is waiting for other processes to arrive, because of unbalanced computation. Average 1852 microsecond per call. (Figure~13 in paper)
+			\item 5.3\% of all time spent inside MPI calls, 0.7\% of all CPU time, estimated 1.6\% of the barrier execution time is actual synchronisation, 100\% minus 1.6\% is waiting for other processes to arrive, because of unbalanced computation. Average 1852 microsecond per call. (Figure~13 in paper)
 			\item e.g. receive 12.9\% of all time spent inside MPI calls, 1.8\% of all cpu time, 33\% of the recv executation time is actual latency plus transfer time, 100\% minus 33\% is waiting for other processes to arrive, because of unbalanced comoputation. Average 498 microseconds per call.
 		\end{itemize}
-	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronization primitives, e.g. barriers in order to gain performance, where performance can be any important measure e.g. speed, energy efficiency, (say something about possible improvements that can still be made).
+	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronisation primitives, e.g. barriers in order to gain performance, where performance can be any important measure e.g. speed, energy efficiency, (say something about possible improvements that can still be made).
 	\item summarize pW/CS
 		\begin{itemize}
-			\item usually concurrent programs work in a deterministic fashion. That is the order and partners of remote synchronization (locally, programs are obviously mostly deterministic) are predetermined. The algorithm is executed in a very controlled fashion. Same holds for synchronization primitives themselves. Faulty behavior is avoided at great cost.
+			\item usually concurrent programs work in a deterministic fashion. That is the order and partners of remote synchronisation (locally, programs are obviously mostly deterministic) are predetermined. The algorithm is executed in a very controlled fashion. Same holds for synchronisation primitives themselves. Faulty behavior is avoided at great cost.
 			\item don't avoid inconsistency at all cost. Make errors detectable, or ignorable.
 			\item use the inherent randomness\cite{mcg09}, induced by caching, scheduling, randomness (ECC, flash access e.g.) at hardware level (jitter), or short: complexity of today's computer systems, in order to view concurrent accesses as really random. Thus we are able to apply probabilistic algorithms and analyse these algorithms using tools of probability theory.
 			\item design algorithms that have sufficiently high probability of success and tolerate faulty behaviour.
@@ -201,7 +201,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 			\item Assuming you have randomized measurements, the probability to reach certain states in the protocol is so low that they are not revealed.
 			\item Some parts of algorithms are performed in such a short time or need very exact preparation that it is practically impossible to analyse these parts using measurement. In this case model checking can be applied because it offers this granularity.
 			\item Modelling has of course its own short comings. For example the state explosion problem.
-			\item we can gain better quantitative insights into synchronization protocols by combining both measurement and model checking.
+			\item we can gain better quantitative insights into synchronisation protocols by combining both measurement and model checking.
 		\end{itemize}
 	\item briefly explain the report structure
 		\begin{itemize}
@@ -261,7 +261,7 @@ Aside from implementing barriers in software vendors can wire a barrier implemen
 \label{sssec:background-means-distributed}
 A parallel program for a distributed memory architecture consists of multiple \emph{processes}. Each process has its own address space and is therefore unable to directly share memory with other processes.
 
-First we will give an overview of general ways to implement synchronization primitives on distributed memory systems followed by an analysis of one specific distributed memory programming standard.
+First we will give an overview of general ways to implement synchronisation primitives on distributed memory systems followed by an analysis of one specific distributed memory programming standard.
 
 One way to exchange information between two processes is via \emph{synchronous message passing}. Two processes meet at a point in time, exchange information, then part and continue their computational tasks. This method requires the involved peers to wait for each other, buffer and queue information and send it via network.
 
@@ -273,7 +273,7 @@ Due to its one-sided nature RMA incurs less overhead than the two previous techn
 
 Hardware support for barriers in distributed memory systems is widespread especially in high-performance computing. Examples include the Earth Simulator~\cite{earthsimulator}, IBM Blue Gene/L~\cite{bluegenel}, IBM Blue Gene/Q~\cite{bluegeneq} and a low-cost FPGA-based system~\cite{hoefler2006b}
 
-Another interesting and seemingly untested approach is to use lossy communication channels for developing synchronization protocols. Hardware is always erroneous. For example network packages conflict, packages drop, packages are corrupted or connections drop all the time. Reliability increasing techniques and protocols such as the Transmission Control Protocol (TCP), that are used to to mitigate these errors, incur a great performance penalty for transmitting short messages. TCP for example creates comparatively huge packages for small amounts of data, and each transmitted package has to be acknowledged by the receiver. Checking for flipped bits in the package adds further latency.
+Another interesting and seemingly untested approach is to use lossy communication channels for developing synchronisation protocols. Hardware is always erroneous. For example network packages conflict, packages drop, packages are corrupted or connections drop all the time. Reliability increasing techniques and protocols such as the Transmission Control Protocol (TCP), that are used to to mitigate these errors, incur a great performance penalty for transmitting short messages. TCP for example creates comparatively huge packages for small amounts of data, and each transmitted package has to be acknowledged by the receiver. Checking for flipped bits in the package adds further latency.
 If one would instead craft algorithms so that they don't require 100\% reliable connections, further performance improvements are conceivable.
 Two ways one could implement such algorithms are via the User Datagram Protocol (UDP)~\cite{udp} and InfiniBand's unreliable connections~\cite{infiniband}.
 
@@ -298,19 +298,19 @@ Upon creating a window a number of restrictions regarding the use of the window 
 
 Depending on the underlying hardware and MPI implementation there are two different memory models. A window may either have the \emph{separate} or the \emph{unified} model. The separate model states that the memory that is visible to the peers and the memory that is visible to the local process is not the same and might therefore not automatically update between these two copies. That means a change by a peer to one process's memory might not be made visible. This process has to manually update its local copy in order to see the change. In contrast the unified model makes sure that the two copies are eventually updated. Therefore manual refreshing is unnecessary. This differentiation is a direct result of trying to support many different hardware configurations.
 
-Before going into the details of window synchronisation we have to introduce the concept of \emph{epochs}. An epoch is a period between two window synchronization calls. RMA operations like \emph{put}, \emph{get}, \emph{accumulate} may only be used inside an epoch. Epochs are used to accumulate multiple operations to one larger transfer in order to achieve better efficiency.
+Before going into the details of window synchronisation we have to introduce the concept of \emph{epochs}. An epoch is a period between two window synchronisation calls. RMA operations like \emph{put}, \emph{get}, \emph{accumulate} may only be used inside an epoch. Epochs are used to accumulate multiple operations to one larger transfer in order to achieve better efficiency.
 
-MPI differentiates between \emph{active} and \emph{passive} target communication. In active target communication all peers are actively involved in window synchronization, whereas in passive target communication only one side's activity is required.
+MPI differentiates between \emph{active} and \emph{passive} target communication. In active target communication all peers are actively involved in window synchronisation, whereas in passive target communication only one side's activity is required.
 
-One way to synchronize a window is via the \emph{fence} operation. A fence is a collective operation among all window group members that makes sure all outstanding RMA requests on this window are finished before the operation returns. It implies a full barrier synchronization.
+One way to synchronise a window is via the \emph{fence} operation. A fence is a collective operation among all window group members that makes sure all outstanding RMA requests on this window are finished before the operation returns. It implies a full barrier synchronisation.
 
-A more fine-grained instance of active target communication is via the operations \emph{start}, \emph{complete}, \emph{post} and \emph{wait}. Before issuing any remote access calls the issuing process first has to advertise his intention through the start operation. Once he is finished he will invoke the complete operation to announce that his transmission is complete. The receiving end similarly issues post and wait to expose and synchronise its memory. It is allowed to access his window's local memory meanwhile. In contrast to a fence operation one can restrict such synchronization to arbitrary processes of the window.
+A more fine-grained instance of active target communication is via the operations \emph{start}, \emph{complete}, \emph{post} and \emph{wait}. Before issuing any remote access calls the issuing process first has to advertise his intention through the start operation. Once he is finished he will invoke the complete operation to announce that his transmission is complete. The receiving end similarly issues post and wait to expose and synchronise its memory. It is allowed to access his window's local memory meanwhile. In contrast to a fence operation one can restrict such synchronisation to arbitrary processes of the window.
 
 The \emph{lock} and \emph{unlock} operations facilitate one way of passive target communication. Through these two functions one can block all access to a chunk of remote memory for all other window members. Between lock and unlock the process can then issue remote memory access operations without being interfered.
 
-Another method to synchronize memory passively is through \emph{flush}. A flush makes sure all outstanding RMA calls, issued by the caller, are completed before returning. One can choose if the operations have to be completed only at the issuer's side or on the receiver's side as well.
+Another method to synchronise memory passively is through \emph{flush}. A flush makes sure all outstanding RMA calls, issued by the caller, are completed before returning. One can choose if the operations have to be completed only at the issuer's side or on the receiver's side as well.
 
-Window synchronization can be optimized through giving the implementation information about which operations are not used during the epoch and what happens before and after this synchronization.
+Window synchronisation can be optimized through giving the implementation information about which operations are not used during the epoch and what happens before and after this synchronisation.
 
 Inside an epoch one may issue remote memory access operations. The two simple ones are \emph{put} and \emph{get}. Memory access through put and get appears unordered inside an epoch.
 Furthermore one can use atomic operations like \emph{accumulate}, \emph{fetch-and-op} or \emph{compare-and-swap}, with the intuitive semantic and where \emph{op} is a placeholder for various operations. The default global visibility order of atomic operations is sequentially consistent. When creating a window one can weaken this by, for example, allowing remote write operations to overtake remote read operations. Any combination of overtaking between reads, writes or between equal operations can be allowed.
@@ -323,7 +323,7 @@ Remote memory access in MPI is subject to a number of restrictions:
 	\item The outcome of concurrent local and remote access to the same location inside an epoch is undefined.
 	\item The outcome of a single process issuing multiple put operations to the same location inside an epoch is undefined.
 \end{itemize}
-Therefore the only way to make sure that data is correctly written or read is through atomic operations or isolating access to the same location with costly window synchronization operations.
+Therefore the only way to make sure that data is correctly written or read is through atomic operations or isolating access to the same location with costly window synchronisation operations.
 Normally a processor commits 32 or 64 bit to main memory atomically, and in the remainder of this thesis we will assume this is the case.
 Therefore these restrictions make sense for buffers at sizes above this, because concurrent memory access of interfering operations might overlap and the outcome is then indeed undefined.
 For amounts of memory below this threshold we wish to have a semantic that is more specific. For example if two puts of at most 64 bits are concurrently issued to the same location, the outcome is that of the last put committed. Since this is not the case, MPI's restrictive RMA semantic makes it unsuitable to implement barrier algorithms, based on pW/CS's non-determinism ideas, on top of it.
@@ -333,7 +333,7 @@ Shared memory barriers usually rely on atomic operations. Most distributed memor
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Currently used barrier protocols}
 \label{ssec:background-currently-used}
-Having surveyed the tools for implementing synchronization primitives we will now examine the barrier protocols which power today's implementations for both shared and distributed memory systems.
+Having surveyed the tools for implementing synchronisation primitives we will now examine the barrier protocols which power today's implementations for both shared and distributed memory systems.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Shared memory systems}
@@ -459,8 +459,8 @@ The protocol consists of two symmetric sub-barriers. It uses \texttt{current}, a
 Through \texttt{first} and \texttt{second} the barrier keeps track of which threads have arrived.
 The variable \texttt{copy} is a local copy of either \texttt{first} or \texttt{second}.
 A thread commits itself to \texttt{first} or \texttt{second} by setting its respective bit to 1. In the pseudocode we implement this bit set behaviour through integers and working with powers of two. If all threads committed themselves to one of the sub-barriers, it is a full bit set equal to the constant \texttt{full}.
-All threads participating in the barrier synchronization enter the same of the two parts.
-Inside a loop participants try to synchronize. When successful the barrier is reset through the two subsequent assignments of \texttt{current} and either \texttt{first} or \texttt{second}.
+All threads participating in the barrier synchronisation enter the same of the two parts.
+Inside a loop participants try to synchronise. When successful the barrier is reset through the two subsequent assignments of \texttt{current} and either \texttt{first} or \texttt{second}.
 
 Initially \texttt{first} and \texttt{second} are zero, and \texttt{current} is one. When a thread arrives at the barrier it will enter the upper if-branch. It then asks which threads have already arrived, adds himself to the acquired bit set, and stores it back to the variable \texttt{first}.
 He then repeatedly polls \texttt{first} in order to find out if his commitment attempt has been overwritten, i.e. its bit is not set anymore, by another thread's concurrently issued write operation, and secondly to determine whether the barrier is completed. The upper barrier is completed, if either \texttt{first} equals \texttt{full} or \texttt{current} is 2. The first thread to realise that \texttt{first} has been set to \texttt{full} will exit the loop, set \texttt{current} to 2 and continue his computational work. Subsequently all other threads eventually leave the barrier.
@@ -486,7 +486,7 @@ The algorithm's pseudocode, executed individually on each thread taking part, is
 	\label{fig:pseudocode-b1}
 \end{figure}
 
-Initially each array element is false. Upon arriving at the barrier a thread registers itself by setting its array element to true. He subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronization.
+Initially each array element is false. Upon arriving at the barrier a thread registers itself by setting its array element to true. He subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronisation.
 
 Similar to the Central Counter Barrier the protocol can be split into two phases (Figure~\ref{fig:diagram-central-counter}).
 The two differences are that, because each thread writes only to its own array element, they don't require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
@@ -751,8 +751,8 @@ In the distributed memory scenario we are also interested in the remote access b
 	\item PRISM\cite{prism, knp09} for quantitative analysis
 	\item in the following graphs we will use control flow diagrams and CTMCs
 	\item The CTMCs of the protocols will be composed of multiple modules.
-	\item synchronization between modules on the CTMC level is done via synchronizing actions.
-	\item composed modules are executed interleaved except if transitions require synchronizing actions. A synchronizing action is an action that can be issued by at least two modules. A transition with such an action can only fire if all modules, that are able to fire this action eventually, are presently in a state where they can fire it. The rate of such a transition is determined by any one module. For each synchronization action, in our case, only one module will specify a rate for this action.
+	\item synchronisation between modules on the CTMC level is done via synchronising actions.
+	\item composed modules are executed interleaved except if transitions require synchronising actions. A synchronising action is an action that can be issued by at least two modules. A transition with such an action can only fire if all modules, that are able to fire this action eventually, are presently in a state where they can fire it. The rate of such a transition is determined by any one module. For each synchronisation action, in our case, only one module will specify a rate for this action.
 	\item This corresponds to the following SOS rules
 	\item If no other module uses the action $\alpha$
 		\begin{center}
@@ -772,13 +772,13 @@ In the distributed memory scenario we are also interested in the remote access b
 \begin{itemize}
 	\item todo reason why modelling cache? (very short. Has been mentioned above)
 		\begin{itemize}
-			\item memory access determines performance of synchronization protocols
+			\item memory access determines performance of synchronisation protocols
 			\item memory access is cached so that effectively we only deal with cache latency
 		\end{itemize}
 	\item shared memory variable encapsulated in own CTMC modules.
 	\item We identify a variable with the cache line it resides on.
 	\item each thread has one copy of such a cache line.
-	\item synchronization between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronizing actions. The triggering thread of a cache operation determines the rate of the operation. For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between the two states. Either action can trigger a transition between these two states.
+	\item synchronisation between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronising actions. The triggering thread of a cache operation determines the rate of the operation. For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between the two states. Either action can trigger a transition between these two states.
 	\item we use an MSI cache coherency protocol extended by support for atomic operations. MSI model is a basic cache model and explanations on it can readily be found online\cite{msi}.
 	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but other threads may a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked from access through other modules. Figure~\ref{fig:model-shared-memory} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
 	\item CTMC Figure~\ref{fig:model-shared-memory}
@@ -810,7 +810,7 @@ In the distributed memory scenario we are also interested in the remote access b
 			\label{fig:model-central-counter}
 		\end{figure}
 	\item rates for reading writing and atomic operations are determined by the module for the shared variable \texttt{barrier}
-	\item the synchronization to the shared variable module is hinted at in grey
+	\item the synchronisation to the shared variable module is hinted at in grey
 	\item The control flow has been augmented by one rate that the resulting CTMC will use. $\lambda_{work}$ is the work rate, meaning the time spent doing actual work. It is used to add an initial distribution to the model so that we can control how the arrival times of the threads at the barrier are distributed. In particular not all threads arrive at the exact same instant in time at the barrier, which is an extreme case.
 	\item atomic op consists of multiple smaller transitions: begin atomic (locks the variable), read, decrement, write, end atomic (releases the lock).
 	\item functional model does resetting and repetition. Three barriers, as described in~\ref{ssec:background-building-blocks}. (if you did not describe it there, you have to do it here)
@@ -853,7 +853,7 @@ In the distributed memory scenario we are also interested in the remote access b
 	\item we assume all local operations to be much quicker, ten to a thousand times, than remote operations. Therefore we assign the rate $\lambda_c$ (one CPU cycle) to local operations. $\lambda_p$, which is assigned to remote write (put) operations, is assigned a rate of $\frac{1}{100}$. This value is, like the shared memory rates, hardware-dependent. For simplicity's sake we therefore assume a remote transfer to take 100 cycles.
 	\item one could make this more fine grained by introducing separate rates for local reading and writing.
 	\item \texttt{to} and \texttt{from} are shorthands for \texttt{processIndex $\pm$ dist (mod processCount)}
-	\item In the CTMC model, resulting from unwinding this control flow diagram, a put onto a remote process is represented as a synchronized action, so the target process stores the new value in its CTMC module.
+	\item In the CTMC model, resulting from unwinding this control flow diagram, a put onto a remote process is represented as a synchronised action, so the target process stores the new value in its CTMC module.
 	\item functional model does resetting and repetition with a counter instead of bools as described in Section~\ref{ssec:background-building-blocks}.
 \end{itemize}
 
@@ -1278,7 +1278,7 @@ In the distributed memory scenario we are also interested in the remote access b
 			\item "It is important to separate objective facts clearly from their discussion"
 		\end{itemize}
 
-	\item all analysed barriers are functionally correct in the sense that they indeed perform a barrier synchronization.
+	\item all analysed barriers are functionally correct in the sense that they indeed perform a barrier synchronisation.
 	\item all shown barriers finish reasonably quick.
 	\item all considered barriers use a reasonable amount of energy.
 
@@ -1312,7 +1312,7 @@ Conclusion:
 	\item We presented three new barriers, two of which show promise and we therefore conclude that there exists potential to improve barrier protocols.
 	\item To achieve the shown performance, both new barriers do not use a fixed communication pattern, as today's barrier algorithms do, but rely on randomness to yield better results. This is one of the fundamental principles of pW/CS and shows that it is useful.
 	\item Model checking enabled us to look into barrier algorithms at a more fine-grained level than measurement-based methods could hope to.
-	\item We demonstrated the aptitude of model checking as a method for analysing synchronization protocols and algorithms in general.
+	\item We demonstrated the aptitude of model checking as a method for analysing synchronisation protocols and algorithms in general.
 \end{itemize}
 
 Future work:
