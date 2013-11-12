@@ -555,18 +555,18 @@ In the distributed memory scenario we are also interested in the remote access b
 %%%%%%%%%%%%%%%%%%%%
 \paragraph{Shared memory barriers}
 \label{sssec:analysis-general-shared}
-\begin{itemize}
-	\item don't talk cache specifics, because we have not given an introduction to MSI. Express yourself in simple terms.
-	\item ref algorithms
-	\item make sure that people understand it is about shared read/write, not local variables.
-	\item PHASES: both algorithms are performed in two phases. A writing phase and a reading phase.
-	\item In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations will be queued (because atomic ops on a single variable). On the other hand the B1 Barrier allocates one cache line per array element. Thus all writes to shared memory can be executed in parallel. If all threads arrive at the same instant, writing can be sped up to a factor of $\mathit{threadCount}$ in comparison to executing serialized write operations. In more balanced scenarios this effect diminishes.
-	\item The reading phase of the Central Counter Barrier reads a single variable repeatedly. The cache line this variable resides on will be invalidated for each core exactly $\mathit{threadCount} - 1$ times (disregarding outside influences) ((, thus each core fetches the variable at most $\mathit{threadCount} - 1$ times)).
-	\item The reading phase of the B1 Barrier needs to read each array element once until it can make a decision whether to leave or repeat the loop. Each array element is invalidated exactly once. Thus each array element, from the viewpoint of one thread, has to be fetched from memory at most twice. From then on it is cached and quickly accessible.
-	\item the Central Counter Barrier has the obvious advantage in this phase. How big this advantage is depends heavily on the underlying hardware. For example if the cache line prefetcher predicts the access pattern of the reading phase of the B1 Barrier, those reads can be executed in parallel. (Vorsicht. Evtl weglassen)
-	\item The Central Counter Barrier is quicker during busy waiting, whereas the B1 Barrier barrier performs well during writing. We attempt to quantify the effects of this behaviour in the following subsections.
-	\item MEMORY: the Central Counter barrier needs a logarithmic amount of memory in the number of threads (i.e. 64 bits, for up to $2^{64}$ threads), whereas B1 Barrier needs a linear amount -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes. This looks like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only about 32KiB of memory would be used. 64 bytes per thread. Furthermore one thread team needs only one barrier and repeat it. There would be no benefit in allocating the memory for more than one.
-\end{itemize}
+% - don't talk cache specifics, because we have not given an introduction to MSI. Express yourself in simple terms.
+% - make sure that people understand it is about shared read/write, not local variables.
+
+The Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) and the B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) are both divided into two phases: the reading and the writing phase.
+
+In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations are serialised, because atomic operations on a single variable are not executed in parallel. On the other hand the B1 Barrier allocates one array element per thread. Therefore all write operations can be executed concurrently. If all threads arrive at the same instant, the commitment of all threads takes only take as long as one write operation does, therefore speeding up this process by a factor of $n$, where $n$ is the number of threads participating. In a more balanced scenario, i.e. processes arrive in intervals, this advantage over the Central Counter Barrier diminishes.
+
+During the reading phase of the Central Counter Barrier a thread fetches a single variable repeatedly until it has the desired value. A thread in the B1 Barrier needs to read between 1 and $n$ array elements before it can leave the loop.
+
+The Central Counter Barrier has the edge in the reading phase, whereas the B1 Barrier performs well during writing. We attempt to quantify the effect of this behaviour in Section~\ref{ssec:analysis-modelchecking}.
+
+The memory required by the Central Counter Barrier is logarithmic in the number of threads. With a 64-bit counter up to $2^{64}$ threads can be synchronised. The B1 Barrier uses a linear amount of memory -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes large. This might seem like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only 32 KiB is used.
 
 %%%%%%%%%%%%%%%%%%%%
 \paragraph{Distributed memory barriers}
