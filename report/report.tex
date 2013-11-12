@@ -378,7 +378,7 @@ The basic barrier algorithm used in it is the same as for GNU~OpenMP. One main d
 In this section we present the barrier algorithms that are used in the two major open source MPI implementations, namely Open~MPI~\cite{openmpi} and MPICH~\cite{mpich}. We restrict our analysis to MPI for the same reasons we only considered MPI in Section~\ref{sssec:background-means-distributed}.
 
 % ompi/mca/coll/tuned/coll_tuned_barrier.c : ompi_coll_tuned_barrier_intra_recursivedoubling, ompi_coll_tuned_barrier_intra_bruck, ompi/mca/coll/tuned/coll_tuned_decision_fixed.c
-Open~MPI distinguishes between process counts that are powers of two and which are not. If it is a power of two, a \emph{recursive doubling} barrier is used. A detailed explanation of this protocol can be found in \cite{hoefler2005}. For non-power of two process counts Open~MPI uses the \emph{Dissemination Barrier}, introduced by Hensgen, Finkel and Manber in 1988~\cite{hensgen1988}.
+Open~MPI distinguishes between process counts that are powers of two and which are not. If it is a power of two, a \emph{recursive doubling} barrier is used. A detailed explanation of this protocol can be found in \cite{hoefler2005}. For non-power-of-two process counts Open~MPI uses the \emph{Dissemination Barrier}, introduced by Hensgen, Finkel and Manber in 1988~\cite{hensgen1988}.
 
 Figure~\ref{fig:pseudocode-dissemination} presents the pseudocode of this algorithm, which is executed on each process individually. A process is identified by its \emph{process index}, which is a number between 0 and $\mathit{processCount} - 1$. For readability reasons we have chosen an RMA-esque representation of the protocol, although it can similarly be implemented using message passing techniques.
 In contrast to the Central Counter Barrier, the Dissemination Barrier uses not only one variable but an array of boolean variables per process involved. Each of these arrays is located in the local memory of its owning process and is initially set to false.
@@ -699,7 +699,7 @@ Table~\ref{tab:table-dissemination-progress} illustrates which process knows of 
 \label{tab:table-dissemination-progress}
 \end{table}
 
-Because the number of blocked processes doubles each round the ratio of stuck to not-stuck processes is worse for non-power of two than it is for power of two process counts.
+Because the number of blocked processes doubles each round the ratio of stuck to not-stuck processes is worse for non-power-of-two than it is for power of two process counts.
 
 The B2 Barrier does not work in rounds and does not have designated communication partners. Therefore it fetches all other process's arrival notifications while one is missing.
 
@@ -1255,7 +1255,7 @@ We attempt to quantify the influence of this behaviour on the execution time and
 					\item as expected the B2 Barrier issues more remote transactions than the Dissemination Barrier.
 					\item it is still relatively low.
 					\item especially the number of failed remote accesses is low in comparison to the number of successful ones.
-					\item For process count 5, and other non-power of two process counts the situation might turn out better for the B2 Barrier, because of the additional rounds and thus additional transfers needed.
+					\item For process count 5, and other non-power-of-two process counts the situation might turn out better for the B2 Barrier, because of the additional rounds and thus additional transfers needed.
 				\end{itemize}
 			\item work=1000. Table~\ref{tab:d2-transfers-1000}
 				\begin{table}[htbp]
@@ -1304,7 +1304,7 @@ We attempt to quantify the influence of this behaviour on the execution time and
 	\item distributed memory
 	\item the B2 Barrier issues not much more remote operations than the Dissemination barrier despite busy waiting on remote memory.
 	\item as conjectured in Section~\ref{sssec:analysis-general-distributed} the Dissemination barrier wastes substantial time when processes arrive even in small intervals.
-	\item for non-power of two process counts the Dissemination barrier wastes substantial time and energy due to its $\lceil \log_2 n \rceil$ number of rounds and $n \cdot \lceil \log_2 n \rceil$ number of remote operations.
+	\item for non-power-of-two process counts the Dissemination barrier wastes substantial time and energy due to its $\lceil \log_2 n \rceil$ number of rounds and $n \cdot \lceil \log_2 n \rceil$ number of remote operations.
 	\item B2 outperforms the Dissemination barrier in all scenarios.
 
 	\item CTMC model checking semantic for interleaving modules is different from the intuitive notion of parallel execution. Therefore one has to exercise caution when interpreting model checking results.
