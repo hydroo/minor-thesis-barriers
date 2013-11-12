@@ -571,127 +571,141 @@ The memory required by the Central Counter Barrier is logarithmic in the number 
 %%%%%%%%%%%%%%%%%%%%
 \paragraph{Distributed memory barriers}
 \label{sssec:analysis-general-distributed}
-\begin{itemize}
-	\item ref algorithms
-	\item For the Dissemination Barrier the number of remote writes is exactly $n \cdot \lceil \log _2~n \rceil$ -- $n$ processes times $\lceil \log _2~n \rceil$ rounds. Dissemination remotely writes more than the minimum needed in order to gain speed over the straightforward gather + broadcast approach, which is, illustrated in Figure~\ref{fig:diagram-gather-broadcast}, $2 \cdot (n-1)$ writes in $2 \cdot  \lceil \log _2~n \rceil$ rounds.
-		\begin{figure}[htbp]
-			\centering
-			\input{tikz/diagram-gather-broadcast}
-			\caption{Communication pattern of a basic gather and broadcast barrier}
-			\label{fig:diagram-gather-broadcast}
-		\end{figure}
+In this section we assume $n$ to be the number of processes participating in the barrier synchronisation.
 
-	\item Reading is only done locally.
-	\item B2 Barrier needs between $2 \cdot (n-1)$ and $n \cdot (n-1)$ successful (non-zero) remote reads. Writing is only done locally. (perhaps add picture of n*(n-1), n*(n-1) might also be completely wrong)
-	\item failed remote gets. Maybe give a rough estimate of the lost bandwidth.
-	\item Dissemination needs exactly $\lceil \log _2~n \rceil$ rounds. The B2 Barrier does not have rounds and tries reading from the next process regardless of whether a remote read has been successful (non-zero) where the Dissemination Barrier waits for its designated communication partner.
-	\item needing $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. This especially means that from $n$, where $n$ is a power of 2 threads, to $n+1$ number of rounds increases by 1. Therefore, for core counts other that are not a power of two, the performance degrades. Super wasteful shows a more balanced picture with increasing core counts where Dissemination has jumps at power of two core counts. Benchmarks on shared memory have shown this to be true.
-	\item MEMORY: The memory requirements of the Dissemination Barrier and the B2 Barrier are the same. Each process uses some local memory to keep track of the other processes. The exact number depends on the implementation. Theoretically $\lceil \log _2~n \rceil$ bits per process for both algorithms suffice. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n \cdot n$ bits, but, since each thread communicates only with $\lceil \log _2~n \rceil$ other threads, a modified index calculation would allow it to work with $n \cdot \lceil \log _2 ~n \rceil$ bits. The memory usage is minuscule either way.
-	\item the progress problem
-		\begin{itemize}
-			\item normal Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed}. All processes arrive timely.
-			\item more normal that one or more processes are missing.
-			\item how much progress can a barrier make while not all processes have arrived?
-			\item suppose process 4 has not entered. Modified diagram of the progress through the rounds: Figure~\ref{fig:diagram-dissemination-progress}
-				\begin{figure}[htbp]
-					\centering
-					\input{tikz/diagram-dissemination-progress}
-					\caption{Progression through the rounds of the Dissemination Barrier with process four not having entered}
-					\label{fig:diagram-dissemination-progress}
-				\end{figure}
-			\item process 4 does not notify process 5, therefore in the next round process 5 cannot notify process 7 and so on.
-			\item number of blocked processes doubles each round.
-			\item once process 4 arrives each one of these blocked processes then needs to finish the still to do rounds until the protocol succeeds
-			\item who knows of whose arrival Figure~\ref{tab:table-dissemination-progress}
-				\begin{table}[htbp]
-					\centering
-					\caption{Which process knows of which other's arrival}
-					\vspace{0.2cm}
-					\begin{minipage}{0.42\linewidth}
-						\textbf{After round 1:} \\
-						$(n-1) + (n-1) = 14$ \\
-						\vspace{-0.1cm} \\
-						\resizebox{5cm}{!}{
-							\begin{tabular}{c | c c c c c c c c}
-								  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
-								\hline
-								0 & $\times$ &          &          &          &         &          &          & $\times$ \\
-								1 & $\times$ & $\times$ &          &          &         &          &          &          \\
-								2 &          & $\times$ & $\times$ &          &         &          &          &          \\
-								3 &          &          & $\times$ & $\times$ &         &          &          &          \\
-								4 &          &          &          & $\times$ &         &          &          &          \\
-								5 &          &          &          &          &         & $\times$ &          &          \\
-								6 &          &          &          &          &         & $\times$ & $\times$ &          \\
-								7 &          &          &          &          &         &          & $\times$ & $\times$ \\
-							\end{tabular}
-						}
-					\end{minipage}
-					\begin{minipage}{0.42\linewidth}
-						\textbf{After round 2:} \\
-						$14 + 6 \cdot 2 = 26$ \\
-						\vspace{-0.1cm} \\
-						\resizebox{5cm}{!}{
-							\begin{tabular}{c | c c c c c c c c}
-								  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
-								\hline
-								0 & $\times$ &          &          &          &   & $\times$ & $\times$ & $\times$ \\
-								1 & $\times$ & $\times$ &          &          &   &          & $\times$ & $\times$ \\
-								2 & $\times$ & $\times$ & $\times$ &          &   &          &          & $\times$ \\
-								3 & $\times$ & $\times$ & $\times$ & $\times$ &   &          &          &          \\
-								4 &          & $\times$ & $\times$ & $\times$ &   &          &          &          \\
-								5 &          &          & $\times$ & $\times$ &   & $\times$ &          &          \\
-								6 &          &          &          &          &   & $\times$ & $\times$ &          \\
-								7 &          &          &          &          &   &          & $\times$ & $\times$ \\
-							\end{tabular}
-						}
-					\end{minipage}
-					\begin{minipage}{0.42\linewidth}
-						\vspace{0.3cm}
-						\textbf{After round 3}: \\
-						$26 + 4 \cdot 4 = 44$ \\
-						\vspace{-0.1cm} \\
-						\resizebox{5cm}{!}{
-							\begin{tabular}{c | c c c c c c c c}
-								  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
-								\hline
-								0 & $\times$ &          &          &          &        & $\times$ & $\times$ & $\times$ \\
-								1 & $\times$ & $\times$ &          &          &        &          & $\times$ & $\times$ \\
-								2 & $\times$ & $\times$ & $\times$ &          &        &          &          & $\times$ \\
-								3 & $\times$ & $\times$ & $\times$ & $\times$ &        &          &          &          \\
-								4 & $\times$ & $\times$ & $\times$ & $\times$ &        & $\times$ & $\times$ & $\times$ \\
-								5 & $\times$ & $\times$ & $\times$ & $\times$ &        & $\times$ & $\times$ & $\times$ \\
-								6 & $\times$ & $\times$ & $\times$ &          &        & $\times$ & $\times$ & $\times$ \\
-								7 & $\times$ & $\times$ & $\times$ & $\times$ &        &          & $\times$ & $\times$ \\
-							\end{tabular}
-						}
-					\end{minipage}
-					\begin{minipage}{0.42\linewidth}
-						\vspace{0.3cm}
-						\textbf{B2 Barrier:} \\
-						$(n-1) \cdot (n-1) = 49$ \\
-						\vspace{-0.1cm} \\
-						\resizebox{5cm}{!}{
-							\begin{tabular}{c | c c c c c c c c}
-								  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
-								\hline
-								0 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
-								1 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
-								2 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
-								3 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
-								4 &          &          &          &          &   &          &          &          \\
-								5 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
-								6 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
-								7 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
-							\end{tabular}
-						}
-					\end{minipage}
-					\label{tab:table-dissemination-progress}
-				\end{table}
-			\item for non-power of two process counts the effect worsens. Where for power of two process counts $n-1$ remote writes need to be executed before the barrier is finished, non-power of two process counts need to issue $2^{\lceil \log_2 n \rceil} - 1$ writes.
-			\item the B2 Barrier does need multiple rounds to finish. The last arriving thread can fetch all others from one other process. And all others need to do one more successful remote read. Therefore $n$ remote reads, which can be issued in parallel, are needed to complete the barrier.
-			\item quantifying this effect will be done in the following section.
-		\end{itemize}
-\end{itemize}
+The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) communicate very differently.
+
+The minimum number of remote access operations required to perform a barrier synchronisation is $2 \cdot (n-1)$. Figure~\ref{fig:diagram-gather-broadcast} illustrates a simple gather and broadcast barrier using this number of operations. It does so in $2 \cdot  \lceil \log _2~n \rceil$ rounds. All operations inside a round can be executed in parallel. However rounds themselves are completed serially. In order to lower the number of rounds to $\lceil \log _2~n \rceil$ the Dissemination Barrier issues $n \cdot \lceil \log _2~n \rceil$, more than the minimum needed, remote access operations. The added communication overhead is traded for a decrease in overall execution time.
+
+\begin{figure}[htbp]
+	\centering
+	\input{tikz/diagram-gather-broadcast}
+	\caption{Communication pattern of the gather and broadcast barrier}
+	\label{fig:diagram-gather-broadcast}
+\end{figure}
+
+Because of its random communication pattern there is no fixed number of remote accesses issued by the B2 Barrier. The number of successful, non-zero, remote reads, lies between $2 \cdot (n-1)$ and $n \cdot (n-1)$. The amount of unsuccessful reads is not limited, since the loop remotely polls other processes until all arrive.
+
+Where a process in the Dissemination Barrier waits for one designated communication partner each round, the B2 Barrier does not wait for a single process but instead continues to poll the next one.
+
+Requiring $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. Especially from $n$, where $n$ is a power of two, to $n+1$ processes the number of rounds increases by 1. Therefore the runtime is expected to show a stair-esque behaviour. Every time the number of rounds increases, the duration of the barrier increases by a large step, whereas adding more processes to the same number of rounds adds little overhead.
+In contrast to this the execution time of the B2 Barrier is distributed evenly.
+
+Synchronisation using the Dissemination and B2 Barrier requires the same amount of memory. In principle $\lceil \log _2~n \rceil$ bits per process suffice for both algorithms. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n^2$ bits, but, since each process receives from only $\lceil \log _2~n \rceil$ other processes, a modified array index calculation would allow the protocol to work with $n \cdot \lceil \log _2 ~n \rceil$ bits per process.
+
+Assuming all processes arrive at a similar time, Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed} illustrates the progression through the rounds of the Dissemination Barrier. But more often than not, processes arrive in large intervals, compared to the execution time of a barrier itself.
+Therefore some processes advance through the rounds before every process arrived.
+But how far exactly can the protocol progress without all processes?
+
+Suppose every process but the fourth has entered the barrier. Figure~\ref{fig:diagram-dissemination-progress} then shows the advance of the processes through the rounds.
+
+\begin{figure}[htbp]
+	\centering
+	\input{tikz/diagram-dissemination-progress}
+	\caption{Progression through the rounds of the Dissemination Barrier with process four not having entered}
+	\label{fig:diagram-dissemination-progress}
+\end{figure}
+
+Every dotted line indicates a remote write operation that does not happen. Processes with dotted circles have not reached the current round.
+
+Since process four does not notify process five of its arrival, in the second round process four and five do not advertise their arrival to process six and zero.
+Therefore, the number of stuck processes doubles each round.
+Once process four enters, the rest of the communication through all three rounds is still to be completed until the processes may leave the barrier.
+
+Table~\ref{tab:table-dissemination-progress} illustrates which process knows of which other's arrival through the rounds and for the B2 Barrier. The formula below each subtable title indicates the number of processes that are known to have arrived.
+
+\begin{table}[htbp]
+\centering
+\caption{Which process knows of which other's arrival}
+\vspace{0.2cm}
+\begin{minipage}{0.42\linewidth}
+	\textbf{Diss. after round 1:} \\
+	$(n-1) + (n-1) = 14$ \\
+	\vspace{-0.1cm} \\
+	\resizebox{5cm}{!}{
+		\begin{tabular}{c | c c c c c c c c}
+			  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
+			\hline
+			0 & $\times$ &          &          &          &         &          &          & $\times$ \\
+			1 & $\times$ & $\times$ &          &          &         &          &          &          \\
+			2 &          & $\times$ & $\times$ &          &         &          &          &          \\
+			3 &          &          & $\times$ & $\times$ &         &          &          &          \\
+			4 &          &          &          & $\times$ &         &          &          &          \\
+			5 &          &          &          &          &         & $\times$ &          &          \\
+			6 &          &          &          &          &         & $\times$ & $\times$ &          \\
+			7 &          &          &          &          &         &          & $\times$ & $\times$ \\
+		\end{tabular}
+	}
+\end{minipage}
+\begin{minipage}{0.42\linewidth}
+	\textbf{Diss. after round 2:} \\
+	$14 + 6 \cdot 2 = 26$ \\
+	\vspace{-0.1cm} \\
+	\resizebox{5cm}{!}{
+		\begin{tabular}{c | c c c c c c c c}
+			  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
+			\hline
+			0 & $\times$ &          &          &          &   & $\times$ & $\times$ & $\times$ \\
+			1 & $\times$ & $\times$ &          &          &   &          & $\times$ & $\times$ \\
+			2 & $\times$ & $\times$ & $\times$ &          &   &          &          & $\times$ \\
+			3 & $\times$ & $\times$ & $\times$ & $\times$ &   &          &          &          \\
+			4 &          & $\times$ & $\times$ & $\times$ &   &          &          &          \\
+			5 &          &          & $\times$ & $\times$ &   & $\times$ &          &          \\
+			6 &          &          &          &          &   & $\times$ & $\times$ &          \\
+			7 &          &          &          &          &   &          & $\times$ & $\times$ \\
+		\end{tabular}
+	}
+\end{minipage}
+\begin{minipage}{0.42\linewidth}
+	\vspace{0.3cm}
+	\textbf{Diss. after round 3}: \\
+	$26 + 4 \cdot 4 = 44$ \\
+	\vspace{-0.1cm} \\
+	\resizebox{5cm}{!}{
+		\begin{tabular}{c | c c c c c c c c}
+			  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
+			\hline
+			0 & $\times$ &          &          &          &        & $\times$ & $\times$ & $\times$ \\
+			1 & $\times$ & $\times$ &          &          &        &          & $\times$ & $\times$ \\
+			2 & $\times$ & $\times$ & $\times$ &          &        &          &          & $\times$ \\
+			3 & $\times$ & $\times$ & $\times$ & $\times$ &        &          &          &          \\
+			4 & $\times$ & $\times$ & $\times$ & $\times$ &        & $\times$ & $\times$ & $\times$ \\
+			5 & $\times$ & $\times$ & $\times$ & $\times$ &        & $\times$ & $\times$ & $\times$ \\
+			6 & $\times$ & $\times$ & $\times$ &          &        & $\times$ & $\times$ & $\times$ \\
+			7 & $\times$ & $\times$ & $\times$ & $\times$ &        &          & $\times$ & $\times$ \\
+		\end{tabular}
+	}
+\end{minipage}
+\begin{minipage}{0.42\linewidth}
+	\vspace{0.3cm}
+	\textbf{B2 Barrier:} \\
+	$(n-1) \cdot (n-1) = 49$ \\
+	\vspace{-0.1cm} \\
+	\resizebox{5cm}{!}{
+		\begin{tabular}{c | c c c c c c c c}
+			  & 0        & 1        & 2        & 3        & 4 & 5        & 6        & 7 \\
+			\hline
+			0 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+			1 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+			2 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+			3 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+			4 &          &          &          &          &   &          &          &          \\
+			5 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+			6 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+			7 & $\times$ & $\times$ & $\times$ & $\times$ &   & $\times$ & $\times$ & $\times$ \\
+		\end{tabular}
+	}
+\end{minipage}
+\label{tab:table-dissemination-progress}
+\end{table}
+
+Because the number of blocked processes doubles each round the ratio of stuck to not-stuck processes is worse for non-power of two than it is for power of two process counts.
+
+The B2 Barrier does not work in rounds and does not have designated communication partners. Therefore it fetches all other process's arrival notifications while one is missing.
+
+When the last process arrives the Dissemination Barrier requires at least as many serial remote writes as there are rounds, whereas the B2 Barrier issues its remaining remote reads concurrently. The number of remaining remote access operations is $n$ for the B2 Barrier and $2^{\lceil \log_2~n \rceil} - 1$ for the Dissemination Barrier.
+
+We attempt to quantify the influence of this behaviour on the execution time and energy consumption in the following section.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Model checking}
