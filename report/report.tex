@@ -533,13 +533,16 @@ Like the MGB Barrier this protocol is restricted to 64 processes. An extension t
 \label{sec:analysis}
 \begin{itemize}
 	\item \todo maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
-	\item In this section we will evaluate one commonly used barrier for each shared memory and distributed memory architectures and pit them against one novel protocol in each category.
-	\item Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas the B1 and B2 Barrier show promise. Therefore we restrict our attention to the latter.
-	\item For the shared memory case the Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) is pitted against B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}).
-	\item For distributed memory architectures the Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) are compared. (explain choice with a few words? -- ref existing-currently-used?)
-	\item In our evaluations we always assume no back-off strategy is used. Each algorithm polls busily on the requested variable until the desired value is read. Threads do not wait sleeping or use callback mechanisms. The topic of back-off strategies is a large and intricate subject in its own right and goes beyond the scope of this thesis.
-	\item The analysis is split into two parts: general properties (bla, perceived without measuring, bla), model checking.
 \end{itemize}
+In this section we will evaluate one commonly used barrier for each shared and distributed memory architectures. In both categories we compare the chosen barrier protocol to one of our newly presented ones.
+
+Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas the B1 and B2 Barrier show promise. Therefore we restrict our attention to these two.
+
+In the shared memory setting the Central Counter Barrier is pitted against the B1 Barrier. For the distributed memory case we compare the Dissemination to the B2 Barrier.
+
+In our evaluation we assume no back-off strategy is used. This means if a variable is repeatedly requested inside a loop, it is fetched as often as program execution speed allows. The topic of back-off strategies is a subject in its own right and goes beyond the scope of this thesis.
+
+The analysis is split into two parts. First we present properties, perceivable without measurement and modelling, that are inherent to the protocols. Second we employ model checking to quantify our observations and gain a deeper understanding of the chosen barriers.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{General properties}
