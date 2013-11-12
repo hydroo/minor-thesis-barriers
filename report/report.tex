@@ -241,7 +241,7 @@ A parallel program for a shared memory system consists of multiple threads of ex
 
 The straightforward way to share information between threads is to \emph{load} from and \emph{store} to the same memory address.
 
-Furthermore most modern processors provide means to execute a small series of computations on a date while making the memory unavailable to other threads. They are called \emph{atomic operations}. Two examples are the \emph{test-and-set} and \emph{add-fetch} instructions. The former stores a value to an address if a given condition is fulfilled, the latter loads a date, adds a given value to it and stores it back.
+Furthermore most modern processors provide means to execute a small series of computations on a date while making the memory unavailable to other threads. They are called \emph{atomic operations}. Two examples are the \emph{test-and-set}- and \emph{add-fetch}-instruction. The former stores a value to an address if a given condition is fulfilled, the latter loads a date, adds a given value to it and stores it back.
 
 Without these operations parallel programming is much more difficult and error-prone, since concurrently issuing normal load and store operations can easily cause \emph{race conditions}. This convenience, on the other hand, comes at the cost of additional management overhead for the processor. To date shared memory systems are usually limited to 64 threads and less. Some high-performance computing implementations reach numbers of 512 threads. In comparison distributed memory systems can have over a million processing units.
 
