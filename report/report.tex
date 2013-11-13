@@ -572,9 +572,9 @@ The memory required by the Central Counter Barrier is logarithmic in the number 
 \label{sssec:analysis-general-distributed}
 In this section we assume $n$ to be the number of processes participating in the barrier synchronisation.
 
-The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) communicate very differently.
+The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} and \ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) communicate very differently.
 
-The minimum number of remote access operations required to perform a barrier synchronisation is $2 \cdot (n-1)$. Figure~\ref{fig:diagram-gather-broadcast} illustrates a simple gather and broadcast barrier using this number of operations. It does so in $2 \cdot  \lceil \log _2~n \rceil$ rounds. All operations inside a round can be executed in parallel. However rounds themselves are completed serially. In order to lower the number of rounds to $\lceil \log _2~n \rceil$ the Dissemination Barrier issues $n \cdot \lceil \log _2~n \rceil$, more than the minimum needed, remote access operations. The added communication overhead is traded for a decrease in overall execution time.
+The minimum number of remote access operations required to perform a barrier synchronisation is $2 \cdot (n-1)$. Figure~\ref{fig:diagram-gather-broadcast} illustrates a simple gather and broadcast  barrier (process zero gathers all arrival notifications and broadcasts to all processes when the barrier is complete) using this number of operations. It does so in $2 \cdot  \lceil \log _2~n \rceil$ rounds. All operations inside a round can be executed in parallel. However rounds themselves are completed serially. In order to lower the number of rounds to $\lceil \log _2~n \rceil$ the Dissemination Barrier issues $n \cdot \lceil \log _2~n \rceil$, more than the minimum needed, remote access operations. The added communication overhead is traded for a decrease in overall execution time.
 
 \begin{figure}[htbp]
 	\centering
@@ -606,12 +606,10 @@ Suppose every process but the fourth has entered the barrier. Figure~\ref{fig:di
 \end{figure}
 
 Every dotted line indicates a remote write operation that does not happen. Processes with dotted circles have not reached the current round.
+Since process four does not notify process five of its arrival, in the second round process four and five do not advertise their arrival to process six and zero. The number of stuck processes doubles each round.
+Once process four enters, the missing remote operations in all three rounds are still to be completed until the processes may leave the barrier.
 
-Since process four does not notify process five of its arrival, in the second round process four and five do not advertise their arrival to process six and zero.
-Therefore, the number of stuck processes doubles each round.
-Once process four enters, the rest of the communication through all three rounds is still to be completed until the processes may leave the barrier.
-
-Table~\ref{tab:table-dissemination-progress} illustrates which process knows of which other's arrival through the rounds and for the B2 Barrier. The formula below each subtable title indicates the number of processes that are known to have arrived.
+Table~\ref{tab:table-dissemination-progress} illustrates which process knows of which other's arrival through the rounds of the Dissemination Barrier and for the B2 Barrier. The formula below each subtable title indicates the number of processes that are known to have arrived.
 
 \begin{table}[htbp]
 \centering
@@ -700,9 +698,9 @@ Table~\ref{tab:table-dissemination-progress} illustrates which process knows of 
 
 Because the number of blocked processes doubles each round the ratio of stuck to not-stuck processes is worse for non-power-of-two than it is for power of two process counts.
 
-The B2 Barrier does not work in rounds and does not have designated communication partners. Therefore it fetches all other process's arrival notifications while one is missing.
+The B2 Barrier does not work in rounds and does not have designated communication partners. It therefore fetches all other process's arrival notifications while one is missing.
 
-When the last process arrives the Dissemination Barrier requires at least as many serial remote writes as there are rounds, whereas the B2 Barrier issues its remaining remote reads concurrently. The number of remaining remote access operations is $n$ for the B2 Barrier and $2^{\lceil \log_2~n \rceil} - 1$ for the Dissemination Barrier.
+When the last process arrives the Dissemination Barrier requires at least as many serial remote writes as there are rounds, whereas the B2 Barrier issues its remaining remote reads concurrently. The number of remaining remote access operations is $2^{\lceil \log_2~n \rceil} - 1$ for the Dissemination Barrier and $n$ for the B2 Barrier.
 
 We attempt to quantify the influence of this behaviour on the execution time and energy consumption in the following section.
 
