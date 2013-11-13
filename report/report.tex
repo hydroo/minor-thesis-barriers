@@ -707,9 +707,13 @@ We attempt to quantify the influence of this behaviour on the execution time and
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Model checking}
 \label{ssec:analysis-modelchecking}
-\begin{itemize}
-	\item SPIN\cite{spin, hol97}, PRISM\cite{prism, knp09}
-\end{itemize}
+The properties, we are interested in, can be divided into two broad categories: functional and quantitative properties. Functional properties describe the supposed behaviour of the barriers, where quantitative properties express conditions that rely on probabilistic aspects of the protocols, e.g. execution time.
+
+To check correctness of the barriers we model every instance where execution is random through non-deterministic choice. This yields a Markov decision process (MDP), which we then use a basis for automated analysis with the SPIN~\cite{spin, hol97} model checker.
+
+To model the inherent randomness of the algorithms we use exponential distributions. This way we obtain continuous-time Markov chains (CTMCs) which serve a basis for formal quantitative analysis using the PRISM~\cite{prism, knp09} model checker.
+
+Models are obtained in a compositional way, using action labels and global state to synchronise.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Preliminaries}
@@ -758,8 +762,8 @@ We attempt to quantify the influence of this behaviour on the execution time and
 	\item distinct models for functional and quantitative properties
 	\item because resetting and repetition only needed for functional properties + we can save state space by stripping the model of unnecessary information for the quantitative analysis
 	\item ordinary (non-stochastic) transition systems for functional models and CTMCs for quantitative models
-	\item Spin\cite{spin, hol97} for model checking functional properties
-	\item PRISM\cite{prism, knp09} for quantitative analysis
+	\item Spin\cite{spin, hol97} (already cites before) for model checking functional properties
+	\item PRISM\cite{prism, knp09} (already cited before) for quantitative analysis
 	\item in the following graphs we will use control flow diagrams and CTMCs
 	\item The CTMCs of the protocols will be composed of multiple modules.
 	\item synchronisation between modules on the CTMC level is done via synchronising actions.
