@@ -786,17 +786,20 @@ Analogous rules apply for more than two modules sharing an action label.
 %%%%%%%%%%
 \paragraph{Shared memory}
 \label{sssec:analysis-modelchecking-modelling-shared-memory}
+In order to exchange information threads write to and read from the same memory location.
+Memory access latency is very large in comparison to arithmetic operations.
+Because synchronisation is mainly about exchanging information between threads, the execution time of barrier protocols is dominated by memory access latency.
+
+Usually memory access is cached. That means repeatedly reading a value is quick, because the processor holds a copy of it near its execution units. When a cached value gets changed by another thread that shares it, the cached value needs to be thrown away because it will soon be outdated.
+In order to model execution time and energy consumption of a barrier protocol, we therefore model the cache behaviour of threads.
+
+We identify a shared variable with the cache line it resides on. A cache line is usually a 64 bytes large unit of contiguous memory to which all cache manipulation operations are applied as a whole. It increases the granularity of address space, which is usually one byte, to decrease management overhead for caching.
+Each thread that has access to this shared variable has one copy of such a cache line.
+Synchronisation between cache line copies and with other CTMC modules, like the actual algorithm to be modelled, is done via synchronising actions. The operation triggering thread's cache line copy determines the rate of the transition.
+For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between two states. Either action can trigger a transition between the states.
+As a cache coherency protocol we use the MSI protocol extended by support for atomic operations. The MSI model is a basic cache model and details about it can be found online, e.g.~\cite{msi}.
+
 \begin{itemize}
-	\item todo reason why modelling cache? (very short. Has been mentioned above)
-		\begin{itemize}
-			\item memory access determines performance of synchronisation protocols
-			\item memory access is cached so that effectively we only deal with cache latency
-		\end{itemize}
-	\item shared memory variable encapsulated in own CTMC modules.
-	\item We identify a variable with the cache line it resides on.
-	\item each thread has one copy of such a cache line.
-	\item synchronisation between cache line copies and with other modules of a model, like the actual program to be modelled, is done via synchronising actions. The triggering thread of a cache operation determines the rate of the operation. For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between the two states. Either action can trigger a transition between these two states.
-	\item we use an MSI cache coherency protocol extended by support for atomic operations. MSI model is a basic cache model and explanations on it can readily be found online\cite{msi}.
 	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but other threads may a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked from access through other modules. Figure~\ref{fig:model-shared-memory} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
 	\item CTMC Figure~\ref{fig:model-shared-memory}
 		\begin{figure}[htbp]
