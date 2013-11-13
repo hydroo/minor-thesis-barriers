@@ -756,30 +756,32 @@ Analysing the protocols we will for example deal with the state reward function 
 We also wish to count remote memory access operations. For this we assign value 1 to each transition that represents such an operation. $\mathrm{ReaRew}(T)$ is then the average number of remote memory access operations issued until reaching $T$.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Modelling} %AE: modeling, BE: modelling
+\subsubsection{Modelling}
 \label{sssec:analysis-modelchecking-modelling}
-\begin{itemize}
-	\item distinct models for functional and quantitative properties
-	\item because resetting and repetition only needed for functional properties + we can save state space by stripping the model of unnecessary information for the quantitative analysis
-	\item ordinary (non-stochastic) transition systems for functional models and CTMCs for quantitative models
-	\item Spin\cite{spin, hol97} (already cites before) for model checking functional properties
-	\item PRISM\cite{prism, knp09} (already cited before) for quantitative analysis
-	\item in the following graphs we will use control flow diagrams and CTMCs
-	\item The CTMCs of the protocols will be composed of multiple modules.
-	\item synchronisation between modules on the CTMC level is done via synchronising actions.
-	\item composed modules are executed interleaved except if transitions require synchronising actions. A synchronising action is an action that can be issued by at least two modules. A transition with such an action can only fire if all modules, that are able to fire this action eventually, are presently in a state where they can fire it. The rate of such a transition is determined by any one module. For each synchronisation action, in our case, only one module will specify a rate for this action.
-	\item This corresponds to the following SOS rules
-	\item If no other module uses the action $\alpha$
-		\begin{center}
-			$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s'}{\langle s , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', \overline{x} \rangle}}$
-		\end{center}
-	\item $\overline{x}$ stands for the tuple of local state of all other modules
-	\item if $\alpha$ is used by two modules
-		\begin{center}
-			$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s', t \xrightarrow{\alpha} t'}{\langle s, t , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', t', \overline{x} \rangle}}$
-		\end{center}
-	\item analogous rules can be stated for more than two modules sharing an action.
-\end{itemize}
+To analyse functional and quantitative aspects of the chosen barrier protocols, we model them using two different formalisms and two different software tools. We use ordinary non-stochastic transition systems and the SPIN model checker to verify functional properties. To analyse quantitative properties we employ CTMCs and PRISM.
+
+To verify the functional correctness of a barrier, we need to include a reset mechanism into the model, which is not needed for quantitative analysis. By stripping this unnecessary information off the probabilistic model we shrink its state space. This enables us to model check more quickly and/or larger models.
+
+Depending on circumstances we describe part of a system as non-stochastic control flow diagram and part as CTMC. Control flow diagrams contain local variables, shared variables, control flow information, no rates, and need to be unwound to form a proper CTMC. The state space of the resulting CTMC is then a combination of control flow location and variable assignment.
+
+The CTMCs of the protocols are composed of multiple modules.
+Synchronisation between modules on the CTMC level is done via synchronising actions.
+Composed modules are executed in an interleaved fashion except if transitions require synchronising actions. A synchronising action is an action that can be triggered by at least two modules. A transition with such an action can only fire if all modules that are able to fire this action eventually, are presently in a state where a transition with this action label is enabled. The rate of such a simultaneous transition of multiple modules is determined by any one module. For each simultaneous transition, in our case, only one module specifies a rate.
+The presented way of composing modules corresponds to the following SOS rules.
+
+If no other module uses action label $\alpha$:
+\begin{center}
+	$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s'}{\langle s , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', \overline{x} \rangle}}$
+\end{center}
+where $\overline{x}$ stands for the tuple of local state of all other modules. The module's execution is interleaved with the all others.
+
+If $\alpha$ is used by two modules:
+\begin{center}
+	$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s', t \xrightarrow{\alpha} t'}{\langle s, t , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', t', \overline{x} \rangle}}$
+\end{center}
+Only if $\alpha$ is enabled in both modules, these two transitions fire simultaneously.
+
+Analogous rules apply for more than two modules sharing an action label.
 
 %%%%%%%%%%
 \paragraph{Shared memory}
