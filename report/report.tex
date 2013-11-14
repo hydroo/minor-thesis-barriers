@@ -850,22 +850,24 @@ Unlike the quantitative model, the functional model repeatedly executes the prot
 %%%%%%%%%%
 \paragraph{B1 Barrier}
 \label{ssssec:analysis-modelchecking-modelling-b1}
-\begin{itemize}
-	\item repeat variables and initial configuration from the algorithm box
-	\item Algorithm explained in Section~\ref{ssec:new-b1}
-	\item Control flow diagram Figure~\ref{fig:model-b1}
-		\begin{figure}[htbp]
-			\centering
-			\input{tikz/model-b1}
-			\caption{Control flow diagram of the B1 Barrier}
-			\label{fig:model-b1}
-		\end{figure}
-	\item each element of the array \texttt{barrier} is located in an own cache line. Therefore each thread has \texttt{threadCount} cache line copy modules, one for each element in the array. In total a CTMC model of this protocol has $\mathtt{threadCount}^2$ cache line copy modules plus $\mathtt{threadCount}$ thread modules.
-	\item As described in the previous paragraph, $\lambda_{work}$ is the work rate and all other rates are determined by the cache line copy modules.
-	\item functional model does resetting and repetition using a counter instead of bools as described in Section~\ref{ssec:background-building-blocks} (if you did not describe it there, you have to do it here)
-	\item functional model splits some of the transitions to allow for more interleaving, thus more errors can be revealed.
-\end{itemize}
+The B1 Barrier (Figure~\ref{ssec:new-b1} in Section~\ref{fig:pseudocode-b1}) allocates one cache line per array element. Therefore the final model is composed of $n$ algorithm modules plus $n^2$ cache line copy modules where $n$ is the number of threads.
 
+The algorithm's control flow is illustrated in Figure~\ref{fig:model-b1}. As for the Central Counter Barrier, the B1 Barrier starts with an initial work period, its rates are determined by thread's cache line copy module, and the grey transition labelling indicates the interaction with the cache.
+
+\begin{figure}[htbp]
+	\centering
+	\input{tikz/model-b1}
+	\caption{Control flow diagram of the B1 Barrier}
+	\label{fig:model-b1}
+\end{figure}
+
+Initially each array element is set to false and the loop index to zero.
+In comparison to the pseudocode the assignments are slightly different, but ultimately result in the same behaviour.
+
+Deviating from the quantitative model, the functional model implements repetition and resetting by replacing the boolean array elements with counters. The principle is described in detail in Section~\ref{ssec:background-building-blocks}.
+Additionally the functional model splits some of the transition into multiple transitions to allow for more interleaving and therefore reveal more potential errors in the protocol.
+
+Splitting these transitions in the quantitative model would increase model size majorly, since the number of locations inflates the model's size exponentially in the number of threads. It is important not to merge multiple shared memory dependent transitions. Everything else influences timing only in a minor way.
 %%%%%%%%%%
 \paragraph{Dissemination Barrier}
 \label{ssssec:analysis-modelchecking-modelling-dissemination}
