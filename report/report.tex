@@ -762,10 +762,9 @@ To analyse functional and quantitative aspects of the chosen barrier protocols, 
 
 To verify the functional correctness of a barrier, we need to include a reset mechanism into the model, which is not needed for quantitative analysis. By stripping this unnecessary information off the probabilistic model we shrink its state space. This enables us to model check more quickly and/or larger models.
 
-Depending on circumstances we describe part of a system as non-stochastic control flow diagram and part as CTMC. Control flow diagrams contain local variables, shared variables, control flow information, no rates, and need to be unwound to form a proper CTMC. The state space of the resulting CTMC is then a combination of control flow location and variable assignment.
+Depending on circumstances we describe part of a system as non-stochastic control flow diagram and part as CTMC. Control flow diagrams contain local variables, shared variables, control flow information and need to be unwound to form a proper CTMC. The state space of the resulting CTMC is then a combination of control flow location and variable assignments.
 
 The CTMCs of the protocols are composed of multiple modules.
-Synchronisation between modules on the CTMC level is done via synchronising actions.
 Composed modules are executed in an interleaved fashion except if transitions require synchronising actions. A synchronising action is an action that can be triggered by at least two modules. A transition with such an action can only fire if all modules that are able to fire this action eventually, are presently in a state where a transition with this action label is enabled. The rate of such a simultaneous transition of multiple modules is determined by any one module. For each simultaneous transition, in our case, only one module specifies a rate.
 The presented way of composing modules corresponds to the following SOS rules.
 
@@ -773,8 +772,7 @@ If no other module uses action label $\alpha$:
 \begin{center}
 	$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s'}{\langle s , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', \overline{x} \rangle}}$
 \end{center}
-where $\overline{x}$ stands for the tuple of local state of all other modules. The module's execution is interleaved with the all others.
-
+where $\overline{x}$ is the tuple of local state of all other modules. The module's execution is interleaved with that of all other modules.
 If $\alpha$ is used by two modules:
 \begin{center}
 	$\mathlarger{\frac{s \xrightarrow{\lambda : \alpha} s', t \xrightarrow{\alpha} t'}{\langle s, t , \overline{x} \rangle \xrightarrow{\lambda : \alpha} \langle s', t', \overline{x} \rangle}}$
