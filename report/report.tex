@@ -898,19 +898,21 @@ The functional model includes repetition and resetting with a counter instead of
 %%%%%%%%%%
 \paragraph{B2 Barrier}
 \label{ssssec:analysis-modelchecking-modelling-b2}
-\begin{itemize}
-	\item repeat variables and initial configuration from the algorithm box
-	\item Algorithm explained in Section~\ref{ssec:new-b2}
-	\item Control flow diagram augmented with rates: Figure~\ref{fig:model-b2}
-		\begin{figure}[htbp]
-			\centering
-			\input{tikz/model-b2}
-			\caption{Augmented Control flow diagram of the B2 Barrier}
-			\label{fig:model-b2}
-		\end{figure}
-	\item Rates are like in previous section, except we now use remote read (get) with a rate of $\lambda_g = \frac{1}{100}$.
-	\item functional model does resetting and repetition using three barriers as described in~\ref{ssec:background-building-blocks}.
-\end{itemize}
+The B2 Barrier, introduced in Section~\ref{ssec:new-b2}, is modelled as a composition of one algorithm module per process.
+
+Figure~\ref{fig:model-b2} illustrates the control flow of the protocol.
+Initially each bitset is empty and the loop index is set to \texttt{processIndex}.
+The rates of operations are the same as for the Dissemination Barrier except that, instead of remote writing, we assign a rate of $\lambda_g = \frac{1}{100}$ to remote read (also called get) transitions.
+
+\begin{figure}[htbp]
+	\centering
+	\input{tikz/model-b2}
+	\caption{Augmented Control flow diagram of the B2 Barrier}
+	\label{fig:model-b2}
+\end{figure}
+
+The functional model additionally includes repetition and resetting, using the triple barrier approach explained in Section~\ref{ssec:background-building-blocks}.
+Similar to previously presented models the functional model splits some of the transitions into multiple ones to allow for more interleaving. This way more potential errors can be revealed. The quantitative model refrains from splitting them to reduce the model's size.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Functional properties}
