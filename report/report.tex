@@ -868,27 +868,32 @@ Deviating from the quantitative model, the functional model implements repetitio
 Additionally the functional model splits some of the transition into multiple transitions to allow for more interleaving and therefore reveal more potential errors in the protocol.
 
 Splitting these transitions in the quantitative model would increase model size majorly, since the number of locations inflates the model's size exponentially in the number of threads. It is important not to merge multiple shared memory dependent transitions. Everything else influences timing only in a minor way.
+
 %%%%%%%%%%
 \paragraph{Dissemination Barrier}
 \label{ssssec:analysis-modelchecking-modelling-dissemination}
-\begin{itemize}
-	\item repeat variables and initial configuration from the algorithm box
-	\item no special module for distributed memory, since all variables are independently stored in the local memory of each process. There is no influence that copies data between processes other then the user-specified program itself.
-	\item Algorithm explained in Section~\ref{sssec:background-currently-used-distributed}
-	\item Control flow diagram augmented with rates: Figure~\ref{fig:model-dissemination}
-		\begin{figure}[htbp]
-			\centering
-			\input{tikz/model-dissemination}
-			\caption{Augmented Control flow diagram of the Dissemination Barrier}
-			\label{fig:model-dissemination}
-		\end{figure}
-	\item As in the two previous paragraphs $\lambda_{work}$ is the work rate.
-	\item we assume all local operations to be much quicker, ten to a thousand times, than remote operations. Therefore we assign the rate $\lambda_c$ (one CPU cycle) to local operations. $\lambda_p$, which is assigned to remote write (put) operations, is assigned a rate of $\frac{1}{100}$. This value is, like the shared memory rates, hardware-dependent. For simplicity's sake we therefore assume a remote transfer to take 100 cycles.
-	\item one could make this more fine grained by introducing separate rates for local reading and writing.
-	\item \texttt{to} and \texttt{from} are shorthands for \texttt{processIndex $\pm$ dist (mod processCount)}
-	\item In the CTMC model, resulting from unwinding this control flow diagram, a put onto a remote process is represented as a synchronised action, so the target process stores the new value in its CTMC module.
-	\item functional model does resetting and repetition with a counter instead of bools as described in Section~\ref{ssec:background-building-blocks}.
-\end{itemize}
+The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination}, Section~\ref{sssec:background-currently-used-distributed}), as a representative for distributed barrier algorithms, does not have shared memory. Therefore the CTMC model consists of one process module per process and nothing else.
+
+Figure~\ref{fig:model-dissemination} depicts the control flow diagram of the protocol.
+The distance is initialised to one, and each array element to false.
+As in the two previous paragraphs a work period precedes the protocol.
+The expressions \texttt{to} and \texttt{from} are shorthands for \texttt{processIndex $\pm$ dist (mod processCount)}.
+
+\begin{figure}[htbp]
+	\centering
+	\input{tikz/model-dissemination}
+	\caption{Augmented Control flow diagram of the Dissemination Barrier}
+	\label{fig:model-dissemination}
+\end{figure}
+
+Local operations take far less time than remote operations -- between ten to a thousand times usually. Therefore we assign the $\lambda_c$ (one processor clock cycle) to local operations.
+The duration of a remote write (also called put) operation, which is strongly hard-ware dependent, is assumed to take 100 cycles. Therefore we assign $\lambda_p = \frac{1}{100}$ to each corresponding transition.
+
+One could model the algorithm more accurate by splitting some of the transitions into multiple transitions. We refrain from this to keep the model size at a manageable level.
+
+In the CTMC model, resulting from unwinding this control flow diagram, a remote write operation is represented as a synchronised action. When a process executes a put, the target process then changes its local state accordingly.
+
+The functional model includes repetition and resetting with a counter instead of boolean variables as described in Section~\ref{ssec:background-building-blocks}.
 
 %%%%%%%%%%
 \paragraph{B2 Barrier}
