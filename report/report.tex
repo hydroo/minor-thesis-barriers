@@ -711,7 +711,7 @@ The properties, we are interested in, can be divided into two broad categories: 
 
 To check correctness of the barriers we model every instance where execution is random through non-deterministic choice. This yields a Markov decision process (MDP), which we then use a basis for automated analysis with the SPIN~\cite{spin, hol97} model checker.
 
-To model the inherent randomness of the algorithms we use exponential distributions. This way we obtain continuous-time Markov chains (CTMCs) which serve a basis for formal quantitative analysis using the PRISM~\cite{prism, knp09} model checker.
+To model the inherent randomness of our algorithms we use exponential distributions. This way we obtain continuous-time Markov chains (CTMCs) which serve a basis for formal quantitative analysis using the PRISM~\cite{prism, knp09} model checker.
 
 Models are obtained in a compositional way, using action labels and global state to synchronise.
 
