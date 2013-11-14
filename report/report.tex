@@ -785,34 +785,44 @@ Analogous rules apply for more than two modules sharing an action label.
 \paragraph{Shared memory}
 \label{sssec:analysis-modelchecking-modelling-shared-memory}
 In order to exchange information threads write to and read from the same memory location.
-Memory access latency is very large in comparison to arithmetic operations.
+Memory access latency is very large in comparison to the duration of arithmetic operations.
 Because synchronisation is mainly about exchanging information between threads, the execution time of barrier protocols is dominated by memory access latency.
 
-Usually memory access is cached. That means repeatedly reading a value is quick, because the processor holds a copy of it near its execution units. When a cached value gets changed by another thread that shares it, the cached value needs to be thrown away because it will soon be outdated.
-In order to model execution time and energy consumption of a barrier protocol, we therefore model the cache behaviour of threads.
+Usually memory access is cached. That means repeatedly reading a value is quick, because upon first reading it the processor places a copy of it near its execution units. When a cached value gets changed by another thread that shares it, the cached value needs to be thrown away because otherwise it would soon be incoherent.
+In order to model execution time and energy consumption of a barrier protocol, we therefore model the caching behaviour of threads.
 
 We identify a shared variable with the cache line it resides on. A cache line is usually a 64 bytes large unit of contiguous memory to which all cache manipulation operations are applied as a whole. It increases the granularity of address space, which is usually one byte, to decrease management overhead for caching.
 Each thread that has access to this shared variable has one copy of such a cache line.
 Synchronisation between cache line copies and with other CTMC modules, like the actual algorithm to be modelled, is done via synchronising actions. The operation triggering thread's cache line copy determines the rate of the transition.
-For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that we have two transitions, one with action $\alpha$ and one with $\beta$ between two states. Either action can trigger a transition between the states.
-As a cache coherency protocol we use the MSI protocol extended by support for atomic operations. The MSI model is a basic cache model and details about it can be found online, e.g.~\cite{msi}.
+For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that there are two transitions, one with action $\alpha$ and one with $\beta$ between two states. Either action can trigger the transition.
 
-\begin{itemize}
-	\item A cache line copy can be in one of four states. \emph{modified}, means the thread has the only up-to-date copy of the cache line and all other copies are marked invalid. \emph{shared}, which means the core has an up-to-date copy, but other threads may a correct copy, too. \emph{invalid}, meaning the local copy is not up-to-date. We extend these three states by a fourth named \emph{atomic}. It is the same as modified, except that between $\mathit{atomic\_begin}$ and $\mathit{atomic\_end}$ the access to this variable is blocked from access through other modules. Figure~\ref{fig:model-shared-memory} shows how a cache line copy changes its state depending on events occurring. The solid transitions are triggered by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events issued indirectly by actions of other threads.
-	\item CTMC Figure~\ref{fig:model-shared-memory}
-		\begin{figure}[htbp]
-			\centering
-			\input{tikz/model-shared-memory}
-			\caption{CTMC module of a shared memory variable}
-			\label{fig:model-shared-memory}
-		\end{figure}
-	\item For example if a core reads a variable, it first needs to make sure that all other cores take notice and change its cache line copy state to shared in case it was modified before. After this the core fetches the cache line, marks its copy shared and continues reading the variable.
-	\item taken from complex-lab, rephrase: The timings of shared read and shared write are as follows. A read on a modified or shared variable does not imply any extra work. It can immediately use the cached data. Therefore we consider this operation instantaneous. If a read is done on an invalid copy, it has to first fetch an up-to-date copy of the cache line and make sure all other cores are notified before it can proceed. This usually takes around 50 CPU cycles. A write on a modified variable is instantaneous, since all other cores do not have an up-to-date copy and therefore do not have to be notified. If the cache line in question is in a shared or invalid state, we first have to wait until all other cores follow the request to invalidate their copies of the cache line. After this we can safely mark our copy modified and write to it. This operation usually takes around 100 cycles.
-	\item taken from complex-lab, rephrase: The number of cycles these operations take is strongly dependent on the CPU itself. For the CTMC model we assume a cache read to use 50 cycles and a cache write to use 100 cycles. The rates of the transitions corresponding to the described events is then the reciprocal of the cycle time: 1, $\frac{1}{50}$ or $\frac{1}{100}$.
-	\item $\lambda_c$, $\lambda_r$, $\lambda_w$, $\lambda_a$ one cycle, read, write, atomic\_begin rate. Reciprocal of the average number of cycles needed for each of these actions
-	\item explain CTMC behaviour and work around through setting atomic\_begin to something higher than write, although normally it would be just that
-	\item explain to move atomic rate to atomic end to make parallel and serial code look different (explain how parallel and serial doesn't make a difference for interleaved CTMCs)
-\end{itemize}
+We use the MSI cache coherency protocol, extended by support for atomic operations, to model cache consistency. The MSI protocol is a basic cache model. Further details about it can be found online at for example~\cite{msi}.
+
+In the MSI model a cache line copy can be in one of three states. \emph{Modified} means the thread has the only up-to-date copy of the cache line and all other copies are \emph{invalid}. If a cache line copy is invalid it is outdated and therefore not usable. Being in the \emph{shared} state means the thread has an up-to-date copy, but other threads may have a correct copy, too. We extend these three states by a fourth, called \emph{atomic}. Its meaning is the same as modified, except that as long as a cache line copy is in this state, no other thread may access it.
+
+Figure~\ref{fig:model-shared-memory} illustrates how a cache line copy changes its state. Solid transitions are fired by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events triggered by other cache line copies.
+
+\begin{figure}[htbp]
+	\centering
+	\input{tikz/model-shared-memory}
+	\caption{CTMC of a shared memory variable}
+	\label{fig:model-shared-memory}
+\end{figure}
+
+For example if a thread reads a variable and its own cache line copy is invalid, it first needs to make sure that all other threads take notice and change its cache line copy state to shared in case it was modified before. After this the thread fetches the cache line from main memory, marks its own copy shared, reads the variable and continues program execution.
+
+The execution times of the cache line copy state transitions are as follows.
+Reading a modified or shared copy is considered instantaneous, because the copy is up-to-date and no other copies need to be notified.
+If a thread reads a variable whose copy is invalid, it has to advertise its intent to all other copies. A copy that is modified then needs to switch to the shared state. Meanwhile the thread fetches an up-to-date copy from main memory, and sets its local copy state to shared. After all of this is done, it continues program execution. This usually takes around 50 processor clock cycles.
+A write operation on a modified variable is considered instantaneous, since no other thread has an up-to-date copy and therefore no one needs to be notified.
+If the cache line copy in question is shared or invalid, it broadcasts an invalidation request to all other copies, and waits until every copy fulfills the request. After this the thread can safely mark his copy modified and finally write to it. This operation commonly takes about 100 cycles.
+Entering the atomic state works exactly like entering the modified state.
+During the atomic state the cache line copy postpones all requests to this copy until it transitions to a different state. After leaving the atomic state, it instantly begins to answer these requests. Therefore leaving the atomic state is considered instantaneous.
+
+The exact number of processor clock cycles these operations take is strongly hardware-dependent. For the CTMC model we assume a cache read to take 50 cycles, whereas writing and entering an atomic operation requires 100 cycles. The rates of the transitions corresponding to the described events is then the reciprocal of the cycle count.
+The rate of an instantaneous operation, which is assumed to be one cycle, is $\lambda_c = 1$. The rate of a cache read is $\lambda_r = \frac{1}{50}$. And the rate of initiating a write or an atomic operation is $\lambda_w = \lambda_a = \frac{1}{100}$
+
+For technical reasons we switch the rate of entering and leaving an atomic operation. The intuitive result is the same.
 
 %%%%%%%%%%
 \paragraph{Central Counter Barrier}
