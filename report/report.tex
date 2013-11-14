@@ -827,22 +827,25 @@ For technical reasons we switch the rate of entering and leaving an atomic opera
 %%%%%%%%%%
 \paragraph{Central Counter Barrier}
 \label{sssec:analysis-modelchecking-modelling-central-counter}
-\begin{itemize}
-	\item repeat variables and initial configuration from the algorithm box
-	\item Algorithm explained in Section~\ref{sssec:background-currently-used-shared}
-	\item Control flow diagram Figure~\ref{fig:model-central-counter}
-		\begin{figure}[htbp]
-			\centering
-			\input{tikz/model-central-counter}
-			\caption{Control flow diagram of the Central Counter Barrier}
-			\label{fig:model-central-counter}
-		\end{figure}
-	\item rates for reading writing and atomic operations are determined by the module for the shared variable \texttt{barrier}
-	\item the synchronisation to the shared variable module is hinted at in grey
-	\item The control flow has been augmented by one rate that the resulting CTMC will use. $\lambda_{work}$ is the work rate, meaning the time spent doing actual work. It is used to add an initial distribution to the model so that we can control how the arrival times of the threads at the barrier are distributed. In particular not all threads arrive at the exact same instant in time at the barrier, which is an extreme case.
-	\item atomic op consists of multiple smaller transitions: begin atomic (locks the variable), read, decrement, write, end atomic (releases the lock).
-	\item functional model does resetting and repetition. Three barriers, as described in~\ref{ssec:background-building-blocks}. (if you did not describe it there, you have to do it here)
-\end{itemize}
+The Central Counter Barrier uses one shared variable. Therefore the final CTMC is composed of one cache line copy module per thread and one algorithm module per thread.
+The algorithm's control flow diagram (Figure~\ref{fig:model-central-counter}) directly results from the pseudocode in Figure~\ref{fig:pseudocode-central-counter} (Section~\ref{sssec:background-currently-used-shared}).
+
+\begin{figure}[htbp]
+	\centering
+	\input{tikz/model-central-counter}
+	\caption{Control flow diagram of the Central Counter Barrier}
+	\label{fig:model-central-counter}
+\end{figure}
+
+Initially variable \texttt{barrier} is set to \texttt{threadCount}.
+The synchronisation with the cache line copy module is hinted at in grey.
+The rates for the shared operations are determined by the thread's cache line copy module, depending on its internal state.
+
+We emulate the interval in which threads arrive at the barrier via an exponential distribution with rate $\lambda_{\mathit{work}}$. One can imagine this as a period where the thread is performing computational work.
+
+The atomic operation has been shortened for readability and really contains multiple transitions. The thread initiates the atomic operation on \texttt{barrier}, reads it, subtracts one from it, writes it back, and finally ends the atomic operation.
+
+Unlike the quantitative model, the functional model repeatedly executes the protocol. Resetting is achieved via the triple barrier approach, which is explained in Section~\ref{ssec:background-building-blocks}.
 
 %%%%%%%%%%
 \paragraph{B1 Barrier}
