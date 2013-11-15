@@ -537,7 +537,7 @@ In this section we will evaluate one commonly used barrier for each shared and d
 
 Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas the B1 and B2 Barrier show promise. Therefore we restrict our attention to these two.
 
-In the shared memory setting the Central Counter Barrier is pitted against the B1 Barrier. For the distributed memory case we compare the Dissemination to the B2 Barrier.
+In the shared memory setting the Central Counter Barrier is pitted against the B1 Barrier. In the distributed memory case we compare the Dissemination to the B2 Barrier.
 
 In our evaluation we assume no back-off strategy is used. This means if a variable is repeatedly requested inside a loop, it is fetched as often as program execution speed allows. The topic of back-off strategies is a subject in its own right and goes beyond the scope of this thesis.
 
@@ -559,7 +559,7 @@ In the distributed memory scenario we are also interested in the remote access b
 
 The Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) and the B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) are both divided into two phases: the reading and the writing phase.
 
-In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations are serialised, because atomic operations on a single variable are not executed in parallel. On the other hand the B1 Barrier allocates one array element per thread. Therefore all write operations can be executed concurrently. If all threads arrive at the same instant, the commitment of all threads takes only as long as one write operation does, therefore speeding up this process by a factor of $n$, where $n$ is the number of threads participating. In a more balanced scenario, i.e. processes arrive in intervals, this advantage over the Central Counter Barrier diminishes.
+In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations are serialised, because atomic operations on a single variable cannot be executed in parallel. On the other hand the B1 Barrier allocates one array element per thread. Therefore all write operations can be performed concurrently. If all threads arrive in the same instant, the commitment of all threads takes only as long as one write operation does, therefore speeding up this process by a factor of $n$, where $n$ is the number of threads participating. In a more balanced scenario, i.e. processes arrive in intervals, this advantage over the Central Counter Barrier diminishes.
 
 During the reading phase of the Central Counter Barrier a thread fetches a single variable repeatedly until it has the desired value. A thread in the B1 Barrier needs to read between 1 and $n$ array elements before it can leave the loop.
 
@@ -587,12 +587,12 @@ Because of its random communication pattern there is no fixed number of remote a
 
 Where a process in the Dissemination Barrier waits for one designated communication partner each round, the B2 Barrier does not wait for a single process but instead continues to poll the next one.
 
-Requiring $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. Especially from $n$, where $n$ is a power of two, to $n+1$ processes the number of rounds increases by 1. Therefore the runtime is expected to show a stair-esque behaviour. Every time the number of rounds increases, the duration of the barrier increases by a large step, whereas adding more processes to the same number of rounds adds little overhead.
+Requiring $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. Especially from $n$, where $n$ is a power of two, to $n+1$ processes the number of rounds increases by 1. Therefore the runtime is expected to show a stair-esque behaviour. Every time the number of rounds increases the duration of the barrier increases by a large step, whereas adding more processes to the same number of rounds adds little overhead.
 In contrast to this the execution time of the B2 Barrier is distributed evenly.
 
-Synchronisation using the Dissemination and B2 Barrier requires the same amount of memory. In principle $\lceil \log _2~n \rceil$ bits per process suffice for both algorithms. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n^2$ bits, but, since each process receives from only $\lceil \log _2~n \rceil$ other processes, a modified array index calculation would allow the protocol to work with $n \cdot \lceil \log _2 ~n \rceil$ bits per process.
+Synchronisation using the Dissemination and B2 Barrier requires the same amount of memory. In principle $\lceil \log _2~n \rceil$ bits per process suffice for both algorithms. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n^2$ bits, but, since each process receives from only $\lceil \log _2~n \rceil$ other processes, a modified array index calculation would allow the protocol to work with $n \cdot \lceil \log _2 ~n \rceil$ bits.
 
-Assuming all processes arrive at a similar time, Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed} illustrates the progression through the rounds of the Dissemination Barrier. But more often than not, processes arrive in large intervals, compared to the execution time of a barrier itself.
+Assuming all processes arrive at a similar time, Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed} illustrates the progression through the rounds of the Dissemination Barrier. More often than not, processes arrive in large intervals, compared to the execution time of a barrier itself.
 Therefore some processes advance through the rounds before every process arrived.
 But how far exactly can the protocol progress without all processes?
 
@@ -707,18 +707,18 @@ We attempt to quantify the influence of this behaviour on the execution time and
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Model checking}
 \label{ssec:analysis-modelchecking}
-The properties, we are interested in, can be divided into two broad categories: functional and quantitative properties. Functional properties describe the supposed behaviour of the barriers, where quantitative properties express conditions that rely on probabilistic aspects of the protocols, e.g. execution time.
+The properties, we are interested in, can be divided into two broad categories: functional and quantitative properties. Functional properties describe the supposed behaviour of the barriers, whereas quantitative properties express conditions that rely on probabilistic aspects of the protocols, e.g. execution time.
 
-To check correctness of the barriers we model every instance where execution is random through non-deterministic choice. This yields a Markov decision process (MDP), which we then use a basis for automated analysis with the SPIN~\cite{spin, hol97} model checker.
+To check correctness of the barriers we model every instance where execution is random through non-deterministic choice. This yields a Markov decision process (MDP), which we then use a basis for automated analysis with the SPIN model checker.
 
-To model the inherent randomness of our algorithms we use exponential distributions. This way we obtain continuous-time Markov chains (CTMCs) which serve a basis for formal quantitative analysis using the PRISM~\cite{prism, knp09} model checker.
+To model the inherent randomness of our algorithms we use exponential distributions. This way we obtain continuous-time Markov chains (CTMCs) which serve a basis for formal quantitative analysis using the PRISM model checker.
 
 Models are obtained in a compositional way, using action labels and global state to synchronise.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Preliminaries}
 \label{sssec:analysis-modelchecking-preliminaries}
-In this section we repeat principles of continuous-time Markov chains that are of interest to our analysis. Further details can be found in textbooks on Markov chains, e.g. \cite{kul95, ks76}. Some of this Section borrow from \cite{bai13}
+In this section we repeat principles of continuous-time Markov chains that are of interest to our analysis. Further details can be found in textbooks on Markov chains, e.g. \cite{kul95, ks76}. Some of this Section borrows from \cite{bai13}
 
 If $S$ is a finite set, then a distribution on $S$ is a function $\nu:S \rightarrow [0,1]$ with $\sum\limits_{s \in S} \nu (s) = 1$.
 
@@ -732,11 +732,11 @@ The probability to trigger a particular transition $s \xrightarrow{\lambda : \al
 The probability that $s \xrightarrow{\lambda : \alpha} s'$ will fire within $t$ time units is then $P(s, \alpha, s') \cdot (1 - e^{- E(s) \cdot t})$.
 
 Paths in a CTMC are sequences of consecutive transitions augmented by the time points when they are taken.
-We employ the logic CSL \cite{assb96, bhhk00, knp07} to analyse such transition systems.
+We employ the logic CSL~\cite{assb96, bhhk00, knp07} to analyse such transition systems.
 To specify sets of infinite paths, we will use an LTL-like notation, such as $\lozenge T$ (``eventually T'') and $\square T$ (``always T'') where $T$ is a set of states.
 Instead of naming states we will oftentimes use state predicates, combined using propositional formulas, to describe sets of states. Their meaning will be obvious from the context.
 
-We will also study reward based properties formalized using the logic CSRL \cite{bhhk00, knp07}.
+We will also study reward based properties formalized using the logic CSRL~\cite{bhhk00, knp07}.
 This requires the extension of $\mathcal{M}$ by two reward functions. The state reward function $\mathit{srew} : S \rightarrow \mathbb{R}$ specifies the reward earned per time unit while being in state $s$. The transition reward function $\mathit{trew} : S \times S \rightarrow \mathbb{R}$ assigns a reward to each transition between two states regardless of action labels.
 For finite paths one can then reason about accumulated reward and reachability reward.
 Suppose $\pi$ is a finite path where the underlying state sequence is $s_1 s_2 ...s_n$ and let $t_0 = 0$ and $t_i$ the time point where $\pi$ takes the $i$-th transition.
@@ -750,22 +750,22 @@ The reachability reward is defined as
 	$\mathrm{ReaRew}(\pi, \Phi) = \mathit{Rew}(\pi(s_0:s_j))$
 \end{center}
 where $j = min \{ i~|~s_i \models \Phi \}$ and  $\pi(s_0:s_j)$ stands for the sub-path of $\pi$ starting in $s_0$ and ending in $s_j$.
-The extension of these notions from paths to states and models is done the usual way and can be found in \cite{bhhk03}
+The extension of these notions from paths to states and CTMCs is done the usual way and can be found in \cite{bhhk03}
 
-Analysing the protocols we will for example deal with the state reward function that assigns value 1 to each state. In this case $\mathrm{ReaRew}(\Phi)$ can be interpreted as the average number of processor cycles to reach a state where $\Phi$ holds.
+Analysing the protocols we will for example deal with the state reward function that assigns value 1 to each state. In this case $\mathrm{ReaRew}(\Phi)$ can be interpreted as the average number of processor clock cycles to reach a state where $\Phi$ holds.
 We also wish to count remote memory access operations. For this we assign value 1 to each transition that represents such an operation. $\mathrm{ReaRew}(\Phi)$ is then the average number of remote memory access operations issued until reaching a $\Phi$-state.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Modelling}
 \label{sssec:analysis-modelchecking-modelling}
-To analyse functional and quantitative aspects of the chosen barrier protocols, we model them using two different formalisms and two different software tools. We use ordinary non-stochastic transition systems and the SPIN model checker to verify functional properties. To analyse quantitative properties we employ CTMCs and PRISM.
+To analyse functional and quantitative aspects of the chosen barrier protocols, we model them using two different formalisms and two different software tools. We use ordinary non-stochastic transition systems and the SPIN~\cite{spin, hol97} model checker to verify functional properties. To analyse quantitative properties we employ CTMCs and PRISM~\cite{prism, knp09}.
 
-To verify the functional correctness of a barrier, we need to include a reset mechanism into the model, which is not needed for quantitative analysis. By stripping this unnecessary information off the probabilistic model we shrink its state space. This enables us to model check more quickly and/or larger models.
+To verify the functional correctness of a barrier, we need to include a reset mechanism into the model, which is not needed for quantitative analysis. By stripping this unnecessary information off the probabilistic model we shrink its state space. This enables us to verify properties more quickly and/or on larger models.
 
 Depending on circumstances we describe part of a system as non-stochastic control flow diagram and part as CTMC. Control flow diagrams contain local variables, shared variables, control flow information and need to be unwound to form a proper CTMC. The state space of the resulting CTMC is then a combination of control flow location and variable assignments.
 
 The CTMCs of the protocols are composed of multiple modules.
-Composed modules are executed in an interleaved fashion except if transitions require synchronising actions. A synchronising action is an action that can be triggered by at least two modules. A transition with such an action can only fire if all modules that are able to fire this action eventually, are presently in a state where a transition with this action label is enabled. The rate of such a simultaneous transition of multiple modules is determined by any one module. For each simultaneous transition, in our case, only one module specifies a rate.
+Composed modules are executed in an interleaved fashion except if transitions require synchronising actions. A synchronising action is an action that can be triggered by at least two modules. A transition with such an action can only fire if all modules, that are able to fire this action eventually, are presently in a state where a transition with this action label is enabled. The rate of such a simultaneous transition is determined by any one module. For each simultaneous transition, in our case, only one module specifies a rate.
 The presented way of composing modules corresponds to the following SOS rules.
 
 If no other module uses action label $\alpha$:
@@ -794,7 +794,7 @@ In order to model execution time and energy consumption of a barrier protocol, w
 We identify a shared variable with the cache line it resides on. A cache line is usually a 64 bytes large unit of contiguous memory to which all cache manipulation operations are applied as a whole. It increases the granularity of address space, which is usually one byte, to decrease management overhead for caching.
 Each thread that has access to this shared variable has one copy of such a cache line.
 Synchronisation between cache line copies and with other CTMC modules, like the actual algorithm to be modelled, is done via synchronising actions. The operation triggering thread's cache line copy determines the rate of the transition.
-For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that there are two transitions, one with action $\alpha$ and one with $\beta$ between two states. Either action can trigger the transition.
+For convenience we use combinations of action labels like $\alpha \lor \beta$ meaning that there are two transitions, one with action $\alpha$ and one with $\beta$ between two states. Either action may trigger the transition.
 
 We use the MSI cache coherency protocol, extended by support for atomic operations, to model cache consistency. The MSI protocol is a basic cache model. Further details about it can be found online at for example~\cite{msi}.
 
@@ -811,9 +811,9 @@ Figure~\ref{fig:model-shared-memory} illustrates how a cache line copy changes i
 
 For example if a thread reads a variable and its own cache line copy is invalid, it first needs to make sure that all other threads take notice and change its cache line copy state to shared in case it was modified before. After this the thread fetches the cache line from main memory, marks its own copy shared, reads the variable and continues program execution.
 
-The execution times of the cache line copy state transitions are as follows.
+The durations of the cache line copy state transitions are as follows.
 Reading a modified or shared copy is considered instantaneous, because the copy is up-to-date and no other copies need to be notified.
-If a thread reads a variable whose copy is invalid, it has to advertise its intent to all other copies. A copy that is modified then needs to switch to the shared state. Meanwhile the thread fetches an up-to-date copy from main memory, and sets its local copy state to shared. After all of this is done, it continues program execution. This usually takes around 50 processor clock cycles.
+If a thread whose copy is invalid reads a variable, it has to advertise its intent to all other copies. If another copy is modified, it needs to switch to the shared state. Meanwhile the reading thread fetches an up-to-date copy from main memory, sets the state of its local copy to shared, and finally continues program execution. This usually takes around 50 processor clock cycles.
 A write operation on a modified variable is considered instantaneous, since no other thread has an up-to-date copy and therefore no one needs to be notified.
 If the cache line copy in question is shared or invalid, it broadcasts an invalidation request to all other copies, and waits until every copy fulfills the request. After this the thread can safely mark his copy modified and finally write to it. This operation commonly takes about 100 cycles.
 Entering the atomic state works exactly like entering the modified state.
@@ -872,10 +872,10 @@ Splitting these transitions in the quantitative model would increase model size 
 %%%%%%%%%%
 \paragraph{Dissemination Barrier}
 \label{ssssec:analysis-modelchecking-modelling-dissemination}
-The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination}, Section~\ref{sssec:background-currently-used-distributed}), as a representative for distributed barrier algorithms, does not have shared memory. Therefore the CTMC model consists of one process module per process and nothing else.
+The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination}, Section~\ref{sssec:background-currently-used-distributed}), as a representative for distributed barrier algorithms, does not have shared memory. Therefore the CTMC model consists of one algorithm module per process and nothing else.
 
 Figure~\ref{fig:model-dissemination} depicts the control flow diagram of the protocol.
-The distance is initialised to one, and each array element to false.
+The distance is initialised to one and each array element to false.
 As in the two previous paragraphs a work period precedes the protocol.
 The expressions \texttt{to} and \texttt{from} are shorthands for \texttt{processIndex $\pm$ dist (mod processCount)}.
 
@@ -889,11 +889,11 @@ The expressions \texttt{to} and \texttt{from} are shorthands for \texttt{process
 Local operations take far less time than remote operations -- between ten to a thousand times usually. Therefore we assign the $\lambda_c$ (one processor clock cycle) to local operations.
 The duration of a remote write (also called put) operation, which is strongly hard-ware dependent, is assumed to take 100 cycles. Therefore we assign $\lambda_p = \frac{1}{100}$ to each corresponding transition.
 
-One could model the algorithm more accurate by splitting some of the transitions into multiple transitions. We refrain from this to keep the model size at a manageable level.
+One could model the algorithm in more detail by splitting some of the transitions into multiple ones. We refrain from this to keep the model size at a manageable level.
 
 In the CTMC model, resulting from unwinding this control flow diagram, a remote write operation is represented as a synchronised action. When a process executes a put, the target process then changes its local state accordingly.
 
-The functional model includes repetition and resetting with a counter instead of boolean variables as described in Section~\ref{ssec:background-building-blocks}.
+The functional model includes repetition and resetting with counters instead of boolean variables as described in Section~\ref{ssec:background-building-blocks}.
 
 %%%%%%%%%%
 \paragraph{B2 Barrier}
@@ -911,7 +911,7 @@ The rates of operations are the same as for the Dissemination Barrier except tha
 	\label{fig:model-b2}
 \end{figure}
 
-The functional model additionally includes repetition and resetting, using the triple barrier approach explained in Section~\ref{ssec:background-building-blocks}.
+The functional model additionally includes repetition and resetting using the triple barrier approach explained in Section~\ref{ssec:background-building-blocks}.
 Similar to previously presented models the functional model splits some of the transitions into multiple ones to allow for more interleaving. This way more potential errors can be revealed. The quantitative model refrains from splitting them to reduce the model's size.
 
 %%%%%%%%%%%%%%%%%%%%
