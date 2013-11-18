@@ -950,66 +950,69 @@ The section is divided into two parts. We first identify and formalise interesti
 %%%%%%%%%%
 \paragraph{Identification and formalisation}
 \label{ssssec:analysis-modelchecking-quantitative-properties-identification}
-\begin{itemize}
-	\item interesting values to query for
-		\begin{itemize}
-			\item time: unit: CPU cycles. srew 1.
-			\item energy consumption: unit: Joule, and rate of energy consumption: unit: Joule per second = Watt. (assume 2.5ghz. W (nJ/ns) = 2.5 * nJ/cycle)
-				\begin{itemize}
-					\item trew shared memory operations = 200nJ
-					\item trew cached shared memory operation = 2nJ
-					\item trew any other operation = 0nJ
-					\item for dist: remote 200nJ, local memory op = 2nJ, others none
-					\item baseline of 11W
-					\item These numbers are a very limited estimate derived from a small reference measurement. The numbers can be found in Section~\ref{ssec:energy-measurement}.
-				\end{itemize}
-			\item (diss, B2) number of remote transfers. trew for remote operations = 1. srew =0.
-		\end{itemize}
-	\item interesting points in time
-		\begin{itemize}
-			\item (A) first thread entered the barrier
-			\item (B) last thread entered the barrier
-			\item (C) first thread left the barrier
-			\item (D) last thread left the barrier
-			\item (W) (only for Central Counter and B1) the last thread finished writing
-			\item (R$i$) (only for Dissemination) last process left round $i$, i.e. entered round $i+1$. The current round of process is determined through the variable $\mathit{dist}$. $\mathit{round} = 1 + \log_2 \mathit{dist}$.
-		\end{itemize}
-	\item resulting properties
-		\begin{itemize}
-			\item $T$ is the set of all threads
-			\item \textbf{A:} \emph{Average reward until the first thread enters the barrier}
-				\begin{center}
-					$\mathrm{ReaRew}(\exists t \in T . \mathit{entered_t} )$
-				\end{center}
-			\item \textbf{B:} \emph{Average reward until the last thread enters the barrier}
-				\begin{center}
-					$\mathrm{ReaRew}(\forall t \in T . \mathit{entered_t} )$
-				\end{center}
-			\item \textbf{C:} \emph{Average reward until the first thread leaves the barrier}
-				\begin{center}
-					$\mathrm{ReaRew}(\exists t \in T . \mathit{left_t} )$
-				\end{center}
-			\item \textbf{D:} \emph{Average reward until the last thread leaves the barrier}
-				\begin{center}
-					$\mathrm{ReaRew}(\forall t \in T . \mathit{left_t} )$
-				\end{center}
-			\item \textbf{W:} \emph{Average reward until the last thread finished writing}
-				\begin{center}
-					$\mathrm{ReaRew}(\forall t \in T . \mathit{done\_writing_t} )$
-				\end{center}
-			\item \textbf{R$i$:} \emph{Average reward until the last thread left round $i$}
-				\begin{center}
-					$\mathrm{ReaRew}(\forall t \in T . \mathit{left\_round_{i,t}} )$
-				\end{center}
-			\item where the predicates have the obvious meaning.
-			\item and combinations of these to get measures like (D-B) last in until last out.
-		\end{itemize}
-	\item which parameters to variate
-		\begin{itemize}
-			\item thread count. Maximum 4 is almost always considered. Model checking limitations bla.
-			\item work rate. Variate the distribution of the times the threads enter the barrier.
-		\end{itemize}
-\end{itemize}
+There are a number of interesting questions to ask about barrier protocols. First let us enumerate what we can quantify.
+
+Measuring time is obviously of great interest to us. We want to count how many processor clock cycles certain operations take. In order to measure cycles, we assign a state reward of 1 to each state. The accumulated reward is then the desired value.
+
+Another interesting quantity to measure is energy consumption (unit joule) and its rate, measured in Watt (joule per second).
+To measure these, we use a mix of transition and state rewards.
+The following, very limited assumptions are based on a sample measurement presented in Section~\ref{ssec:energy-measurement}.
+We assume a processor clock rate of 2.5 GHz to convert between seconds and cycles.
+We assume the processor to consume 11 Watts as a baseline.
+Local operations are assigned no reward.
+For shared memory protocols we assign a cost of 2 nanojoules (nJ) to each instantaneous memory operation and 200 nanojoules to each slow memory operation.
+For distributed memory we assume a cost 200 nanojoules per remote memory operation and 2 nanojoules for each local memory operation.
+
+For distributed memory protocols we are also interested in the number of remote operations issued. To obtain this measure we assign a transition reward of 1 to each corresponding transition.
+
+Having listed the three measures we want to quantify, we now consider the points in time when we want to measure.
+There are four of these: the moment when the first (A), and the last (B), thread enters the barrier, and the instant when the first (C), and last (D), thread leaves the barrier.
+For the shared memory barriers we additionally consider the moment when the writing phase ends (W), i.e. when the last thread finished writing.
+Since the Dissemination Barrier consists of multiple rounds, we are also interested in measuring at the end of each round (R$i$). That is the point in time when the last thread leaves round $i$.
+
+Formalising the preceding enumeration we present the list of properties used for model checking.
+
+\vspace{0.2cm}
+\noindent \textbf{(A)} \emph{``Average reward until any one thread entered the barrier''}
+\begin{center}
+	$\mathrm{ReaRew}( \mathit{one\_entered} )$
+\end{center}
+
+\vspace{0.2cm}
+\noindent \textbf{(B)} \emph{``Average reward until all threads entered the barrier''}
+\begin{center}
+	$\mathrm{ReaRew}( \mathit{all\_entered} )$
+\end{center}
+
+\vspace{0.2cm}
+\noindent \textbf{(C)} \emph{``Average reward until any one thread left the barrier''}
+\begin{center}
+	$\mathrm{ReaRew}( \mathit{one\_left} )$
+\end{center}
+
+\vspace{0.2cm}
+\noindent \textbf{(D)} \emph{``Average reward until every thread left the barrier''}
+\begin{center}
+	$\mathrm{ReaRew}( \mathit{all\_left} )$
+\end{center}
+
+\vspace{0.2cm}
+\noindent \textbf{(W)} \emph{``Average reward until every thread finished writing''}
+\begin{center}
+	$\mathrm{ReaRew}( \mathit{all\_done\_writing} )$
+\end{center}
+
+\vspace{0.2cm}
+\noindent \textbf{(R$i$)} \emph{``Average reward until every thread left round $i$''}
+\begin{center}
+	$\mathrm{ReaRew}( \mathit{all\_left\_round_{i}} )$
+\end{center}
+
+\noindent The state predicates have the intuitive meaning. For example $\mathit{all\_left\_round_{i}}$ describes the set of states where all threads passed round $i$.
+We additionally consider combinations of the above properties, for example D minus B, which measures the average reward accumulated between the last thread entering the barrier and the last thread leaving the barrier.
+
+There are two main parameters to variate for the measurements. The first one is the number of threads participating in the barrier synchronisation. Because the model size grows exponentially in the number of threads we are mostly restricted to thread counts of up to four.
+The second value to variate is the initial work period's rate. By changing the work rate we can consider scenarios where threads arrive in smaller and larger intervals.
 
 %%%%%%%%%%
 \paragraph{Evaluation}
