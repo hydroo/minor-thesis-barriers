@@ -1025,38 +1025,47 @@ The evaluation is split into shared and distributed memory protocols.
 %%%%%
 \subparagraph{Shared memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-evaluation-shared}
+First we assume the initial work period to take 100 cycles on average, which is extremely low considering that barrier synchronisation takes takes more time than doing actual work. Later we switch to larger work periods.
+
+Figure~\ref{fig:c1-time-work-100-B-C-D} presents the basic timing of our two shared memory barriers for different thread counts.
+The time from the last thread to enter the barrier to the last thread to leave the barrier (dark red) is similar for both the Central Counter and the B1 Barrier.
+Considering the first thread to leave, the B1 Barrier performs better.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=10cm]{charts/c1-time-work-100-B-C-D}
+	\caption{Expected execution time}
+	\label{fig:c1-time-work-100-B-C-D}
+\end{figure}
+
+Figure~\ref{fig:c1-work-100-partition} shows the total time spent and energy consumed for both barriers and thread counts between two and four.
+The diagram presents the four basic points in time we chose, along with the moment the last thread finishes writing, in a stacked fashion.
+Phase A covers the accumulated time or energy from the starting point until the first thread entered the barrier.
+During B there is at least one thread that has not entered the barrier. When the last thread enters, we reach the writing phase.
+The writing phase covers the area where at least one thread has not committed himself to the barrier.
+Phase C describes the interval in which every thread has written his date, but no thread has left.
+Phase D depicts the accumulated time or energy from the first to the last thread leaving the barrier.
+Phase C and D can also be understood as the reading phase, because no more writes are issued.
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.53\linewidth}
+		\includegraphics[height=4.3cm]{charts/c1-time-work-100-partition}
+	\end{minipage}
+	\begin{minipage}{0.46\linewidth}
+		\includegraphics[height=4.3cm]{charts/c1-energy-work-100-partition}
+	\end{minipage}
+	\caption{Distribution of total time spent and energy consumed}
+	\label{fig:c1-work-100-partition}
+\end{figure}
+
+The length of the phases A and B is only dependent on the thread count. They are equal for different protocols.
+In the Central Counter Barrier the last thread to commit himself very likely immediately exists the barrier. Therefore there is no time between the last thread writing and the first leaving the barrier (green).
+
+As conjectured in Section~\ref{sssec:analysis-general-shared} writing is quicker for the B1 Barrier and reading, i.e. C and D combined, for the Central Counter Barrier.
+
 \begin{itemize}
-	\item work = 100. Expected time it takes a thread to arrive at the barrier is 100 cycles.
-	\item last to last, last to first Figure~\ref{fig:c1-time-work-100-B-C-D}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/c1-time-work-100-B-C-D}
-			\caption{Expected execution time}
-			\label{fig:c1-time-work-100-B-C-D}
-		\end{figure}
-		\begin{itemize}
-			\item both barriers similarly fast when considering the last one to finish
-			\item B1 is faster for the first one to leave
-		\end{itemize}
-	\item distribution of total time and energy spent: Figure~\ref{fig:c1-work-100-partition}
-		\begin{figure}[htbp]
-			\centering
-			\begin{minipage}{0.53\linewidth}
-				\includegraphics[height=4.3cm]{charts/c1-time-work-100-partition}
-			\end{minipage}
-			\begin{minipage}{0.46\linewidth}
-				\includegraphics[height=4.3cm]{charts/c1-energy-work-100-partition}
-			\end{minipage}
-			\caption{Distribution of total time spent and energy consumed}
-			\label{fig:c1-work-100-partition}
-		\end{figure}
 	\item time
 		\begin{itemize}
-			\item stacked fashion. Including the time of the previous bar.
-			\item the initial work distribution is the same for all processes and protocols
-			\item cc: first thread leaves a few cycles after writing is done. Because the last one to write its value will likely immediately read the completed barrier and leave.
-			\item from the moment the first thread leaves, all threads only read. No one writes anymore.
-			\item writing, as expected, takes longer for Central Counter and reading takes longer for the B1 Barrier
 			\item all parts take longer with increasing thread count, since CTMC semantic (described in Section~\ref{sssec:analysis-modelchecking-preliminaries}) makes a transition get an exit rate of the sum of the rates of all enabled transitions.
 			\item in particular, assume you have $n$ interleaved modules (or concurrent threads of execution) where one transition in each module is enabled. The exit rate of the first transition to be triggered is then  $n \cdot \lambda$. The expected time of a parallel execution of all transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ time rather than $\frac{1}{\lambda}$.
 			\item for example the expected number of cycles for the first process to enter is $\approx \frac{100}{n}$. The last one is finished working after $\approx$ 150, 183 and 208 cycles, for two, three and four processes.
