@@ -917,25 +917,28 @@ Similar to previously presented models the functional model splits some of the t
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Functional properties}
 \label{sssec:analysis-modelchecking-functional-properties}
-\begin{itemize}
-	\item In the following two sections we use \emph{thread} and \emph{process} interchangeable. For modelling this does not make a difference.
-	\item intro text here
-	\item LTL as logic, Spin as model checker
-	\item $T$ is the set of all threads
-	\item $\mathit{left_t}$ is a predicate describing all states where thread $t$ has passed the barrier
-	\item $entered_t$ is a predicate describing all states where thread $t$ has passed the initial work period and therefore entered the barrier.
-	\item \textbf{A:} \emph{a thread may only exit the barrier if all threads have entered it}
-		\begin{center}
-			$\square \big( ~ ( \exists t \in T . \mathit{left_t} ) \implies \forall s \in T. \mathit{entered_s} ~ \big)$
-		\end{center}
-	\item \textbf{B:} \emph{if all threads entered the barrier, they will all leave it in a finite amount of time}
-		\begin{center}
-			$\square \big( ~(\forall t \in T . \mathit{entered_t} ) \implies \forall s \in T. \lozenge \mathit{left_s} ~ \big)$
-		\end{center}
-	\item A and B are the two basic properties a barrier protocol must satisfy
-	\item A could be seen as safety and B as liveness of a barrier protocol
-	\item yes it works.
-\end{itemize}
+In this section we use the words \emph{thread} and \emph{process} interchangeably, because conditions of functional correctness apply to both shared and distributed memory protocols.
+
+There are two basic conditions that every barrier protocol has to fulfill.
+It has to properly synchronise threads and may not deadlock.
+We express these two properties using the linear temporal logic (LTL).
+
+\vspace{0.2cm}
+\noindent \textbf{(A)} \emph{``A thread may only exit the barrier if all threads have entered it.''}
+\begin{center}
+	$\square ( \mathit{one\_left} \implies \mathit{all\_entered} )$
+\end{center}
+
+\vspace{0.2cm}
+\noindent \textbf{(B)} \emph{``If all threads entered the barrier, each one leaves it in a finite amount of time.''}
+\begin{center}
+	$\square ( \mathit{all\_entered} \implies \lozenge \mathit{all\_left} )$
+\end{center}
+
+We use state predicates to describe sets of states with the intuitive meaning. For example $\mathit{one\_left}$ represents the set of states where at least one thread has passed the barrier.
+
+We implemented each of the four chosen protocols in the modelling language Promela and verified properties A and B using the SPIN model checker.
+Each barrier protocol fulfills both conditions.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Quantitative properties}
