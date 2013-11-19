@@ -952,25 +952,25 @@ The section is divided into two parts. We first identify and formalise interesti
 \label{ssssec:analysis-modelchecking-quantitative-properties-identification}
 There are a number of interesting questions to ask about barrier protocols. First let us enumerate what we can quantify.
 
-Measuring time is obviously of great interest to us. We want to count how many processor clock cycles certain operations take. In order to measure cycles, we assign a state reward of 1 to each state. The accumulated reward is then the desired value.
+Measuring time is obviously of great interest to us. We want to determine how many processor clock cycles certain operations take. In order to measure cycles, we assign a state reward of 1 to each state. The accumulated reward is then the desired value.
 
-Another interesting quantity to measure is energy consumption (unit joule) and its rate, measured in Watt (joule per second).
+Another interesting quantity to measure is energy consumption (unit joule) and its rate, measured in watt (joule per second).
 To measure these, we use a mix of transition and state rewards.
 The following, very limited assumptions are based on a sample measurement presented in Section~\ref{ssec:energy-measurement}.
 We assume a processor clock rate of 2.5 GHz to convert between seconds and cycles.
-We assume the processor to consume 11 Watts as a baseline.
+We assume the processor to consume 11 watts as a baseline.
 Local operations are assigned no reward.
-For shared memory protocols we assign a cost of 2 nanojoules (nJ) to each instantaneous memory operation and 200 nanojoules to each slow memory operation.
+For shared memory protocols we assign a cost of 2 nanojoules (nJ) to each instantaneous memory operation and 200 nanojoules to slower memory operations.
 For distributed memory we assume a cost 200 nanojoules per remote memory operation and 2 nanojoules for each local memory operation.
 
-For distributed memory protocols we are also interested in the number of remote operations issued. To obtain this measure we assign a transition reward of 1 to each corresponding transition.
+For distributed memory protocols we are also interested in the number of remote operations issued. To obtain this measure we assign a reward of 1 to each corresponding transition and take the accumulated reward.
 
 Having listed the three measures we want to quantify, we now consider the points in time when we want to measure.
 There are four of these: the moment when the first (A), and the last (B), thread enters the barrier, and the instant when the first (C), and last (D), thread leaves the barrier.
 For the shared memory barriers we additionally consider the moment when the writing phase ends (W), i.e. when the last thread finished writing.
 Since the Dissemination Barrier consists of multiple rounds, we are also interested in measuring at the end of each round (R$i$). That is the point in time when the last thread leaves round $i$.
 
-Formalising the preceding enumeration we present the list of properties used for model checking.
+Formalising this enumeration we present the list of properties used for model checking.
 
 \vspace{0.2cm}
 \noindent \textbf{(A)} \emph{``Average reward until any one thread entered the barrier''}
@@ -991,19 +991,19 @@ Formalising the preceding enumeration we present the list of properties used for
 \end{center}
 
 \vspace{0.2cm}
-\noindent \textbf{(D)} \emph{``Average reward until every thread left the barrier''}
+\noindent \textbf{(D)} \emph{``Average reward until all threads left the barrier''}
 \begin{center}
 	$\mathrm{ReaRew}( \mathit{all\_left} )$
 \end{center}
 
 \vspace{0.2cm}
-\noindent \textbf{(W)} \emph{``Average reward until every thread finished writing''}
+\noindent \textbf{(W)} \emph{``Average reward until all threads finished writing''}
 \begin{center}
 	$\mathrm{ReaRew}( \mathit{all\_done\_writing} )$
 \end{center}
 
 \vspace{0.2cm}
-\noindent \textbf{(R$i$)} \emph{``Average reward until every thread left round $i$''}
+\noindent \textbf{(R$i$)} \emph{``Average reward until all threads left round $i$''}
 \begin{center}
 	$\mathrm{ReaRew}( \mathit{all\_left\_round_{i}} )$
 \end{center}
