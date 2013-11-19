@@ -1026,10 +1026,10 @@ The evaluation is split into shared and distributed memory protocols.
 %%%%%
 \subparagraph{Shared memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-evaluation-shared}
-First we assume the initial work period to take 100 cycles on average, which is extremely low considering that barrier synchronisation takes takes more time than doing actual work. Later we switch to larger work periods.
+First we assume the initial work period to take 100 cycles on average, which is extremely low considering that barrier synchronisation takes more time than the actual computation task. Later we switch to larger work periods.
 
 Figure~\ref{fig:c1-time-work-100-B-C-D} presents the basic timing of our two shared memory barriers for different thread counts.
-The time from the last thread to enter the barrier to the last thread to leave the barrier (dark red) is similar for both the Central Counter and the B1 Barrier.
+The time from the last thread to enter the barrier to the last thread to leave the barrier (dark red) is similar for both the Central Counter Barrier and the B1 Barrier.
 Considering the first thread to leave, the B1 Barrier performs better.
 
 \begin{figure}[htbp]
@@ -1040,13 +1040,12 @@ Considering the first thread to leave, the B1 Barrier performs better.
 \end{figure}
 
 Figure~\ref{fig:c1-work-100-partition} shows the total time spent and energy consumed for both barriers and thread counts between two and four.
-The diagram presents the four basic points in time we chose, along with the moment the last thread finishes writing, in a stacked fashion.
-Phase A covers the accumulated time or energy from the starting point until the first thread entered the barrier.
+The diagram presents the four basic points in time we chose, and the moment the last thread finishes writing, in a stacked fashion.
+Phase A covers the accumulated time or energy from the starting point until the first thread enters the barrier.
 During B there is at least one thread that has not entered the barrier. When the last thread enters, we reach the writing phase.
 The writing phase covers the area where at least one thread has not committed himself to the barrier.
-Phase C describes the interval in which every thread has written his date, but no thread has left.
+Phase C describes the interval in which every thread has written his date, but no thread has left the barrier, yet.
 Phase D depicts the accumulated time or energy from the first to the last thread leaving the barrier.
-Phase C and D can also be understood as the reading phase, because no more writes are issued.
 \begin{figure}[htbp]
 	\centering
 	\begin{minipage}{0.53\linewidth}
@@ -1060,103 +1059,89 @@ Phase C and D can also be understood as the reading phase, because no more write
 \end{figure}
 
 The length of the phases A and B is only dependent on the thread count. They are equal for different protocols.
-In the Central Counter Barrier the last thread to commit himself very likely immediately exists the barrier. Therefore there is no time between the last thread writing and the first leaving the barrier (green).
+In the Central Counter Barrier the last thread to commit himself very likely immediately exits the barrier. Therefore there is few time, on average, between the last thread writing and the first one leaving the barrier (green).
 
-As conjectured in Section~\ref{sssec:analysis-general-shared} writing is quicker for the B1 Barrier and reading, i.e. C and D combined, for the Central Counter Barrier.
+As conjectured in Section~\ref{sssec:analysis-general-shared} writing is quicker for the B1 Barrier and reading, i.e. phase C and D combined, for the Central Counter Barrier.
 
-\begin{itemize}
-	\item time
-		\begin{itemize}
-			\item all parts take longer with increasing thread count, since CTMC semantic (described in Section~\ref{sssec:analysis-modelchecking-preliminaries}) makes a transition get an exit rate of the sum of the rates of all enabled transitions.
-			\item in particular, assume you have $n$ interleaved modules (or concurrent threads of execution) where one transition in each module is enabled. The exit rate of the first transition to be triggered is then  $n \cdot \lambda$. The expected time of a parallel execution of all transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ time rather than $\frac{1}{\lambda}$.
-			\item for example the expected number of cycles for the first process to enter is $\approx \frac{100}{n}$. The last one is finished working after $\approx$ 150, 183 and 208 cycles, for two, three and four processes.
-			\item Especially reading for Central Counter (2: 50, 3:75, 4:92 cycles). Normally this period is expected to be nearly the same for all thread counts.
-			\item writing for the B1 Barrier is expected to take less time than shown here (100 across the board instead of 2:125, 3:138, 4:146), for the same reason as reading takes longer as expected for the Central Counter Barrier.
-		\end{itemize}
-	\item energy
-		\begin{itemize}
-			\item similar to time
-			\item the B1 Barrier needs more energy. Because it performs more shared memory operations and more local operations in the same amount of time, where the Central Counter Barrier spends considerable time waiting for atomic operations to finish.
-			\item Central Counter's energy scales similarly to time.
-			\item amount of energy for the B1 Barrier grows faster than time needed.
-			\item the B1 Barrier spends considerable energy from the last commitment to first leaving the barrier.
-		\end{itemize}
-	\item rate of power consumption per protocol phase: Figure~\ref{fig:c1-power-work-100}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/c1-power-work-100}
-			\caption{Rate of energy consumption for each phase}
-			\label{fig:c1-power-work-100}
-		\end{figure}
-		\begin{itemize}
-			\item same partitioning as the previous figure.
-			\item (A) all working has 11W - the baseline.
-			\item overall low for Central Counter (16-18.3W), B1 (19.4 - 30.6)
-			\item writing considerably higher for rs, because quicker and more shared memory operations.
-			\item no one left: cc: high because very very short, rs: high because many shared reads across many threads.
-			\item one left similar because cc: shared reads, rs: shared reads, and local reads.
-		\end{itemize}
-	\item reading vs writing: Figure~\ref{fig:c1-time-work-100-percent}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/c1-time-work-100-percent}
-			\caption{Time spent reading versus writing}
-			\label{fig:c1-time-work-100-percent}
-		\end{figure}
-		\begin{itemize}
-			\item writing is from (A) to (W). Reading is from (W) to (D).
-			\item with increasing thread count there is a shift from writing to reading in execution time.
-		\end{itemize}
-	\item work=1000. Still very small. (According to \cite{rab00} at a barrier each process spends on average 8194 CPU cycles idly\footnote{1813 microseconds accumulated idle time at 450MHz on 99.6 processes})
-	\item last to last, last to first Figure~\ref{fig:c1-time-work-1000-B-C-D}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/c1-time-work-1000-B-C-D}
-			\caption{Expected execution time}
-			\label{fig:c1-time-work-1000-B-C-D}
-		\end{figure}
-		\begin{itemize}
-			\item very different picture.
-			\item Central Counter faster in all respects.
-			\item probability of a thread trying to write while no one is writing at the moment increases due to the larger working period distribution. Writes for the B1 Barrier tend to be serialized for the same reason, but B1 still reads longer.
-			\item time for one thread from entry to exit converges to one atomic op + a few cycles. 105 cycles for Central Counter.
-		\end{itemize}
-	\item distribution of total time and energy spent: Figure~\ref{fig:c1-work-1000-partition}
-		\begin{figure}[htbp]
-			\centering
-			\begin{minipage}{0.53\linewidth}
-				\includegraphics[height=4.3cm]{charts/c1-time-work-1000-partition}
-			\end{minipage}
-			\begin{minipage}{0.46\linewidth}
-				\includegraphics[height=4.3cm]{charts/c1-energy-work-1000-partition}
-			\end{minipage}
-			\caption{Distribution of total time spent and energy consumed}
-			\label{fig:c1-work-1000-partition}
-		\end{figure}
-		\begin{itemize}
-			\item Excluding (A) and (B) since they are large in comparison to the barrier
-		\end{itemize}
-	\item time
-		\begin{itemize}
-			\item as expected
-		\end{itemize}
-	\item energy
-		\begin{itemize}
-			\item writing is constant across multiple threads because the atomic op forbids reading the variable thus there is few busy waiting, whereas B1 is constantly polling. And the amount increases with increasing thread count.
-		\end{itemize}
-	\item rate of power consumption per protocol phase: Figure~\ref{fig:c1-power-work-1000}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/c1-power-work-1000}
-			\caption{Rate of energy consumption for each phase}
-			\label{fig:c1-power-work-1000}
-		\end{figure}
-		\begin{itemize}
-			\item more even. (1) longer work period. (2) cc and rs use similarly many shared and local operations (due to busy waiting) in the reading phase ((D) one left). Energy usage is dominated by busy waiting of threads.
-			\item the B1 Barrier can catch up considerably. (cc:14.6-20.9, rs:15.3-23.5)
-		\end{itemize}
-	\item with larger and more realistic, since 1000 cycles is still very few, work periods this yields a series of writing operations for both algorithms, and a little more time spent reading for the B1 Barrier.
-\end{itemize}
+All phases take longer with increasing thread count because of the CTMC semantic for simultaneously enabled transitions, described in Section~\ref{sssec:analysis-modelchecking-preliminaries}. The exit rate of a transition is the sum of rates of all currently enabled transitions.
+In particular suppose you have $n$ concurrent threads of execution, modelled as interleaved CTMC modules, and in each one transition with rate $\lambda$ is enabled. The average delay of the first transition to fire is then $\frac{1}{n \cdot \lambda}$. The average time of a parallel execution of all $n$ transitions, assuming no interleaving with other transitions, is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ rather than the intuitive $\frac{1}{\lambda}$.
+For example the expected number of cycles until the first thread enters the barrier is $\frac{100}{n}$. The last thread is expected to enter the barrier after roughly 150, 183 and 208 cycles, for two, three and four processes.
+Because of this influence phase D for the Central Counter Barrier takes 50, 75 and 92 cycles for two, three and four threads. It is expected to be about the same across all thread counts, since each thread issues exactly one shared read operation.
+For the same reason the duration of the writing phase for the B1 Barrier should be around 100 cycles, instead of 125, 138 and 146 for two, three and four threads.
+
+The energy consumption is similar to the timing.
+The B1 Barrier requires more energy than the Central Counter Barrier, since it issues more memory operations in a similar amount of time.
+The writing phase of the Central Counter Barrier uses few energy since it spends considerable time waiting for atomic operations to finish, during which no operations on the same variable are performed.
+Where the Central Counter Barrier's energy consumption scales similarly to the duration, the B1 Barrier's energy consumption grows faster than the time needed.
+Because a thread in the waiting loop of the B1 Barrier iterates between 1 and $n$ times, where $n$ is the number of threads, before leaving the barrier, the two last phases consume considerably more energy than in the Central Counter Barrier.
+
+Aside from the accumulated energy consumption its rate during the different phases, depicted in Figure~\ref{fig:c1-power-work-100}, is also interesting.
+Phase A uses the baseline power consumption of 11 watts.
+The overall power consumption of the Central Counter Barrier lies between 16 and 18.3 watts. The B1 Barrier's is considerably higher with 19.4 to 30.6 watts.
+Because the Central Counter Barrier uses atomic operations and waits busily on only one variable, its power consumption is less in almost every phase.
+The only part where power consumption is similar is phase D. The Central Counter barrier only issues shared read operations in this phase, whereas the B1 Barrier executes a mix of shared and local read operations. The execution rate to energy reward ratio is similar, though.
+Both Barriers have very high power consumption between the moment the last thread commits himself and the first one leaves (green). For the Central Counter Barrier this is due to the shortness of this phase. In the B1 Barrier shared read operations are issued almost exclusively. In contrast to shared write operations they are modelled to take half the time, but use the same amount of energy.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=10cm]{charts/c1-power-work-100}
+	\caption{Rate of energy consumption for each phase}
+	\label{fig:c1-power-work-100}
+\end{figure}
+
+Figure~\ref{fig:c1-time-work-100-percent} shows how much time writing versus reading takes for both protocols.
+Writing begins when the first thread enters the barrier and ends when the last thread announced its arrival.
+Reading begins when the last thread committed itself and ends when the barrier completes.
+Deviating from our expectation the Central Counter Barrier's ratio is the same across all thread counts. This is due to the CTMC interleaving behaviour, explained earlier in this section.
+As expected, from our informal analysis in Section~\ref{sssec:analysis-general-shared}, with increasing thread count the ration of writing to reading time for the B1 Barrier increases.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=10cm]{charts/c1-time-work-100-percent}
+	\caption{Time spent reading versus writing}
+	\label{fig:c1-time-work-100-percent}
+\end{figure}
+
+Having reviewed different metrics for a rather short initial work period, we now have a look at similarly organised figures with an increased work period duration of 1000 cycles. Note that in comparison to real life scenarios this is still small. According to \cite{rab00} each process at a barrier spends 8194 process cycles idly\footnote{1813 microseconds accumulated idle time at 450MHz on 99.6 processes}. But an average of 1000 cycles is already enough to emulate threads arriving in intervals large enough so that each can conduct his desired work before the next one arrives.
+
+The basic timing of the barriers is very different from before. In Figure~\ref{fig:c1-time-work-1000-B-C-D} one can observe that the Central Counter Barrier outperforms the B1 Barrier in every respect.
+The serialisation of write operations for the B1 Barrier nullifies its advantage in this phase. And, as mentioned before, the reading phase takes longer as well.
+The duration of the last thread to enter to the first thread to leave for the Central Counter Barrier converges to 100 cycles, one atomic operation, plus a few additional cycles for other instructions.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=10cm]{charts/c1-time-work-1000-B-C-D}
+	\caption{Expected execution time}
+	\label{fig:c1-time-work-1000-B-C-D}
+\end{figure}
+
+Figure~\ref{fig:c1-work-1000-partition}, again, shows the total time spent and energy consumed during the different phases.
+Phases A and B are excluded because they are large and behave very similarly for both protocols.
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.53\linewidth}
+		\includegraphics[height=4.3cm]{charts/c1-time-work-1000-partition}
+	\end{minipage}
+	\begin{minipage}{0.46\linewidth}
+		\includegraphics[height=4.3cm]{charts/c1-energy-work-1000-partition}
+	\end{minipage}
+	\caption{Distribution of total time spent and energy consumed}
+	\label{fig:c1-work-1000-partition}
+\end{figure}
+
+The timing behaves as expected. The Central Counter Barrier needs one atomic operation and a few more short instructions from the last thread to enter until the first leaves. The B1 Barrier uses very similar amount of time -- a write operation and a few read operations.
+Since changing the work period only influences the phases before each thread has committed his date, the interval between C and D is the same as in Figure~\ref{fig:c1-work-100-partition}.
+
+Energy consumption during the writing phase of the Central Counter Barrier is constant across all thread counts, because atomic operations block all other threads from busily reading the barrier variable.
+The B1 Barrier in turn polls constantly, and therefore energy consumption increases with increasing thread count.
+
+The power consumption behaves similarly to the previous measurement where we used an average work period duration of 100 cycles.
+The overall power consumption is now dominated by phases A and B, which are similar across protocols. The B1 Barrier requires between 15.3 and 23.5 watts and the Central Counter Barrier uses 14.6 to 20.9 watts. The B1 Barrier can catch up considerably.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=10cm]{charts/c1-power-work-1000}
+	\caption{Rate of energy consumption for each phase}
+	\label{fig:c1-power-work-1000}
+\end{figure}
+
+If one increases the length of the work period beyond 1000 cycles, both algorithms issue few serial write operations followed by busy-waiting. The timing is then similar to our 1000 cycle case. The power consumption converges to the same value for both protocols.
 
 %%%%%
 \subparagraph{Distributed memory barriers}
