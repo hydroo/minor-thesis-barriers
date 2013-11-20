@@ -463,7 +463,7 @@ A thread commits itself to \texttt{first} or \texttt{second} by setting its resp
 All threads participating in the barrier synchronisation enter the same of the two parts.
 Inside a loop participants try to synchronise. When successful the barrier is reset through the two subsequent assignments of \texttt{current} and either \texttt{first} or \texttt{second}.
 
-Initially \texttt{first} and \texttt{second} are zero, and \texttt{current} is one. When a thread arrives at the barrier it will enter the upper if-branch. It then asks which threads have already arrived, adds himself to the acquired bit set, and stores it back to the variable \texttt{first}.
+Initially \texttt{first} and \texttt{second} are zero, and \texttt{current} is one. When a thread arrives at the barrier it will enter the upper if-branch. It then asks which threads have already arrived, adds itself to the acquired bit set, and stores it back to the variable \texttt{first}.
 He then repeatedly polls \texttt{first} in order to find out if his commitment attempt has been overwritten, i.e. its bit is not set anymore, by another thread's concurrently issued write operation, and secondly to determine whether the barrier is completed. The upper barrier is completed, if either \texttt{first} equals \texttt{full} or \texttt{current} is 2. The first thread to realise that \texttt{first} has been set to \texttt{full} will exit the loop, set \texttt{current} to 2 and continue his computational work. Subsequently all other threads eventually leave the barrier.
 When entered again the same procedure is executed in the lower if-branch using the variable \texttt{second} instead of \texttt{first}. A third repetition utilises the upper branch again.
 
@@ -1043,8 +1043,8 @@ Figure~\ref{fig:c1-work-100-partition} shows the total time spent and energy con
 The diagram presents the four basic points in time we chose, and the moment the last thread finishes writing, in a stacked fashion.
 Phase A covers the accumulated time or energy from the starting point until the first thread enters the barrier.
 During B there is at least one thread that has not entered the barrier. When the last thread enters, we reach the writing phase.
-The writing phase covers the area where at least one thread has not committed himself to the barrier.
-Phase C describes the interval in which every thread has written his date, but no thread has left the barrier, yet.
+The writing phase covers the area where at least one thread has not committed itself to the barrier.
+Phase C describes the interval in which every thread has written its date, but no thread has left the barrier, yet.
 Phase D depicts the accumulated time or energy from the first to the last thread leaving the barrier.
 \begin{figure}[htbp]
 	\centering
@@ -1059,7 +1059,7 @@ Phase D depicts the accumulated time or energy from the first to the last thread
 \end{figure}
 
 The length of the phases A and B is only dependent on the thread count. They are equal for different protocols.
-In the Central Counter Barrier the last thread to commit himself very likely immediately exits the barrier. Therefore there is few time, on average, between the last thread writing and the first one leaving the barrier (green).
+In the Central Counter Barrier the last thread to commit itself very likely immediately exits the barrier. Therefore there is few time, on average, between the last thread writing and the first one leaving the barrier (green).
 
 As conjectured in Section~\ref{sssec:analysis-general-shared} writing is quicker for the B1 Barrier and reading, i.e. phase C and D combined, for the Central Counter Barrier.
 
@@ -1080,7 +1080,7 @@ Phase A uses the baseline power consumption of 11 watts.
 The overall power consumption of the Central Counter Barrier lies between 16 and 18.3 watts. The B1 Barrier's is considerably higher with 19.4 to 30.6 watts.
 Because the Central Counter Barrier uses atomic operations and waits busily on only one variable, its power consumption is less in almost every phase.
 The only part where power consumption is similar is phase D. The Central Counter barrier only issues shared read operations in this phase, whereas the B1 Barrier executes a mix of shared and local read operations. The execution rate to energy reward ratio is similar, though.
-Both Barriers have very high power consumption between the moment the last thread commits himself and the first one leaves (green). For the Central Counter Barrier this is due to the shortness of this phase. In the B1 Barrier shared read operations are issued almost exclusively. In contrast to shared write operations they are modelled to take half the time, but use the same amount of energy.
+Both Barriers have very high power consumption between the moment the last thread commits itself and the first one leaves (green). For the Central Counter Barrier this is due to the shortness of this phase. In the B1 Barrier shared read operations are issued almost exclusively. In contrast to shared write operations they are modelled to take half the time, but use the same amount of energy.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=10cm]{charts/c1-power-work-100}
@@ -1127,7 +1127,7 @@ Phases A and B are excluded because they are large and behave very similarly for
 \end{figure}
 
 The timing behaves as expected. The Central Counter Barrier needs one atomic operation and a few more short instructions from the last thread to enter until the first leaves. The B1 Barrier uses very similar amount of time -- a write operation and a few read operations.
-Since changing the work period only influences the phases before each thread has committed his date, the interval between C and D is the same as in Figure~\ref{fig:c1-work-100-partition}.
+Since changing the work period only influences the phases before each thread has committed its date, the interval between C and D is the same as in Figure~\ref{fig:c1-work-100-partition}.
 
 Energy consumption during the writing phase of the Central Counter Barrier is constant across all thread counts, because atomic operations block all other threads from busily reading the barrier variable.
 The B1 Barrier in turn polls constantly, and therefore energy consumption increases with increasing thread count.
