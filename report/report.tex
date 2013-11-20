@@ -1146,112 +1146,107 @@ If one increases the length of the work period beyond 1000 cycles, both algorith
 %%%%%
 \subparagraph{Distributed memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-evaluation-distributed}
+This section presents a set of similarly organised results as the previous section.
+Additionally we analyse the Dissemination Barrier with up to eight concurrent processes.
+If we attempt the same for the B2 Barrier, the model size exceeds the manageable, due to the random nature of the protocol.
+Furthermore we quantify the number of remote operations the B2 Barrier issues.
+
+We begin with a work period of 100 cycles, simulating that processes arrive in extremely small intervals.
+The stacked diagrams in Figure~\ref{fig:d2-work-100-partition} show the total time spent and energy consumed for both protocols and varying thread counts through the different phases.
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.54\linewidth}
+		\includegraphics[height=4.3cm]{charts/d2-time-work-100-partition}
+	\end{minipage}
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[height=4.3cm]{charts/d2-energy-work-100-partition}
+	\end{minipage}
+	\caption{Distribution of total time spent and energy consumed}
+	\label{fig:d2-work-100-partition}
+\end{figure}
+Both protocols complete similarly fast. The B2 Barrier has an advantage at over two processes.
+The Dissemination Barrier finishes 23 cycles earlier for two processes, because remote writes can be issued during another process's work period, whereas the B1 Barrier needs to execute two more remote reads after the last process entered the barrier.
+For the B2 Barrier after the last process arrives, the first one leaves in 50, 60 and 66 cycles for two, three and four processes. Since a remote read takes 100 cycles on average, this is unrealistically early. It is an effect caused by the CTMC interleaving behaviour, explained in the previous section.
+Furthermore one can observe that there is a wider spread between the first and last to leave for the B2 Barrier.
+For the Dissemination Barrier at two processes the first and last process leave at nearly the same time, because when the first realises its peer has completed its remote write, it already completed its own. Both remote writes finish before either process can leave and therefore phase D is one cycle short.
+
+Energy consumption behaves similarly to execution time through the different phases.
+
+Figure~\ref{fig:d-work-100-partition} presents execution time and energy consumption of the Dissemination barrier through its rounds.
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.43\linewidth}
+		\includegraphics[height=4.2cm]{charts/d-time-work-100-partition}
+	\end{minipage}
+	\begin{minipage}{0.56\linewidth}
+		\includegraphics[height=4.2cm]{charts/d-energy-work-100-partition}
+	\end{minipage}
+	\caption{Distribution of total time spent and energy consumed for the Dissemination Barrier}
+	\label{fig:d-work-100-partition}
+\end{figure}
+As suspected in Section~\ref{sssec:analysis-general-distributed} it shows a stair-shaped execution time distribution. With each new round the duration increases by a large step, whereas adding processes and maintaining the number of rounds increases runtime very little.
+Normally, because remote writes can be issued concurrently, one expects the runtime to not increase at all. But due to the CTMC interleaving semantic an increase in concurrently issued operations increases the average time it takes to complete all of them.
+In this case one can interpret this effect as resource contention, i.e. the number of messages that can concurrently be exchanged is limited. We expect this behaviour to be visible in runtime measurements as well.
+
+Energy consumption with increasing process count and constant number of rounds increases faster than the execution time. There are two reasons for this. First more remote operations are issued if processes are added, as described in Section~\ref{sssec:analysis-general-distributed}. Second having more processes means more processes are waiting busily and therefore increase energy consumption.
+
+The B2 Barrier's rate of energy consumption is similar to the Dissemination Barrier's as can be observed in Figure~\ref{fig:d2-power-work-100}.
+That is, because the execution time and the number of issued remote operations is similar.
+The Dissemination Barrier uses between 17.4 and 25.2 watts, whereas the B2 Barrier requires between 16.1 and 22.15 watts.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=10cm]{charts/d2-power-work-100}
+	\caption{Rate of energy consumption for each phase}
+	\label{fig:d2-power-work-100}
+\end{figure}
+Only phase D differs, but not significantly.
+This is due to the fact that all processes in the Dissemination Barrier poll actively on local memory, where in the B2 Barrier they poll remotely and therefore more slowly.
+
+Switching to a 1000 cycle long work period, thus emulating that processes arrive in larger intervals, Figure~\ref{fig:d2-work-1000-partition} illustrates the distribution of execution time and energy consumption for both barrier protocols.
+As in the previous section we omit phase A and B, because they are long and behave equally in both protocols.
+The measurement is similar to the 100 cycle case. Here, too, the first process to leave the B2 Barrier does so unrealistically early.
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.54\linewidth}
+		\includegraphics[height=4.3cm]{charts/d2-time-work-1000-partition}
+	\end{minipage}
+	\begin{minipage}{0.45\linewidth}
+		\includegraphics[height=4.3cm]{charts/d2-energy-work-1000-partition}
+	\end{minipage}
+	\caption{Distribution of total time spent and energy consumed}
+	\label{fig:d2-work-1000-partition}
+\end{figure}
+
+Figure~\ref{fig:d-work-1000-partition} shows the same measures for the Dissemination Barrier with up to eight processes.
+\begin{figure}[htbp]
+	\centering
+	\begin{minipage}{0.43\linewidth}
+		\includegraphics[height=4.2cm]{charts/d-time-work-1000-partition}
+	\end{minipage}
+	\begin{minipage}{0.56\linewidth}
+		\includegraphics[height=4.2cm]{charts/d-energy-work-1000-partition}
+	\end{minipage}
+	\caption{Distribution of total time spent and energy consumed for the Dissemination Barrier}
+	\label{fig:d-work-1000-partition}
+\end{figure}
+Comparing to Figure~\ref{fig:d-work-100-partition} there is almost no additional execution time per process involved, if the number of rounds does not increase.
+Remote writes inside one round are approximately serial. Therefore a write is oftentimes enabled at the same time as other processes repeatedly execute local reads. The expected time such a write then takes, according to CTMC semantics explained in Section~\ref{sssec:analysis-modelchecking-preliminaries}, is approximately 100 processor cycles.
+The duration of each round is related to the explanation on progress in Section~\ref{sssec:analysis-general-distributed}. When the last process arrives at the barrier, exactly one remote write needs to be executed to finish round one, two more are needed to finish round two, and four writes are required to complete the third round. Therefore, and because of CTMC interleaving semantics, approximately 100, 150 and 183 cycles are needed to finish rounds one, two and three.
+
+Energy consumption behaves similarly to that illustrated in Figure~\ref{fig:d-work-100-partition} where we assumed a work period of 100 cycles.
+
+As we observed there is a certain cost for each additional round in the Dissemination Barrier. Due to model checking limitations we are unable to compare the Dissemination Barrier with the B2 Barrier for more than four processes, i.e. two rounds. In Figure~\ref{fig:d2-work-1000-partition} one can see that the B2 Barrier's execution time is spread more evenly than that of the Dissemination Barrier. We expect this advantage to become greater with increasing process count.
+Comparing to the 100 cycle work period results, the B2 Barrier did not increase its headway. The B2 Barrier in phase C and D uses 84.6 and 53.5 fewer cycles for three and four processes than the Dissemination Barrier, whereas for the larger work period it uses 69.5 and 43.4 fewer cycles. This is surprising, and there are a number of possible explanations. First the B2 Barrier might handle the case where processes arrive in large intervals less efficient than expected. Second the fact that the Dissemination Barrier exchanges relatively few messages might be more important than assumed. This means there is no clear indication that the progress problem, described in Section~\ref{sssec:analysis-general-distributed} exists. It might be revealed if one is able to analyse beyond four processes, though.
+
+Figure~\ref{fig:d2-power-work-1000} displays the rate of energy consumption for both protocols. It is similar to the 100 cycle work period case, except that it uses overall less power because of the longer work period.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=10cm]{charts/d2-power-work-1000}
+	\caption{Rate of energy consumption for each phase}
+	\label{fig:d2-power-work-1000}
+\end{figure}
+
 \begin{itemize}
-	\item work = 100
-	\item distribution of total time spent and total energy consumed: Figure~\ref{fig:d2-work-100-partition}
-		\begin{figure}[htbp]
-			\centering
-			\begin{minipage}{0.54\linewidth}
-				\includegraphics[height=4.3cm]{charts/d2-time-work-100-partition}
-			\end{minipage}
-			\begin{minipage}{0.45\linewidth}
-				\includegraphics[height=4.3cm]{charts/d2-energy-work-100-partition}
-			\end{minipage}
-			\caption{Distribution of total time spent and energy consumed}
-			\label{fig:d2-work-100-partition}
-		\end{figure}
-		\begin{itemize}
-			\item the B2 Barrier is quicker for process counts over two
-			\item Dissemination finishes 23 cycles earlier than the B2 Barrier for 2 processes because remote write can be executed during the work period of the other process, whereas the B1 Barrier still needs to execute 2 remote reads after the last process entered the barrier.
-			\item rf: first one to leave unrealistic. Should not be quicker than 100 cycles. CTMC exit rate calculation.
-			\item more time between first and last to leave.
-			\item last and first exit at almost the same time for Dissemination, because when the second arrives and writes his part into the remote peers memory both will quickly exit. This cannot happen for processes since when the first leaves there might still be pending remote writes.
-			\item energy consumption similar to time spent in proportion
-		\end{itemize}
-	\item Dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-100-partition}
-		\begin{figure}[htbp]
-			\centering
-			\begin{minipage}{0.43\linewidth}
-				\includegraphics[height=4.2cm]{charts/d-time-work-100-partition}
-			\end{minipage}
-			\begin{minipage}{0.56\linewidth}
-				\includegraphics[height=4.2cm]{charts/d-energy-work-100-partition}
-			\end{minipage}
-			\caption{Distribution of total time spent and energy consumed for the Dissemination Barrier}
-			\label{fig:d-work-100-partition}
-		\end{figure}
-		\begin{itemize}
-			\item stair-esque running time due to $\lceil \log_2 \mathit{processCount} \rceil$ number of rounds. During those rounds remote writes are issued concurrently.
-			\item unfavourable for non-power-of-two processes counts. Ref to Section~\ref{sssec:analysis-general-distributed}
-			\item slight increase in per-round execution time with number of processes is result of CTMC interleaving semantics. This behaviour is realistic, because resource contention for remote writes and + non-uniform distribution durations for those writes, but we didn't specifically model this.
-			\item energy consumption increase per round a bit larger than runtime increase. This is partly because more remote operations are issued as described in Section~\ref{ssssec:analysis-modelchecking-modelling-dissemination}. And partly because one more process is locally spinning before entering a new round.
-		\end{itemize}
-	\item rate of power consumption per phase: Figure~\ref{fig:d2-power-work-100}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/d2-power-work-100}
-			\caption{Rate of energy consumption for each phase}
-			\label{fig:d2-power-work-100}
-		\end{figure}
-		\begin{itemize}
-			\item All phases except the last are very similar.
-			\item largely because comparing number of local and remote operations issued to the rewards given for these operations the amount of energy consumed is expected to be similar.
-			\item Dissemination issues less remote operations, but due to local wait spinning a lot of local operations, the B2 Barrier on the other hand polls remotely.
-			\item in the last phase the B2 Barrier draws less power because it takes a lot more time for a little more energy to be consumed.
-			\item overall the B2 Barrier performs slightly better.
-		\end{itemize}
-	\item longer work period. work=1000
-	\item distribution of total time spent and energy consumed: Figure~\ref{fig:d2-work-1000-partition}
-		\begin{figure}[htbp]
-			\centering
-			\begin{minipage}{0.54\linewidth}
-				\includegraphics[height=4.3cm]{charts/d2-time-work-1000-partition}
-			\end{minipage}
-			\begin{minipage}{0.45\linewidth}
-				\includegraphics[height=4.3cm]{charts/d2-energy-work-1000-partition}
-			\end{minipage}
-			\caption{Distribution of total time spent and energy consumed}
-			\label{fig:d2-work-1000-partition}
-		\end{figure}
-		\begin{itemize}
-			\item excluding (A) and (B) because long.
-			\item first one to leave for rf unrealistic as in Figure~\ref{fig:d2-work-100-partition}
-		\end{itemize}
-	\item Dissemination: distribution of total time spent and energy consumed: Figure~\ref{fig:d-work-1000-partition}
-		\begin{figure}[htbp]
-			\centering
-			\begin{minipage}{0.43\linewidth}
-				\includegraphics[height=4.2cm]{charts/d-time-work-1000-partition}
-			\end{minipage}
-			\begin{minipage}{0.56\linewidth}
-				\includegraphics[height=4.2cm]{charts/d-energy-work-1000-partition}
-			\end{minipage}
-			\caption{Distribution of total time spent and energy consumed for the Dissemination Barrier}
-			\label{fig:d-work-1000-partition}
-		\end{figure}
-		\begin{itemize}
-			\item as expected
-			\item In comparison to Figure~\ref{fig:d-work-100-partition} there is almost no additional time cost per process associated. CTMC semantic effect diminishes because the remote writes in the rounds are approximately serial. Therefore a write is oftentimes activatable at the same time as other processes are repeatedly executing local reads. The expected time such a write takes is then $\approx 100$ CPU cycles.
-			\item the durations for the rounds are related to the progress explanation in Section~\ref{sssec:analysis-general-distributed}. When the last process arrives at the barrier, exactly one remote write is needed to finish round one, two more writes are needed to finish round two and four writes are needed to finish the third round. Therefore, and because of CTMC interleaving semantics, approximately 100, 150 and 183 cycles are needed to finish rounds one, two and three.
-			\item Energy usage increases with each additional progress for the same reasons as in Figure~\ref{fig:d-work-100-partition}
-			\item progress problem.
-			\item there is a fixed cost for each additional round in the Dissemination Barrier.
-			\item due to model checking limitations (a very large state space), we cannot quantify beyond four processes, i.e. two rounds.
-			\item as shown in Figure~\ref{fig:d-work-1000-partition} the B2 Barrier is indeed quicker.
-			\item in relation to the results from work period 100, the B2 Barrier could not increase its headway at work period 1000.
-			\item this does not necessarily mean that the progress problem does not exist. It might for example mean that the B2 Barrier does not handle this situation as efficiently as we expected or that it did better than we expected for the 100 cycle work period case. Either way it is definitely possible to be generally faster than the Dissemination Barrier is for this scenario.
-		\end{itemize}
-	\item rate of power consumption per phase: Figure~\ref{fig:d2-power-work-1000}
-		\begin{figure}[htbp]
-			\centering
-			\includegraphics[width=10cm]{charts/d2-power-work-1000}
-			\caption{Rate of energy consumption for each phase}
-			\label{fig:d2-power-work-1000}
-		\end{figure}
-		\begin{itemize}
-			\item overall power consumption slightly lower because of the 1000 cycle work period.
-			\item everything else similar to Figure~\ref{fig:d2-power-work-100}.
-		\end{itemize}
 	\item number of remote transfers
 		\begin{itemize}
 			\item remote transfer is a generic term including remote reads and remote writes.
