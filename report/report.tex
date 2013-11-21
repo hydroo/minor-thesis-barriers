@@ -921,7 +921,7 @@ Similar to previously presented models the functional model splits some of the t
 In this section we use the words \emph{thread} and \emph{process} interchangeably, because conditions of functional correctness apply to both shared and distributed memory protocols.
 
 There are two basic conditions that every barrier protocol has to fulfill.
-It has to properly synchronise threads, i.e. no thread leaves before all threads arrived at the barrier, and may not deadlock.
+It has to properly synchronise threads, i.e. no thread leaves before all threads arrived at the barrier, and it may not deadlock.
 We express these two properties using the linear temporal logic (LTL).
 
 \vspace{0.2cm}
@@ -937,6 +937,8 @@ We express these two properties using the linear temporal logic (LTL).
 \end{center}
 
 We use state predicates to describe sets of states with the intuitive meaning. For example $\mathit{all\_left}$ represents the set of states where each thread has passed the barrier.
+
+In order for B to hold we have to assume that each thread is scheduled infinitely often. This property is also called \emph{fairness}. In fact assuming weak fairness already suffices here. Without this mild side assumption a barrier protocol can deadlock since one thread might never leave the barrier.
 
 We implemented each of the four chosen protocols in the modelling language Promela and verified properties A and B using the SPIN model checker.
 All barrier protocols fulfill both conditions.
