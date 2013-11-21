@@ -1186,7 +1186,7 @@ Figure~\ref{fig:d-work-100-partition} presents execution time and energy consump
 \end{figure}
 As suspected in Section~\ref{sssec:analysis-general-distributed} it shows a stair-shaped execution time distribution. With each new round the duration increases by a large step, whereas adding processes and maintaining the number of rounds increases runtime very little.
 Normally, because remote writes can be issued concurrently, one expects the runtime to not increase at all. But due to the CTMC interleaving semantic an increase in concurrently issued operations increases the average time it takes to complete all of them.
-Here one can interpret this effect as resource contention, i.e. the number of messages that can concurrently be exchanged is limited. We expect this behaviour to be visible in runtime measurements as well.
+Here one can interpret this effect as resource contention, i.e. the number of messages that can concurrently be exchanged is limited. We expect this behaviour to be visible in runtime benchmarks as well.
 
 Energy consumption with increasing process count and constant number of rounds increases faster than the execution time. There are two reasons for this. First more remote operations are issued if processes are added, as described in Section~\ref{sssec:analysis-general-distributed}. Second having more processes means more processes are waiting busily and therefore increase energy consumption.
 
@@ -1246,59 +1246,49 @@ Figure~\ref{fig:d2-power-work-1000} displays the rate of energy consumption for 
 	\label{fig:d2-power-work-1000}
 \end{figure}
 
-\begin{itemize}
-	\item number of remote transfers
-		\begin{itemize}
-			\item remote transfer is a generic term including remote reads and remote writes.
-			\item fixed for Dissemination as explained in Section~\ref{sssec:analysis-general-distributed}. $n \cdot \lceil \log _2~n \rceil$
-			\item number of successful transfers (transfers that read from an arrived processes) between $2 \cdot (n-1)$ and $n \cdot (n-1)$. Both practically never happen because randomness and access pattern.
-			\item failed transfers (transfers where you read from a not yet arrived process).
-			\item hard to estimate, because the randomness of the system defines this number.
-			\item work=100. Figure~\ref{tab:d2-transfers-100}
-				\begin{table}[htbp]
-					\centering
-					\caption{Expected number of remote transfers}
-					\vspace{0.2cm}
-					\begin{tabular}{r | r | r r}
-						              & Threads & Successful transfers & Failed transfers \\
-						\hline
-						Dissemination & 2       & 2                     &                 \\
-						              & 3       & 6                     &                 \\
-						              & 4       & 8                     &                 \\
-						\hline
-						B2 Barrier    & 2       & 2                     & 0.99            \\
-						              & 3       & 4.74                  & 1.73            \\
-						              & 4       & 7.98                  & 2.44            \\
-					\end{tabular}
-					\label{tab:d2-transfers-100}
-				\end{table}
-				\begin{itemize}
-					\item as expected the B2 Barrier issues more remote transactions than the Dissemination Barrier.
-					\item it is still relatively low.
-					\item especially the number of failed remote accesses is low in comparison to the number of successful ones.
-					\item For process count 5, and other non-power-of-two process counts the situation might turn out better for the B2 Barrier, because of the additional rounds and thus additional transfers needed.
-				\end{itemize}
-			\item work=1000. Table~\ref{tab:d2-transfers-1000}
-				\begin{table}[htbp]
-					\centering
-					\caption{Expected number of remote transfers}
-					\vspace{0.2cm}
-					\begin{tabular}{r | r r}
-						Threads & Successful transfers & Failed transfers \\
-						\hline
-						2       & 2                     & 9.9             \\
-						3       & 4.95                  & 22.89           \\
-						4       & 8.78                  & 38.05           \\
-					\end{tabular}
-					\label{tab:d2-transfers-1000}
-				\end{table}
-				\begin{itemize}
-					\item number of successful transfers very similar to work=100.
-					\item failed transfers is of course more than before since the B2 Barrier is busy waiting on remote memory.
-					\item back-off strategies could be used, if one would want to save the lost bandwidth, latency and energy in exchange for a longer duration of the protocol.
-				\end{itemize}
-		\end{itemize}
-\end{itemize}
+Aside from execution time and energy consumption, the number of remote transfer operations is another interesting measure to evaluate.
+As explained in Section~\ref{sssec:analysis-general-distributed}, this number is fixed for the Dissemination Barrier -- $n \cdot \lceil \log _2~n \rceil$ where $n$ is the process count.
+The number of successful, i.e. non-zero, remote read operations for the B2 Barrier lies between $2 \cdot (n-1)$ and $n \cdot (n-1)$. We are unable to give a better estimate. This is where model checking comes into play.
+
+Table~\ref{tab:d2-transfers-100} presents the number of remote operations, assuming a work period duration of 100 cycles.
+\begin{table}[htbp]
+	\centering
+	\caption{Expected number of remote transfers}
+	\vspace{0.2cm}
+	\begin{tabular}{r | r | r r}
+					  & Threads & Successful transfers & Failed transfers \\
+		\hline
+		Dissemination & 2       & 2                     &                 \\
+					  & 3       & 6                     &                 \\
+					  & 4       & 8                     &                 \\
+		\hline
+		B2 Barrier    & 2       & 2                     & 0.99            \\
+					  & 3       & 4.74                  & 1.73            \\
+					  & 4       & 7.98                  & 2.44            \\
+	\end{tabular}
+	\label{tab:d2-transfers-100}
+\end{table}
+The B2 Barrier issues more remote transactions than the Dissemination Barrier, but comparatively few.
+For the Dissemination Barrier the number of remote operations depends heavily on the number of rounds, therefore the situation might get better for the B2 Barrier with process counts higher than four.
+
+Table~\ref{tab:d2-transfers-1000} shows the same measurement for an assumed work period length of 1000 cycles.
+\begin{table}[htbp]
+	\centering
+	\caption{Expected number of remote transfers}
+	\vspace{0.2cm}
+	\begin{tabular}{r | r r}
+		Threads & Successful transfers & Failed transfers \\
+		\hline
+		2       & 2                     & 9.9             \\
+		3       & 4.95                  & 22.89           \\
+		4       & 8.78                  & 38.05           \\
+	\end{tabular}
+	\label{tab:d2-transfers-1000}
+\end{table}
+The number of transfers for the Dissemination Barrier is the same as before.
+If processes arrive in large intervals, each time a new one arrives it gets concurrently polled by all others. The resulting communication pattern is more inefficient than if processes would share their presence in a chain- or tree-like fashion. Therefore the B2 Barrier issues slightly more successful remote reads in this case.
+The number of failed transfers is, as expected, considerably higher.
+Through implementing a back-off strategy this number can be lowered in exchange for a higher execution time.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Discussion}
