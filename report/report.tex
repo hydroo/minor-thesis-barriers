@@ -1146,9 +1146,9 @@ If one increases the length of the work period beyond 1000 cycles, both algorith
 %%%%%
 \subparagraph{Distributed memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-evaluation-distributed}
-This section presents a set of similarly organised results as the previous section.
+This section presents a comparison of the Dissemination Barrier and the B2 Barrier, similarly organised as the previous section.
 Additionally we analyse the Dissemination Barrier with up to eight concurrent processes.
-If we attempt the same for the B2 Barrier, the model size exceeds the manageable, due to the random nature of the protocol.
+If we attempt the same for the B2 Barrier, the model size exceeds the manageable.
 Furthermore we quantify the number of remote operations the B2 Barrier issues.
 
 We begin with a work period of 100 cycles, simulating that processes arrive in extremely small intervals.
@@ -1165,10 +1165,10 @@ The stacked diagrams in Figure~\ref{fig:d2-work-100-partition} show the total ti
 	\label{fig:d2-work-100-partition}
 \end{figure}
 Both protocols complete similarly fast. The B2 Barrier has an advantage at over two processes.
-The Dissemination Barrier finishes 23 cycles earlier for two processes, because remote writes can be issued during another process's work period, whereas the B1 Barrier needs to execute two more remote reads after the last process entered the barrier.
-For the B2 Barrier after the last process arrives, the first one leaves in 50, 60 and 66 cycles for two, three and four processes. Since a remote read takes 100 cycles on average, this is unrealistically early. It is an effect caused by the CTMC interleaving behaviour, explained in the previous section.
-Furthermore one can observe that there is a wider spread between the first and last to leave for the B2 Barrier.
-For the Dissemination Barrier at two processes the first and last process leave at nearly the same time, because when the first realises its peer has completed its remote write, it already completed its own. Both remote writes finish before either process can leave and therefore phase D is one cycle short.
+The Dissemination Barrier finishes 23 cycles earlier for two processes, because remote writes can be issued during another process's work period, whereas the B1 Barrier needs to execute two more remote read operations after the last process enters the barrier.
+For the B2 Barrier after the last process arrives, the first one leaves in 50, 60 and 66 cycles for two, three and four processes. Since a remote read takes 100 cycles on average, this is unrealistically early. The CTMC interleaving behaviour, explained in the previous section, causes this effect.
+Furthermore one can observe that there is a wider spread between the first and the last process to leave for the B2 Barrier.
+For the Dissemination Barrier at two processes the first and the last process leave at nearly the same time, because when the first realises its peer has completed its remote write, it already completed its own. Both remote writes finish before either process can leave and therefore phase D is one cycle short.
 
 Energy consumption behaves similarly to execution time through the different phases.
 
@@ -1186,7 +1186,7 @@ Figure~\ref{fig:d-work-100-partition} presents execution time and energy consump
 \end{figure}
 As suspected in Section~\ref{sssec:analysis-general-distributed} it shows a stair-shaped execution time distribution. With each new round the duration increases by a large step, whereas adding processes and maintaining the number of rounds increases runtime very little.
 Normally, because remote writes can be issued concurrently, one expects the runtime to not increase at all. But due to the CTMC interleaving semantic an increase in concurrently issued operations increases the average time it takes to complete all of them.
-In this case one can interpret this effect as resource contention, i.e. the number of messages that can concurrently be exchanged is limited. We expect this behaviour to be visible in runtime measurements as well.
+Here one can interpret this effect as resource contention, i.e. the number of messages that can concurrently be exchanged is limited. We expect this behaviour to be visible in runtime measurements as well.
 
 Energy consumption with increasing process count and constant number of rounds increases faster than the execution time. There are two reasons for this. First more remote operations are issued if processes are added, as described in Section~\ref{sssec:analysis-general-distributed}. Second having more processes means more processes are waiting busily and therefore increase energy consumption.
 
@@ -1230,15 +1230,15 @@ Figure~\ref{fig:d-work-1000-partition} shows the same measures for the Dissemina
 	\label{fig:d-work-1000-partition}
 \end{figure}
 Comparing to Figure~\ref{fig:d-work-100-partition} there is almost no additional execution time per process involved, if the number of rounds does not increase.
-Remote writes inside one round are approximately serial. Therefore a write is oftentimes enabled at the same time as other processes repeatedly execute local reads. The expected time such a write then takes, according to CTMC semantics explained in Section~\ref{sssec:analysis-modelchecking-preliminaries}, is approximately 100 processor cycles.
+Remote writes inside one round are approximately serial. Therefore a write is oftentimes enabled at the same time as other processes repeatedly execute local reads. The expected time such a write takes, according to CTMC semantics explained in Section~\ref{sssec:analysis-modelchecking-preliminaries}, is then roughly 100 processor cycles.
 The duration of each round is related to the explanation on progress in Section~\ref{sssec:analysis-general-distributed}. When the last process arrives at the barrier, exactly one remote write needs to be executed to finish round one, two more are needed to finish round two, and four writes are required to complete the third round. Therefore, and because of CTMC interleaving semantics, approximately 100, 150 and 183 cycles are needed to finish rounds one, two and three.
 
 Energy consumption behaves similarly to that illustrated in Figure~\ref{fig:d-work-100-partition} where we assumed a work period of 100 cycles.
 
-As we observed there is a certain cost for each additional round in the Dissemination Barrier. Due to model checking limitations we are unable to compare the Dissemination Barrier with the B2 Barrier for more than four processes, i.e. two rounds. In Figure~\ref{fig:d2-work-1000-partition} one can see that the B2 Barrier's execution time is spread more evenly than that of the Dissemination Barrier. We expect this advantage to become greater with increasing process count.
-Comparing to the 100 cycle work period results, the B2 Barrier did not increase its headway. The B2 Barrier in phase C and D uses 84.6 and 53.5 fewer cycles for three and four processes than the Dissemination Barrier, whereas for the larger work period it uses 69.5 and 43.4 fewer cycles. This is surprising, and there are a number of possible explanations. First the B2 Barrier might handle the case where processes arrive in large intervals less efficient than expected. Second the fact that the Dissemination Barrier exchanges relatively few messages might be more important than assumed. This means there is no clear indication that the progress problem, described in Section~\ref{sssec:analysis-general-distributed} exists. It might be revealed if one is able to analyse beyond four processes, though.
+As we observed there is a certain cost for each additional round in the Dissemination Barrier. Due to model checking limitations we are unable to compare the Dissemination Barrier to the B2 Barrier for more than four processes, i.e. two rounds. In Figure~\ref{fig:d2-work-1000-partition} one can see that the B2 Barrier's execution time is spread more evenly than that of the Dissemination Barrier. We expect this advantage to become greater with increasing process count.
+Comparing to the 100 cycle work period results, the B2 Barrier does not increase its advantage. The B2 Barrier in phase C and D uses 84.6 and 53.5 fewer cycles for three and four processes than the Dissemination Barrier, whereas for the larger work period it uses 69.5 and 43.4 fewer cycles. This is surprising, and there are a number of possible explanations. First the B2 Barrier might handle the case where processes arrive in large intervals less efficient than expected. Second the fact that the Dissemination Barrier exchanges relatively few messages might be more important than assumed. This means there is no clear indication that the progress problem, described in Section~\ref{sssec:analysis-general-distributed} exists. It might be revealed if one is able to analyse beyond four processes, though.
 
-Figure~\ref{fig:d2-power-work-1000} displays the rate of energy consumption for both protocols. It is similar to the 100 cycle work period case, except that it uses overall less power because of the longer work period.
+Figure~\ref{fig:d2-power-work-1000} displays the rate of energy consumption for both protocols. It is similar to the 100 cycle work period case, except that it uses overall less power because, due to the longer work period, more time is spent idly.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=10cm]{charts/d2-power-work-1000}
