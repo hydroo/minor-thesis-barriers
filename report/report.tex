@@ -262,7 +262,7 @@ Aside from implementing barriers in software vendors can wire a barrier implemen
 \label{sssec:background-means-distributed}
 A parallel program for a distributed memory architecture consists of multiple \emph{processes}. Each process has its own address space and is therefore unable to directly share memory with other processes.
 
-First we will give an overview of general ways to implement synchronisation primitives on distributed memory systems followed by an analysis of one specific distributed memory programming standard.
+First, we will give an overview of general ways to implement synchronisation primitives on distributed memory systems followed by an analysis of one specific distributed memory programming standard.
 
 One way to exchange information between two processes is via \emph{synchronous message passing}. Two processes meet at a point in time, exchange information, then part and continue their computational tasks. This method requires the involved peers to wait for each other, buffer and queue information and send it via network.
 
@@ -370,7 +370,7 @@ Throughout this thesis we will assume that the thread and process count is at mo
 
 % glibc/nptl/sysdeps/pthread/pthread.h, glibc/nptl/pthread_barrier_*, glibc/nptl/sysdeps/unix/sysv/linux/internaltypes.h
 The GNU POSIX Threads implementation, called Native POSIX Threads Library (NPTL), is part of the The GNU~C~Library.
-The basic barrier algorithm used in it is the same as for GNU~OpenMP. One main differences is that it does not use atomic operations to decrement the variable, but explicitly locks it to guard from interfering access. Second there is no busy waiting, but upon arriving at the barrier the thread will immediately suspend, via a futex, and wait to be woken up by the last thread arriving. The third difference is that to reset the barrier each thread atomically increments the barrier variable by one upon leaving.
+The basic barrier algorithm used in it is the same as for GNU~OpenMP. One main differences is that it does not use atomic operations to decrement the variable, but explicitly locks it to guard from interfering access. Second, there is no busy waiting, but upon arriving at the barrier the thread will immediately suspend, via a futex, and wait to be woken up by the last thread arriving. The third difference is that to reset the barrier each thread atomically increments the barrier variable by one upon leaving.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed memory systems}
@@ -542,7 +542,7 @@ In the shared memory setting the Central Counter Barrier is pitted against the B
 
 In our evaluation we assume no back-off strategy is used. This means if a variable is repeatedly requested inside a loop, it is fetched as often as program execution speed allows. The topic of back-off strategies is a subject in its own right and goes beyond the scope of this thesis.
 
-The analysis is split into two parts. First we present properties, perceivable without measurement and modelling, that are inherent to the protocols. Second we employ model checking to quantify our observations and gain a deeper understanding of the chosen barriers.
+The analysis is split into two parts. First, we present properties, perceivable without measurement and modelling, that are inherent to the protocols. Second, we employ model checking to quantify our observations and gain a deeper understanding of the chosen barriers.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{General properties}
@@ -948,12 +948,12 @@ All barrier protocols fulfill both conditions.
 \label{sssec:analysis-modelchecking-quantitative-properties}
 As in the previous section we use the words \emph{thread} and \emph{process} interchangeably, since some properties apply to both shared and distributed memory barrier protocols.
 
-The section is divided into two parts. We first identify and formalise interesting quantitative properties of barrier protocols. Second we present the results of the automated analysis.
+The section is divided into two parts. We first identify and formalise interesting quantitative properties of barrier protocols. Second, we present the results of the automated analysis.
 
 %%%%%%%%%%
 \paragraph{Identification and formalisation}
 \label{ssssec:analysis-modelchecking-quantitative-properties-identification}
-There are a number of interesting questions to ask about barrier protocols. First let us enumerate what we can quantify.
+There are a number of interesting questions to ask about barrier protocols. First, let us enumerate what we can quantify.
 
 Measuring time is obviously of great interest to us. We want to determine how many processor clock cycles certain operations take. In order to measure cycles, we assign a state reward of 1 to each state. The accumulated reward is then the desired value.
 
@@ -1028,7 +1028,7 @@ The evaluation is split into shared and distributed memory protocols.
 %%%%%
 \subparagraph{Shared memory barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-evaluation-shared}
-First we assume the initial work period to take 100 cycles on average, which is extremely low considering that barrier synchronisation takes more time than the actual computation task.
+First, we assume the initial work period to take 100 cycles on average, which is extremely low considering that barrier synchronisation takes more time than the actual computation task.
 
 Figure~\ref{fig:c1-time-work-100-B-C-D} presents the basic timing of our two shared memory barriers for different thread counts. We exclude the time before the last thread completes its work period, because the barrier cannot finish earlier.
 The execution time until the last thread leaves the barrier (dark red) is similar for both the Central Counter Barrier and the B1 Barrier.
@@ -1190,7 +1190,7 @@ As suspected in Section~\ref{sssec:analysis-general-distributed} it shows a stai
 Normally, because remote writes can be issued concurrently, one expects the runtime to not increase at all. But due to the CTMC interleaving semantic an increase in concurrently issued operations increases the average time it takes to complete all of them.
 Here one can interpret this effect as resource contention, i.e. the number of messages that can concurrently be exchanged is limited. We expect this behaviour to be visible in runtime benchmarks as well.
 
-Energy consumption with increasing process count and constant number of rounds increases faster than the execution time. There are two reasons for this. First more remote operations are issued if processes are added, as described in Section~\ref{sssec:analysis-general-distributed}. Second having more processes means more processes are waiting busily and therefore increase energy consumption.
+Energy consumption with increasing process count and constant number of rounds increases faster than the execution time. There are two reasons for this. First, more remote operations are issued if processes are added, as described in Section~\ref{sssec:analysis-general-distributed}. Second, having more processes means more processes are waiting busily and therefore increase energy consumption.
 
 The B2 Barrier's rate of energy consumption is similar to the Dissemination Barrier's as can be observed in Figure~\ref{fig:d2-power-work-100}.
 That is, because the execution time and the number of issued remote operations is similar.
@@ -1238,7 +1238,7 @@ The duration of each round is related to the explanation on progress in Section~
 Energy consumption behaves similarly to that illustrated in Figure~\ref{fig:d-work-100-partition} where we assumed a work period of 100 cycles.
 
 As we observed there is a certain cost for each additional round in the Dissemination Barrier. Due to model checking limitations we are unable to compare the Dissemination Barrier to the B2 Barrier for more than four processes, i.e. two rounds. In Figure~\ref{fig:d2-work-1000-partition} one can see that the B2 Barrier's execution time is spread more evenly than that of the Dissemination Barrier. We expect this advantage to become greater with increasing process count.
-Comparing to the 100 cycle work period results, the B2 Barrier does not increase its advantage. The B2 Barrier in phase C and D uses 84.6 and 53.5 fewer cycles for three and four processes than the Dissemination Barrier, whereas for the larger work period it uses 69.5 and 43.4 fewer cycles. This is surprising, and there are a number of possible explanations. First the B2 Barrier might handle the case where processes arrive in large intervals less efficient than expected. Second the fact that the Dissemination Barrier exchanges relatively few messages might be more important than assumed. This means there is no clear indication that the progress problem, described in Section~\ref{sssec:analysis-general-distributed} exists. It might be revealed if one is able to analyse beyond four processes, though.
+Comparing to the 100 cycle work period results, the B2 Barrier does not increase its advantage. The B2 Barrier in phase C and D uses 84.6 and 53.5 fewer cycles for three and four processes than the Dissemination Barrier, whereas for the larger work period it uses 69.5 and 43.4 fewer cycles. This is surprising, and there are a number of possible explanations. First, the B2 Barrier might handle the case where processes arrive in large intervals less efficient than expected. Second, the fact that the Dissemination Barrier exchanges relatively few messages might be more important than assumed. This means there is no clear indication that the progress problem, described in Section~\ref{sssec:analysis-general-distributed} exists. It might be revealed if one is able to analyse beyond four processes, though.
 
 Figure~\ref{fig:d2-power-work-1000} displays the rate of energy consumption for both protocols. It is similar to the 100 cycle work period case, except that it uses overall less power because, due to the longer work period, more time is spent idly.
 \begin{figure}[htbp]
