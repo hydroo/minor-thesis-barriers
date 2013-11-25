@@ -539,7 +539,7 @@ In this section we will evaluate one commonly used barrier for each shared and d
 
 Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas the B1 and B2 Barrier show promise. Therefore we restrict our attention to these two.
 
-In the shared memory setting the Central Counter Barrier is pitted against the B1 Barrier. In the distributed memory case we compare the Dissemination to the B2 Barrier.
+In the shared memory setting the Central Counter Barrier is pitted against the B1 Barrier. In the distributed memory case we compare the Dissemination Barrier to the B2 Barrier.
 
 In our evaluation we assume no back-off strategy is used. This means if a variable is repeatedly requested inside a loop, it is fetched as often as program execution speed allows. The topic of back-off strategies is a subject in its own right and goes beyond the scope of this thesis.
 
@@ -565,7 +565,7 @@ In the writing phase of the Central Counter Barrier concurrently issued add-fetc
 
 During the reading phase of the Central Counter Barrier a thread fetches a single variable repeatedly until it has the desired value. A thread in the B1 Barrier needs to read between 1 and $n$ array elements before it can leave the loop.
 
-The B1 Barrier has the edge in the writing phase, whereas the Central Counter Barrier performs well during reading. We attempt to quantify the effect of this behaviour in Section~\ref{ssec:analysis-modelchecking}.
+The B1 Barrier has the edge in the writing phase, whereas the Central Counter Barrier performs well during reading. We quantify the effect of this behaviour in Section~\ref{ssec:analysis-modelchecking}.
 
 The memory required by the Central Counter Barrier is logarithmic in the number of threads. With a 64-bit counter up to $2^{64}$ threads can be synchronised. The B1 Barrier uses a linear amount of memory -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes large. This might seem like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only 32 KiB is used.
 
@@ -576,7 +576,7 @@ In this section we assume $n$ to be the number of processes participating in the
 
 The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} and \ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) communicate very differently.
 
-The minimum number of remote access operations required to perform a barrier synchronisation is $2 \cdot (n-1)$. Figure~\ref{fig:diagram-gather-broadcast} illustrates a simple gather and broadcast  barrier (process zero gathers all arrival notifications and broadcasts to all processes when the barrier is complete) using this number of operations. It does so in $2 \cdot  \lceil \log _2~n \rceil$ rounds. All operations inside a round can be executed in parallel. However rounds themselves are completed serially. In order to lower the number of rounds to $\lceil \log _2~n \rceil$ the Dissemination Barrier issues $n \cdot \lceil \log _2~n \rceil$, more than the minimum needed, remote access operations. The added communication overhead is traded for a decrease in overall execution time.
+The minimum number of remote access operations required to perform a barrier synchronisation is $2 \cdot (n-1)$. Figure~\ref{fig:diagram-gather-broadcast} illustrates a simple gather and broadcast  barrier (process zero gathers all arrival notifications and broadcasts to all processes when the barrier is complete) using this number of operations. It does so in $2 \cdot  \lceil \log _2~n \rceil$ rounds. All operations inside a round can be executed in parallel. However rounds themselves are completed serially. This means the minimum execution time of this  barrier is $2 \cdot \lceil \log_2~n \rceil$ times the duration of a remote write operation. In order to lower the number of rounds to $\lceil \log _2~n \rceil$ the Dissemination Barrier issues $n \cdot \lceil \log _2~n \rceil$, more than the minimum needed, remote access operations. The added communication overhead is traded for a decrease in overall execution time.
 
 \begin{figure}[htbp]
 	\centering
@@ -596,7 +596,7 @@ Synchronisation using the Dissemination and B2 Barrier requires the same amount 
 
 Assuming all processes arrive at a similar time, Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed} illustrates the progression through the rounds of the Dissemination Barrier. More often than not, processes arrive in large intervals, compared to the execution time of a barrier itself.
 Therefore some processes advance through the rounds before every process arrived.
-But how far exactly can the protocol progress without all processes?
+But how far exactly can the protocol progress without all processes being present?
 
 Suppose every process but the fourth has entered the barrier. Figure~\ref{fig:diagram-dissemination-progress} then shows the advance of the processes through the rounds.
 
@@ -607,7 +607,7 @@ Suppose every process but the fourth has entered the barrier. Figure~\ref{fig:di
 	\label{fig:diagram-dissemination-progress}
 \end{figure}
 
-Every dotted line indicates a remote write operation that does not happen. Processes with dotted circles have not reached the current round.
+Every dotted line indicates a remote write operation that is not executed. Processes with dotted circles have not reached the current round.
 Since process four does not notify process five of its arrival, in the second round process four and five do not advertise their arrival to process six and zero. The number of stuck processes doubles each round.
 Once process four enters, the missing remote operations in all three rounds are still to be completed until the processes may leave the barrier.
 
@@ -702,7 +702,7 @@ Because the number of blocked processes doubles each round the ratio of stuck to
 
 The B2 Barrier does not work in rounds and does not have designated communication partners. It therefore fetches all other process's arrival notifications while one is missing.
 
-When the last process arrives the Dissemination Barrier requires at least as many serial remote writes as there are rounds, whereas the B2 Barrier issues its remaining remote reads concurrently. The number of remaining remote access operations is $2^{\lceil \log_2~n \rceil} - 1$ for the Dissemination Barrier and $n$ for the B2 Barrier.
+When the last process arrives the Dissemination Barrier requires at least as many serial remote writes as there are rounds, whereas the B2 Barrier issues its remaining remote read operations concurrently. The number of remaining remote access operations is $2^{\lceil \log_2~n \rceil} - 1$ for the Dissemination Barrier and $n$ for the B2 Barrier.
 
 We attempt to quantify the influence of this behaviour on the execution time and energy consumption in the following section.
 
@@ -729,7 +729,7 @@ A CTMC $\mathcal{M}$ is a tuple $(S, \mathit{Act}, R, \mu)$ where $S$ is a finit
 If $R(s, \alpha, s') = \lambda$ (short $s \xrightarrow{\lambda : \alpha} s'$) and $\lambda > 0$ then $\mathcal{M}$ has a transition from $s$ to $s'$ with action label $\alpha$ and rate $\lambda$.
 $\lambda$ specifies the rate of the exponential distribution. That means the probability for the transition $s \xrightarrow{\lambda : \alpha} s'$ to be ready for firing some time in the interval $[0,t]$ is $1-e^{- \lambda t}$. The average delay of this transition is $\frac{1}{\lambda}$.
 If $R(s, \alpha, s') = 0$ then there is no transition in $\mathcal{M}$ from $s$ to $s'$ via $\alpha$.
-The choice between multiple enabled transitions is made by the following condition.
+The choice between multiple enabled transitions is made by the following rule.
 The probability to trigger a particular transition $s \xrightarrow{\lambda : \alpha} s'$ is $P(s, \alpha, s') = \frac{\lambda}{E(s)}$ where $E(s)$ is the exit rate of state $s$, i.e. the sum of the rates of all outgoing transitions of state $s$.
 The probability that $s \xrightarrow{\lambda : \alpha} s'$ will fire within $t$ time units is then $P(s, \alpha, s') \cdot (1 - e^{- E(s) \cdot t})$.
 
@@ -760,9 +760,9 @@ We also wish to count remote memory access operations. For this we assign value 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Modelling}
 \label{sssec:analysis-modelchecking-modelling}
-To analyse functional and quantitative aspects of the chosen barrier protocols, we model them using two different formalisms and two different software tools. We use ordinary non-stochastic transition systems and the SPIN~\cite{spin, hol97} model checker to verify functional properties. To analyse quantitative properties we employ CTMCs and PRISM~\cite{prism, knp09}.
+To analyse functional and quantitative aspects of the chosen barrier protocols, we model them using two different formalisms and two different software tools. We use ordinary non-deterministic transition systems and the SPIN~\cite{spin, hol97} model checker to verify functional properties. To analyse quantitative properties we employ CTMCs and PRISM~\cite{prism, knp09}.
 
-To verify the functional correctness of a barrier, we need to include a reset mechanism into the model, which is not needed for quantitative analysis. By stripping this unnecessary information off the probabilistic model we shrink its state space. This enables us to verify properties more quickly and/or on larger models.
+To verify the functional correctness of a barrier, we need to include a reset mechanism into the model, which is not needed for quantitative analysis. By stripping this unnecessary information off the probabilistic model we shrink its state space. This enables us to verify properties more quickly and/or of larger models.
 
 Depending on circumstances we describe part of a system as non-stochastic control flow diagram and part as CTMC. Control flow diagrams contain local variables, shared variables, control flow information and need to be unwound to form a proper CTMC. The state space of the resulting CTMC is then a combination of control flow location and variable assignments.
 
@@ -869,7 +869,7 @@ In comparison to the pseudocode the assignments are slightly different, but ulti
 Deviating from the quantitative model, the functional model implements repetition and resetting by replacing the boolean array elements with counters. The principle is described in detail in Section~\ref{ssec:background-building-blocks}.
 Additionally the functional model splits some of the transition into multiple transitions to allow for more interleaving and therefore reveal more potential errors in the protocol.
 
-Splitting these transitions in the quantitative model would increase model size majorly, since the number of locations inflates the model's size exponentially in the number of threads. It is important not to merge multiple shared memory dependent transitions. Everything else influences timing only in a minor way.
+Splitting these transitions in the quantitative model would increase model size majorly. It is important not to merge multiple transitions that depend on shared memory. Merging and splitting other transitions influences timing in a minor way.
 
 %%%%%%%%%%
 \paragraph{Dissemination Barrier}
@@ -890,8 +890,6 @@ The expressions \texttt{to} and \texttt{from} are shorthands for \texttt{process
 
 Local operations take far less time than remote operations -- between ten to a thousand times usually. Therefore we assign the $\lambda_c$ (one processor clock cycle) to local operations.
 The duration of a remote write (also called put) operation, which is strongly hard-ware dependent, is assumed to take 100 cycles. Therefore we assign $\lambda_p = \frac{1}{100}$ to each corresponding transition.
-
-One could model the algorithm in more detail by splitting some of the transitions into multiple ones. We refrain from this to keep the model size at a manageable level.
 
 In the CTMC model, resulting from unwinding this control flow diagram, a remote write operation is represented as a synchronised action. When a process executes a put, the target process then changes its local state accordingly.
 
@@ -1067,7 +1065,7 @@ In the Central Counter Barrier the last thread to commit itself, very likely imm
 As conjectured in Section~\ref{sssec:analysis-general-shared} writing is quicker for the B1 Barrier and reading, i.e. phase C and D combined, for the Central Counter Barrier.
 
 All phases take longer with increasing thread count because of the CTMC semantic for simultaneously enabled transitions, described in Section~\ref{sssec:analysis-modelchecking-preliminaries}. The exit rate of a transition is the sum of rates of all currently enabled transitions.
-In particular suppose you have $n$ concurrent threads of execution, modelled as interleaved CTMC modules, and in each a transition with rate $\lambda$ is enabled. The average delay of the first transition to fire is then $\frac{1}{n \cdot \lambda}$. The average time of a parallel execution of all $n$ transitions, assuming no interleaving with other transitions, is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ rather than the intuitive $\frac{1}{\lambda}$.
+In particular suppose you have $n$ concurrent threads of execution, modelled as interleaved CTMC modules, and in each a transition with rate $\lambda$ is enabled. The average delay of the first transition to fire is then $\frac{1}{n \cdot \lambda}$. The average time of a parallel execution of all $n$ transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ rather than the intuitive $\frac{1}{\lambda}$.
 For example the expected number of cycles until the first thread enters the barrier is $\frac{100}{n}$. The last thread is expected to enter the barrier after roughly 150, 183 and 208 cycles, for two, three and four processes.
 Because of this influence phase D for the Central Counter Barrier takes 50, 75 and 92 cycles for two, three and four threads. It is expected to be about the same across all thread counts, since each thread issues exactly one shared read operation.
 For the same reason the duration of the writing phase for the B1 Barrier should be around 100 cycles instead of 125, 138 and 146 for two, three and four threads.
@@ -1092,10 +1090,10 @@ Both Barriers have very high power consumption between the moment the last threa
 \end{figure}
 
 Figure~\ref{fig:c1-time-work-100-percent} shows the ratio of time spent writing versus reading for both protocols.
-Writing begins when the first thread enters the barrier and ends when the last thread announced its arrival.
+Writing begins when the first thread enters the barrier and ends when the last thread announces its arrival.
 Reading begins when the last thread committed itself and ends when the barrier completes.
 Deviating from our expectation, that the writing percentage would increase, the Central Counter Barrier's ratio is the same across all thread counts. This is due to the CTMC interleaving behaviour, explained earlier in this section.
-As expected, from our informal analysis in Section~\ref{sssec:analysis-general-shared}, with decreases thread count the ration of writing to reading time for the B1 Barrier increases.
+As expected, from our informal analysis in Section~\ref{sssec:analysis-general-shared}, with increasing thread count the ration of writing to reading time for the B1 Barrier decreases.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=10cm]{charts/c1-time-work-100-percent}
@@ -1103,7 +1101,7 @@ As expected, from our informal analysis in Section~\ref{sssec:analysis-general-s
 	\label{fig:c1-time-work-100-percent}
 \end{figure}
 
-Having reviewed different metrics for a rather short initial work period, we now have a look at similarly organised figures with an increased work period duration of 1000 cycles. Note that in comparison to real life scenarios this is still small. According to \cite{rab00} each process at a barrier spends 8194 cycles idly\footnote{1813 microseconds accumulated idle time at 450 MHz on 99.6 processes}. But an average of 1000 cycles is already enough to emulate threads arriving in intervals large enough so that each can conduct its desired work before the next one arrives. Increasing the work period this point does not reveal new effects.
+Having reviewed different metrics for a rather short initial work period, we now have a look at similarly organised figures with an increased work period duration of 1000 cycles. Note that in comparison to real life scenarios this is still small. According to \cite{rab00} each process at a barrier spends 8194 cycles idly\footnote{1813 microseconds accumulated idle time at 450 MHz on 99.6 processes}. But an average of 1000 cycles is already enough to emulate threads arriving in intervals large enough so that each can conduct its desired work before the next one arrives. Increasing the work period further does not reveal new effects.
 
 As one can observe in Figure~\ref{fig:c1-time-work-1000-B-C-D} the basic execution time of the barriers is very different from before.
 Being naturally at a disadvantage in the reading phase, and because write operations are serialized due to the large arrival intervals, the B1 Barrier performs worse in every respect.
@@ -1168,14 +1166,14 @@ The stacked diagrams in Figure~\ref{fig:d2-work-100-partition} show the total ti
 	\label{fig:d2-work-100-partition}
 \end{figure}
 Both protocols complete similarly fast. The B2 Barrier has an advantage at over two processes.
-The Dissemination Barrier finishes 23 cycles earlier for two processes, because remote writes can be issued during another process's work period, whereas the B1 Barrier needs to execute two more remote read operations after the last process enters the barrier.
-For the B2 Barrier after the last process arrives, the first one leaves in 50, 60 and 66 cycles for two, three and four processes. Since a remote read takes 100 cycles on average, this is unrealistically early. The CTMC interleaving behaviour, explained in the previous section, causes this effect.
+The Dissemination Barrier finishes 23 cycles earlier for two processes, because remote writes can be issued during another process's work period, whereas the B2 Barrier needs to execute two more remote read operations after the last process enters the barrier.
+For the B2 Barrier after the last process arrives, the first one leaves in 50 cycles for two processes. Since a remote read takes 100 cycles on average, this is unrealistically early. The CTMC interleaving behaviour, explained in the previous section, causes this effect.
 Furthermore one can observe that there is a wider spread between the first and the last process to leave for the B2 Barrier.
 For the Dissemination Barrier at two processes the first and the last process leave at nearly the same time, because when the first realises its peer has completed its remote write, it already completed its own. Both remote writes finish before either process can leave and therefore phase D is one cycle short.
 
 Energy consumption behaves similarly to execution time through the different phases.
 
-Figure~\ref{fig:d-work-100-partition} presents execution time and energy consumption of the Dissemination barrier through its rounds.
+Figure~\ref{fig:d-work-100-partition} presents execution time and energy consumption of the Dissemination Barrier through its rounds for up to eight processes.
 \begin{figure}[htbp]
 	\centering
 	\begin{minipage}{0.43\linewidth}
@@ -1233,15 +1231,15 @@ Figure~\ref{fig:d-work-1000-partition} shows the same measures for the Dissemina
 	\label{fig:d-work-1000-partition}
 \end{figure}
 Comparing to Figure~\ref{fig:d-work-100-partition} there is almost no additional execution time per process involved, if the number of rounds does not increase.
-Remote writes inside one round are approximately serial. Therefore a write is oftentimes enabled at the same time as other processes repeatedly execute local reads. The expected time such a write takes, according to CTMC semantics explained in Section~\ref{sssec:analysis-modelchecking-preliminaries}, is then roughly 100 processor cycles.
+Remote writes inside one round are approximately serial. Therefore a write is oftentimes enabled at the same time as other processes repeatedly execute local reads. The expected time such a write takes, according to CTMC semantics explained in Section~\ref{sssec:analysis-modelchecking-preliminaries}, is then 100 processor cycles.
 The duration of each round is related to the explanation on progress in Section~\ref{sssec:analysis-general-distributed}. When the last process arrives at the barrier, exactly one remote write needs to be executed to finish round one, two more are needed to finish round two, and four writes are required to complete the third round. Therefore, and because of CTMC interleaving semantics, approximately 100, 150 and 183 cycles are needed to finish rounds one, two and three.
 
 Energy consumption behaves similarly to that illustrated in Figure~\ref{fig:d-work-100-partition} where we assumed a work period of 100 cycles.
 
 As we observed there is a certain cost for each additional round in the Dissemination Barrier. Due to model checking limitations we are unable to compare the Dissemination Barrier to the B2 Barrier for more than four processes, i.e. two rounds. In Figure~\ref{fig:d2-work-1000-partition} one can see that the B2 Barrier's execution time is spread more evenly than that of the Dissemination Barrier. We expect this advantage to become greater with increasing process count.
-Comparing to the 100 cycle work period results, the B2 Barrier does not increase its advantage. The B2 Barrier in phase C and D uses 84.6 and 53.5 fewer cycles for three and four processes than the Dissemination Barrier, whereas for the larger work period it uses 69.5 and 43.4 fewer cycles. This is surprising, and there are a number of possible explanations. First, the B2 Barrier might handle the case where processes arrive in large intervals less efficient than expected. Second, the fact that the Dissemination Barrier exchanges relatively few messages might be more important than assumed. This means there is no clear indication that the progress problem, described in Section~\ref{sssec:analysis-general-distributed} exists. It might be revealed if one is able to analyse beyond four processes, though.
+Comparing to the 100 cycle work period results, the B2 Barrier does not increase its advantage. The B2 Barrier in phase C and D uses 84.6 and 53.5 fewer cycles for three and four processes than the Dissemination Barrier, whereas for the larger work period it uses 69.5 and 43.4 fewer cycles. This is surprising, and there are a number of possible explanations. First, the B2 Barrier might handle the case where processes arrive in large intervals less efficient than expected. Second, the fact that the Dissemination Barrier exchanges relatively few messages might be more important than assumed. This means there is no clear indication that the progress problem, described in Section~\ref{sssec:analysis-general-distributed} exists. It might surface, if one is able to analyse beyond four processes, though.
 
-Figure~\ref{fig:d2-power-work-1000} displays the rate of energy consumption for both protocols. It is similar to the 100 cycle work period case, except that it uses overall less power because, due to the longer work period, more time is spent idly.
+Figure~\ref{fig:d2-power-work-1000} displays the rate of energy consumption for both protocols. It is similar to the 100 cycle work period case, except that it uses overall less power, because a longer work period means that more time is spent idly.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=10cm]{charts/d2-power-work-1000}
@@ -1380,6 +1378,7 @@ Future work:
 \label{sec:appendix}
 \subsection{Energy reference measurement for estimating the model parameters}
 The CPU we used is an Intel\textregistered~Core\texttrademark~i5-2520M clocked at 2.50GHz.
+Barriers are repeated as quickly as possible, without waiting time in between.
 \label{ssec:energy-measurement}
 \begin{table}[htbp]
 	\centering
