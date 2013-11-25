@@ -852,7 +852,7 @@ Unlike the quantitative model, the functional model repeatedly executes the prot
 %%%%%%%%%%
 \paragraph{B1 Barrier}
 \label{ssssec:analysis-modelchecking-modelling-b1}
-The B1 Barrier (Figure~\ref{ssec:new-b1} in Section~\ref{fig:pseudocode-b1}) allocates one cache line per array element. Therefore the final model is composed of $n$ algorithm modules plus $n^2$ cache line copy modules where $n$ is the number of threads.
+The B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) allocates one cache line per array element. Therefore the final model is composed of $n$ algorithm modules plus $n^2$ cache line copy modules where $n$ is the number of threads.
 
 The algorithm's control flow is illustrated in Figure~\ref{fig:model-b1}. As for the Central Counter Barrier, the B1 Barrier starts with an initial work period, its rates are determined by thread's cache line copy module, and the grey transition labelling indicates the interaction with the cache.
 
