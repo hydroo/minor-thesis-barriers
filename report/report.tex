@@ -1305,33 +1305,28 @@ The CTMC model checking semantic for simultaneously enabled transitions is diffe
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion and future work}
 \label{sec:conclusion}
-Conclusion:
-\begin{itemize}
-	\item meta
-		\begin{itemize}
-			\item "Don't leave it at the discussion: discuss what you/we can learn from the results. Draw some real conclusions. Separate discussion/interpretation of the results clearly from the conclusions you draw from them"
-			\item condense results into a small passage
-			\item ?repeat claim - overarching thesis - present an answer?
-		\end{itemize}
-	\item (overarching (1) barriers can be improved, (2) pW/CS (3) model checking is useful)
-	\item we had an in-depth look at how current barriers work, and by which means barriers can be designed.
-	\item We presented three new barriers, two of which show promise and we therefore conclude that there exists potential to improve barrier protocols.
-	\item To achieve the shown performance, both new barriers do not use a fixed communication pattern, as today's barrier algorithms do, but rely on randomness to yield better results. This is one of the fundamental principles of pW/CS and shows that it is useful.
-	\item Model checking enabled us to look into barrier algorithms at a more fine-grained level than measurement-based methods could hope to.
-	\item We demonstrated the aptitude of model checking as a method for analysing synchronisation protocols and algorithms in general.
-\end{itemize}
+In this work we first enumerate the available tools for building barriers, survey today's implementation landscape, and show how barriers are constructed from orthogonal components.
+We then present three new protocols, one of which shows promise. We therefore conclude that barrier protocols can be improved. To achieve the displayed performance, the B2 Barrier does not use a fixed communication pattern but relies on randomness. Weakening determinism and using randomness are core principles of pW/CS locks. The B2 Barrier can, therefore, be considered an example for the aptitude of the ideas behind pW/CS locks to improve synchronisation performance.
+Using model checking enabled a fine-grained analysis beyond what measurement-based methods can achieve.
+Although the model size and accuracy is admittedly limited, we expect future work in this direction to alleviate these deficiencies.
+We belief that model checking is a powerful tool to aid the development and analysis of algorithms, and synchronisation protocols in particular.
+
+The possible future directions of this work can be divided into five categories.
+First, what this thesis lacks is benchmarks.
+One should repeat the analysis and comparison done in Section~\ref{sssec:analysis-modelchecking-functional-properties} using measurement instead of model checking. Once this is done, the models should also be refined.
+
+Second, new barriers and variations of old ones should be evaluated.
+For example one can try different increment strategies for the iteration variable of the B2 Barrier.
+The B1 and B2 Barrier both exclusively read remotely and write locally. In particular, both busily wait on remote memory. Some hardware-platforms, like the Epiphany~\cite{epiphany} multi-core processor, also offer better performance for remote write operations than for remote read operations.
+By reversing the situation so that remote writing in conjunction with local busy waiting is used, one might be able to get rid of busy waiting on remote memory and leverage the potentially better performance of remote write operations on some architectures.
+
+Third, model checking should be extended. The unfortunate limit of four processes for model checking should be improved upon. To achieve this, one can employ techniques like symmetry reduction, partial order reduction and manual fine-tuning.
+Another interesting pursuit is to model check in greater detail. Today's processors, for example, have a multi-layered cache. In order to get preciser performance predictions one can incorporate these intricacies into the model.
+Resource contention is another detail we do not model in this work. Our theoretical machine is able to concurrently transfer data between processes at an arbitrarily high bandwidth.
+
 
 Future work:
 \begin{itemize}
-	\item meta
-		\begin{itemize}
-			\item "Identify all shortcomings/limitations of your work, and discuss how they could be fixed"
-		\end{itemize}
-	\item measurement
-		\begin{itemize}
-			\item conduct measurements of the shared memory barriers (easy). Preliminary tests show that both the B1 and the B2 Barrier perform better than model checking analysis suggests.
-			\item implement the B2 Barrier on RDMA hardware and benchmark against established algorithms
-		\end{itemize}
 	\item widen focus
 		\begin{itemize}
 			\item evaluate back-off strategies. (technical possibilities. Strategies like exponential back-off, linear back-off, etc.)
@@ -1344,22 +1339,6 @@ Future work:
 			\item work around it?
 			\item attempt to invent an variations on the CTMC semantic to suit modelling parallel execution better?
 			\item try alternative model checking formalisms.
-		\end{itemize}
-	\item modelcheck larger: more threads. Symmetry reduction. Partial order reduction. Manual reduction.
-	\item model check more fine-grained
-		\begin{itemize}
-			\item model multi layered cache. More realistic.
-			\item model resource conflict. (We currently assume infinite bandwidth and amount of communication that can take at the same time)
-			\item model topology between processes. Like cores/dies/packages/nodes/blades. Because it influence latency.
-		\end{itemize}
-	\item explore variations of the new barriers
-		\begin{itemize}
-			\item B2: Try different i increment strategies. Or perhaps randomize the choice of i.
-			\item use remote write \& local read instead of local write \& remote read, because remote writing is preferred on some platforms, e.g. on the Epiphany\cite{epiphany}. AND this way one might be able to avoid failed remote operations entirely and keep busy waiting local.
-		\end{itemize}
-	\item misc
-		\begin{itemize}
-			\item~
 		\end{itemize}
 \end{itemize}
 
