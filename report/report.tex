@@ -174,10 +174,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 \label{sec:introduction}
-\begin{itemize}
-	\item \todo watch out that the intention/laying down a continuous thread is strong enough ((1)barriers can be improved, (2)through pW/CS, (3)model checking is useful)
-\end{itemize}
-
 Synchronisation is a central element of parallel programs. Various synchronisation mechanisms with different goals have been devised. One such mechanism is the barrier. If a group of threads or processes execute a barrier, each of them must wait at this point until all other threads/processes arrive at the barrier.
 
 Many synchronisation operations imply a barrier. For example OpenMP's~\cite{openmp} parallel for-loops make sure that no thread continues program execution until all iterations are completed, since the following operations might rely on the results of the loop. Likewise in MPI~\cite{mpiforum}, global operations like reduce, scatter and gather imply a barrier synchronisation.
