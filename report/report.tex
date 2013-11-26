@@ -176,48 +176,43 @@ I hereby declare that I prepared this thesis independently and without use of to
 \label{sec:introduction}
 \begin{itemize}
 	\item \todo watch out that the intention/laying down a continuous thread is strong enough ((1)barriers can be improved, (2)through pW/CS, (3)model checking is useful)
-	\item what is a barrier
-	\item usage example for barriers
-	\item barriers are common in parallel programming. OpenMP's\cite{openmp} implicit barriers. MPI barriers (Rolf Rabenseifner\cite{rab00}). Relate to normal send/recv, because absolute numbers without relation are not helpful.
-		\begin{itemize}
-			\item HLRS, year 2000
-			\item many calls,
-			\item 5.3\% of all time spent inside MPI calls, 0.7\% of all CPU time, estimated 1.6\% of the barrier execution time is actual synchronisation, 100\% minus 1.6\% is waiting for other processes to arrive, because of unbalanced computation. Average 1852 microsecond per call. (Figure~13 in paper)
-			\item e.g. receive 12.9\% of all time spent inside MPI calls, 1.8\% of all cpu time, 33\% of the recv executation time is actual latency plus transfer time, 100\% minus 33\% is waiting for other processes to arrive, because of unbalanced comoputation. Average 498 microseconds per call.
-		\end{itemize}
-	\item motivation for researching barriers: Apply ideas of pW/CS\cite{pwcs} to other synchronisation primitives, e.g. barriers in order to gain performance, where performance can be any important measure e.g. speed, energy efficiency, (say something about possible improvements that can still be made).
-	\item summarize pW/CS
-		\begin{itemize}
-			\item usually concurrent programs work in a deterministic fashion. That is the order and partners of remote synchronisation (locally, programs are obviously mostly deterministic) are predetermined. The algorithm is executed in a very controlled fashion. Same holds for synchronisation primitives themselves. Faulty behavior is avoided at great cost.
-			\item don't avoid inconsistency at all cost. Make errors detectable, or ignorable.
-			\item use the inherent randomness\cite{mcg09}, induced by caching, scheduling, randomness (ECC, flash access e.g.) at hardware level (jitter), or short: complexity of today's computer systems, in order to view concurrent accesses as really random. Thus we are able to apply probabilistic algorithms and analyse these algorithms using tools of probability theory.
-			\item design algorithms that have sufficiently high probability of success and tolerate faulty behaviour.
-			\item build them so that on average, or in their intended use case, they perform better than their deterministic counterparts, where better might e.g. be faster, more energy efficient, resource preserving.
-			\item It seems to be a promising approach
-			\item barriers can be improved. One possible way is through pW/CS.
-		\end{itemize}
-	\item how do we gather data on these algorithms to build confidence that they work properly, i.e. satisfy certain properties? And get a feeling for how they perform?
-	\item Testing/Measurement (explain wording. Be aware of possible confusion) and model checking complement one another:
-		\begin{itemize}
-			\item Measurement is usually deterministic. If so, certain interesting states in a protocol are impossible to reach because of the randomness inherent to today's computers (add a short example? A special very case of a low level lock being contented?)
-			\item Assuming you have randomized measurements, the probability to reach certain states in the protocol is so low that they are not revealed.
-			\item Some parts of algorithms are performed in such a short time or need very exact preparation that it is practically impossible to analyse these parts using measurement. In this case model checking can be applied because it offers this granularity.
-			\item Modelling has of course its own short comings. For example the state explosion problem.
-			\item we can gain better quantitative insights into synchronisation protocols by combining both measurement and model checking.
-		\end{itemize}
-	\item briefly explain the report structure
-		\begin{itemize}
-			\item existing stuff
-				\begin{itemize}
-					\item means to implement barriers
-					\item currently used barriers
-					\item idea to split barriers into orthogonal parts and think about them separately
-				\end{itemize}
-			\item new barriers
-			\item analysis and comparison of one old for shared memory and one old for distributed memory against the new barriers
-			\item conclusion \& future work
-		\end{itemize}
 \end{itemize}
+
+Synchronisation is a central element of parallel programs. Various synchronisation mechanisms with different goals have been devised. One such mechanism is the barrier. If a group of threads or processes execute a barrier, each of them must wait at this point until all other threads/processes arrive at the barrier.
+
+Many synchronisation operations imply a barrier. For example OpenMP's~\cite{openmp} parallel for-loops make sure that no thread continues program execution until all iterations are completed, since the following operations might rely on the results of the loop. Likewise in MPI~\cite{mpiforum}, global operations like reduce, scatter and gather imply a barrier synchronisation.
+
+Many parallel programs use a lock-step approach to interleave computation with communication phases.
+For example a program simulating weather divides the map into a grid.
+Each square in this grid is assigned to one process, so that the weather progression of the next few minutes, for all squares, can be simulated concurrently.
+Changes in weather condition at the borders of a square influence the next simulation step of neighbouring squares.
+Therefore before entering the next simulation phase, data about the border regions, like temperature, humidity or cloud movement, is exchanged.
+Before beginning this exchange the program needs to make sure that each square has completed the current simulation step. To achieve that, they invoke a barrier operation.
+Once it is completed, data is exchanged and the next simulation step starts.
+
+The barrier is a commonly used synchronisation operation. According to a survey conducted at the High Performance Computing Center Stuttgart~\cite{rab00} in 2000, 5.3\% of all time spent synchronising and 0.7\% of the total program execution time is spent in barriers.
+
+Today's barrier implementations use protocols that are fairly old. One example is the Dissemination Barrier~\cite{hensgen1988}, presented in 1988. This suggests that, due to the rapidly changing computer science and engineering landscape, one can improve upon existing barriers.
+
+At a recent workshop, Nicholas Mc~Guire proposed a new low-level synchronisation scheme, called probabilistic Write/Copy-Select (short pW/CS)~\cite{pwcs} lock. It aims to improve the performance of exclusive access to shared memory. The core ideas, though, apply to synchronisation in general:
+\begin{itemize}
+	\item Concurrent algorithms work, mostly, in a deterministic fashion. That is the arrangement of synchronisation is predetermined. The program is executed in a strict form. Faulty behaviour is avoided at great cost.
+	\item One can improve performance by relieving this constraint. Tolerate inconsistencies, make errors detectable and/or ignorable.
+	\item Leverage the inherent randomness~\cite{mcg09}, induced by caching, scheduling, memory access latency differences, or short: the complexity of today's computer systems, in order to view concurrent memory access as genuinely random. This enables the use of probabilistic algorithms for development, and the tools of probability theory for analysis.
+\end{itemize}
+One wants to design algorithms that have a sufficiently high probability of success, tolerate faulty behaviour and, on average, perform better than their deterministic cousins. They aim to be better in ways, e.g. speed, energy efficiency, memory consumption, that depend on the use case.
+We believe that synchronisation primitives, in particular barriers, can be improved by applying these principles.
+
+To gain confidence that a program works properly, i.e. satisfies certain properties, one normally uses testing and benchmarks.
+Testing, as well as measurement, is usually deterministic. When testing probabilistic algorithms deterministically, there is always a chance of errors not being revealed. Randomising tests only gives a certain degree of confidence as well. Both methods are not exhaustive.
+Two more drawbacks of measurement is that the granularity of the measurement scale is limited, and that measuring itself can influence the outcome. This makes analysing low-level synchronisation primitives, and small program pieces in general, hard and sometimes impossible.
+Model checking avoids these three problems. It is exhaustive, arbitrarily granular and, since it simulates the protocol, involves no measurement overhead. But Model checking has, of course, its own set of shortcomings. First of all, the available tools are difficult to use. Second, the accuracy of results depends on the quality of the model. Third, exhaustive analysis needs a lot of hardware resources, and can therefore be infeasible even in relatively confined scenarios.
+Model checking, therefore, complements measurement-based analysis.
+
+The thesis is structured as follows. First, we survey the tools developers have at their disposal to implement barriers. Second, we present today's mainly used barrier algorithms. To conclude the background study, we give an account of the basic anatomy of barriers.
+We then move on to present three newly devised barrier protocols.
+The largest part of the thesis concerns the analysis and comparison of two known and two new barriers. We analyse them by means of an informal scrutiny combined with functional and probabilistic model checking.
+The final section summarises the presented work and gives an outlook of possible directions for future research.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background}
