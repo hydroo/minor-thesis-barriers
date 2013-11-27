@@ -197,7 +197,7 @@ The barrier is a commonly used synchronisation operation. According to a survey 
 
 Today's barrier implementations use protocols that are fairly old. One example is the Dissemination Barrier~\cite{hensgen1988}, presented in 1988. This suggests that, due to the rapidly changing computer science and engineering landscape, one can improve upon existing barriers.
 
-At a recent workshop, Nicholas Mc~Guire proposed a new low-level synchronisation scheme, called probabilistic Write/Copy-Select (short pW/CS)~\cite{pwcs} lock. It aims to improve the performance of exclusive access to shared memory. The core ideas, though, apply to synchronisation in general:
+At a recent workshop, Nicholas Mc~Guire proposed a new low-level synchronisation scheme, called probabilistic Write/Copy-Select (short pW/CS) lock~\cite{pwcs}. It aims to improve the performance of exclusive access to shared memory. The core ideas, though, apply to synchronisation in general:
 \begin{itemize}
 	\item Concurrent algorithms work, mostly, in a deterministic fashion. That is the arrangement of synchronisation is predetermined. The program is executed in a strict form. Faulty behaviour is avoided at great cost.
 	\item One can improve performance by relieving this constraint. Tolerate inconsistencies, make errors detectable and/or ignorable.
@@ -208,14 +208,14 @@ We believe that synchronisation primitives, in particular barriers, can be impro
 
 To gain confidence that a program works properly, i.e. satisfies certain properties, one normally uses testing and benchmarks.
 Testing, as well as measurement, is usually deterministic. When testing probabilistic algorithms deterministically, there is always a chance of errors not being revealed. Randomising tests only gives a certain degree of confidence as well. Both methods are not exhaustive.
-Two more drawbacks of measurement is that the granularity of the measurement scale is limited, and that measuring itself can influence the outcome. This makes analysing low-level synchronisation primitives, and small program pieces in general, hard and sometimes impossible.
+Two more drawbacks of measurement are that the granularity of the measurement scale is limited, and that measuring itself can influence the outcome. This makes analysing low-level synchronisation primitives, and small program pieces in general, hard and sometimes impossible.
 Model checking avoids these three problems. It is exhaustive, arbitrarily granular and, since it simulates the protocol, involves no measurement overhead. But Model checking has, of course, its own set of shortcomings. First of all, the available tools are difficult to use. Second, the accuracy of results depends on the quality of the model. Third, exhaustive analysis needs a lot of hardware resources, and can therefore be infeasible even in relatively confined scenarios.
-Model checking, therefore, complements measurement-based analysis.
+Model checking, thus, complements measurement-based analysis.
 
 The thesis is structured as follows. First, we survey the tools developers have at their disposal to implement barriers. Second, we present today's mainly used barrier algorithms. To conclude the background study, we give an account of the basic anatomy of barriers.
 We then move on to present three newly devised barrier protocols.
 The largest part of the thesis concerns the analysis and comparison of two known and two new barriers. We analyse them by means of an informal scrutiny combined with functional and probabilistic model checking.
-The final section summarises the presented work and gives an outlook of possible directions for future research.
+The final section summarises the presented work and gives an outlook on possible directions for future research.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Background}
