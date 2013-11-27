@@ -231,7 +231,7 @@ The final section summarises the presented work and gives an outlook on possible
 \section{Background}
 \label{sec:background}
 In this section we will first take look at the tools at our disposal to implement barriers on both shared memory and distributed memory architectures, followed by an overview of which barrier algorithms are used in today's parallel programming frameworks.
-Finally we present a view of the barrier as a modularized algorithm consisting of various independent pieces.
+Finally we present a view of the barrier as a modularized algorithm consisting of various independent components.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Means to implement barrier protocols}
@@ -283,7 +283,7 @@ Due to its one-sided nature RMA incurs less overhead than the two previous techn
 
 Hardware support for barriers in distributed memory systems is widespread especially in high-performance computing. Examples include the Earth Simulator~\cite{earthsimulator}, IBM Blue Gene/L~\cite{bluegenel}, IBM Blue Gene/Q~\cite{bluegeneq} and a low-cost FPGA-based system~\cite{hoefler2006b}
 
-Another interesting and seemingly untested approach is to use lossy communication channels for developing synchronisation protocols. Hardware is always erroneous. For example network packages conflict, packages drop, packages are corrupted or connections drop all the time. Reliability increasing techniques and protocols such as the Transmission Control Protocol (TCP), that are used to to mitigate these errors, incur a great performance penalty for transmitting short messages. TCP for example creates comparatively huge packages for small amounts of data, and each transmitted package has to be acknowledged by the receiver. Checking for flipped bits in the package adds further latency.
+Another interesting and seemingly untested approach is to use lossy communication channels for developing synchronisation protocols. Hardware is always erroneous. For example network packages conflict, packages drop, packages are corrupted or connections drop all the time. Reliability increasing techniques and protocols such as the Transmission Control Protocol (TCP), that are used to mitigate these errors, incur a great performance penalty for transmitting short messages. TCP for example creates comparatively huge packages for small amounts of data, and each transmitted package has to be acknowledged by the receiver. Checking for flipped bits in the package adds further latency.
 If one would instead craft algorithms so that they don't require 100\% reliable connections, further performance improvements are conceivable.
 Two ways one could implement such algorithms are via the User Datagram Protocol (UDP)~\cite{udp} and InfiniBand's unreliable connections~\cite{infiniband}.
 
@@ -373,7 +373,7 @@ The protocol can be separated into two phases (Figure~\ref{fig:diagram-central-c
 
 The actual implementation in GNU~OpenMP is more involved than the pseudocode in Figure~\ref{fig:pseudocode-central-counter} suggests. For example the algorithm shown here is destructive in the sense that it cannot be repeated, because if the variable is zero at the end, repetition would mean that the variable is negative in the next round, which breaks the protocol. To mitigate this the variable is copied, by each thread, upon first reading it and the last thread to enter resets the shared variable to its initial value.
 
-The loop additionally keeps track number of unsuccessful reads. If this number reaches a certain amount, an operating system mechanism, called futex\cite{franke2002}, is employed to suspend the thread until a later time when the other threads hopefully have arrived. Through this back-off mechanism the system avoids unnecessary busy waiting which would negatively impact power consumption. The threshold of this counter is architecture specific and set to an equivalent of about 3 milliseconds of waiting on GNU/Linux. In case the number of threads is larger than the number of physical cores, i.e. the processor is oversubscribed, the counter is set to a much lower value. This way the operating system scheduler can switch between threads more quickly so that threads that need time for computation are not blocked by busy waiting ones.
+The loop additionally keeps track of the number of unsuccessful reads. If this number reaches a certain amount, an operating system mechanism, called futex\cite{franke2002}, is employed to suspend the thread until a later time when the other threads hopefully have arrived. Through this back-off mechanism the system avoids unnecessary busy waiting which would negatively impact power consumption. The threshold of this counter is architecture specific and set to an equivalent of about 3 milliseconds of waiting on GNU/Linux. In case the number of threads is larger than the number of physical cores, i.e. the processor is oversubscribed, the counter is set to a much lower value. This way the operating system scheduler can switch between threads more quickly so that threads that need time for computation are not blocked by busy waiting ones.
 
 Throughout this thesis we will assume that the thread and process count is at most as high as the number of physical processor cores in a system, because oversubscription is not useful inside a single program and therefore rarely happens.
 
@@ -443,7 +443,7 @@ In order to lower power consumption limiting the amount of busy waiting is impor
 During the first initialisation of the barrier an implementation can decide how to handle the case where the number of threads or processes exceeds the number of physical processor cores. Therefore, implementing a solution to this scenario is orthogonal to the other algorithm components.
 
 Another useful approach is to assemble multiple different barrier protocols to create a new one. For example assume you have a hardware topology of shared memory nodes which are connected via network. It is conceivable to construct a barrier that executes a Central Counter Barrier on each node, and then one process of each node takes part in a Dissemination Barrier. After the Dissemination Barrier is completed the intra-node processes are notified and the assembled barrier completes.
-This way one can reap the benefits of the best performing barrier on each level of the topology.
+This way one can benefit from the best performing barrier on each level of the topology.
 This might also make sense if barrier algorithms vary in performance for different numbers of threads or processes.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
