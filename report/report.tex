@@ -189,7 +189,7 @@ Many parallel programs use a lock-step approach to interleave computation with c
 For example a program simulating weather divides the map into a grid.
 Each square in this grid is assigned to one process, so that the weather progression of the next few minutes, for all squares, can be simulated concurrently.
 Changes in weather condition at the borders of a square influence the next simulation step of neighbouring squares.
-Therefore before entering the next simulation phase, data about the border regions, like temperature, humidity or cloud movement, is exchanged.
+Therefore, before entering the next simulation phase, data about the border regions, like temperature, humidity or cloud movement, is exchanged.
 Before beginning this exchange the program needs to make sure that each square has completed the current simulation step. To achieve that, they invoke a barrier operation.
 Once it is completed, data is exchanged and the next simulation step starts.
 
@@ -232,7 +232,7 @@ Desktops, laptops and small to medium servers are typical examples of shared mem
 Many shared memory systems (called nodes) can be connected via a network to compose a distributed memory system. Such systems do not have one global memory, instead each of the nodes has its own private memory. Computation is done on each node using only local memory. In order to share information between nodes messages via network need to be exchanged.
 For example large servers and high-performance computers are oftentimes distributed memory systems.
 
-Programming for shared memory and distributed memory architectures is very different. Therefore we will subsequently differentiate between these two worlds.
+Programming for shared memory and distributed memory architectures is very different. Therefore, we will subsequently differentiate between these two worlds.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Shared memory systems}
@@ -296,7 +296,7 @@ The definition of RMA according to the standard is rather involved, and we have 
 To initiate sharing remote memory each participating process issues a collective call to create a \emph{window} of memory to be shared. A window is associated with the group of processes that created it, and through it each participating process exposes a portion of local memory to the other peers.
 Upon creating a window a number of restrictions regarding the use of the window can be established in order to gain better performance. One can for example lower the memory consistency requirements or guarantee to not use certain operations.
 
-Depending on the underlying hardware and MPI implementation there are two different memory models. A window may either have the \emph{separate} or the \emph{unified} model. The separate model states that the memory that is visible to the peers and the memory that is visible to the local process is not the same and might therefore not automatically update between these two copies. That means a change by a peer to one process's memory might not be made visible. This process has to manually update its local copy in order to see the change. In contrast the unified model makes sure that the two copies are eventually updated. Therefore manual refreshing is unnecessary. This differentiation is a direct result of trying to support many different hardware configurations.
+Depending on the underlying hardware and MPI implementation there are two different memory models. A window may either have the \emph{separate} or the \emph{unified} model. The separate model states that the memory that is visible to the peers and the memory that is visible to the local process is not the same and might therefore not automatically update between these two copies. That means a change by a peer to one process's memory might not be made visible. This process has to manually update its local copy in order to see the change. In contrast the unified model makes sure that the two copies are eventually updated. Therefore, manual refreshing is unnecessary. This differentiation is a direct result of trying to support many different hardware configurations.
 
 Before going into the details of window synchronisation we have to introduce the concept of \emph{epochs}. An epoch is a period between two window synchronisation calls. RMA operations like \emph{put}, \emph{get}, \emph{accumulate} may only be used inside an epoch. Epochs are used to accumulate multiple operations to one larger transfer in order to achieve better efficiency.
 
@@ -323,9 +323,9 @@ Remote memory access in MPI is subject to a number of restrictions:
 	\item The outcome of concurrent local and remote access to the same location inside an epoch is undefined.
 	\item The outcome of a single process issuing multiple put operations to the same location inside an epoch is undefined.
 \end{itemize}
-Therefore the only way to make sure that data is correctly written or read is through atomic operations or isolating access to the same location with costly window synchronisation operations.
+Therefore, the only way to make sure that data is correctly written or read is through atomic operations or isolating access to the same location with costly window synchronisation operations.
 Normally a processor commits 32 or 64 bit to main memory atomically, and in the remainder of this thesis we will assume this is the case.
-Therefore these restrictions make sense for buffers at sizes above this, because concurrent memory access of interfering operations might overlap and the outcome is then indeed undefined.
+Therefore, these restrictions make sense for buffers at sizes above this, because concurrent memory access of interfering operations might overlap and the outcome is then indeed undefined.
 For amounts of memory below this threshold we wish to have a semantic that is more specific. For example if two puts of at most 64 bits are concurrently issued to the same location, the outcome is that of the last put committed. Since this is not the case, MPI's restrictive RMA semantic makes it unsuitable to implement barrier algorithms, based on pW/CS's non-determinism ideas, on top of it.
 
 Shared memory barriers usually rely on atomic operations. Most distributed memory barriers use synchronous message passing. These protocols have also been implemented using RMA to improve efficiency, but still behave equivalently.
@@ -402,7 +402,7 @@ At first a process notifies the next one that is has arrived at the barrier by s
 
 Notifying the next process is done via writing to remote memory, and waiting for notification via busy waiting on local memory. The number of remote access operations per round is the same as the number of processes involved.
 
-The actual implementation in Open~MPI uses MPI's \emph{send-receive} operation instead of our version's remote write and local read. This operation sends a message and waits for another at the same time. The protocol is not destructive because send and receive do not change the state of the protocol. Therefore no resetting mechanism, as used by GNU~OpenMP for the Central Counter Barrier, is needed.
+The actual implementation in Open~MPI uses MPI's \emph{send-receive} operation instead of our version's remote write and local read. This operation sends a message and waits for another at the same time. The protocol is not destructive because send and receive do not change the state of the protocol. Therefore, no resetting mechanism, as used by GNU~OpenMP for the Central Counter Barrier, is needed.
 Open~MPI is able to replace this implementation with hardware specific ones, if it detects supported hardware. For example InfiniBand uses a variation of the Dissemination Barrier based on RMA\cite{hoefler2006a}.
 
 % src/mpi/coll/barrier.c : MPIR_Barrier_intra
@@ -430,7 +430,7 @@ A way of resetting that works in all circumstances is to use three distinct barr
 
 In order to lower power consumption limiting the amount of busy waiting is important for barrier implementations. Choosing a back-off strategy can be done independently of the used barrier protocol. In almost all cases one wants to take apart the waiting loop and insert a suspension mechanism.
 
-During the first initialisation of the barrier an implementation can decide how to handle the case where the number of threads or processes exceeds the number of physical processor cores. Therefore implementing a solution to this scenario is orthogonal to the other algorithm components.
+During the first initialisation of the barrier an implementation can decide how to handle the case where the number of threads or processes exceeds the number of physical processor cores. Therefore, implementing a solution to this scenario is orthogonal to the other algorithm components.
 
 Another useful approach is to assemble multiple different barrier protocols to create a new one. For example assume you have a hardware topology of shared memory nodes which are connected via network. It is conceivable to construct a barrier that executes a Central Counter Barrier on each node, and then one process of each node takes part in a Dissemination Barrier. After the Dissemination Barrier is completed the intra-node processes are notified and the assembled barrier completes.
 This way one can reap the benefits of the best performing barrier on each level of the topology.
@@ -491,7 +491,7 @@ Initially each array element is false. Upon arriving at the barrier a thread reg
 Similar to the Central Counter Barrier the protocol can be split into two phases (Figure~\ref{fig:diagram-central-counter}).
 The two differences are that, because each thread writes only to its own array element, they don't require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
 
-The Barrier cannot be repeated as is. A way to add resetting to the protocol is by using the repetition counter approach introduced in Section~\ref{ssec:background-building-blocks}. In order to avoid false~sharing~\cite{falsesharing}, which would majorly degrade performance, an actual implementation of the protocol allocates one cache line for each array element. Cache lines are usually 64 bytes large. Therefore transforming the array into an array of counters does not require more memory.
+The Barrier cannot be repeated as is. A way to add resetting to the protocol is by using the repetition counter approach introduced in Section~\ref{ssec:background-building-blocks}. In order to avoid false~sharing~\cite{falsesharing}, which would majorly degrade performance, an actual implementation of the protocol allocates one cache line for each array element. Cache lines are usually 64 bytes large. Therefore, transforming the array into an array of counters does not require more memory.
 
 A small improvement to the shown algorithm is to keep track of the first few threads that have successfully arrived. The loop counter is then reset to this number instead of 0.
 
@@ -535,7 +535,7 @@ Like the MGB Barrier this protocol is restricted to 64 processes. An extension t
 
 In this section we will evaluate one commonly used barrier for each shared and distributed memory architectures. In both categories we compare the chosen protocol to one of our newly presented ones.
 
-Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas the B1 and B2 Barrier show promise. Therefore we restrict our attention to these two.
+Early evaluations have shown the MGB Barrier to perform worse than the Central Counter Barrier, whereas the B1 and B2 Barrier show promise. Therefore, we restrict our attention to these two.
 
 In the shared memory setting the Central Counter Barrier is pitted against the B1 Barrier. In the distributed memory case we compare the Dissemination Barrier to the B2 Barrier.
 
@@ -559,7 +559,7 @@ In the distributed memory scenario we are also interested in the remote access b
 
 The Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) and the B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) are both divided into two phases: the reading and the writing phase.
 
-In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations are serialised, because atomic operations on a single variable cannot be executed in parallel. On the other hand the B1 Barrier allocates one array element per thread. Therefore all write operations can be performed concurrently. If all threads arrive in the same instant, the commitment of all threads takes only as long as one write operation does, therefore speeding up this process by a factor of $n$, where $n$ is the number of threads participating. In a more balanced scenario, i.e. processes arrive in intervals, this advantage over the Central Counter Barrier diminishes.
+In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations are serialised, because atomic operations on a single variable cannot be executed in parallel. On the other hand the B1 Barrier allocates one array element per thread. Therefore, all write operations can be performed concurrently. If all threads arrive in the same instant, the commitment of all threads takes only as long as one write operation does, therefore speeding up this process by a factor of $n$, where $n$ is the number of threads participating. In a more balanced scenario, i.e. processes arrive in intervals, this advantage over the Central Counter Barrier diminishes.
 
 During the reading phase of the Central Counter Barrier a thread fetches a single variable repeatedly until it has the desired value. A thread in the B1 Barrier needs to read between 1 and $n$ array elements before it can leave the loop.
 
@@ -587,13 +587,13 @@ Because of its random communication pattern there is no fixed number of remote a
 
 Where a process in the Dissemination Barrier waits for one designated communication partner each round, the B2 Barrier does not wait for a single process but instead continues to poll the next one.
 
-Requiring $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. Especially from $n$, where $n$ is a power of two, to $n+1$ processes the number of rounds increases by 1. Therefore the runtime is expected to show a stair-esque behaviour. Every time the number of rounds increases the duration of the barrier increases by a large step, whereas adding more processes to the same number of rounds adds little overhead.
+Requiring $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. Especially from $n$, where $n$ is a power of two, to $n+1$ processes the number of rounds increases by 1. Therefore, the runtime is expected to show a stair-esque behaviour. Every time the number of rounds increases the duration of the barrier increases by a large step, whereas adding more processes to the same number of rounds adds little overhead.
 In contrast to this the execution time of the B2 Barrier is distributed evenly.
 
 Synchronisation using the Dissemination and B2 Barrier requires the same amount of memory. In principle $\lceil \log _2~n \rceil$ bits per process suffice for both algorithms. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n^2$ bits, but, since each process receives from only $\lceil \log _2~n \rceil$ other processes, a modified array index calculation would allow the protocol to work with $n \cdot \lceil \log _2 ~n \rceil$ bits.
 
 Assuming all processes arrive at a similar time, Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed} illustrates the progression through the rounds of the Dissemination Barrier. More often than not, processes arrive in large intervals, compared to the execution time of a barrier itself.
-Therefore some processes advance through the rounds before every process arrived.
+Therefore, some processes advance through the rounds before every process arrived.
 But how far exactly can the protocol progress without all processes being present?
 
 Suppose every process but the fourth has entered the barrier. Figure~\ref{fig:diagram-dissemination-progress} then shows the advance of the processes through the rounds.
@@ -817,7 +817,7 @@ If a thread whose copy is invalid reads a variable, it has to advertise its inte
 A write operation on a modified variable is considered instantaneous, since no other thread has an up-to-date copy and therefore no one needs to be notified.
 If the cache line copy in question is shared or invalid, it broadcasts an invalidation request to all other copies, and waits until every copy fulfills the request. After this the thread can safely mark its copy modified and finally write to it. This operation commonly takes about 100 cycles.
 Entering the atomic state works exactly like entering the modified state.
-During the atomic state the cache line copy postpones all requests to this copy until it transitions to a different state. After leaving the atomic state, it instantly begins to answer these requests. Therefore leaving the atomic state is considered instantaneous.
+During the atomic state the cache line copy postpones all requests to this copy until it transitions to a different state. After leaving the atomic state, it instantly begins to answer these requests. Therefore, leaving the atomic state is considered instantaneous.
 
 The exact number of processor clock cycles these operations take is strongly hardware-dependent. For the CTMC model we assume a cache read to take 50 cycles, whereas writing and entering an atomic operation requires 100 cycles. The rates of the transitions corresponding to the described events is then the reciprocal of the cycle count.
 The rate of an instantaneous operation, which is assumed to be one cycle, is $\lambda_c = 1$. The rate of a cache read is $\lambda_r = \frac{1}{50}$. And the rate of initiating a write or an atomic operation is $\lambda_w = \lambda_a = \frac{1}{100}$
@@ -827,7 +827,7 @@ For technical reasons we switch the rate of entering and leaving an atomic opera
 %%%%%%%%%%
 \paragraph{Central Counter Barrier}
 \label{sssec:analysis-modelchecking-modelling-central-counter}
-The Central Counter Barrier uses one shared variable. Therefore the final CTMC is composed of one cache line copy module per thread and one algorithm module per thread.
+The Central Counter Barrier uses one shared variable. Therefore, the final CTMC is composed of one cache line copy module per thread and one algorithm module per thread.
 The algorithm's control flow diagram (Figure~\ref{fig:model-central-counter}) directly results from the pseudocode in Figure~\ref{fig:pseudocode-central-counter} (Section~\ref{sssec:background-currently-used-shared}).
 
 \begin{figure}[htbp]
@@ -850,7 +850,7 @@ Unlike the quantitative model, the functional model repeatedly executes the prot
 %%%%%%%%%%
 \paragraph{B1 Barrier}
 \label{ssssec:analysis-modelchecking-modelling-b1}
-The B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) allocates one cache line per array element. Therefore the final model is composed of $n$ algorithm modules plus $n^2$ cache line copy modules where $n$ is the number of threads.
+The B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) allocates one cache line per array element. Therefore, the final model is composed of $n$ algorithm modules plus $n^2$ cache line copy modules where $n$ is the number of threads.
 
 The algorithm's control flow is illustrated in Figure~\ref{fig:model-b1}. As for the Central Counter Barrier, the B1 Barrier starts with an initial work period, its rates are determined by thread's cache line copy module, and the grey transition labelling indicates the interaction with the cache.
 
@@ -872,7 +872,7 @@ Splitting these transitions in the quantitative model would increase model size 
 %%%%%%%%%%
 \paragraph{Dissemination Barrier}
 \label{ssssec:analysis-modelchecking-modelling-dissemination}
-The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination}, Section~\ref{sssec:background-currently-used-distributed}), as a representative for distributed barrier algorithms, does not have shared memory. Therefore the CTMC model consists of one algorithm module per process and nothing else.
+The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination}, Section~\ref{sssec:background-currently-used-distributed}), as a representative for distributed barrier algorithms, does not have shared memory. Therefore, the CTMC model consists of one algorithm module per process and nothing else.
 
 Figure~\ref{fig:model-dissemination} depicts the control flow diagram of the protocol.
 The distance is initialised to one and each array element to false.
@@ -886,8 +886,8 @@ The expressions \texttt{to} and \texttt{from} are shorthands for \texttt{process
 	\label{fig:model-dissemination}
 \end{figure}
 
-Local operations take far less time than remote operations -- between ten to a thousand times usually. Therefore we assign the $\lambda_c$ (one processor clock cycle) to local operations.
-The duration of a remote write (also called put) operation, which is strongly hard-ware dependent, is assumed to take 100 cycles. Therefore we assign $\lambda_p = \frac{1}{100}$ to each corresponding transition.
+Local operations take far less time than remote operations -- between ten to a thousand times usually. Therefore, we assign the $\lambda_c$ (one processor clock cycle) to local operations.
+The duration of a remote write (also called put) operation, which is strongly hard-ware dependent, is assumed to take 100 cycles. Therefore, we assign $\lambda_p = \frac{1}{100}$ to each corresponding transition.
 
 In the CTMC model, resulting from unwinding this control flow diagram, a remote write operation is represented as a synchronised action. When a process executes a put, the target process then changes its local state accordingly.
 
@@ -1058,7 +1058,7 @@ Phase D depicts the accumulated time or energy from the first to the last thread
 \end{figure}
 
 The length of phase A and B depends only on the thread count. They are equally long for both protocols.
-In the Central Counter Barrier the last thread to commit itself, very likely immediately exits the barrier. Therefore there is few time, on average, between the last thread writing and the first one leaving the barrier (green).
+In the Central Counter Barrier the last thread to commit itself, very likely immediately exits the barrier. Therefore, there is few time, on average, between the last thread writing and the first one leaving the barrier (green).
 
 As conjectured in Section~\ref{sssec:analysis-general-shared} writing is quicker for the B1 Barrier and reading, i.e. phase C and D combined, for the Central Counter Barrier.
 
@@ -1229,7 +1229,7 @@ Figure~\ref{fig:d-work-1000-partition} shows the same measures for the Dissemina
 	\label{fig:d-work-1000-partition}
 \end{figure}
 Comparing to Figure~\ref{fig:d-work-100-partition} there is almost no additional execution time per process involved, if the number of rounds does not increase.
-Remote writes inside one round are approximately serial. Therefore a write is oftentimes enabled at the same time as other processes repeatedly execute local reads. The expected time such a write takes, according to CTMC semantics explained in Section~\ref{sssec:analysis-modelchecking-preliminaries}, is then 100 processor cycles.
+Remote writes inside one round are approximately serial. Therefore, a write is oftentimes enabled at the same time as other processes repeatedly execute local reads. The expected time such a write takes, according to CTMC semantics explained in Section~\ref{sssec:analysis-modelchecking-preliminaries}, is then 100 processor cycles.
 The duration of each round is related to the explanation on progress in Section~\ref{sssec:analysis-general-distributed}. When the last process arrives at the barrier, exactly one remote write needs to be executed to finish round one, two more are needed to finish round two, and four writes are required to complete the third round. Therefore, and because of CTMC interleaving semantics, approximately 100, 150 and 183 cycles are needed to finish rounds one, two and three.
 
 Energy consumption behaves similarly to that illustrated in Figure~\ref{fig:d-work-100-partition} where we assumed a work period of 100 cycles.
@@ -1285,7 +1285,7 @@ Table~\ref{tab:d2-transfers-1000} shows the same measurement for an assumed work
 	\label{tab:d2-transfers-1000}
 \end{table}
 The number of transfers for the Dissemination Barrier is the same as before.
-If processes arrive in large intervals, each time a new one arrives it gets concurrently polled by all others. The resulting communication pattern is more inefficient than if processes would share their presence in a chain- or tree-like fashion. Therefore the B2 Barrier issues slightly more successful remote reads in this case.
+If processes arrive in large intervals, each time a new one arrives it gets concurrently polled by all others. The resulting communication pattern is more inefficient than if processes would share their presence in a chain- or tree-like fashion. Therefore, the B2 Barrier issues slightly more successful remote reads in this case.
 The number of failed transfers is, as expected, considerably higher.
 Through implementing a back-off strategy this number can be lowered in exchange for a higher execution time.
 
