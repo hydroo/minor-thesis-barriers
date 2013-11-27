@@ -76,7 +76,7 @@
 
 \begin{flushleft} \large
 	Author: Ronny Brendel \\
-	Responsible university professor: Christel Baier \\
+	Responsible University Professor: Christel Baier \\
 	Supervisors: Sascha Kl\"uppelholz
 \end{flushleft}
 
@@ -133,7 +133,7 @@
 %\label{sec:integrity}
 %Ich erkl\"are hiermit, dass ich die vorliegende Arbeit selbst\"andig und ohne Benutzung anderer als der angegebenen Hilfsmittel angefertigt habe. Die aus fremden Quellen w\"ortlich oder sinngem\"a\ss ~\"ubernommenen Gedanken sind als solche kenntlich gemacht. Ich erkl\"are ferner, dass ich die vorliegende Arbeit an keiner anderen Stelle als Pr\"ufungsarbeit eingereicht habe oder einreichen werde.
 
-\section*{Statement of academic integrity}
+\section*{Statement of Academic Integrity}
 \label{sec:integrity}
 I hereby declare that I prepared this thesis independently and without use of tools other than specified. Foreign thoughts, taken literally or in spirit, are marked as such. I also declare that I have not filed the present work at any other location or will submit it.
 
@@ -144,7 +144,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \thispagestyle{empty}
 
-\renewcommand{\contentsname}{Table of contents}
+\renewcommand{\contentsname}{Table of Contents}
 \tableofcontents
 
 \pagebreak
@@ -234,7 +234,7 @@ In this section we will first take look at the tools at our disposal to implemen
 Finally we present a view of the barrier as a modularized algorithm consisting of various independent components.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Means to implement barrier protocols}
+\subsection{Means to Implement Barrier Protocols}
 \label{ssec:background-means}
 A shared memory system consists of a number of processors which are connected to one chunk of memory. Information can be exchanged between processors by simply reading from and writing to the same memory location, since they all share the same address space.
 Desktops, laptops and small to medium servers are typical examples of shared memory systems.
@@ -245,7 +245,7 @@ For example large servers and high-performance computers are oftentimes distribu
 Programming for shared memory and distributed memory architectures is very different. Therefore, we will subsequently differentiate between these two worlds.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Shared memory systems}
+\subsubsection{Shared Memory Systems}
 \label{sssec:background-means-shared}
 A parallel program for a shared memory system consists of multiple threads of execution -- short \emph{threads}.
 
@@ -267,7 +267,7 @@ If an algorithm is carefully designed, one can weaken the consistency model to g
 Aside from implementing barriers in software vendors can wire a barrier implementation into the system's hardware. This is almost never done on shared memory architectures. One example for hardware barrier support is the SGI~UV~2000~\cite{sgiuv2000}, a high-performance shared memory computer.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Distributed memory systems}
+\subsubsection{Distributed Memory Systems}
 \label{sssec:background-means-distributed}
 A parallel program for a distributed memory architecture consists of multiple \emph{processes}. Each process has its own address space and is therefore unable to directly share memory with other processes.
 
@@ -341,12 +341,12 @@ For amounts of memory below this threshold we wish to have a semantic that is mo
 Shared memory barriers usually rely on atomic operations. Most distributed memory barriers use synchronous message passing. These protocols have also been implemented using RMA to improve efficiency, but still behave equivalently.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Currently used barrier protocols}
+\subsection{Currently Used Barrier Protocols}
 \label{ssec:background-currently-used}
 Having surveyed the tools for implementing synchronisation primitives we will now examine the barrier protocols which power today's implementations for both shared and distributed memory systems.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Shared memory systems}
+\subsubsection{Shared Memory Systems}
 \label{sssec:background-currently-used-shared}
 
 Many prominent implementations of shared memory concurrent programming facilities are part of closed source commercial products, like for example Intel Composer and Microsoft Visual Studio, and can therefore not be analysed. So we restrict ourselves to examining the GNU~C~Library~\cite{glibc} and GNU~OpenMP~\cite{gomp}.
@@ -382,7 +382,7 @@ The GNU POSIX Threads implementation, called Native POSIX Threads Library (NPTL)
 The basic barrier algorithm used in it is the same as for GNU~OpenMP. One main differences is that it does not use atomic operations to decrement the variable, but explicitly locks it to guard from interfering access. Second, there is no busy waiting, but upon arriving at the barrier the thread will immediately suspend, via a futex, and wait to be woken up by the last thread arriving. The third difference is that to reset the barrier each thread atomically increments the barrier variable by one upon leaving.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Distributed memory systems}
+\subsubsection{Distributed Memory Systems}
 \label{sssec:background-currently-used-distributed}
 
 In this section we present the barrier algorithms that are used in the two major open source MPI implementations, namely Open~MPI~\cite{openmpi} and MPICH~\cite{mpich}. We restrict our analysis to MPI for the same reasons we only considered MPI in Section~\ref{sssec:background-means-distributed}.
@@ -421,7 +421,7 @@ MPICH version 3.0, which forms the basis of many other prominent MPI implementat
 Aside from distributed memory architectures it is possible to implement these protocols for shared memory systems, as has been demonstrated for the Intel~XEON~Phi~\cite{hoefler2013}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Barrier building blocks}
+\subsection{Barrier Building Blocks}
 \label{ssec:background-building-blocks}
 During our analysis of general implementation facilities and concrete barrier implementations we observed that one can assemble barriers from orthogonal components.
 
@@ -448,7 +448,7 @@ This might also make sense if barrier algorithms vary in performance for differe
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cleartooddpage
-\section{New barriers}
+\section{New Barriers}
 \label{sec:new}
 In this section we first present a new variation on a barrier protocol of ours. The second algorithm reverses the approach of the Central Counter Barrier. Third we demonstrate a pW/CS-influenced modification of the second barrier.
 
@@ -541,7 +541,7 @@ Like the MGB Barrier this protocol is restricted to 64 processes. An extension t
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cleartooddpage
-\section{Analysis and comparison}
+\section{Analysis and Comparison}
 \label{sec:analysis}
 % maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
 
@@ -556,7 +556,7 @@ In our evaluation we assume no back-off strategy is used. This means if a variab
 The analysis is split into two parts. First, we present properties, perceivable without measurement and modelling, that are inherent to the protocols. Second, we employ model checking to quantify our observations and gain a deeper understanding of the chosen barriers.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{General properties}
+\subsection{General Properties}
 \label{sssec:analysis-general}
 This section is divided into two parts: shared and distributed memory barriers.
 In each we present the memory requirement of the algorithms.
@@ -564,7 +564,7 @@ For the Central Counter and B1 Barrier we additionally consider properties of th
 In the distributed memory scenario we are also interested in the remote access behaviour of both chosen protocols.
 
 %%%%%%%%%%%%%%%%%%%%
-\paragraph{Shared memory barriers}
+\paragraph{Shared Memory Barriers}
 \label{sssec:analysis-general-shared}
 % - don't talk cache specifics, because we have not given an introduction to MSI. Express yourself in simple terms.
 % - make sure that people understand it is about shared read/write, not local variables.
@@ -580,7 +580,7 @@ The B1 Barrier has the edge in the writing phase, whereas the Central Counter Ba
 The memory required by the Central Counter Barrier is logarithmic in the number of threads. With a 64-bit counter up to $2^{64}$ threads can be synchronised. The B1 Barrier uses a linear amount of memory -- $\mathit{threadCount} \cdot 64$ bytes, assuming a cache line is 64 bytes large. This might seem like a lot, but since shared memory systems rarely exceed 512 cores, a maximum of only 32 KiB is used.
 
 %%%%%%%%%%%%%%%%%%%%
-\paragraph{Distributed memory barriers}
+\paragraph{Distributed Memory Barriers}
 \label{sssec:analysis-general-distributed}
 In this section we assume $n$ to be the number of processes participating in the barrier synchronisation.
 
@@ -717,7 +717,7 @@ When the last process arrives the Dissemination Barrier requires at least as man
 We attempt to quantify the influence of this behaviour on the execution time and energy consumption in the following section.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Model checking}
+\subsection{Model Checking}
 \label{ssec:analysis-modelchecking}
 The properties, we are interested in, can be divided into two broad categories: functional and quantitative properties. Functional properties describe the supposed behaviour of the barriers, whereas quantitative properties express conditions that rely on probabilistic aspects of the protocols, e.g. execution time.
 
@@ -925,7 +925,7 @@ The functional model additionally includes repetition and resetting using the tr
 Similar to previously presented models the functional model splits some of the transitions into multiple ones to allow for more interleaving. This way more potential errors can be revealed. The quantitative model refrains from splitting them to reduce the model's size.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Functional properties}
+\subsubsection{Functional Properties}
 \label{sssec:analysis-modelchecking-functional-properties}
 In this section we use the words \emph{thread} and \emph{process} interchangeably, because conditions of functional correctness apply to both shared and distributed memory protocols.
 
@@ -953,7 +953,7 @@ We implemented each of the four chosen protocols in the modelling language Prome
 All barrier protocols fulfill both conditions.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Quantitative properties}
+\subsubsection{Quantitative Properties}
 \label{sssec:analysis-modelchecking-quantitative-properties}
 As in the previous section we use the words \emph{thread} and \emph{process} interchangeably, since some properties apply to both shared and distributed memory barrier protocols.
 
@@ -1035,7 +1035,7 @@ In the following section we present and comment on these results.
 The evaluation is split into shared and distributed memory protocols.
 
 %%%%%
-\subparagraph{Shared memory barriers}
+\subparagraph{Shared Memory Barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-evaluation-shared}
 First, we assume the initial work period to take 100 cycles on average, which is extremely low considering that barrier synchronisation takes more time than the actual computation task.
 
@@ -1155,7 +1155,7 @@ The overall power consumption is now dominated by phases A and B, which are simi
 If one increases the length of the work period beyond 1000 cycles, both algorithms issue few serial write operations followed by busy-waiting. The timing is then similar to our 1000 cycle case. The power consumption converges to the same value for both protocols.
 
 %%%%%
-\subparagraph{Distributed memory barriers}
+\subparagraph{Distributed Memory Barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-evaluation-distributed}
 This section presents a comparison of the Dissemination Barrier and the B2 Barrier, similarly organised as the previous section.
 Additionally we analyse the Dissemination Barrier with up to eight concurrent processes.
@@ -1319,7 +1319,7 @@ The CTMC model checking semantic for simultaneously enabled transitions is diffe
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cleartooddpage
-\section{Conclusion and future work}
+\section{Conclusion and Future Work}
 \label{sec:conclusion}
 In this work we first enumerate the available tools for building barriers, survey today's implementation landscape, and show how barriers are constructed from orthogonal components.
 We then present three new protocols, one of which is promising. We, therefore, conclude that today's barriers can be improved upon. To achieve the displayed performance, the B2 Barrier does not use a fixed communication pattern but relies on randomness. Weakening determinism and using randomness are core principles of pW/CS locks. Thus, we consider the B2 Barrier an example for the aptitude of the ideas behind pW/CS locks to increase synchronisation performance.
