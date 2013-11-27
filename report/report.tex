@@ -15,6 +15,7 @@
 \usepackage{epstopdf}
 	\DeclareGraphicsRule{.eps}{pdf}{.pdf}{`epstopdf #1}
 	\pdfcompresslevel=9
+\usepackage{intcalc}
 \usepackage{latexsym}
 \usepackage[latin1]{inputenc}
 \usepackage{listings}
@@ -54,6 +55,22 @@
 		{\newpage \mbox{} \clearpage}
 }
 
+\newdateformat{titledate}{%
+	\THEDAY
+	\ifthenelse
+		{\equal{\intcalcMod{\THEDAY}{10}}{1}}
+		{st}
+		{%
+			\ifthenelse{\equal{\intcalcMod{\THEDAY}{10}}{2}}
+			{nd}
+			{%
+				\ifthenelse{\equal{\intcalcMod{\THEDAY}{10}}{3}}
+				{rd}
+				{th}}}
+	\monthname[\THEMONTH], \THEYEAR
+}
+\titledate
+
 %\setcounter{secnumdepth}{5}
 
 \title{Development and Analysis of Barrier Protocols}
@@ -83,7 +100,7 @@
 
 \vfill
 \begin{flushright}
-	\large October 2013
+	\large Vienna, \today
 \end{flushright}
 
 \end{titlepage}
