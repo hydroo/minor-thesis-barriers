@@ -46,6 +46,14 @@
 \def \citationneeded{\textbf{\textcolor{yellow}{CITATION NEEDED}}}
 \newcommand{\listingrule}[1]{\rule{#1}{0.4pt}}
 
+
+\newcommand*\cleartooddpage{
+	\clearpage
+	\ifthenelse{\isodd{\thepage}}
+		{}
+		{\newpage \mbox{} \clearpage}
+}
+
 %\setcounter{secnumdepth}{5}
 
 \title{Development and Analysis of Barrier Protocols}
@@ -179,6 +187,7 @@ I hereby declare that I prepared this thesis independently and without use of to
 % \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleartooddpage
 \section{Introduction}
 \label{sec:introduction}
 Synchronisation is a central element of parallel programs. Various synchronisation mechanisms with different goals have been devised. One such mechanism is the barrier. If a group of threads or processes execute a barrier, each of them must wait at this point until all other threads/processes arrive at the barrier.
@@ -218,6 +227,7 @@ The largest part of the thesis concerns the analysis and comparison of two known
 The final section summarises the presented work and gives an outlook on possible directions for future research.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleartooddpage
 \section{Background}
 \label{sec:background}
 In this section we will first take look at the tools at our disposal to implement barriers on both shared memory and distributed memory architectures, followed by an overview of which barrier algorithms are used in today's parallel programming frameworks.
@@ -437,6 +447,7 @@ This way one can reap the benefits of the best performing barrier on each level 
 This might also make sense if barrier algorithms vary in performance for different numbers of threads or processes.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleartooddpage
 \section{New barriers}
 \label{sec:new}
 In this section we first present a new variation on a barrier protocol of ours. The second algorithm reverses the approach of the Central Counter Barrier. Third we demonstrate a pW/CS-influenced modification of the second barrier.
@@ -529,6 +540,7 @@ Like the B1 Barrier this protocol is destructive. One can add resetting via the 
 Like the MGB Barrier this protocol is restricted to 64 processes. An extension to arrays of bit sets can be implemented in the same way as described in Section~\ref{ssec:new-mgb}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleartooddpage
 \section{Analysis and comparison}
 \label{sec:analysis}
 % maybe distinguish extreme cases vs more normal cases. And the spectrum in between -- adds structure -- is nice.
@@ -1306,6 +1318,7 @@ The main drawback of the B2 Barrier is, due to busy waiting on remote memory, it
 The CTMC model checking semantic for simultaneously enabled transitions is different from our intuitive notion of parallel execution. Because of this, and since the assumptions we make do not closely reflect reality, one has to exercise caution when interpreting the model checking results.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleartooddpage
 \section{Conclusion and future work}
 \label{sec:conclusion}
 In this work we first enumerate the available tools for building barriers, survey today's implementation landscape, and show how barriers are constructed from orthogonal components.
@@ -1337,7 +1350,7 @@ The sixth suggestion is to improve tool support. Model checking is able to compl
 \appendix
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagebreak
+\cleartooddpage
 \section{Appendix}
 \label{sec:appendix}
 \subsection{Energy reference measurement for estimating the model parameters}
@@ -1424,7 +1437,7 @@ Barriers are repeated as quickly as possible, without waiting time in between.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagebreak
+\cleartooddpage
 \section{Bibliography}
 \label{sec:bibliography}
 \renewcommand\refname{\vskip -1cm} %TODO fine tune perhaps
