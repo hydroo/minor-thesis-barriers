@@ -1309,42 +1309,29 @@ The CTMC model checking semantic for simultaneously enabled transitions is diffe
 \section{Conclusion and future work}
 \label{sec:conclusion}
 In this work we first enumerate the available tools for building barriers, survey today's implementation landscape, and show how barriers are constructed from orthogonal components.
-We then present three new protocols, one of which shows promise. We therefore conclude that barrier protocols can be improved. To achieve the displayed performance, the B2 Barrier does not use a fixed communication pattern but relies on randomness. Weakening determinism and using randomness are core principles of pW/CS locks. The B2 Barrier can, therefore, be considered an example for the aptitude of the ideas behind pW/CS locks to improve synchronisation performance.
-Using model checking enabled a fine-grained analysis beyond what measurement-based methods can achieve.
+We then present three new protocols, one of which is promising. We, therefore, conclude that today's barriers can be improved upon. To achieve the displayed performance, the B2 Barrier does not use a fixed communication pattern but relies on randomness. Weakening determinism and using randomness are core principles of pW/CS locks. Thus, we consider the B2 Barrier an example for the aptitude of the ideas behind pW/CS locks to increase synchronisation performance.
+Model checking enables a fine-grained analysis beyond what measurement-based methods can achieve.
 Although the model size and accuracy is admittedly limited, we expect future work in this direction to alleviate these deficiencies.
 We belief that model checking is a powerful tool to aid the development and analysis of algorithms, and synchronisation protocols in particular.
 
-The possible future directions of this work can be divided into five categories.
+The possible future directions of this work can be divided into six categories.
 First, what this thesis lacks is benchmarks.
-One should repeat the analysis and comparison done in Section~\ref{sssec:analysis-modelchecking-functional-properties} using measurement instead of model checking. Once this is done, the models should also be refined.
+One should repeat the analysis of Section~\ref{sssec:analysis-modelchecking-functional-properties} using measurement instead of model checking. One should then refine the existing models using the obtained results.
 
-Second, new barriers and variations of old ones should be evaluated.
+Second, new barriers and variations of our presented ones should be evaluated.
 For example one can try different increment strategies for the iteration variable of the B2 Barrier.
-The B1 and B2 Barrier both exclusively read remotely and write locally. In particular, both busily wait on remote memory. Some hardware-platforms, like the Epiphany~\cite{epiphany} multi-core processor, also offer better performance for remote write operations than for remote read operations.
-By reversing the situation so that remote writing in conjunction with local busy waiting is used, one might be able to get rid of busy waiting on remote memory and leverage the potentially better performance of remote write operations on some architectures.
+The B1 and B2 Barrier both exclusively read remotely and write locally. In particular, both protocols wait busily on remote memory.
+By switching to remote writing in conjunction with local busy waiting, one might be able to get rid of busy waiting on remote memory and leverage the potentially better performance of remote write operations on some architectures, like for example on the Epiphany~\cite{epiphany} multi-core processor.
 
 Third, model checking should be extended. The unfortunate limit of four processes for model checking should be improved upon. To achieve this, one can employ techniques like symmetry reduction, partial order reduction and manual fine-tuning.
-Another interesting pursuit is to model check in greater detail. Today's processors, for example, have a multi-layered cache. In order to get preciser performance predictions one can incorporate these intricacies into the model.
+Another interesting pursuit is to model the protocols in greater detail. Today's processors, for example, have a multi-layered cache. In order to get preciser performance predictions one can incorporate such intricacies into the model.
 Resource contention is another detail we do not model in this work. Our theoretical machine is able to concurrently transfer data between processes at an arbitrarily high bandwidth.
 
+The fourth area of future research is to expand the focus of our analysis. We are interested in analysing different back-off strategies together with barrier protocols. Another attractive pursuit is to evaluate the Dissemination Barrier and B2 Barrier for shared memory architectures.
 
-Future work:
-\begin{itemize}
-	\item widen focus
-		\begin{itemize}
-			\item evaluate back-off strategies. (technical possibilities. Strategies like exponential back-off, linear back-off, etc.)
-			\item mwait (wait for a change in a variable. Not polling actively).
-			\item model and measure dissemination and B2 for shared memory.
-		\end{itemize}
-	\item CTMC exit rate semantic
-		\begin{itemize}
-			\item why is it like that?
-			\item work around it?
-			\item attempt to invent an variations on the CTMC semantic to suit modelling parallel execution better?
-			\item try alternative model checking formalisms.
-		\end{itemize}
-\end{itemize}
+Fifth, we encourage to rethink the CTMC interleaving semantic. It does make sense, if there is only one transition that influences the outcome of a formula, for example if we ask for the arrival of a specific thread. But, when modelling multi-threading through multiple modules, if one checks quantitative properties of state of more than one module, the behaviour is unintuitive. We don't have a definite answer how to approach this. We merely encourage to look for alternative modelling formalisms and logics, or to modify/limit the existing CTMC/CSRL semantic.
 
+The sixth suggestion is to improve tool support. Model checking is able to complement testing and benchmarking algorithms, in particular synchronisation primitives. But tools like SPIN and PRISM are both very extensive and hard to use, because they have custom input languages, hard-to-use user interfaces, and require a background knowledge in temporal logics. A specialised set of tools to aid the design of synchronisation mechanisms would be much desired.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \appendix
