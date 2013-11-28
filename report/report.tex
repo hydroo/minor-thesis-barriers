@@ -1338,30 +1338,32 @@ The CTMC model checking semantic for simultaneously enabled transitions is diffe
 \cleartooddpage
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
-In this work we first enumerate the available tools for building barriers, survey today's implementation landscape, and show how barriers are constructed from orthogonal components.
-We then present three new protocols, one of which is promising. We, therefore, conclude that today's barriers can be improved upon. To achieve the displayed performance, the B2 Barrier does not use a fixed communication pattern but relies on randomness. Weakening determinism and using randomness are core principles of pW/CS locks. Thus, we consider the B2 Barrier an example for the aptitude of the ideas behind pW/CS locks to increase synchronisation performance.
-Model checking enables a fine-grained analysis beyond what measurement-based methods can achieve.
-Although the model size and accuracy is admittedly limited, we expect future work in this direction to alleviate these deficiencies.
+In this work we first enumerate the available low-level tools for building barriers, survey today's implementation landscape, and show how barriers are constructed from orthogonal components.
+After presenting three new barrier protocols, we compare two of them to two known protocols.
+The B2 Barrier turns out to be a promising algorithm.
+We, therefore, conclude that today's barriers can be improved upon. To achieve the displayed performance, the B2 Barrier does not use a fixed communication pattern but relies on randomness. Weakening determinism and using randomness are core principles of the pW/CS lock. Thus, we consider the B2 Barrier an example for the aptitude of these principles to increase synchronisation performance.
+Model checking enables exhaustive and fine-grained analysis beyond what measurement-based methods can deliver.
+Although model size and accuracy is admittedly limited, we expect future work in this direction to alleviate these deficiencies.
 We belief that model checking is a powerful tool to aid the development and analysis of algorithms, and synchronisation protocols in particular.
 
 The possible future directions of this work can be divided into six categories.
-First, what this thesis lacks is benchmarks.
-One should repeat the analysis of Section~\ref{sssec:analysis-modelchecking-functional-properties} using measurement instead of model checking. One should then refine the existing models using the obtained results.
+First, this thesis lacks benchmarks.
+One should repeat the analysis of Section~\ref{sssec:analysis-modelchecking-functional-properties} using measurement. One then sees how the protocols perform in reality, and can also use the obtained results to refine the existing probabilistic models.
 
 Second, new barriers and variations of our presented ones should be evaluated.
 For example one can try different increment strategies for the iteration variable of the B2 Barrier.
-The B1 and B2 Barrier both exclusively read remotely and write locally. In particular, both protocols wait busily on remote memory.
-By switching to remote writing in conjunction with local busy waiting, one might be able to get rid of busy waiting on remote memory and leverage the potentially better performance of remote write operations on some architectures, like for example on the Epiphany~\cite{epiphany} multi-core processor.
+Both the B1 and the B2 Barrier exclusively read remotely and write locally. In particular, they repeatedly poll remote memory.
+By switching to remote writing in conjunction with local reading, one might be able to get rid of busy waiting on remote memory and leverage the better performance of remote write operations on some architectures, like the Epiphany~\cite{epiphany} multi-core processor.
 
-Third, model checking should be extended. The unfortunate limit of four processes for model checking should be improved upon. To achieve this, one can employ techniques like symmetry reduction, partial order reduction and manual fine-tuning.
+Third, model checking should be extended. The unfortunate limit of four processes for our analysis ought to be improved. To achieve this, one can employ techniques like symmetry reduction, partial order reduction and manual fine-tuning.
 Another interesting pursuit is to model the protocols in greater detail. Today's processors, for example, have a multi-layered cache. In order to get preciser performance predictions one can incorporate such intricacies into the model.
-Resource contention is another detail we do not model in this work. Our theoretical machine is able to concurrently transfer data between processes at an arbitrarily high bandwidth.
+Resource contention is another detail we do not model in this work. Our theoretical computer concurrently transfer data between processes with arbitrarily high bandwidth.
 
-The fourth area of future research is to expand the focus of our analysis. We are interested in analysing different back-off strategies together with barrier protocols. Another attractive pursuit is to evaluate the Dissemination Barrier and B2 Barrier for shared memory architectures.
+The fourth area of future research is to expand the focus of analysis. We are interested in analysing The Dissemination Barrier and the B2 Barrier for shared memory architectures, and incorporate back-off strategies into the evaluation.
 
-Fifth, we encourage to rethink the CTMC interleaving semantic. It does make sense, if there is only one transition that influences the outcome of a formula, for example if we ask for the arrival of a specific thread. But, when modelling multi-threading through multiple modules, if one checks quantitative properties of state of more than one module, the behaviour is unintuitive. We don't have a definite answer how to approach this. We merely encourage to look for alternative modelling formalisms and logics, or to modify/limit the existing CTMC/CSRL semantic.
+Fifth, we encourage to search for alternative modelling formalisms or to modify/limit the existing CTMC/CSRL semantic. The way interleaving is treated does make sense, if a formula queries information about one module, for example if we ask for the arrival time of a specific thread. But, when modelling multi-threading through multiple modules, if one checks quantitative properties about multiple modules, the behaviour is unintuitive.
 
-The sixth suggestion is to improve tool support. Model checking is able to complement testing and benchmarking algorithms, in particular synchronisation primitives. But tools like SPIN and PRISM are both very extensive and hard to use, because they have custom input languages, hard-to-use user interfaces, and require a background knowledge in temporal logics. A specialised set of tools to aid the design of synchronisation mechanisms would be much desired.
+The sixth suggestion is to improve tool support. Model checking complements testing and benchmarking algorithms. But, tools like SPIN and PRISM are both very extensive and difficult to use. They have esoteric input languages, hard-to-use user interfaces, and require the user to have background knowledge about model checking and temporal logics. A specialised tool set to aid the design of parallel algorithms is much desired.
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \appendix
