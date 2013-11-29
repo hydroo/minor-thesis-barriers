@@ -134,7 +134,7 @@
 	\item Identification and formalisation of key functional properties concerning correctness as well as quantitative aspects for determining performance of barrier protocols with regard to energy consumption and speed.
 		\item Modelling and quantitative analysis:
 			\begin{itemize}
-				\item Modelling a) a prominent representative of barrier protocols for distributed memory, b) a prominent representative of barrier protocols for shared memory, c) the barrier protocol based on Mc~Guire's idea in each case using the probabilistic model checker PRISM.
+				\item Modelling a) a prominent representative of barrier protocols for distributed memory, b) a prominent representative of barrier protocols for shared memory, c) the barrier protocol based on Mc~Guire's idea, in each case using the probabilistic model checker PRISM.
 				\item Analysis and comparison of the three above-mentioned models, regarding the functional as well as quantitative properties identified in 3., using PRISM. If possible: complement the performance evaluation of the three barriers using measurement-based methods.
 			\end{itemize}
 		\item Summary and outlook: Discussion of the insights gained in 4.
@@ -185,16 +185,16 @@ I hereby declare that I prepared this thesis independently and without use of to
 \cleartooddpage
 \section{Introduction}
 \label{sec:introduction}
-Synchronisation is a central element of parallel programs. Various synchronisation mechanisms with different goals have been devised. One such mechanism is the barrier. If a group of threads or processes execute a barrier, each of them must wait at this point until all other threads/processes arrive at the barrier.
+Synchronisation is a central element of parallel programs. Various synchronisation mechanisms with different goals have been devised. One such mechanism is the barrier. If a group of threads or processes execute a barrier operation, each of them must wait at this point until all other threads/processes arrive at the barrier.
 
-Many synchronisation operations imply a barrier. For example OpenMP's~\cite{openmp} parallel for-loops make sure that no thread continues program execution until all iterations are completed, since the following operations might rely on the results of the loop. Likewise in MPI~\cite{mpiforum}, global operations like reduce, scatter and gather imply a barrier synchronisation.
+Many synchronisation operations imply a barrier. For example OpenMP's~\cite{openmp} parallel for loop makes sure that no thread continues program execution until all iterations are completed, since the following operations might rely on the results of the loop. Likewise in MPI~\cite{mpiforum}, global operations like reduce, scatter and gather imply a barrier synchronisation.
 
 Many parallel programs use a lock-step approach to interleave computation with communication phases.
 For example a program simulating weather divides the map into a grid.
 Each square in this grid is assigned to one process, so that the weather progression of the next few minutes, for all squares, can be simulated concurrently.
 Changes in weather condition at the borders of a square influence the next simulation step of neighbouring squares.
-Therefore, before entering the next simulation phase, data about the border regions, like temperature, humidity or cloud movement, is exchanged.
-Before beginning this exchange the program needs to make sure that each square has completed the current simulation step. To achieve that, they invoke a barrier operation.
+Therefore, before entering the next simulation phase, information, like temperature, humidity or cloud movement, about the border regions is exchanged.
+Before beginning this exchange the program needs to make sure that each square has completed the current simulation step. To achieve that, they collectively invoke a barrier operation.
 Once it is completed, data is exchanged and the next simulation step starts.
 
 The barrier is a commonly used synchronisation operation. According to a survey conducted at the High Performance Computing Center Stuttgart~\cite{rab00} in 2000, 5.3\% of all time spent synchronising and 0.7\% of the total program execution time is spent in barriers.
@@ -207,7 +207,7 @@ At a recent workshop, Nicholas Mc~Guire proposed a new low-level synchronisation
 	\item One can improve performance by relieving this constraint. Tolerate inconsistencies, make errors detectable and/or ignorable.
 	\item Leverage the inherent randomness~\cite{mcg09}, induced by caching, scheduling, memory access latency differences, or short: the complexity of today's computer systems, in order to view concurrent memory access as genuinely random. This enables the use of probabilistic algorithms for development, and the tools of probability theory for analysis.
 \end{itemize}
-One wants to design algorithms that have a sufficiently high probability of success, tolerate faulty behaviour and, on average, perform better than their deterministic cousins. They aim to be better in ways, e.g. speed, energy efficiency, memory consumption, that depend on the use case.
+One wants to design algorithms that have a sufficiently high probability of success, tolerate faulty behaviour and, on average, perform better than their deterministic cousins. They aim to be better in ways, e.g. speed, energy efficiency and memory consumption, that depend on the use case.
 We believe that synchronisation primitives, in particular barriers, can be improved by applying these principles.
 
 To gain confidence that a program works properly, i.e. satisfies certain properties, one normally uses testing and benchmarks.
@@ -225,7 +225,7 @@ The final section summarises the presented work and gives an outlook on possible
 \cleartooddpage
 \section{Background}
 \label{sec:background}
-In this section we will first take look at the tools at our disposal to implement barriers on both shared memory and distributed memory architectures, followed by an overview of which barrier algorithms are used in today's parallel programming frameworks.
+In this section we will first take look at the tools at our disposal to implement barriers, on both shared memory and distributed memory architectures, followed by an overview of which barrier algorithms are used in today's parallel programming frameworks.
 Finally we present a view of the barrier as a modularized algorithm consisting of various independent components.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -237,25 +237,24 @@ Desktops, laptops and small to medium servers are typical examples of shared mem
 Many shared memory systems (called nodes) can be connected via a network to compose a distributed memory system. Such systems do not have one global memory, instead each of the nodes has its own private memory. Computation is done on each node using only local memory. In order to share information between nodes messages via network need to be exchanged.
 For example large servers and high-performance computers are oftentimes distributed memory systems.
 
-Programming for shared memory and distributed memory architectures is very different. Therefore, we will subsequently differentiate between these two worlds.
+Programming shared memory systems is very different from developing for distributed memory architectures. Therefore, we will subsequently differentiate between these two worlds.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Shared Memory Systems}
 \label{sssec:background-means-shared}
-A parallel program for a shared memory system consists of multiple threads of execution -- short \emph{threads}.
-
+A parallel program for a shared memory system consists of multiple threads of execution -- short \emph{threads}. 
 The straightforward way to share information between threads is to \emph{load} from and \emph{store} to the same memory address.
 
 Furthermore most modern processors provide means to execute a small series of computations on a date while making the memory unavailable to other threads. They are called \emph{atomic operations}. Two examples are the \emph{test-and-set}- and \emph{add-fetch}-instruction. The former stores a value to an address if a given condition is fulfilled, the latter loads a date, adds a given value to it and stores it back.
 
-Without these operations parallel programming is much more difficult and error-prone, since concurrently issuing normal load and store operations can easily cause \emph{race conditions}. This convenience, on the other hand, comes at the cost of additional management overhead for the processor. To date shared memory systems are usually limited to 64 threads and less. Some high-performance computing implementations reach numbers of 512 threads. In comparison distributed memory systems can have over a million processing units.
+Without these operations parallel programming is much more difficult and error-prone, since concurrently issuing normal load and store operations can easily cause \emph{race conditions}. This convenience, on the other hand, comes at the cost of additional management overhead for the processor. To date shared memory systems are usually limited to 64 threads and less. Some high-performance computing implementations reach 512 concurrent threads. In comparison distributed memory systems can have over a million processing units.
 
 The intuitive ordering of concurrent memory accesses is \emph{sequentially consistent}.
 \begin{quote}
 	\textit{The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.} (Lamport~\cite{sequentialconsistency})
 \end{quote}
 
-Enforcing this intuitive semantic comes at a cost. Modern processors buffer memory operations on many levels. To enforce sequential consistency mechanisms to control and circumvent this buffering have to be introduced resulting in more transistors in the processor and higher memory access latency.
+Enforcing this intuitive semantic comes at a cost. Modern processors buffer memory operations on many levels. To enforce sequential consistency mechanisms to control and circumvent this buffering have to be introduced resulting in higher memory access latency and more transistors in the processor.
 
 If an algorithm is carefully designed, one can weaken the consistency model to gain better performance. One prominent way of such a model is \textit{release consistency}~\cite{gha90}. Memory access appears unordered except for so called \emph{acquire} and \emph{release} operations. No memory access that has been issued after an acquire operation is permitted to finish before this acquire operation. No memory access is allowed to finish later than the next release operation. Acquire and release encapsulate the memory accesses in between.
 
@@ -272,26 +271,26 @@ One way to exchange information between two processes is via \emph{synchronous m
 
 Another way to approach this is to wait as few as possible, since there is, for example, no need for a sending entity to wait until a receiver arrives. The sender might as well give its information to the communication framework and continue its computational work while the framework delivers the message as soon as the receiver is ready. This method is called \emph{asynchronous message passing}. Aside from less waiting time asynchronous message passing incurs similar overhead to synchronous message passing, because on the communication framework level the same work has to be done. The framework establishes network channels, buffers and queues data, and waits for the receiver to arrive.
 
-A comparatively recent development is the move to \emph{remote memory access} (RMA). Remote memory access makes a portion of main memory available via network so that others can load from it and store to it without actively involving the memory's owning process. It is therefore sometimes called \emph{one-sided communication}. Implementations of RMA oftentimes support atomic operations.
+A comparatively recent development is the move to \emph{remote memory access} (RMA). Remote memory access makes a portion of main memory available via network, so that others can load from it and store to it without actively involving the memory's owning process. It is therefore sometimes called \emph{one-sided communication}. Implementations of RMA oftentimes support atomic operations.
 In order for RMA to be available, the network hardware has to support it. For example InfiniBand~\cite{infiniband} has RMA facilities built in.
-Due to its one-sided nature RMA incurs less overhead than the two previous techniques, but still buffers data. At very high networking bandwidths buffering data becomes a serious problem. To mitigate this vendors implement so called \emph{zero-copy} techniques.
+Due to its one-sided nature RMA incurs less overhead than the two previous techniques, but still buffers data. At very high networking bandwidths buffering data becomes a serious problem. To mitigate this, vendors implement so called \emph{zero-copy} techniques.
 
 Hardware support for barriers in distributed memory systems is widespread especially in high-performance computing. Examples include the Earth Simulator~\cite{earthsimulator}, IBM Blue Gene/L~\cite{bluegenel}, IBM Blue Gene/Q~\cite{bluegeneq} and a low-cost FPGA-based system~\cite{hoefler2006b}
 
-Another interesting and seemingly untested approach is to use lossy communication channels for developing synchronisation protocols. Hardware is always erroneous. For example network packages conflict, packages drop, packages are corrupted or connections drop all the time. Reliability increasing techniques and protocols such as the Transmission Control Protocol (TCP), that are used to mitigate these errors, incur a great performance penalty for transmitting short messages. TCP for example creates comparatively huge packages for small amounts of data, and each transmitted package has to be acknowledged by the receiver. Checking for flipped bits in the package adds further latency.
-If one would instead craft algorithms so that they don't require 100\% reliable connections, further performance improvements are conceivable.
+Another interesting and seemingly untested approach is to use lossy communication channels for developing synchronisation protocols. Hardware is always erroneous. For example network packages conflict, packages drop, packages are corrupted or connections drop all the time. Reliability-increasing techniques and protocols such as the Transmission Control Protocol (TCP), that are used to mitigate these errors, incur a great performance penalty for transmitting short messages. TCP for example creates comparatively huge packages for small amounts of data, and each transmitted package has to be acknowledged by the receiver. Checking for flipped bits in the package adds further latency.
+If one would instead craft algorithms so that they do not require 100\% reliable connections, further performance improvements are conceivable.
 Two ways one could implement such algorithms are via the User Datagram Protocol (UDP)~\cite{udp} and InfiniBand's unreliable connections~\cite{infiniband}.
 
-We will now investigate the facilities the Message Passing Interface (MPI)~\cite{mpi3}, the most prominent high-performance distributed programming interface, provides to implement barrier protocols. MPI is a standardised, low-level, language-independent and portable interface specification. It is very customizable and supports various modes of operation in order to support many different hardware configurations and allow the user to achieve maximum performance. MPI is widely adopted in high-performance computing and scientific computing\cite{mpiadoptiona, mpiadoptionb, mpiadoptionc} and there exist a variety of implementations in all major programming languages.
+We will now investigate the facilities the Message Passing Interface (MPI)~\cite{mpi3}, the most prominent high-performance distributed programming interface, provides to implement barrier protocols. MPI is a standardised, low-level, language-independent and portable interface specification. It is very customizable and supports various modes of operation, in order to support many different hardware configurations and allow the user to achieve maximum performance. MPI is widely adopted in high-performance computing and scientific computing\cite{mpiadoptiona, mpiadoptionb, mpiadoptionc} and there exist a variety of implementations in all major programming languages.
 
-In our analysis we will only scratch the surface of what the standard offers, since diving deep involves lots of details, complicated semantics and many of the details don't matter for our purpose.
+In our analysis we will only scratch the surface of what the standard offers, since diving deep involves lots of details, complicated semantics, and many of the details do not matter for our purpose.
 
-MPI supports synchronous message passing via \emph{send} and \emph{receive}. Additionally you can issue a send operation that immediately returns if no receiver is already in place waiting for the sender.
+MPI supports synchronous message passing via \emph{send} and \emph{receive}. Additionally you can issue a send operation that immediately returns, if no receiver is already in place waiting for the sender.
 
-Furthermore MPI facilitates asynchronous message passing. One can send and receive messages without blocking and one can test if a message has been successfully transmitted. Synchronous and asynchronous message passing can be mixed. That means one is able to, for example, issue a non-blocking send that is matched by a blocking receive operation.
+Furthermore MPI facilitates asynchronous message passing. One can send and receive messages without blocking, and one can test if a message has been successfully transmitted. Synchronous and asynchronous message passing can be mixed. That means one is able to, for example, issue a non-blocking send that is matched by a blocking receive operation.
 
 Since version 3.0 the MPI standard supports \emph{non-blocking collectives}. ``Collectives'' is a collective name for all communication operations where there is a variable number of communicating  peers, like barrier, broadcast, reduce and more.
-Non-blocking collectives allow, in the example of the barrier, to not block at the operation but to register at the barrier upon arrival, and subsequently test the barrier for completion while doing computational work meanwhile.
+Non-blocking collectives allow, in the example of the barrier, to not block at the operation, but to register at the barrier upon arrival and subsequently test the barrier for completion, doing computational work meanwhile.
 This facility is probably unsuited for building new barriers on top of it, but is nevertheless an interesting recent development.
 
 MPI also supports RMA. Although some MPI implementations, for example Open~MPI~\cite{openmpi}, do not yet support version 3.0 of the specification, we will restrict ourselves to analysing it, because it subsumes the features of version 2.2, it is already a year old and supported by other prominent implementations such as MPICH~3.0~\cite{mpich} and its derivatives MVAPICH2~\cite{mvapich} and Cray MPT~\cite{craympt}.
@@ -299,19 +298,19 @@ MPI also supports RMA. Although some MPI implementations, for example Open~MPI~\
 The definition of RMA according to the standard is rather involved, and we have to go into more detail to highlight important points.
 
 To initiate sharing remote memory each participating process issues a collective call to create a \emph{window} of memory to be shared. A window is associated with the group of processes that created it, and through it each participating process exposes a portion of local memory to the other peers.
-Upon creating a window a number of restrictions regarding the use of the window can be established in order to gain better performance. One can for example lower the memory consistency requirements or guarantee to not use certain operations.
+Upon creating a window, a number of restrictions regarding the use of the window can be established, in order to gain better performance. One can for example lower the memory consistency requirements or guarantee to not use certain operations.
 
-Depending on the underlying hardware and MPI implementation there are two different memory models. A window may either have the \emph{separate} or the \emph{unified} model. The separate model states that the memory that is visible to the peers and the memory that is visible to the local process is not the same and might therefore not automatically update between these two copies. That means a change by a peer to one process's memory might not be made visible. This process has to manually update its local copy in order to see the change. In contrast the unified model makes sure that the two copies are eventually updated. Therefore, manual refreshing is unnecessary. This differentiation is a direct result of trying to support many different hardware configurations.
+Depending on the underlying hardware and MPI implementation there are two different memory models. A window may either have the \emph{separate} or the \emph{unified} model. The separate model states that the memory that is visible to the remote peers and the memory that is visible to the local process is not the same and might therefore not automatically update between these two copies. That means a change by a peer to one process's memory might not be made visible. This process has to manually update its local copy in order to see the change. In contrast the unified model makes sure that the two copies are eventually updated. Therefore, manual refreshing is unnecessary. This differentiation is a direct result of trying to support many different hardware configurations.
 
-Before going into the details of window synchronisation we have to introduce the concept of \emph{epochs}. An epoch is a period between two window synchronisation calls. RMA operations like \emph{put}, \emph{get}, \emph{accumulate} may only be used inside an epoch. Epochs are used to accumulate multiple operations to one larger transfer in order to achieve better efficiency.
+Before going into the details of window synchronisation we have to introduce the concept of \emph{epochs}. An epoch is a period between two window synchronisation calls. RMA operations like \emph{put}, \emph{get}, \emph{accumulate} may only be used inside an epoch. Epochs are used to accumulate multiple operations to one larger transfer, in order to achieve better efficiency.
 
 MPI differentiates between \emph{active} and \emph{passive} target communication. In active target communication all peers are actively involved in window synchronisation, whereas in passive target communication only one side's activity is required.
 
-One way to synchronise a window is via the \emph{fence} operation. A fence is a collective operation among all window group members that makes sure all outstanding RMA requests on this window are finished before the operation returns. It implies a full barrier synchronisation.
+One way to synchronise a window is via the \emph{fence} operation. A fence is a collective operation among all window group members that makes sure all outstanding RMA requests on this window are finished before the operation returns. It implies a barrier synchronisation.
 
-A more fine-grained instance of active target communication is via the operations \emph{start}, \emph{complete}, \emph{post} and \emph{wait}. Before issuing any remote access calls the issuing process first has to advertise its intention through the start operation. Once he is finished he will invoke the complete operation to announce that its transmission is complete. The receiving end similarly issues post and wait to expose and synchronise its memory. It is allowed to access its window's local memory meanwhile. In contrast to a fence operation one can restrict such synchronisation to arbitrary processes of the window.
+A more fine-grained instance of active target communication is via the operations \emph{start}, \emph{complete}, \emph{post} and \emph{wait}. Before issuing any remote access calls, the issuing process first has to advertise its intention through the start operation. Once he is finished he will invoke the complete operation to announce that its transmission is complete. The receiving end similarly issues post and wait to expose and synchronise its memory. It is allowed to access its window's local memory meanwhile. In contrast to a fence operation, one can restrict such synchronisation to arbitrary processes of the window.
 
-The \emph{lock} and \emph{unlock} operations facilitate one way of passive target communication. Through these two functions one can block all access to a chunk of remote memory for all other window members. Between lock and unlock the process can then issue remote memory access operations without being interfered.
+The \emph{lock} and \emph{unlock} operations facilitate one way of passive target communication. Through these two functions one can block all access to a chunk of remote memory for all other window members. Between lock and unlock, the process can then issue remote memory access operations, without being interfered.
 
 Another method to synchronise memory passively is through \emph{flush}. A flush makes sure all outstanding RMA calls, issued by the caller, are completed before returning. One can choose if the operations have to be completed only at the issuer's side or on the receiver's side as well.
 
@@ -331,9 +330,9 @@ Remote memory access in MPI is subject to a number of restrictions:
 Therefore, the only way to make sure that data is correctly written or read is through atomic operations or isolating access to the same location with costly window synchronisation operations.
 Normally a processor commits 32 or 64 bit to main memory atomically, and in the remainder of this thesis we will assume this is the case.
 Therefore, these restrictions make sense for buffers at sizes above this, because concurrent memory access of interfering operations might overlap and the outcome is then indeed undefined.
-For amounts of memory below this threshold we wish to have a semantic that is more specific. For example if two puts of at most 64 bits are concurrently issued to the same location, the outcome is that of the last put committed. Since this is not the case, MPI's restrictive RMA semantic makes it unsuitable to implement barrier algorithms, based on pW/CS's non-determinism ideas, on top of it.
+For amounts of memory below this threshold we wish to have a semantic that is more specific. For example if two puts of at most 64 bits are concurrently issued to the same location, the outcome is that of the last put committed. Since this is not the case, MPI's restrictive RMA semantic makes it unsuitable to implement barrier algorithms based on the ideas of the pW/CS lock on top of it.
 
-Shared memory barriers usually rely on atomic operations. Most distributed memory barriers use synchronous message passing. These protocols have also been implemented using RMA to improve efficiency, but still behave equivalently.
+Shared memory barriers usually rely on atomic operations. Most distributed memory barriers use synchronous message passing. To improve efficiency, these protocols have also been implemented using RMA, e.g.~in~\cite{rdma1,rdma2,hoefler2006a}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Currently Used Barrier Protocols}
@@ -347,7 +346,7 @@ Having surveyed the tools for implementing synchronisation primitives we will no
 Many prominent implementations of shared memory concurrent programming facilities are part of closed source commercial products, like for example Intel Composer and Microsoft Visual Studio, and can therefore not be analysed. So we restrict ourselves to examining the GNU~C~Library~\cite{glibc} and GNU~OpenMP~\cite{gomp}.
 
 % gnu-openmp/gcc-4.8.0/libgomp/libgomp.h, gnu-openmp/gcc-4.8.0/libgomp/barrier.c, gnu-openmp/gcc-4.8.0/libgomp/config/linux/, gnu-openmp/gcc-4.8.0/libgomp/config/linux/bar.h, gnu-openmp/gcc-4.8.0/libgomp/config/linux/bar.c, gnu-openmp/gcc-4.8.0/libgomp/config/linux/futex.h (cpu_relax), gnu-openmp/gcc-4.8.0/libgomp/config/linux/wait.h
-The GNU~OpenMP implementation, included in the GNU Compiler Collection (GCC) version 4.8.0, implements a \emph{Central Counter Barrier}. Figure~\ref{fig:pseudocode-central-counter} describes the algorithm in pseudocode which is executed on each thread taking part in the barrier synchronisation.
+The GNU~OpenMP implementation, included in the GNU Compiler Collection (GCC) version 4.8.0, implements a \emph{Central Counter Barrier}. Figure~\ref{fig:pseudocode-central-counter} describes the algorithm in pseudocode, which is executed on each thread taking part in the barrier synchronisation.
 The Central Counter Barrier uses the variable \texttt{barrier} to hold the number of threads that do not yet have arrived at the barrier. Initially it is assigned the number of threads. Upon entering the barrier each thread atomically decrements the variable by one and then waits until it reaches zero. After it reaches zero, all threads eventually leave the barrier.
 
 \begin{figure}[H]
@@ -366,9 +365,9 @@ The protocol can be separated into two phases (Figure~\ref{fig:diagram-central-c
 	\label{fig:diagram-central-counter}
 \end{figure}
 
-The actual implementation in GNU~OpenMP is more involved than the pseudocode in Figure~\ref{fig:pseudocode-central-counter} suggests. For example the algorithm shown here is destructive in the sense that it cannot be repeated, because if the variable is zero at the end, repetition would mean that the variable is negative in the next round, which breaks the protocol. To mitigate this the variable is copied, by each thread, upon first reading it and the last thread to enter resets the shared variable to its initial value.
+The actual implementation in GNU~OpenMP is more involved than the pseudocode in Figure~\ref{fig:pseudocode-central-counter} suggests. For example the algorithm shown here is destructive in the sense that it cannot be repeated, because if the variable is zero at the end, repetition would mean that the variable is negative in the next round, which breaks the protocol. To mitigate this in the implementation, the variable is copied, by each thread, upon first reading it and the last thread to enter resets the shared variable to its initial value.
 
-The loop additionally keeps track of the number of unsuccessful reads. If this number reaches a certain amount, an operating system mechanism, called futex\cite{franke2002}, is employed to suspend the thread until a later time when the other threads hopefully have arrived. Through this back-off mechanism the system avoids unnecessary busy waiting which would negatively impact power consumption. The threshold of this counter is architecture specific and set to an equivalent of about 3 milliseconds of waiting on GNU/Linux. In case the number of threads is larger than the number of physical cores, i.e. the processor is oversubscribed, the counter is set to a much lower value. This way the operating system scheduler can switch between threads more quickly so that threads that need time for computation are not blocked by busy waiting ones.
+The loop additionally keeps track of the number of unsuccessful reads. If this number reaches a certain amount, an operating system mechanism, called futex\cite{franke2002}, is employed to suspend the thread until a later time when the other threads hopefully have arrived. Through this back-off mechanism, the system avoids unnecessary busy waiting which would negatively impact power consumption. The threshold of this counter is architecture specific and set to an equivalent of about 3 milliseconds of waiting on GNU/Linux. In case the number of threads is larger than the number of physical cores, i.e. the processor is oversubscribed, the counter is set to a much lower value. This way the operating system scheduler can switch between threads more quickly so that threads that need time for computation are not blocked by busy waiting ones.
 
 Throughout this thesis we will assume that the thread and process count is at most as high as the number of physical processor cores in a system, because oversubscription is not useful inside a single program and therefore rarely happens.
 
@@ -383,7 +382,7 @@ The basic barrier algorithm used in it is the same as for GNU~OpenMP. One main d
 In this section we present the barrier algorithms that are used in the two major open source MPI implementations, namely Open~MPI~\cite{openmpi} and MPICH~\cite{mpich}. We restrict our analysis to MPI for the same reasons we only considered MPI in Section~\ref{sssec:background-means-distributed}.
 
 % ompi/mca/coll/tuned/coll_tuned_barrier.c : ompi_coll_tuned_barrier_intra_recursivedoubling, ompi_coll_tuned_barrier_intra_bruck, ompi/mca/coll/tuned/coll_tuned_decision_fixed.c
-Open~MPI distinguishes between process counts that are powers of two and which are not. If it is a power of two, a \emph{recursive doubling} barrier is used. A detailed explanation of this protocol can be found in \cite{hoefler2005}. For non-power-of-two process counts Open~MPI uses the \emph{Dissemination Barrier}, introduced by Hensgen, Finkel and Manber in 1988~\cite{hensgen1988}.
+Open~MPI's barrier implementation distinguishes between process counts that are powers of two and which are not. If it is a power of two, a \emph{recursive doubling} barrier is used. A detailed explanation of this protocol can be found in \cite{hoefler2005}. For non-power-of-two process counts Open~MPI uses the \emph{Dissemination Barrier}, introduced by Hensgen, Finkel and Manber in 1988~\cite{hensgen1988}.
 
 Figure~\ref{fig:pseudocode-dissemination} presents the pseudocode of this algorithm, which is executed on each process individually. A process is identified by its \emph{process index}, which is a number between 0 and $\mathit{processCount} - 1$. For readability reasons we have chosen an RMA-esque representation of the protocol, although it can similarly be implemented using message passing techniques.
 In contrast to the Central Counter Barrier, the Dissemination Barrier uses not only one variable but an array of boolean variables per process involved. Each of these arrays is located in the local memory of its owning process and is initially set to false.
@@ -403,7 +402,7 @@ The protocol is organised in rounds. Each round the distance (variable \texttt{d
 	\label{fig:diagram-dissemination}
 \end{figure}
 
-At first a process notifies the next one that is has arrived at the barrier by setting the array element at index \texttt{me} on the next process to true. Then it waits until the previous one notifies its arrival. When that happens the waiting process enters the next round. It now knows that itself, and the previous process have arrived at the barrier and notifies the process at double the previous distance (2) of its knowledge by setting its array element at the target process to true. Through this communication pattern the number of processes, that each process knows have arrived, doubles with each round. Thus after $\lceil \log_2 \mathit{processCount} \rceil$ rounds every process knows of the arrival of all others and can therefore leave the barrier.
+At first a process notifies the next one that is has arrived at the barrier by setting the array element at index \texttt{me} on the next process to true. Then it waits until the previous one notifies its arrival. When that happens the waiting process enters the next round. It now knows that itself, and the previous process have arrived at the barrier and notifies the process at double the previous distance (2) of its knowledge, by setting its array element at the target process to true. Through this communication pattern the number of processes, that each process knows have arrived, doubles with each round. Thus after $\lceil \log_2 \mathit{processCount} \rceil$ rounds every process knows of the arrival of all others and can therefore leave the barrier.
 
 Notifying the next process is done via writing to remote memory, and waiting for notification via busy waiting on local memory. The number of remote access operations per round is the same as the number of processes involved.
 
@@ -424,7 +423,7 @@ One independent piece is the employed way of reinitializing the barrier after us
 
 Another possibility is to replace boolean variables, as used in the Dissemination Barrier in Figure~\ref{fig:pseudocode-dissemination}, with a repetition counter. The remote write and local spin-waiting condition are then replaced with atomic increment and a test for the correct number of repetitions. The additional amount of memory needed is linear in the number of processes. The added computational overhead is negligible.
 
-A way of resetting that works in all circumstances is to use three distinct barriers and switch cleverly between them. The proposed procedure, to be executed by each process individually, is illustrated in Figure~\ref{fig:pseudocode-triple-reset}. In the beginning the first two barriers are initialized, whereas the third one is set to the state of a finished barrier. Upon entering the routine one uses the barrier which comes after the currently finished barrier and resets the one which has been finished before. This approach is provably correct, uses triple the amount of memory of a single barrier, and ads minimal computational overhead.
+A way of resetting that works in all circumstances is to use three distinct barriers and switch cleverly between them. The proposed procedure, to be executed by each process individually, is illustrated in Figure~\ref{fig:pseudocode-triple-reset}. In the beginning the first two barriers are initialized, whereas the third one is set to the state of a completed barrier. Upon entering the routine one uses the barrier which comes after the currently finished barrier and resets the one which has been finished before. This approach is provably correct, uses triple the amount of memory of a single barrier, and ads minimal computational overhead.
 
 \begin{figure}[htpb]
 	\centering
@@ -437,7 +436,7 @@ In order to lower power consumption limiting the amount of busy waiting is impor
 
 During the first initialisation of the barrier an implementation can decide how to handle the case where the number of threads or processes exceeds the number of physical processor cores. Therefore, implementing a solution to this scenario is orthogonal to the other algorithm components.
 
-Another useful approach is to assemble multiple different barrier protocols to create a new one. For example assume you have a hardware topology of shared memory nodes which are connected via network. It is conceivable to construct a barrier that executes a Central Counter Barrier on each node, and then one process of each node takes part in a Dissemination Barrier. After the Dissemination Barrier is completed the intra-node processes are notified and the assembled barrier completes.
+Another useful approach, which has been implemented in~\cite{rdma2}, is to assemble multiple different barrier protocols to create a new one. For example assume you have a hardware topology of shared memory nodes which are connected via network. It is conceivable to construct a barrier that executes a Central Counter Barrier on each node, and then one process of each node takes part in a Dissemination Barrier. After the Dissemination Barrier is completed the intra-node processes are notified and the assembled barrier completes.
 This way one can benefit from the best performing barrier on each level of the topology.
 This might also make sense if barrier algorithms vary in performance for different numbers of threads or processes.
 
@@ -495,13 +494,13 @@ The algorithm's pseudocode, executed individually on each thread taking part, is
 Initially each array element is false. Upon arriving at the barrier a thread registers itself by setting its array element to true. He subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronisation.
 
 Similar to the Central Counter Barrier the protocol can be split into two phases (Figure~\ref{fig:diagram-central-counter}).
-The two differences are that, because each thread writes only to its own array element, they don't require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
+The two differences are that, because each thread writes only to its own array element, they do not require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
 
 The Barrier cannot be repeated as is. A way to add resetting to the protocol is by using the repetition counter approach introduced in Section~\ref{ssec:background-building-blocks}. In order to avoid false~sharing~\cite{falsesharing}, which would majorly degrade performance, an actual implementation of the protocol allocates one cache line for each array element. Cache lines are usually 64 bytes large. Therefore, transforming the array into an array of counters does not require more memory.
 
 A small improvement to the shown algorithm is to keep track of the first few threads that have successfully arrived. The loop counter is then reset to this number instead of 0.
 
-Since we don't use any central information, this protocol can be implemented for both shared and distributed memory architectures.
+Since we do not use any central information, this protocol can be implemented for both shared and distributed memory architectures.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{B2 Barrier}
