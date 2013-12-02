@@ -15,13 +15,13 @@
 
   (M)    edge [in=-80, out=80]                                node [right      , pos=0.3] {$\lambda_c: \mathit{atomic\_begin}$}  (A)
   (M)    edge [loop, distance=1.2cm, in=-60, out=240]         node [below] {$\lambda_c: \mathit{read} \lor \mathit{write}$}      (M)
-  (M)    edge [dashed, in=90, out=180]                        node [above left , pos=0.2] {$\mathit{read} \lor \mathit{write}$}  (S)
+  (M)    edge [dashed, in=90, out=180]                        node [above left , pos=0.2] {$\mathit{read}$}                      (S)
   (M)    edge [dashed, in=90, out=0]                          node [above right, pos=0.2] {$\mathit{write}$}                     (I)
 
   (S)    edge [in=180, out=120]                               node [above left , pos=0.7] {$\lambda_a : \mathit{atomic\_begin}$} (A)
   (S)    edge [in=210, out=60]                                node [below right, pos=0.3] {$\lambda_w : \mathit{write}$}         (M)
   (S)    edge [loop, distance=1.2cm, in=220, out=150]         node [left]                 {$\lambda_c : \mathit{read}$}          (S)
-  (S)    edge [loop, dashed, distance=1.2cm, in=320, out=250] node [below]                {$\lambda_r : \mathit{read}$}          (S)
+  (S)    edge [loop, dashed, distance=1.2cm, in=320, out=250] node [below]                {$\mathit{read}$}                      (S)
   (S)    edge [dashed, in=190, out=-10]                       node [below]                {$write$}                              (I)
 
   (I)    edge [in=0, out=60]                                  node [above right,pos=0.7]  {$\lambda_a : \mathit{atomic\_begin}$} (A)
