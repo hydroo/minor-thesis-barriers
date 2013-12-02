@@ -245,7 +245,7 @@ Programming shared memory systems is very different from developing for distribu
 A parallel program for a shared memory system consists of multiple threads of execution -- short \emph{threads}. 
 The straightforward way to share information between threads is to \emph{load} from and \emph{store} to the same memory address.
 
-Furthermore most modern processors provide means to execute a small series of computations on a date while making the memory unavailable to other threads. They are called \emph{atomic operations}. Two examples are the \emph{test-and-set}- and \emph{add-fetch}-instruction. The former stores a value to an address if a given condition is fulfilled, the latter loads a date, adds a given value to it and stores it back.
+Furthermore, most modern processors provide means to execute a small series of computations on a date while making the memory unavailable to other threads. They are called \emph{atomic operations}. Two examples are the \emph{test-and-set}- and \emph{add-fetch}-instruction. The former stores a value to an address if a given condition is fulfilled, the latter loads a date, adds a given value to it and stores it back.
 
 Without these operations parallel programming is much more difficult and error-prone, since concurrently issuing normal load and store operations can easily cause \emph{race conditions}. This convenience, on the other hand, comes at the cost of additional management overhead for the processor. To date shared memory systems are usually limited to 64 threads and less. Some high-performance computing implementations reach 512 concurrent threads. In comparison distributed memory systems can have over a million processing units.
 
@@ -285,9 +285,9 @@ We will now investigate the facilities the Message Passing Interface (MPI)~\cite
 
 In our analysis we will only scratch the surface of what the standard offers, since diving deep involves lots of details, complicated semantics, and many of the details do not matter for our purpose.
 
-MPI supports synchronous message passing via \emph{send} and \emph{receive}. Additionally you can issue a send operation that immediately returns, if no receiver is already in place waiting for the sender.
+MPI supports synchronous message passing via \emph{send} and \emph{receive}. Additionally, you can issue a send operation that immediately returns, if no receiver is already in place waiting for the sender.
 
-Furthermore MPI facilitates asynchronous message passing. One can send and receive messages without blocking, and one can test if a message has been successfully transmitted. Synchronous and asynchronous message passing can be mixed. That means one is able to, for example, issue a non-blocking send that is matched by a blocking receive operation.
+Furthermore, MPI facilitates asynchronous message passing. One can send and receive messages without blocking, and one can test if a message has been successfully transmitted. Synchronous and asynchronous message passing can be mixed. That means one is able to, for example, issue a non-blocking send that is matched by a blocking receive operation.
 
 Since version 3.0 the MPI standard supports \emph{non-blocking collectives}. ``Collectives'' is a collective name for all communication operations where there is a variable number of communicating  peers, like barrier, broadcast, reduce and more.
 Non-blocking collectives allow, in the example of the barrier, to not block at the operation, but to register at the barrier upon arrival and subsequently test the barrier for completion, doing computational work meanwhile.
@@ -317,7 +317,7 @@ Another method to synchronise memory passively is through \emph{flush}. A flush 
 Window synchronisation can be optimised through giving the implementation information about which operations are not used during the epoch and what happens before and after this synchronisation.
 
 Inside an epoch one may issue remote memory access operations. The two simple ones are \emph{put} and \emph{get}. Memory access through put and get appears unordered inside an epoch.
-Furthermore one can use atomic operations like \emph{accumulate}, \emph{fetch-and-op} or \emph{compare-and-swap}, with the intuitive semantic and where \emph{op} is a placeholder for various operations. The default global visibility order of atomic operations is sequentially consistent. When creating a window one can weaken this by, for example, allowing remote write operations to overtake remote read operations. Any combination of overtaking between reads, writes or between equal operations can be allowed.
+Furthermore, one can use atomic operations like \emph{accumulate}, \emph{fetch-and-op} or \emph{compare-and-swap}, with the intuitive semantic and where \emph{op} is a placeholder for various operations. The default global visibility order of atomic operations is sequentially consistent. When creating a window one can weaken this by, for example, allowing remote write operations to overtake remote read operations. Any combination of overtaking between reads, writes or between equal operations can be allowed.
 
 Remote memory access in MPI is subject to a number of restrictions:
 \begin{itemize}
@@ -444,7 +444,7 @@ This might also make sense if barrier algorithms vary in performance for differe
 \cleartooddpage
 \section{New Barriers}
 \label{sec:new}
-In this section we first present a new variation on a barrier protocol of ours. The second algorithm reverses the approach of the Central Counter Barrier. Third we demonstrate a pW/CS-influenced modification of the second barrier.
+In this section we first present a new variation on an already presented barrier protocol of ours. The second algorithm reverses the approach of the Central Counter Barrier. Third we demonstrate a pW/CS-influenced modification of the second barrier.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{MGB Barrier}
@@ -467,9 +467,9 @@ A thread commits itself to \texttt{first} or \texttt{second} by setting its resp
 All threads participating in the barrier synchronisation enter the same of the two parts.
 Inside a loop participants try to synchronise. When successful the barrier is reset through the two subsequent assignments of \texttt{current} and either \texttt{first} or \texttt{second}.
 
-Initially \texttt{first} and \texttt{second} are zero, and \texttt{current} is one. When a thread arrives at the barrier it will enter the upper if-branch. It then asks which threads have already arrived, adds itself to the acquired bit set, and stores it back to the variable \texttt{first}.
+Initially \texttt{first} and \texttt{second} are zero, and \texttt{current} is one. When a thread arrives at the barrier it will enter the upper if branch. It then asks which threads have already arrived, adds itself to the acquired bit set, and stores it back to the variable \texttt{first}.
 He then repeatedly polls \texttt{first} in order to find out if its commitment attempt has been overwritten, i.e. its bit is not set anymore, by another thread's concurrently issued write operation, and secondly to determine whether the barrier is completed. The upper barrier is completed, if either \texttt{first} equals \texttt{full} or \texttt{current} is 2. The first thread to realise that \texttt{first} has been set to \texttt{full} will exit the loop, set \texttt{current} to 2 and continue its computational work. Subsequently all other threads eventually leave the barrier.
-When entered again the same procedure is executed in the lower if-branch using the variable \texttt{second} instead of \texttt{first}. A third repetition utilises the upper branch again.
+When entered again the same procedure is executed in the lower if branch using the variable \texttt{second} instead of \texttt{first}. A third repetition utilises the upper branch again.
 
 The presented protocol reflects the ideas of pW/CS in that it loosely organises communication between threads and is less enforcing in the sense that threads may overwrite each others' commitment attempts.
 
@@ -481,7 +481,7 @@ The number of threads this protocol supports is limited by the number of bits a 
 \subsection{B1 Barrier}
 \label{ssec:new-b1}
 
-The following barrier protocol reverses the idea of the Central Counter Barrier (Section~\ref{sssec:background-currently-used-shared}) to use a single global counter that all threads atomically access once and read repeatedly. Instead it uses an array of boolean variables, one element for each thread, which is also accessed differently.
+The following barrier protocol reverses the idea of the Central Counter Barrier (Section~\ref{sssec:background-currently-used-shared}) to use a single global counter that all threads atomically access once and read repeatedly. Instead an array of boolean variables (one element for each thread), which is also accessed differently, is employed.
 The algorithm's pseudocode, executed individually on each thread taking part, is depicted in Figure~\ref{fig:pseudocode-b1}.
 
 \begin{figure}[htbp]
@@ -493,8 +493,8 @@ The algorithm's pseudocode, executed individually on each thread taking part, is
 
 Initially each array element is false. Upon arriving at the barrier a thread registers itself by setting its array element to true. He subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronisation.
 
-Similar to the Central Counter Barrier the protocol can be split into two phases (Figure~\ref{fig:diagram-central-counter}).
-The two differences are that, because each thread writes only to its own array element, they do not require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
+Similar to the Central Counter Barrier, the protocol can be split into two phases (Figure~\ref{fig:diagram-central-counter}).
+The difference between the two protocols is that, because each thread writes only to its own array element, they do not require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
 
 The Barrier cannot be repeated as is. A way to add resetting to the protocol is by using the repetition counter approach introduced in Section~\ref{ssec:background-building-blocks}. In order to avoid false~sharing~\cite{falsesharing}, which would majorly degrade performance, an actual implementation of the protocol allocates one cache line for each array element. Cache lines are usually 64 bytes large. Therefore, transforming the array into an array of counters does not require more memory.
 
@@ -510,14 +510,12 @@ The B2 Barrier is a variation on the previous barrier in which less communicatio
 In principle the following protocol can be implemented on both shared and distributed memory architectures. We now switch to a distributed setting, because preliminary analysis showed that the saved memory access cost in comparison to the additional computational overhead favours its use in a distributed scenario.
 
 Figure~\ref{fig:pseudocode-b2} presents the B2 Barrier's RMA-style pseudocode. The notation used in this listing is explained in Section~\ref{ssec:new-mgb}.
-
 \begin{figure}[htbp]
 	\centering
 	\input{listings/b2}
 	\caption{Pseudocode of the B2 Barrier}
 	\label{fig:pseudocode-b2}
 \end{figure}
-
 Each array element of \texttt{barrier} is located in the local memory of the process with the matching index. These elements are bit sets representing the knowledge of the owning process about the arrival of others.
 
 When the first process arrives at the barrier it registers itself by setting its bit in its local array element and then continues to query the remote processes. It only acquires a remote array element, if it did not yet successfully do so, i.e. the remote process's bit is not set in the local bit set. If this is the case, it fetches the remote element and adds it to its own, thus adding the arrival of all processes the remote end knows about to its own bit set. Querying the other processes is repeated until the bit set indicates that all processes arrived.
@@ -547,7 +545,7 @@ In the shared memory setting the Central Counter Barrier is pitted against the B
 
 In our evaluation we assume no back-off strategy is used. This means if a variable is repeatedly requested inside a loop, it is fetched as often as program execution speed allows. The topic of back-off strategies is a subject in its own right and goes beyond the scope of this thesis.
 
-The analysis is split into two parts. First, we present properties, perceivable without measurement and modelling, that are inherent to the protocols. Second, we employ model checking to quantify our observations and gain a deeper understanding of the chosen barriers.
+The analysis is split into two parts. First, we present properties, perceivable without measurement and modelling, that are inherent to the protocols. Second, we employ model checking to quantify our observations and, thus, gain a deeper understanding of the chosen barriers.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{General Properties}
@@ -589,11 +587,11 @@ The minimum number of remote access operations required to perform a barrier syn
 	\label{fig:diagram-gather-broadcast}
 \end{figure}
 
-Because of its random communication pattern there is no fixed number of remote accesses issued by the B2 Barrier. The number of successful, non-zero, remote reads, lies between $2 \cdot (n-1)$ and $n \cdot (n-1)$. The amount of unsuccessful reads is not limited, since the loop remotely polls other processes until all arrive.
+Because of its random communication pattern, there is no fixed number of remote accesses issued by the B2 Barrier. The number of successful, non-zero, remote reads, lies between $2 \cdot (n-1)$ and $n \cdot (n-1)$. The amount of unsuccessful reads is not limited, since the loop remotely polls other processes until all arrive.
 
 Where a process in the Dissemination Barrier waits for one designated communication partner each round, the B2 Barrier does not wait for a single process but instead continues to poll the next one.
 
-Requiring $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. Especially from $n$, where $n$ is a power of two, to $n+1$ processes the number of rounds increases by 1. Therefore, the runtime is expected to show a stair-esque behaviour. Every time the number of rounds increases the duration of the barrier increases by a large step, whereas adding more processes to the same number of rounds adds little overhead.
+Requiring $\lceil \log _2~n \rceil$ rounds is obviously worse than $\log _2~n$. Especially from $n$, where $n$ is a power of two, to $n+1$ processes the number of rounds increases by 1. Therefore, the runtime of the Dissemination Barrier is expected to show a stair-esque behaviour. Every time the number of rounds increases the duration of the barrier increases by a large step, whereas adding more processes to the same number of rounds adds little overhead.
 In contrast to this the execution time of the B2 Barrier is distributed evenly.
 
 Synchronisation using the Dissemination and B2 Barrier requires the same amount of memory. In principle $\lceil \log _2~n \rceil$ bits per process suffice for both algorithms. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n^2$ bits, but, since each process receives from only $\lceil \log _2~n \rceil$ other processes, a modified array index calculation would allow the protocol to work with $n \cdot \lceil \log _2 ~n \rceil$ bits.
@@ -704,20 +702,20 @@ Table~\ref{tab:table-dissemination-progress} illustrates which process knows of 
 
 Because the number of blocked processes doubles each round the ratio of stuck to not-stuck processes is worse for non-power-of-two than it is for power of two process counts.
 
-The B2 Barrier does not work in rounds and does not have designated communication partners. It therefore fetches all other process's arrival notifications while one is missing.
+The B2 Barrier does not work in rounds and does not have designated communication partners. It therefore fetches all other process's arrival notifications while one process is missing.
 
-When the last process arrives the Dissemination Barrier requires at least as many serial remote writes as there are rounds, whereas the B2 Barrier issues its remaining remote read operations concurrently. The number of remaining remote access operations is $2^{\lceil \log_2~n \rceil} - 1$ for the Dissemination Barrier and $n$ for the B2 Barrier.
+When the last process arrives, the Dissemination Barrier requires at least as many serial remote writes as there are rounds, whereas the B2 Barrier issues its remaining remote read operations concurrently. The number of remaining remote access operations is $2^{\lceil \log_2~n \rceil} - 1$ for the Dissemination Barrier and $n$ for the B2 Barrier.
 
 We attempt to quantify the influence of this behaviour on the execution time and energy consumption in the following section.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Model Checking}
 \label{ssec:analysis-modelchecking}
-The properties, we are interested in, can be divided into two broad categories: functional and quantitative properties. Functional properties describe the supposed behaviour of the barriers, whereas quantitative properties express conditions that rely on probabilistic aspects of the protocols, e.g. execution time.
+The formal properties of the chosen protocols can be divided into two broad categories: functional and quantitative properties. Functional properties describe the supposed behaviour of the barriers, whereas quantitative properties express conditions that rely on probabilistic aspects of the protocols, e.g. execution time.
 
-To check correctness of the barriers we model every instance where execution is random through non-deterministic choice. This yields a Markov decision process (MDP), which we then use a basis for automated analysis with the SPIN model checker.
+To check correctness of the barriers we model every instance where execution is random through non-deterministic choice. This yields a Markov decision process, which we then use a basis for automated analysis with the SPIN model checker.
 
-To model the inherent randomness of our algorithms we use exponential distributions. This way we obtain continuous-time Markov chains (CTMCs) which serve a basis for formal quantitative analysis using the PRISM model checker.
+To model the inherent randomness of our algorithms we use exponential distributions. This way we obtain continuous-time Markov chains (CTMCs) which serve as a basis for formal quantitative analysis using the PRISM model checker.
 
 Models are obtained in a compositional way, using action labels and global state to synchronise.
 
@@ -755,10 +753,10 @@ The reachability reward is defined as
 \begin{center}
 	$\mathrm{ReaRew}(\pi, \Phi) = \mathit{Rew}(\pi(s_0:s_j))$
 \end{center}
-where $j = min \{ i~|~s_i \models \Phi \}$ and  $\pi(s_0:s_j)$ stands for the sub-path of $\pi$ starting in $s_0$ and ending in $s_j$.
+where $\Phi$ is a propositional formula describing a set of states, $j = min \{ i~|~s_i \models \Phi \}$ and  $\pi(s_0:s_j)$ stands for the sub-path of $\pi$ starting in $s_0$ and ending in $s_j$.
 The extension of these notions from paths to states and CTMCs is done the usual way and can be found in \cite{bhhk03}
 
-Analysing the protocols we will for example deal with the state reward function that assigns value 1 to each state. In this case $\mathrm{ReaRew}(\Phi)$ can be interpreted as the average number of processor clock cycles to reach a state where $\Phi$ holds.
+Analysing the protocols, we will for example deal with the state reward function that assigns value 1 to each state. In this case $\mathrm{ReaRew}(\Phi)$ can be interpreted as the average number of processor clock cycles to reach a state where the formula $\Phi$ holds.
 We also wish to count remote memory access operations. For this we assign value 1 to each transition that represents such an operation. $\mathrm{ReaRew}(\Phi)$ is then the average number of remote memory access operations issued until reaching a $\Phi$-state.
 
 %%%%%%%%%%%%%%%%%%%%
@@ -788,7 +786,7 @@ Only if $\alpha$ is enabled in both modules, these two transitions fire simultan
 Analogous rules apply for more than two modules sharing an action label.
 
 %%%%%%%%%%
-\paragraph{Shared memory}
+\paragraph{Shared Memory}
 \label{sssec:analysis-modelchecking-modelling-shared-memory}
 In order to exchange information threads write to and read from the same memory location.
 Memory access latency is very large in comparison to the duration of arithmetic operations.
@@ -806,7 +804,7 @@ We use the MSI cache coherency protocol, extended by support for atomic operatio
 
 In the MSI model a cache line copy can be in one of three states. \emph{Modified} means the thread has the only up-to-date copy of the cache line and all other copies are \emph{invalid}. If a cache line copy is invalid it is outdated and therefore not usable. Being in the \emph{shared} state means the thread has an up-to-date copy, but other threads may have a correct copy, too. We extend these three states by a fourth, called \emph{atomic}. Its meaning is the same as modified, except that as long as a cache line copy is in this state, no other thread may access it.
 
-Figure~\ref{fig:model-shared-memory} illustrates how a cache line copy changes its state. Solid transitions are fired by events occurring on the thread owning the cache line copy, whereas dashed transitions are due to events triggered by other cache line copies.
+Figure~\ref{fig:model-shared-memory} illustrates how a cache line copy changes its state. Solid transitions are fired by events occurring on the thread that owns the cache line copy, whereas dashed transitions are due to events triggered by other cache line copies.
 
 \begin{figure}[htbp]
 	\centering
@@ -851,7 +849,7 @@ We emulate the interval in which threads arrive at the barrier via an exponentia
 
 The atomic operation has been shortened for readability and really contains multiple transitions. The thread initiates the atomic operation on \texttt{barrier}, reads it, subtracts one from it, writes it back, and finally ends the atomic operation.
 
-Unlike the quantitative model, the functional model repeatedly executes the protocol. Resetting is achieved via the triple barrier approach, which is explained in Section~\ref{ssec:background-building-blocks}.
+Unlike the quantitative model, the functional model repeatedly executes the protocol. Resetting is achieved via the triple barrier method, which is explained in Section~\ref{ssec:background-building-blocks}.
 
 %%%%%%%%%%
 \paragraph{B1 Barrier}
@@ -868,10 +866,10 @@ The algorithm's control flow is illustrated in Figure~\ref{fig:model-b1}. As for
 \end{figure}
 
 Initially each array element is set to false and the loop index to zero.
-In comparison to the pseudocode the assignments are slightly different, but ultimately result in the same behaviour.
+In comparison to the pseudocode, the assignments are slightly different, but ultimately result in the same behaviour.
 
 Deviating from the quantitative model, the functional model implements repetition and resetting by replacing the boolean array elements with counters. The principle is described in detail in Section~\ref{ssec:background-building-blocks}.
-Additionally the functional model splits some of the transition into multiple transitions to allow for more interleaving and therefore reveal more potential errors in the protocol.
+Additionally, the functional model splits some of the transition into multiple transitions to allow for more interleaving and therefore reveal more potential errors in the protocol.
 
 Splitting these transitions in the quantitative model would increase model size majorly. It is important not to merge multiple transitions that depend on shared memory. Merging and splitting other transitions influences timing in a minor way.
 
@@ -893,7 +891,7 @@ The expressions \texttt{to} and \texttt{from} are shorthands for \texttt{process
 \end{figure}
 
 Local operations take far less time than remote operations -- between ten to a thousand times usually. Therefore, we assign the $\lambda_c$ (one processor clock cycle) to local operations.
-The duration of a remote write (also called put) operation, which is strongly hard-ware dependent, is assumed to take 100 cycles. Therefore, we assign $\lambda_p = \frac{1}{100}$ to each corresponding transition.
+The duration of a remote write (also called put) operation, which is strongly hardware-dependent, is assumed to take 100 cycles. Therefore, we assign $\lambda_p = \frac{1}{100}$ to each corresponding transition.
 
 In the CTMC model, resulting from unwinding this control flow diagram, a remote write operation is represented as a synchronised action. When a process executes a put, the target process then changes its local state accordingly.
 
@@ -915,8 +913,8 @@ The rates of operations are the same as for the Dissemination Barrier except tha
 	\label{fig:model-b2}
 \end{figure}
 
-The functional model additionally includes repetition and resetting using the triple barrier approach explained in Section~\ref{ssec:background-building-blocks}.
-Similar to previously presented models the functional model splits some of the transitions into multiple ones to allow for more interleaving. This way more potential errors can be revealed. The quantitative model refrains from splitting them to reduce the model's size.
+The functional model additionally includes repetition and resetting using the triple barrier method explained in Section~\ref{ssec:background-building-blocks}.
+Similar to previously presented models the functional model splits some of the transitions into multiple ones to allow for more interleaving. This way more potential errors can be revealed. The quantitative model refrains from splitting them, to reduce the model's size.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Functional Properties}
@@ -925,10 +923,10 @@ In this section we use the words \emph{thread} and \emph{process} interchangeabl
 
 There are two basic conditions that every barrier protocol has to fulfill.
 It has to properly synchronise threads, i.e. no thread leaves before all threads arrived at the barrier, and it may not deadlock.
-We express these two properties using the linear temporal logic (LTL).
+We express these two properties using the linear temporal logic.
 
 \vspace{0.2cm}
-\noindent \textbf{(A)} \emph{``A thread may only exit the barrier if all threads have entered it.''}
+\noindent \textbf{(A)} \emph{``A thread may only exit the barrier, if all threads have entered it.''}
 \begin{center}
 	$\square ( \mathit{one\_left} \implies \mathit{all\_entered} )$
 \end{center}
@@ -954,7 +952,7 @@ As in the previous section we use the words \emph{thread} and \emph{process} int
 The section is divided into two parts. We first identify and formalise interesting quantitative properties of barrier protocols. Second, we present the results of the automated analysis.
 
 %%%%%%%%%%
-\paragraph{Identification and formalisation}
+\paragraph{Identification and Formalisation}
 \label{ssssec:analysis-modelchecking-quantitative-properties-identification}
 There are a number of interesting questions to ask about barrier protocols. First, let us enumerate what we can quantify.
 
@@ -973,7 +971,7 @@ For distributed memory protocols we are also interested in the number of remote 
 
 Having listed the three measures we want to quantify, we now consider the points in time when we want to measure.
 There are four of these: the moment when the first (A), and the last (B), thread enters the barrier, and the instant when the first (C), and last (D), thread leaves the barrier.
-For the shared memory barriers we additionally consider the moment when the writing phase ends (W), i.e. when the last thread finished writing.
+For the shared memory barriers we additionally consider the moment when the writing phase ends (W), i.e. when the last thread finishes writing.
 Since the Dissemination Barrier consists of multiple rounds, we are also interested in measuring at the end of each round (R$i$). That is the point in time when the last thread leaves round $i$.
 
 Formalising this enumeration we present the list of properties used for model checking.
@@ -1024,7 +1022,7 @@ The second value to variate is the initial work period's rate. By changing the w
 \paragraph{Evaluation}
 \label{ssssec:analysis-modelchecking-quantitative-properties-evaluation}
 We formalised the four chosen barrier protocols using CTMCs and the suggested properties using the logic CSRL.
-We then supplied the PRISM model checker with both in order to retrieve the desired quantitative model checking results.
+We then supplied the PRISM model checker with both, in order to retrieve the desired quantitative model checking results.
 In the following section we present and comment on these results.
 The evaluation is split into shared and distributed memory protocols.
 
@@ -1068,10 +1066,10 @@ In the Central Counter Barrier the last thread to commit itself, very likely imm
 
 As conjectured in Section~\ref{sssec:analysis-general-shared} writing is quicker for the B1 Barrier and reading, i.e. phase C and D combined, for the Central Counter Barrier.
 
-All phases take longer with increasing thread count because of the CTMC semantic for simultaneously enabled transitions, described in Section~\ref{sssec:analysis-modelchecking-preliminaries}. The exit rate of a transition is the sum of rates of all currently enabled transitions.
+All phases take longer with increasing thread count, because of the CTMC semantic for simultaneously enabled transitions, described in Section~\ref{sssec:analysis-modelchecking-preliminaries}. The exit rate of a transition is the sum of rates of all currently enabled transitions.
 In particular suppose you have $n$ concurrent threads of execution, modelled as interleaved CTMC modules, and in each a transition with rate $\lambda$ is enabled. The average delay of the first transition to fire is then $\frac{1}{n \cdot \lambda}$. The average time of a parallel execution of all $n$ transitions is $\sum_{i=1}^{n} \frac{1}{i \cdot \lambda}$ rather than the intuitive $\frac{1}{\lambda}$.
 For example the expected number of cycles until the first thread enters the barrier is $\frac{100}{n}$. The last thread is expected to enter the barrier after roughly 150, 183 and 208 cycles, for two, three and four processes.
-Because of this influence phase D for the Central Counter Barrier takes 50, 75 and 92 cycles for two, three and four threads. It is expected to be about the same across all thread counts, since each thread issues exactly one shared read operation.
+Because of this influence, phase D for the Central Counter Barrier takes 50, 75 and 92 cycles for two, three and four threads. It is expected to be about the same across all thread counts, since each thread issues exactly one shared read operation.
 For the same reason the duration of the writing phase for the B1 Barrier should be around 100 cycles instead of 125, 138 and 146 for two, three and four threads.
 
 The energy consumption is similar to the timing.
@@ -1084,7 +1082,7 @@ Aside from the accumulated energy consumption its rate during the different phas
 Phase A uses the baseline power consumption of 11 watts.
 The overall power consumption of the Central Counter Barrier lies between 16 and 18.3 watts. The B1 Barrier's is considerably higher with 19.4 to 30.6 watts.
 Because the Central Counter Barrier uses atomic operations and waits busily on only one variable, its power consumption is less in almost every phase.
-The only part where power consumption is similar is phase D. The Central Counter barrier only issues shared read operations in this phase, whereas the B1 Barrier executes a mix of shared and local read operations. The execution rate to energy reward ratio is similar, though.
+The only part where power consumption is similar, is phase D. The Central Counter barrier only issues shared read operations in this phase, whereas the B1 Barrier executes a mix of shared and local read operations. The execution rate to energy reward ratio is similar, though.
 Both Barriers have very high power consumption between the moment the last thread commits itself and the first one leaves (green). For the Central Counter Barrier this is due to the shortness of this phase. The B1 Barrier issues almost exclusively shared read operations, which are modelled to consume more energy per cycle than other operations.
 \begin{figure}[htbp]
 	\centering
@@ -1131,13 +1129,13 @@ Phases A and B are excluded because they are large and behave similarly for both
 	\label{fig:c1-work-1000-partition}
 \end{figure}
 
-The timing behaves as expected. The Central Counter Barrier needs one atomic operation and a few more short instructions from the last thread to enter until the first leaves. The B1 Barrier uses very similar amount of time -- a write operation and a few read operations.
+The timing behaves as expected. The Central Counter Barrier needs one atomic operation and a few more short instructions from the last thread to enter until the first leaves. The B1 Barrier uses a very similar amount of time -- a write operation and a few read operations.
 Since changing the work period only influences the phases before each thread has committed its date, the interval between C and D is the same as in Figure~\ref{fig:c1-work-100-partition}.
 
 Energy consumption during the writing phase of the Central Counter Barrier is constant across all thread counts, because atomic operations block all other threads from busily reading the barrier variable.
 The B1 Barrier in turn polls constantly, and therefore energy consumption increases with increasing thread count.
 
-The rate of energy consumption behaves similarly to the previous measurement where we used an average work period duration of 100 cycles.
+The rate of energy consumption behaves similarly to the previous measurement, where we used an average work period duration of 100 cycles.
 The overall power consumption is now dominated by phases A and B, which are similar across protocols. The B1 Barrier requires between 15.3 and 23.5 watts and the Central Counter Barrier uses 14.6 to 20.9 watts. The B1 Barrier can catch up considerably.
 \begin{figure}[htbp]
 	\centering
@@ -1152,9 +1150,9 @@ If one increases the length of the work period beyond 1000 cycles, both algorith
 \subparagraph{Distributed Memory Barriers}
 \label{sssssec:analysis-modelchecking-quantitative-properties-evaluation-distributed}
 This section presents a comparison of the Dissemination Barrier and the B2 Barrier, similarly organised as the previous section.
-Additionally we analyse the Dissemination Barrier with up to eight concurrent processes.
+Additionally, we analyse the Dissemination Barrier with up to eight concurrent processes.
 If we attempt the same for the B2 Barrier, the model size exceeds the manageable.
-Furthermore we quantify the number of remote operations the B2 Barrier issues.
+Furthermore, we quantify the number of remote operations the B2 Barrier issues.
 
 We begin with a work period of 100 cycles, simulating that processes arrive in extremely small intervals.
 The stacked diagrams in Figure~\ref{fig:d2-work-100-partition} show the total time spent and energy consumed for both protocols and varying thread counts through the different phases.
@@ -1172,7 +1170,7 @@ The stacked diagrams in Figure~\ref{fig:d2-work-100-partition} show the total ti
 Both protocols complete similarly fast. The B2 Barrier has an advantage at over two processes.
 The Dissemination Barrier finishes 23 cycles earlier for two processes, because remote writes can be issued during another process's work period, whereas the B2 Barrier needs to execute two more remote read operations after the last process enters the barrier.
 For the B2 Barrier after the last process arrives, the first one leaves in 50 cycles for two processes. Since a remote read takes 100 cycles on average, this is unrealistically early. The CTMC interleaving behaviour, explained in the previous section, causes this effect.
-Furthermore one can observe that there is a wider spread between the first and the last process to leave for the B2 Barrier.
+Furthermore, one can observe that there is a wider spread between the first and the last process to leave for the B2 Barrier.
 For the Dissemination Barrier at two processes the first and the last process leave at nearly the same time, because when the first realises its peer has completed its remote write, it already completed its own. Both remote writes finish before either process can leave and therefore phase D is one cycle short.
 
 Energy consumption behaves similarly to execution time through the different phases.
@@ -1191,13 +1189,13 @@ Figure~\ref{fig:d-work-100-partition} presents execution time and energy consump
 \end{figure}
 As suspected in Section~\ref{sssec:analysis-general-distributed} it shows a stair-shaped execution time distribution. With each new round the duration increases by a large step, whereas adding processes and maintaining the number of rounds increases runtime very little.
 Normally, because remote writes can be issued concurrently, one expects the runtime to not increase at all. But due to the CTMC interleaving semantic an increase in concurrently issued operations increases the average time it takes to complete all of them.
-Here one can interpret this effect as resource contention, i.e. the number of messages that can concurrently be exchanged is limited. We expect this behaviour to be visible in runtime benchmarks as well.
+Here one can interpret this effect as resource contention, i.e. issuing multiple messages concurrently increases the time to transfer all of them. We expect this behaviour to be visible in runtime benchmarks as well.
 
 Energy consumption with increasing process count and constant number of rounds increases faster than the execution time. There are two reasons for this. First, more remote operations are issued if processes are added, as described in Section~\ref{sssec:analysis-general-distributed}. Second, having more processes means more processes are waiting busily and therefore increase energy consumption.
 
 The B2 Barrier's rate of energy consumption is similar to the Dissemination Barrier's as can be observed in Figure~\ref{fig:d2-power-work-100}.
 That is, because the execution time and the number of issued remote operations is similar.
-The Dissemination Barrier uses between 17.4 and 25.2 watts, whereas the B2 Barrier requires between 16.1 and 22.15 watts.
+The Dissemination Barrier uses between 17.4 and 25.2 watts, whereas the B2 Barrier requires between 16.1 and 22.2 watts.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=10cm]{charts/d2-power-work-100}
@@ -1240,7 +1238,7 @@ The duration of each round is related to the explanation on progress in Section~
 
 Energy consumption behaves similarly to that illustrated in Figure~\ref{fig:d-work-100-partition} where we assumed a work period of 100 cycles.
 
-As we observed there is a certain cost for each additional round in the Dissemination Barrier. Due to model checking limitations we are unable to compare the Dissemination Barrier to the B2 Barrier for more than four processes, i.e. two rounds. In Figure~\ref{fig:d2-work-1000-partition} one can see that the B2 Barrier's execution time is spread more evenly than that of the Dissemination Barrier. We expect this advantage to become greater with increasing process count.
+As we observed, there is a certain cost for each additional round in the Dissemination Barrier. Due to model checking limitations we are unable to compare the Dissemination Barrier to the B2 Barrier for more than four processes, i.e. two rounds. In Figure~\ref{fig:d2-work-1000-partition} one can see that the B2 Barrier's execution time is spread more evenly than that of the Dissemination Barrier. We expect this advantage to become greater with increasing process count.
 Comparing to the 100 cycle work period results, the B2 Barrier does not increase its advantage. The B2 Barrier in phase C and D uses 84.6 and 53.5 fewer cycles for three and four processes than the Dissemination Barrier, whereas for the larger work period it uses 69.5 and 43.4 fewer cycles. This is surprising, and there are a number of possible explanations. First, the B2 Barrier might handle the case where processes arrive in large intervals less efficient than expected. Second, the fact that the Dissemination Barrier exchanges relatively few messages might be more important than assumed. This means there is no clear indication that the progress problem, described in Section~\ref{sssec:analysis-general-distributed} exists. It might surface, if one is able to analyse beyond four processes, though.
 
 Figure~\ref{fig:d2-power-work-1000} displays the rate of energy consumption for both protocols. It is similar to the 100 cycle work period case, except that it uses overall less power, because a longer work period means that more time is spent idly.
@@ -1306,7 +1304,7 @@ The approach to trade less time writing for more time reading does not pay off f
 First, in a balanced scenario the time lost due to queuing atomic operations is small. Second, atomic operations blocking access to a variable results in less busy waiting, which in turn lowers energy consumption.
 
 In the distributed memory case, the B2 Barrier outperforms the Dissemination Barrier by most measures.
-As conjectured in Section~\ref{sssec:analysis-general-distributed} the Dissemination Barrier wastes substantial time due to its fixed, round-based communication pattern. For non-power of two process counts it gets worse.
+As conjectured in Section~\ref{sssec:analysis-general-distributed} the Dissemination Barrier wastes substantial time due to its fixed, round-based communication pattern. For non-power of two process counts it even gets worse.
 The main drawback of the B2 Barrier is, due to busy waiting on remote memory, it issues more remote operations overall and therefore allocates more bandwidth than the Dissemination Barrier.
 
 The CTMC model checking semantic for simultaneously enabled transitions is different from our intuitive notion of parallel execution. Because of this, and since the assumptions we make do not closely reflect reality, one has to exercise caution when interpreting the model checking results.
@@ -1334,7 +1332,7 @@ By switching to remote writing in conjunction with local reading, one might be a
 
 Third, model checking should be extended. The unfortunate limit of four processes for our analysis ought to be improved. To achieve this, one can employ techniques like symmetry reduction, partial order reduction and manual fine-tuning.
 Another interesting pursuit is to model the protocols in greater detail. Today's processors, for example, have a multi-layered cache. In order to get preciser performance predictions one can incorporate such intricacies into the model.
-Resource contention is another detail we do not model in this work. Our theoretical computer concurrently transfer data between processes with arbitrarily high bandwidth.
+Resource contention is another detail we do not model in this work. Our theoretical computer can concurrently transfer data between processes with arbitrarily high bandwidth.
 
 The fourth area of future research is to expand the focus of analysis. We are interested in analysing The Dissemination Barrier and the B2 Barrier for shared memory architectures, and incorporate back-off strategies into the evaluation.
 
