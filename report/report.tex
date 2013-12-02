@@ -24,7 +24,7 @@
 		%numbers=left,
 		numberstyle=\small\color{gray},
 		tabsize=4,
-		morekeywords={and, boolean, do, else, false, finished, for, if, initialized, integer, is, mod, reset, true, until, use, wait, while},
+		morekeywords={and, boolean, do, else, false, finished, for, if, initialised, integer, is, mod, reset, true, until, use, wait, while},
 	}
 \usepackage{multirow}
 \usepackage{relsize} % used for larger sum symbols
@@ -226,7 +226,7 @@ The final section summarises the presented work and gives an outlook on possible
 \section{Background}
 \label{sec:background}
 In this section we will first take look at the tools at our disposal to implement barriers, on both shared memory and distributed memory architectures, followed by an overview of which barrier algorithms are used in today's parallel programming frameworks.
-Finally we present a view of the barrier as a modularized algorithm consisting of various independent components.
+Finally we present a view of the barrier as a modularised algorithm consisting of various independent components.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Means to Implement Barrier Protocols}
@@ -314,7 +314,7 @@ The \emph{lock} and \emph{unlock} operations facilitate one way of passive targe
 
 Another method to synchronise memory passively is through \emph{flush}. A flush makes sure all outstanding RMA calls, issued by the caller, are completed before returning. One can choose if the operations have to be completed only at the issuer's side or on the receiver's side as well.
 
-Window synchronisation can be optimized through giving the implementation information about which operations are not used during the epoch and what happens before and after this synchronisation.
+Window synchronisation can be optimised through giving the implementation information about which operations are not used during the epoch and what happens before and after this synchronisation.
 
 Inside an epoch one may issue remote memory access operations. The two simple ones are \emph{put} and \emph{get}. Memory access through put and get appears unordered inside an epoch.
 Furthermore one can use atomic operations like \emph{accumulate}, \emph{fetch-and-op} or \emph{compare-and-swap}, with the intuitive semantic and where \emph{op} is a placeholder for various operations. The default global visibility order of atomic operations is sequentially consistent. When creating a window one can weaken this by, for example, allowing remote write operations to overtake remote read operations. Any combination of overtaking between reads, writes or between equal operations can be allowed.
@@ -423,7 +423,7 @@ One independent piece is the employed way of reinitializing the barrier after us
 
 Another possibility is to replace boolean variables, as used in the Dissemination Barrier in Figure~\ref{fig:pseudocode-dissemination}, with a repetition counter. The remote write and local spin-waiting condition are then replaced with atomic increment and a test for the correct number of repetitions. The additional amount of memory needed is linear in the number of processes. The added computational overhead is negligible.
 
-A way of resetting that works in all circumstances is to use three distinct barriers and switch cleverly between them. The proposed procedure, to be executed by each process individually, is illustrated in Figure~\ref{fig:pseudocode-triple-reset}. In the beginning the first two barriers are initialized, whereas the third one is set to the state of a completed barrier. Upon entering the routine one uses the barrier which comes after the currently finished barrier and resets the one which has been finished before. This approach is provably correct, uses triple the amount of memory of a single barrier, and ads minimal computational overhead.
+A way of resetting that works in all circumstances is to use three distinct barriers and switch cleverly between them. The proposed procedure, to be executed by each process individually, is illustrated in Figure~\ref{fig:pseudocode-triple-reset}. In the beginning the first two barriers are initialised, whereas the third one is set to the state of a completed barrier. Upon entering the routine one uses the barrier which comes after the currently finished barrier and resets the one which has been finished before. This approach is provably correct, uses triple the amount of memory of a single barrier, and ads minimal computational overhead.
 
 \begin{figure}[htpb]
 	\centering
@@ -471,7 +471,7 @@ Initially \texttt{first} and \texttt{second} are zero, and \texttt{current} is o
 He then repeatedly polls \texttt{first} in order to find out if its commitment attempt has been overwritten, i.e. its bit is not set anymore, by another thread's concurrently issued write operation, and secondly to determine whether the barrier is completed. The upper barrier is completed, if either \texttt{first} equals \texttt{full} or \texttt{current} is 2. The first thread to realise that \texttt{first} has been set to \texttt{full} will exit the loop, set \texttt{current} to 2 and continue its computational work. Subsequently all other threads eventually leave the barrier.
 When entered again the same procedure is executed in the lower if-branch using the variable \texttt{second} instead of \texttt{first}. A third repetition utilises the upper branch again.
 
-The presented protocol reflects the ideas of pW/CS in that it loosely organizes communication between threads and is less enforcing in the sense that threads may overwrite each others' commitment attempts.
+The presented protocol reflects the ideas of pW/CS in that it loosely organises communication between threads and is less enforcing in the sense that threads may overwrite each others' commitment attempts.
 
 In comparison to the Central Counter Barrier this approach does not rely on the existence atomic operations.
 
@@ -742,7 +742,7 @@ We employ the logic CSL~\cite{assb96, bhhk00, knp07} to analyse such transition 
 To specify sets of infinite paths, we will use an LTL-like notation, such as $\lozenge T$ (``eventually T'') and $\square T$ (``always T'') where $T$ is a set of states.
 Instead of naming states we will oftentimes use state predicates, combined using propositional formulas, to describe sets of states. Their meaning will be obvious from the context.
 
-We will also study reward based properties formalized using the logic CSRL~\cite{bhhk00, knp07}.
+We will also study reward based properties formalised using the logic CSRL~\cite{bhhk00, knp07}.
 This requires the extension of $\mathcal{M}$ by two reward functions. The state reward function $\mathit{srew} : S \rightarrow \mathbb{R}$ specifies the reward earned per time unit while being in state $s$. The transition reward function $\mathit{trew} : S \times S \rightarrow \mathbb{R}$ assigns a reward to each transition between two states regardless of action labels.
 For finite paths one can then reason about accumulated reward and reachability reward.
 Suppose $\pi$ is a finite path where the underlying state sequence is $s_1 s_2 ...s_n$ and let $t_0 = 0$ and $t_i$ the time point where $\pi$ takes the $i$-th transition.
@@ -1108,7 +1108,7 @@ As expected, from our informal analysis in Section~\ref{sssec:analysis-general-s
 Having reviewed different metrics for a rather short initial work period, we now have a look at similarly organised figures with an increased work period duration of 1000 cycles. Note that in comparison to real life scenarios this is still small. According to \cite{rab00} each process at a barrier spends 8194 cycles idly\footnote{1813 microseconds accumulated idle time at 450 MHz on 99.6 processes}. But an average of 1000 cycles is already enough to emulate threads arriving in intervals large enough so that each can conduct its desired work before the next one arrives. Increasing the work period further does not reveal new effects.
 
 As one can observe in Figure~\ref{fig:c1-time-work-1000-B-C-D} the basic execution time of the barriers is very different from before.
-Being naturally at a disadvantage in the reading phase, and because write operations are serialized due to the large arrival intervals, the B1 Barrier performs worse in every respect.
+Being naturally at a disadvantage in the reading phase, and because write operations are serialised due to the large arrival intervals, the B1 Barrier performs worse in every respect.
 The duration between the last thread to enter and the first thread to leave for the Central Counter Barrier converges to 100 cycles -- one atomic operation plus a few additional cycles.
 \begin{figure}[htbp]
 	\centering
