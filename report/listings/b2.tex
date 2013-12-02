@@ -5,7 +5,7 @@ constants:        me := processIndex, meBit := $2^{me}$,
                   full := $\sum_{i=0}^{\mathit{processCount}-1}2^i$
 shared variables: integer barrier[processCount]
 local variables:  integer i
-initialization:   barrier[*] := 0
+initialisation:   barrier[*] := 0
                   i := processIndex
 $\listingrule{10.7cm}$
 
