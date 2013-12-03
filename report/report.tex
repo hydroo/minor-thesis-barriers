@@ -55,20 +55,7 @@
 		{\newpage \mbox{} \clearpage}
 }
 
-\newdateformat{titledate}{%
-	\THEDAY
-	\ifthenelse
-		{\equal{\intcalcMod{\THEDAY}{10}}{1}}
-		{st}
-		{%
-			\ifthenelse{\equal{\intcalcMod{\THEDAY}{10}}{2}}
-			{nd}
-			{%
-				\ifthenelse{\equal{\intcalcMod{\THEDAY}{10}}{3}}
-				{rd}
-				{th}}}
-	\monthname[\THEMONTH], \THEYEAR
-}
+\newdateformat{titledate}{\ordinalnum{\THEDAY} \monthname[\THEMONTH], \THEYEAR}
 \titledate
 
 %\setcounter{secnumdepth}{5}
