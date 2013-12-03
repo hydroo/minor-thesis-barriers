@@ -292,7 +292,7 @@ Since version 3.0 the MPI standard supports \emph{non-blocking collectives}. ``C
 Non-blocking collectives allow, in the example of the barrier, to not block at the operation, but to register at the barrier upon arrival and subsequently test the barrier for completion, doing computational work meanwhile.
 This facility is probably unsuited for building new barriers on top of it, but is nevertheless an interesting recent development.
 
-MPI also supports RMA. Although some MPI implementations, for example Open~MPI~\cite{openmpi}, do not yet support version 3.0 of the specification, we will restrict ourselves to analysing it, because it subsumes the features of version 2.2, it is already a year old and supported by other prominent implementations such as MPICH~3.0~\cite{mpich} and its derivatives MVAPICH2~\cite{mvapich} and Cray MPT~\cite{craympt}.
+MPI also supports RMA. Although some MPI implementations, for example Open~MPI~\cite{openmpi}, do not yet support version 3.0 of the specification, we will restrict ourselves to analysing it, because it subsumes the features of version 2.2~\cite{mpi2}, it is already a year old and supported by other prominent implementations such as MPICH~3.0~\cite{mpich} and its derivatives MVAPICH2~\cite{mvapich} and Cray MPT~\cite{craympt}.
 
 The definition of RMA according to the standard is rather involved, and we have to go into more detail to highlight important points.
 
