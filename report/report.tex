@@ -8,6 +8,7 @@
 \usepackage{colortbl}
 \usepackage{datetime}
 \usepackage{fancyvrb}
+\usepackage{fancyhdr}
 \usepackage{float}
 \usepackage{graphicx}
 	\graphicspath{{images/}}
@@ -147,6 +148,20 @@ I hereby declare that I prepared this thesis independently and without use of to
 \pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy}
+\setlength{\headheight}{15pt}
+\rhead{
+	\ifthenelse{\isodd{\thepage}}
+		{\thepage}
+		{}
+}
+\lhead{
+	\ifthenelse{\isodd{\thepage}}
+		{}
+		{\thepage}
+}
+\cfoot[]{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagenumbering{arabic}
 
 \renewcommand{\contentsname}{Contents}
@@ -156,6 +171,20 @@ I hereby declare that I prepared this thesis independently and without use of to
 \newpage \mbox{}
 \pagebreak
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy}
+\setlength{\headheight}{15pt}
+\rhead{
+	\ifthenelse{\isodd{\thepage}}
+		{\thepage}
+		{\nouppercase{\leftmark}}
+}
+\lhead{
+	\ifthenelse{\isodd{\thepage}}
+		{\nouppercase{\rightmark}}
+		{\thepage}
+}
+\cfoot[]{}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cleartooddpage
 \section{Introduction}
