@@ -226,7 +226,7 @@ For example large servers and high-performance computers are oftentimes distribu
 Programming shared memory systems is very different from developing for distributed memory architectures. Therefore, we will subsequently differentiate between these two worlds.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Shared Memory Systems}
+\subsubsection{Shared Memory}
 \label{sssec:background-means-shared}
 A parallel program for shared memory systems consists of multiple threads of execution -- short \emph{threads}.
 The straightforward way to share information between threads is to \emph{load} from and \emph{store} to the same memory address.
@@ -247,7 +247,7 @@ If an algorithm is carefully designed, one can weaken the consistency model to g
 Aside from implementing barriers in software vendors can wire a barrier implementation into the system's hardware. This is almost never done on shared memory architectures. One example for hardware barrier support is the SGI~UV~2000~\cite{sgiuv2000}, a high-performance shared memory computer.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Distributed Memory Systems}
+\subsubsection{Distributed Memory}
 \label{sssec:background-means-distributed}
 A parallel program for a distributed memory architecture consists of multiple \emph{processes}. Each process has its own address space and is therefore unable to directly share memory with other processes.
 
@@ -326,7 +326,7 @@ Shared memory barriers usually rely on atomic operations. Most distributed memor
 Having surveyed the tools for implementing synchronisation primitives we will now examine the barrier protocols which power today's implementations for both shared and distributed memory systems.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Shared Memory Systems}
+\subsubsection{Shared Memory}
 \label{sssec:background-current-shared}
 
 Many prominent implementations of shared memory concurrent programming facilities are part of closed source commercial products, like for example Intel Composer and Microsoft Visual Studio, and can therefore not be analysed. So we restrict ourselves to examining the GNU~C~Library~\cite{glibc} and GNU~OpenMP~\cite{gomp}.
@@ -362,7 +362,7 @@ The GNU POSIX Threads implementation, called Native POSIX Threads Library (NPTL)
 The basic barrier algorithm used in it is the same as for GNU~OpenMP. One main differences is that it does not use atomic operations to decrement the variable, but explicitly locks it to guard from interfering access. Second, there is no busy waiting, but upon arriving at the barrier the thread will immediately suspend, via a futex, and wait to be woken up by the last thread arriving. The third difference is that to reset the barrier each thread atomically increments the barrier variable by one upon leaving.
 
 %%%%%%%%%%%%%%%%%%%%
-\subsubsection{Distributed Memory Systems}
+\subsubsection{Distributed Memory}
 \label{sssec:background-current-distributed}
 
 In this section we present the barrier algorithms that are used in the two major open source MPI implementations, namely Open~MPI~\cite{openmpi} and MPICH~\cite{mpich}. We restrict our analysis to MPI for the same reasons we only considered MPI in Section~\ref{sssec:background-means-distributed}.
