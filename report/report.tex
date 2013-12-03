@@ -294,7 +294,7 @@ MPI differentiates between \emph{active} and \emph{passive} target communication
 
 One way to synchronise a window is via the \emph{fence} operation. A fence is a collective operation among all window group members that makes sure all outstanding RMA requests on this window are finished before the operation returns. It implies a barrier synchronisation.
 
-A more fine-grained instance of active target communication is via the operations \emph{start}, \emph{complete}, \emph{post} and \emph{wait}. Before issuing any remote access calls, the issuing process first has to advertise its intention through the start operation. Once he is finished he will invoke the complete operation to announce that its transmission is complete. The receiving end similarly issues post and wait to expose and synchronise its memory. It is allowed to access its window's local memory meanwhile. In contrast to a fence operation, one can restrict such synchronisation to arbitrary processes of the window.
+A more fine-grained instance of active target communication is via the operations \emph{start}, \emph{complete}, \emph{post} and \emph{wait}. Before issuing any remote access calls, the issuing process first has to advertise its intention through the start operation. Once it is finished it will invoke the complete operation to announce that its transmission is complete. The receiving end similarly issues post and wait to expose and synchronise its memory. It is allowed to access its window's local memory meanwhile. In contrast to a fence operation, one can restrict such synchronisation to arbitrary processes of the window.
 
 The \emph{lock} and \emph{unlock} operations facilitate one way of passive target communication. Through these two functions one can block all access to a chunk of remote memory for all other window members. Between lock and unlock, the process can then issue remote memory access operations, without being interfered.
 
@@ -477,7 +477,7 @@ The algorithm's pseudocode, executed individually on each thread taking part, is
 	\label{fig:pseudocode-b1}
 \end{figure}
 
-Initially each array element is false. Upon arriving at the barrier a thread registers itself by setting its array element to true. He subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronisation.
+Initially each array element is false. Upon arriving at the barrier a thread registers itself by setting its array element to true. It subsequently queries all other threads for arrival. As soon as it finds one that has not yet arrived, it resets the loop counter and begins querying all others anew. Once all threads arrive, eventually each of them will leave, thus completing the barrier synchronisation.
 
 Similar to the Central Counter Barrier, the protocol can be split into two phases (Figure~\ref{fig:diagram-central-counter}).
 The difference between the two protocols is that, because each thread writes only to its own array element, they do not require atomic access to register themselves at the barrier, and during the reading phase each thread has to read each other thread's variable instead of polling just a single global one. The threads may concurrently write, but have to spend more time reading.
