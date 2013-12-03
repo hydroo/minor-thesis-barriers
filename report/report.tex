@@ -370,7 +370,8 @@ In this section we present the barrier algorithms that are used in the two major
 % ompi/mca/coll/tuned/coll_tuned_barrier.c : ompi_coll_tuned_barrier_intra_recursivedoubling, ompi_coll_tuned_barrier_intra_bruck, ompi/mca/coll/tuned/coll_tuned_decision_fixed.c
 Open~MPI's barrier implementation distinguishes between process counts that are powers of two and which are not. If it is a power of two, a \emph{recursive doubling} barrier is used. A detailed explanation of this protocol can be found in \cite{hoefler2005}. For non-power-of-two process counts Open~MPI uses the \emph{Dissemination Barrier}, introduced by Hensgen, Finkel and Manber in 1988~\cite{hensgen1988}.
 
-Figure~\ref{fig:pseudocode-dissemination} presents the pseudocode of this algorithm, which is executed on each process individually. A process is identified by its \emph{process index}, which is a number between 0 and $\mathit{processCount} - 1$. For readability reasons we have chosen an RMA-esque representation of the protocol, although it can similarly be implemented using message passing techniques.
+Figure~\ref{fig:pseudocode-dissemination} presents the pseudocode of this algorithm, which is executed on each process individually. A process is identified by its \emph{process index}, which is a number between 0 and $\mathit{processCount} - 1$.
+For readability reasons we have chosen a representation of the protocol where read/write operations use local or remote memory depending on where the accessed array element is located. The protocol can similarly be implemented using message passing techniques.
 In contrast to the Central Counter Barrier, the Dissemination Barrier uses not only one variable but an array of boolean variables per process involved. Each of these arrays is located in the local memory of its owning process and is initially set to false.
 The protocol is organised in rounds. Each round the distance (variable \texttt{dist}) to the next two partners, to read from and write to, doubles. Process indices  are always calculated modulo the total number of processes to achieve a wraparound. Figure~\ref{fig:diagram-dissemination} illustrates this communication pattern.
 
@@ -495,7 +496,7 @@ The B2 Barrier is a variation on the previous barrier in which less communicatio
 
 In principle the following protocol can be implemented on both shared and distributed memory architectures. We now switch to a distributed setting, because preliminary analysis showed that the saved memory access cost in comparison to the additional computational overhead favours its use in a distributed scenario.
 
-Figure~\ref{fig:pseudocode-b2} presents the B2 Barrier's RMA-style pseudocode. The notation used in this listing is explained in Section~\ref{ssec:new-mgb}.
+Figure~\ref{fig:pseudocode-b2} presents the B2 Barrier's pseudocode. The code uses the same remote memory access style as the Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-current-distributed}), i.e. read/write operations use local or remote memory depending on where the accessed array element is located. The notation used in this listing is explained in Section~\ref{ssec:new-mgb}.
 \begin{figure}[htbp]
 	\centering
 	\input{listings/b2}
