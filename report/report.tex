@@ -429,13 +429,13 @@ This might also make sense if barrier algorithms vary in performance for differe
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cleartooddpage
-\section{New Barriers}
-\label{sec:new}
+\section{Innovative Barriers}
+\label{sec:innovative}
 In this section we first present a new variation on an already presented barrier protocol of ours. The second algorithm reverses the approach of the Central Counter Barrier. Third we demonstrate a pW/CS-influenced modification of the second barrier.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{MGB Barrier}
-\label{ssec:new-mgb}
+\label{ssec:innovative-mgb}
 The original idea of the following algorithm is part of a private communique between Nicholas Mc~Guire, the pW/CS-inventor, and us. Figure~\ref{fig:pseudocode-mgb} presents the new barrier, which is a variation of the protocol first mentioned in \cite{bre13}. It is intended for shared memory architectures.
 
 \begin{figure}[htbp]
@@ -466,7 +466,7 @@ The number of threads this protocol supports is limited by the number of bits a 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{B1 Barrier}
-\label{ssec:new-b1}
+\label{ssec:innovative-b1}
 
 The following barrier protocol reverses the idea of the Central Counter Barrier (Section~\ref{sssec:background-current-shared}) to use a single global counter that all threads atomically access once and read repeatedly. Instead an array of boolean variables (one element for each thread), which is also accessed differently, is employed.
 The algorithm's pseudocode, executed individually on each thread taking part, is depicted in Figure~\ref{fig:pseudocode-b1}.
@@ -491,12 +491,12 @@ Since we do not use any central information, this protocol can be implemented fo
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{B2 Barrier}
-\label{ssec:new-b2}
+\label{ssec:innovative-b2}
 The B2 Barrier is a variation on the previous barrier in which less communication is traded for more computation.
 
 In principle the following protocol can be implemented on both shared and distributed memory architectures. We now switch to a distributed setting, because preliminary analysis showed that the saved memory access cost in comparison to the additional computational overhead favours its use in a distributed scenario.
 
-Figure~\ref{fig:pseudocode-b2} presents the B2 Barrier's pseudocode. The code uses the same remote memory access style as the Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-current-distributed}), i.e. read/write operations use local or remote memory depending on where the accessed array element is located. The notation used in this listing is explained in Section~\ref{ssec:new-mgb}.
+Figure~\ref{fig:pseudocode-b2} presents the B2 Barrier's pseudocode. The code uses the same remote memory access style as the Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} in Section~\ref{sssec:background-current-distributed}), i.e. read/write operations use local or remote memory depending on where the accessed array element is located. The notation used in this listing is explained in Section~\ref{ssec:innovative-mgb}.
 \begin{figure}[htbp]
 	\centering
 	\input{listings/b2}
@@ -516,7 +516,7 @@ In comparison to other distributed memory barrier protocols, e.g. the Disseminat
 
 Like the B1 Barrier this protocol is destructive. One can add resetting via the triple barrier method presented in Section~\ref{ssec:background-building-blocks}.
 
-Like the MGB Barrier this protocol is restricted to 64 processes. An extension to arrays of bit sets can be implemented in the same way as described in Section~\ref{ssec:new-mgb}.
+Like the MGB Barrier this protocol is restricted to 64 processes. An extension to arrays of bit sets can be implemented in the same way as described in Section~\ref{ssec:innovative-mgb}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cleartooddpage
@@ -548,7 +548,7 @@ In the distributed memory scenario we are also interested in the remote access b
 % - don't talk cache specifics, because we have not given an introduction to MSI. Express yourself in simple terms.
 % - make sure that people understand it is about shared read/write, not local variables.
 
-The Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-current-shared}) and the B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) are both divided into two phases: the reading and the writing phase.
+The Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-current-shared}) and the B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:innovative-b1}) are both divided into two phases: the reading and the writing phase.
 
 In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations are serialised, because atomic operations on a single variable cannot be executed in parallel. On the other hand the B1 Barrier allocates one array element per thread. Therefore, all write operations can be performed concurrently. If all threads arrive in the same instant, the commitment of all threads takes only as long as one write operation does, therefore speeding up this process by a factor of $n$, where $n$ is the number of threads participating. In a more balanced scenario, i.e. processes arrive in intervals, this advantage over the Central Counter Barrier diminishes.
 
@@ -563,7 +563,7 @@ The memory required by the Central Counter Barrier is logarithmic in the number 
 \label{sssec:analysis-general-distributed}
 In this section we assume $n$ to be the number of processes participating in the barrier synchronisation.
 
-The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} and \ref{fig:diagram-dissemination} in Section~\ref{sssec:background-current-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) communicate very differently.
+The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} and \ref{fig:diagram-dissemination} in Section~\ref{sssec:background-current-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:innovative-b2}) communicate very differently.
 
 The minimum number of remote access operations required to perform a barrier synchronisation is $2 \cdot (n-1)$. Figure~\ref{fig:diagram-gather-broadcast} illustrates a simple gather and broadcast  barrier (process zero gathers all arrival notifications and broadcasts to all processes when the barrier is complete) using this number of operations. It does so in $2 \cdot  \lceil \log _2~n \rceil$ rounds. All operations inside a round can be executed in parallel. However rounds themselves are completed serially. This means the minimum execution time of this  barrier is $2 \cdot \lceil \log_2~n \rceil$ times the duration of a remote write operation. In order to lower the number of rounds to $\lceil \log _2~n \rceil$ the Dissemination Barrier issues $n \cdot \lceil \log _2~n \rceil$, more than the minimum needed, remote access operations. The added communication overhead is traded for a decrease in overall execution time.
 
@@ -841,7 +841,7 @@ Unlike the quantitative model, the functional model repeatedly executes the prot
 %%%%%%%%%%
 \paragraph{B1 Barrier}
 \label{ssssec:analysis-modelchecking-modelling-b1}
-The B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) allocates one cache line per array element. Therefore, the final model is composed of $n$ algorithm modules plus $n^2$ cache line copy modules where $n$ is the number of threads.
+The B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:innovative-b1}) allocates one cache line per array element. Therefore, the final model is composed of $n$ algorithm modules plus $n^2$ cache line copy modules where $n$ is the number of threads.
 
 The algorithm's control flow is illustrated in Figure~\ref{fig:model-b1}. As for the Central Counter Barrier, the B1 Barrier starts with an initial work period, its rates are determined by thread's cache line copy module, and the grey transition labelling indicates the interaction with the cache.
 
@@ -887,7 +887,7 @@ The functional model includes repetition and resetting with counters instead of 
 %%%%%%%%%%
 \paragraph{B2 Barrier}
 \label{ssssec:analysis-modelchecking-modelling-b2}
-The B2 Barrier, introduced in Section~\ref{ssec:new-b2}, is modelled as a composition of one algorithm module per process.
+The B2 Barrier, introduced in Section~\ref{ssec:innovative-b2}, is modelled as a composition of one algorithm module per process.
 
 Figure~\ref{fig:model-b2} illustrates the control flow of the protocol.
 Initially each bitset is empty and the loop index is set to \texttt{processIndex}.
