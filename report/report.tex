@@ -321,13 +321,13 @@ For amounts of memory below this threshold we wish to have a semantic that is mo
 Shared memory barriers usually rely on atomic operations. Most distributed memory barriers use synchronous message passing. To improve efficiency, these protocols have also been implemented using RMA, e.g.~in~\cite{rdma1,rdma2,hoefler2006a}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Currently Used Barrier Protocols}
-\label{ssec:background-currently-used}
+\subsection{Current Barriers}
+\label{ssec:background-current}
 Having surveyed the tools for implementing synchronisation primitives we will now examine the barrier protocols which power today's implementations for both shared and distributed memory systems.
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Shared Memory Systems}
-\label{sssec:background-currently-used-shared}
+\label{sssec:background-current-shared}
 
 Many prominent implementations of shared memory concurrent programming facilities are part of closed source commercial products, like for example Intel Composer and Microsoft Visual Studio, and can therefore not be analysed. So we restrict ourselves to examining the GNU~C~Library~\cite{glibc} and GNU~OpenMP~\cite{gomp}.
 
@@ -363,7 +363,7 @@ The basic barrier algorithm used in it is the same as for GNU~OpenMP. One main d
 
 %%%%%%%%%%%%%%%%%%%%
 \subsubsection{Distributed Memory Systems}
-\label{sssec:background-currently-used-distributed}
+\label{sssec:background-current-distributed}
 
 In this section we present the barrier algorithms that are used in the two major open source MPI implementations, namely Open~MPI~\cite{openmpi} and MPICH~\cite{mpich}. We restrict our analysis to MPI for the same reasons we only considered MPI in Section~\ref{sssec:background-means-distributed}.
 
@@ -405,7 +405,7 @@ Aside from distributed memory architectures it is possible to implement these pr
 \label{ssec:background-building-blocks}
 During our analysis of general implementation facilities and concrete barrier implementations we observed that one can assemble barriers from orthogonal components.
 
-One independent piece is the employed way of reinitializing the barrier after use. As we have seen for the Central Counter Barrier (Section~\ref{sssec:background-currently-used-shared}) resetting might be achievable through slight modification of the algorithm. This does not work for all protocols, though.
+One independent piece is the employed way of reinitializing the barrier after use. As we have seen for the Central Counter Barrier (Section~\ref{sssec:background-current-shared}) resetting might be achievable through slight modification of the algorithm. This does not work for all protocols, though.
 
 Another possibility is to replace boolean variables, as used in the Dissemination Barrier in Figure~\ref{fig:pseudocode-dissemination}, with a repetition counter. The remote write and local spin-waiting condition are then replaced with atomic increment and a test for the correct number of repetitions. The additional amount of memory needed is linear in the number of processes. The added computational overhead is negligible.
 
@@ -467,7 +467,7 @@ The number of threads this protocol supports is limited by the number of bits a 
 \subsection{B1 Barrier}
 \label{ssec:new-b1}
 
-The following barrier protocol reverses the idea of the Central Counter Barrier (Section~\ref{sssec:background-currently-used-shared}) to use a single global counter that all threads atomically access once and read repeatedly. Instead an array of boolean variables (one element for each thread), which is also accessed differently, is employed.
+The following barrier protocol reverses the idea of the Central Counter Barrier (Section~\ref{sssec:background-current-shared}) to use a single global counter that all threads atomically access once and read repeatedly. Instead an array of boolean variables (one element for each thread), which is also accessed differently, is employed.
 The algorithm's pseudocode, executed individually on each thread taking part, is depicted in Figure~\ref{fig:pseudocode-b1}.
 
 \begin{figure}[htbp]
@@ -511,7 +511,7 @@ The protocol does not maintain the differentiation between reading and writing p
 
 This protocol writes only locally, and reads only remotely. It does not rely on the existence of atomic operations.
 
-In comparison to other distributed memory barrier protocols, e.g. the Dissemination Barrier (Section~\ref{sssec:background-currently-used-distributed}), the communication pattern is largely random. The order of remote access depends on remote memory access latency, local computation and memory access speed, the exact time of arrival of each process and operating system influences like scheduling. The effect of these factors combined makes the order of communication practically random.
+In comparison to other distributed memory barrier protocols, e.g. the Dissemination Barrier (Section~\ref{sssec:background-current-distributed}), the communication pattern is largely random. The order of remote access depends on remote memory access latency, local computation and memory access speed, the exact time of arrival of each process and operating system influences like scheduling. The effect of these factors combined makes the order of communication practically random.
 
 Like the B1 Barrier this protocol is destructive. One can add resetting via the triple barrier method presented in Section~\ref{ssec:background-building-blocks}.
 
@@ -547,7 +547,7 @@ In the distributed memory scenario we are also interested in the remote access b
 % - don't talk cache specifics, because we have not given an introduction to MSI. Express yourself in simple terms.
 % - make sure that people understand it is about shared read/write, not local variables.
 
-The Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-currently-used-shared}) and the B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) are both divided into two phases: the reading and the writing phase.
+The Central Counter Barrier (Figure~\ref{fig:pseudocode-central-counter} in Section~\ref{sssec:background-current-shared}) and the B1 Barrier (Figure~\ref{fig:pseudocode-b1} in Section~\ref{ssec:new-b1}) are both divided into two phases: the reading and the writing phase.
 
 In the writing phase of the Central Counter Barrier concurrently issued add-fetch operations are serialised, because atomic operations on a single variable cannot be executed in parallel. On the other hand the B1 Barrier allocates one array element per thread. Therefore, all write operations can be performed concurrently. If all threads arrive in the same instant, the commitment of all threads takes only as long as one write operation does, therefore speeding up this process by a factor of $n$, where $n$ is the number of threads participating. In a more balanced scenario, i.e. processes arrive in intervals, this advantage over the Central Counter Barrier diminishes.
 
@@ -562,7 +562,7 @@ The memory required by the Central Counter Barrier is logarithmic in the number 
 \label{sssec:analysis-general-distributed}
 In this section we assume $n$ to be the number of processes participating in the barrier synchronisation.
 
-The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} and \ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) communicate very differently.
+The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination} and \ref{fig:diagram-dissemination} in Section~\ref{sssec:background-current-distributed}) and the B2 Barrier (Figure~\ref{fig:pseudocode-b2} in Section~\ref{ssec:new-b2}) communicate very differently.
 
 The minimum number of remote access operations required to perform a barrier synchronisation is $2 \cdot (n-1)$. Figure~\ref{fig:diagram-gather-broadcast} illustrates a simple gather and broadcast  barrier (process zero gathers all arrival notifications and broadcasts to all processes when the barrier is complete) using this number of operations. It does so in $2 \cdot  \lceil \log _2~n \rceil$ rounds. All operations inside a round can be executed in parallel. However rounds themselves are completed serially. This means the minimum execution time of this  barrier is $2 \cdot \lceil \log_2~n \rceil$ times the duration of a remote write operation. In order to lower the number of rounds to $\lceil \log _2~n \rceil$ the Dissemination Barrier issues $n \cdot \lceil \log _2~n \rceil$, more than the minimum needed, remote access operations. The added communication overhead is traded for a decrease in overall execution time.
 
@@ -582,7 +582,7 @@ In contrast to this the execution time of the B2 Barrier is distributed evenly.
 
 Synchronisation using the Dissemination and B2 Barrier requires the same amount of memory. In principle $\lceil \log _2~n \rceil$ bits per process suffice for both algorithms. The Dissemination variant shown in Figure~\ref{fig:pseudocode-dissemination} uses a total of $n^2$ bits, but, since each process receives from only $\lceil \log _2~n \rceil$ other processes, a modified array index calculation would allow the protocol to work with $n \cdot \lceil \log _2 ~n \rceil$ bits.
 
-Assuming all processes arrive at a similar time, Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-currently-used-distributed} illustrates the progression through the rounds of the Dissemination Barrier. More often than not, processes arrive in large intervals, compared to the execution time of a barrier itself.
+Assuming all processes arrive at a similar time, Figure~\ref{fig:diagram-dissemination} in Section~\ref{sssec:background-current-distributed} illustrates the progression through the rounds of the Dissemination Barrier. More often than not, processes arrive in large intervals, compared to the execution time of a barrier itself.
 Therefore, some processes advance through the rounds before every process arrived.
 But how far exactly can the protocol progress without all processes being present?
 
@@ -818,7 +818,7 @@ For technical reasons we switch the rate of entering and leaving an atomic opera
 \paragraph{Central Counter Barrier}
 \label{sssec:analysis-modelchecking-modelling-central-counter}
 The Central Counter Barrier uses one shared variable. Therefore, the final CTMC is composed of one cache line copy module per thread and one algorithm module per thread.
-The algorithm's control flow diagram (Figure~\ref{fig:model-central-counter}) directly results from the pseudocode in Figure~\ref{fig:pseudocode-central-counter} (Section~\ref{sssec:background-currently-used-shared}).
+The algorithm's control flow diagram (Figure~\ref{fig:model-central-counter}) directly results from the pseudocode in Figure~\ref{fig:pseudocode-central-counter} (Section~\ref{sssec:background-current-shared}).
 
 \begin{figure}[htbp]
 	\centering
@@ -862,7 +862,7 @@ Splitting these transitions in the quantitative model would increase model size 
 %%%%%%%%%%
 \paragraph{Dissemination Barrier}
 \label{ssssec:analysis-modelchecking-modelling-dissemination}
-The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination}, Section~\ref{sssec:background-currently-used-distributed}), as a representative for distributed barrier algorithms, does not have shared memory. Therefore, the CTMC model consists of one algorithm module per process and nothing else.
+The Dissemination Barrier (Figure~\ref{fig:pseudocode-dissemination}, Section~\ref{sssec:background-current-distributed}), as a representative for distributed barrier algorithms, does not have shared memory. Therefore, the CTMC model consists of one algorithm module per process and nothing else.
 
 Figure~\ref{fig:model-dissemination} depicts the control flow diagram of the protocol.
 The distance is initialised to one and each array element to false.
