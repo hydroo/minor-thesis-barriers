@@ -178,7 +178,6 @@ I hereby declare that I prepared this thesis independently and without use of to
 % 			\item section: currently used barrier protocols
 % 			\item section: discussion
 % 		\end{itemize}
-% 	\item review all captions again
 % \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -352,7 +351,7 @@ The Central Counter Barrier uses the variable \texttt{barrier} to hold the numbe
 \begin{figure}[H]
 	\centering
 	\input{listings/central-counter}
-	\caption{Central Counter Barrier pseudocode}
+	\caption{Pseudocode for the Central Counter Barrier}
 	\label{fig:pseudocode-central-counter}
 \end{figure}
 
@@ -391,14 +390,14 @@ The protocol is organised in rounds. Each round the distance (variable \texttt{d
 \begin{figure}[htbp]
 	\centering
 	\input{listings/dissemination}
-	\caption{Dissemination Barrier pseudocode}
+	\caption{Pseudocode for the Dissemination Barrier}
 	\label{fig:pseudocode-dissemination}
 \end{figure}
 
 \begin{figure}[htbp]
 	\centering
 	\input{tikz/diagram-dissemination}
-	\caption{Dissemination Barrier communication pattern}
+	\caption{Communication pattern of the Dissemination Barrier}
 	\label{fig:diagram-dissemination}
 \end{figure}
 
@@ -428,7 +427,7 @@ A way of resetting that works in all circumstances is to use three distinct barr
 \begin{figure}[htpb]
 	\centering
 	\input{listings/triple-reset}
-	\caption{Pseudocode of the triple barrier reset method}
+	\caption{Pseudocode for the triple barrier reset method}
 	\label{fig:pseudocode-triple-reset}
 \end{figure}
 
@@ -454,7 +453,7 @@ The original idea of the following algorithm is part of a private communique bet
 \begin{figure}[htbp]
 	\centering
 	\input{listings/mgb}
-	\caption{MGB Barrier pseudocode}
+	\caption{Pseudocode for the MGB Barrier}
 	\label{fig:pseudocode-mgb}
 \end{figure}
 
@@ -487,7 +486,7 @@ The algorithm's pseudocode, executed individually on each thread taking part, is
 \begin{figure}[htbp]
 	\centering
 	\input{listings/b1}
-	\caption{B1 Barrier pseudocode}
+	\caption{Pseudocode for the B1 Barrier}
 	\label{fig:pseudocode-b1}
 \end{figure}
 
@@ -513,7 +512,7 @@ Figure~\ref{fig:pseudocode-b2} presents the B2 Barrier's RMA-style pseudocode. T
 \begin{figure}[htbp]
 	\centering
 	\input{listings/b2}
-	\caption{B2 Barrier pseudocode}
+	\caption{Pseudocode for the B2 Barrier}
 	\label{fig:pseudocode-b2}
 \end{figure}
 Each array element of \texttt{barrier} is located in the local memory of the process with the matching index. These elements are bit sets representing the knowledge of the owning process about the arrival of others.
