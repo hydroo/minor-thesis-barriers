@@ -189,15 +189,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 \cleartooddpage
 \section{Introduction}
 \label{sec:introduction}
-Synchronisation is a central element of parallel programs. Various synchronisation mechanisms with different goals have been devised. One such mechanism is the barrier. If a group of threads or processes execute a barrier operation, each of them must wait at this point until all other threads/processes arrive at the barrier.
+Synchronisation is a central element of parallel programs. Various synchronisation mechanisms with different goals have been devised. One such mechanism is the barrier. If a group of threads or processes executes a barrier operation, each of them must wait at this point until all other threads/processes arrive at the barrier.
 
-Many synchronisation operations imply a barrier. For example OpenMP's~\cite{openmp} parallel for loop makes sure that no thread continues program execution until all iterations are completed, since the following operations might rely on the results of the loop. Likewise in MPI~\cite{mpiforum}, global operations like reduce, scatter and gather imply a barrier synchronisation.
+Many synchronisation operations imply a barrier. For example the parallel for loop of the OpenMP~\cite{openmp} programming interface makes sure that no thread continues program execution until all iterations are completed, since the following operations might rely on the results of the loop. Likewise in MPI~\cite{mpiforum}, global operations like reduce, scatter and gather imply a barrier synchronisation.
 
 Many parallel programs use a lock-step approach to interleave computation with communication phases.
 For example a program simulating weather divides the map into a grid.
 Each square in this grid is assigned to one process, so that the weather progression of the next few minutes, for all squares, can be simulated concurrently.
 Changes in weather condition at the borders of a square influence the next simulation step of neighbouring squares.
-Therefore, before entering the next simulation phase, information, like temperature, humidity or cloud movement, about the border regions is exchanged.
+Therefore, before entering the next simulation phase, information, like temperature, humidity or cloud movement, about these regions is exchanged.
 Before beginning this exchange the program needs to make sure that each square has completed the current simulation step. To achieve that, they collectively invoke a barrier operation.
 Once it is completed, data is exchanged and the next simulation step starts.
 
@@ -209,18 +209,20 @@ At a recent workshop, Nicholas Mc~Guire proposed a new low-level synchronisation
 \begin{itemize}
 	\item Concurrent algorithms work, mostly, in a deterministic fashion. That is the arrangement of synchronisation is predetermined. The program is executed in a strict form. Faulty behaviour is avoided at great cost.
 	\item One can improve performance by relieving this constraint. Tolerate inconsistencies, make errors detectable and/or ignorable.
-	\item Leverage the inherent randomness~\cite{mcg09}, induced by caching, scheduling, memory access latency differences, or short: the complexity of today's computer systems, in order to view concurrent memory access as genuinely random. This enables the use of probabilistic algorithms for development, and the tools of probability theory for analysis.
+	\item Because of the inherent randomness~\cite{mcg09}, induced by caching, scheduling, memory access latency differences, or short: the complexity of today's computer systems, one can view concurrent memory access as genuinely random. This enables the use of probabilistic algorithms for development, and the tools of probability theory for analysis.
 \end{itemize}
-One wants to design algorithms that have a sufficiently high probability of success, tolerate faulty behaviour and, on average, perform better than their deterministic cousins. They aim to be better in ways, e.g. speed, energy efficiency and memory consumption, that depend on the use case.
+One wants to design algorithms that have a sufficiently high probability of success, tolerate faulty behaviour and, on average, perform better than their deterministic counterparts.
 We believe that synchronisation primitives, in particular barriers, can be improved by applying these principles.
 
 To gain confidence that a program works properly, i.e. satisfies certain properties, one normally uses testing and benchmarks.
-Testing, as well as measurement, is usually deterministic. When testing probabilistic algorithms deterministically, there is always a chance of errors not being revealed. Randomising tests only gives a certain degree of confidence as well. Both methods are not exhaustive.
+Testing, as well as measurement, is usually deterministic. When testing probabilistic algorithms deterministically, there is always a chance of errors not being revealed. Randomising tests only gives a certain degree of confidence as well. Both methods do not guarantee full coverage.
 Two more drawbacks of measurement are that the granularity of the measurement scale is limited, and that measuring itself can influence the outcome. This makes analysing low-level synchronisation primitives, and small program pieces in general, hard and sometimes impossible.
-Model checking avoids these three problems. It is exhaustive, arbitrarily granular and, since it simulates the protocol, involves no measurement overhead. But Model checking has, of course, its own set of shortcomings. First of all, the available tools are difficult to use. Second, the accuracy of results depends on the quality of the model. Third, exhaustive analysis needs a lot of hardware resources, and can therefore be infeasible even in relatively confined scenarios.
+Model checking avoids these three problems. It is exhaustive, arbitrarily granular and, since it simulates the protocol, involves no measurement overhead. But model checking has, of course, its own set of shortcomings. First of all, the available tools are hard to use. Second, the accuracy of results depends on the quality of the model. Third, exhaustive analysis needs lots of hardware resources, and can therefore be infeasible even in relatively confined scenarios.
 Model checking, thus, complements measurement-based analysis.
 
-The thesis is structured as follows. First, we survey the tools developers have at their disposal to implement barriers. Second, we present today's mainly used barrier algorithms. To conclude the background study, we give an account of the basic anatomy of barriers.
+In this thesis, we devise a set of novel pW/CS-influenced barrier protocols and compare them to state-of-the-art protocols using model checking techniques. One of these new barriers performs better than existing ones, regarding execution time and energy consumption.
+
+The structure of this work is as follows. First, we survey the tools developers have at their disposal to implement barriers. Second, we present today's mainly used barrier algorithms. To conclude the background study, we give an account of the basic anatomy of barriers.
 We then move on to present three newly devised barrier protocols.
 The largest part of the thesis concerns the analysis and comparison of two known and two new barriers. We analyse them by means of an informal scrutiny combined with functional and probabilistic model checking.
 The final section summarises the presented work and gives an outlook on possible directions for future research.
@@ -1318,15 +1320,13 @@ The CTMC model checking semantic for simultaneously enabled transitions is diffe
 \cleartooddpage
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
-In this work we first enumerate the available low-level tools for building barriers, survey today's implementation landscape, and show how barriers are constructed from orthogonal components.
-After presenting three new barrier protocols, we compare two of them to two known protocols.
-The B2 Barrier turns out to be a promising algorithm.
+In this work we present three innovative barrier protocols. We compare two of them to two state-of-the-art protocols using model checking techniques. The B2 Barriers turns out to be a promising algorithm, in that it has a lower execution time and energy consumption than the Dissemination Barrier.
 We, therefore, conclude that today's barriers can be improved upon. To achieve the displayed performance, the B2 Barrier does not use a fixed communication pattern but relies on randomness. Weakening determinism and using randomness are core principles of the pW/CS lock. Thus, we consider the B2 Barrier an example for the aptitude of these principles to increase synchronisation performance.
-Model checking enables exhaustive and fine-grained analysis beyond what measurement-based methods can deliver.
+Model checking enables exhaustive and fine-grained analysis beyond what measurement-based methods deliver.
 Although model size and accuracy is admittedly limited, we expect future work in this direction to alleviate these deficiencies.
 We belief that model checking is a powerful tool to aid the development and analysis of algorithms, and synchronisation protocols in particular.
 
-The possible future directions of this work can be divided into six categories.
+The possible future directions of this work can be divided into five categories.
 First, this thesis lacks benchmarks.
 One should repeat the analysis of Section~\ref{sssec:analysis-modelchecking-functional-properties} using measurement. One then sees how the protocols perform in reality, and can also use the obtained results to refine the existing probabilistic models.
 
@@ -1339,11 +1339,9 @@ Third, model checking should be extended. The unfortunate limit of four processe
 Another interesting pursuit is to model the protocols in greater detail. Today's processors, for example, have a multi-layered cache. In order to get preciser performance predictions one can incorporate such intricacies into the model.
 Resource contention is another detail we do not model in this work. Our theoretical computer can concurrently transfer data between processes with arbitrarily high bandwidth.
 
-The fourth area of future research is to expand the focus of analysis. We are interested in analysing The Dissemination Barrier and the B2 Barrier for shared memory architectures, and incorporate back-off strategies into the evaluation.
+Fourth, we encourage to search for alternative modelling formalisms or to modify/limit the existing CTMC/CSRL semantic. The way interleaving is treated does make sense, if a formula queries information about one module, for example if we ask for the arrival time of a specific thread. But, when modelling multi-threading through multiple modules, if one checks quantitative properties about multiple modules, the behaviour is unintuitive.
 
-Fifth, we encourage to search for alternative modelling formalisms or to modify/limit the existing CTMC/CSRL semantic. The way interleaving is treated does make sense, if a formula queries information about one module, for example if we ask for the arrival time of a specific thread. But, when modelling multi-threading through multiple modules, if one checks quantitative properties about multiple modules, the behaviour is unintuitive.
-
-The sixth suggestion is to improve tool support. Model checking complements testing and benchmarking algorithms. But, tools like SPIN and PRISM are both very extensive and difficult to use. They have esoteric input languages, hard-to-use user interfaces, and require the user to have background knowledge about model checking and temporal logics. A specialised tool set to aid the design of parallel algorithms is much desired.
+The fifth suggestion is to improve tool support. Model checking complements testing and benchmarking algorithms. But, tools like SPIN and PRISM are both very extensive and difficult to use. They have esoteric input languages, hard-to-use user interfaces, and require the user to have background knowledge about model checking and temporal logics. A specialised tool set to aid the design of parallel algorithms is much desired.
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \appendix
