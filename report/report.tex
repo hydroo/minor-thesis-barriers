@@ -149,17 +149,15 @@ I hereby declare that I prepared this thesis independently and without use of to
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{fancy}
-\setlength{\headheight}{15pt}
-\rhead{
+\setlength{\headheight}{15.2pt}
+\rhead{%
 	\ifthenelse{\isodd{\thepage}}
 		{\thepage}
-		{}
-}
-\lhead{
+		{}}
+\lhead{%
 	\ifthenelse{\isodd{\thepage}}
 		{}
-		{\thepage}
-}
+		{\thepage}}
 \cfoot[]{}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagenumbering{arabic}
@@ -172,19 +170,14 @@ I hereby declare that I prepared this thesis independently and without use of to
 \pagebreak
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\pagestyle{fancy}
-\setlength{\headheight}{15pt}
-\rhead{
+\rhead{%
 	\ifthenelse{\isodd{\thepage}}
 		{\thepage}
-		{\nouppercase{\leftmark}}
-}
-\lhead{
+		{\nouppercase{\leftmark}}}
+\lhead{%
 	\ifthenelse{\isodd{\thepage}}
 		{\nouppercase{\rightmark}}
-		{\thepage}
-}
-\cfoot[]{}
+		{\thepage}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \cleartooddpage
 \section{Introduction}
