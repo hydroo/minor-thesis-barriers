@@ -252,7 +252,6 @@ The intuitive ordering of concurrent memory accesses is \emph{sequentially consi
 \begin{quote}
 	\textit{The result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.} (Lamport~\cite{sequentialconsistency})
 \end{quote}
-
 Enforcing this intuitive semantic comes at a cost. Modern processors buffer memory operations on many levels. To enforce sequential consistency, mechanisms to control and circumvent this buffering have to be introduced, resulting in higher memory access latency and more transistors in the processor.
 
 If an algorithm is carefully designed, one can weaken the consistency model to gain better performance. One prominent way of such a model is \textit{release consistency}~\cite{gha90}. Memory access appears unordered except for so called \emph{acquire} and \emph{release} operations. No memory access that has been issued after an acquire operation is permitted to finish before this acquire operation. No memory access is allowed to finish later than the next release operation. Acquire and release encapsulate the memory accesses in between.
