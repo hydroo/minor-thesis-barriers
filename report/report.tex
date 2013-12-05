@@ -1301,7 +1301,7 @@ The CTMC model checking semantic for simultaneously enabled transitions is diffe
 \cleartooddpage
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
-In this work we present three innovative barrier protocols. We compare two of them to two state-of-the-art protocols using model checking techniques. The B2 Barrier, having a shorter execution time and lower energy consumption than the Dissemination Barrier, turns out to be a promising algorithm.
+In this work we present three innovative barrier protocols. We compare two of them to state-of-the-art protocols using model checking techniques. The B2 Barrier, having a shorter execution time and lower energy consumption than the Dissemination Barrier, turns out to be a promising algorithm.
 We, therefore, conclude that today's barriers can be improved upon. To achieve the displayed performance, the B2 Barrier does not use a fixed communication pattern but relies on randomness. Weakening determinism and using randomness are core principles of the pW/CS lock. Thus, we consider the B2 Barrier an example for the aptitude of these principles to increase synchronisation performance.
 Model checking enables exhaustive and fine-grained analysis beyond what measurement-based methods deliver.
 Although model size and accuracy is admittedly limited, we expect future work in this direction to alleviate these deficiencies.
@@ -1322,7 +1322,7 @@ Resource contention is another detail we do not model in this work. Our theoreti
 
 Fourth, we encourage to search for alternative modelling formalisms or to modify/limit the existing CTMC/CSRL semantic. The way interleaving is treated does make sense, if a formula queries information about one module, for example if we ask for the arrival time of a specific thread. But, when modelling multi-threading through multiple modules, if one checks quantitative properties about multiple modules, the behaviour is unintuitive.
 
-The fifth suggestion is to improve tool support. Model checking complements testing and benchmarking algorithms. But, tools like SPIN and PRISM are both very extensive and difficult to use. They have esoteric input languages, hard-to-use user interfaces, and require the user to have background knowledge about model checking and temporal logics. A specialised tool set to aid the design of parallel algorithms is much desired.
+The fifth suggestion is to improve tool support. Model checking complements testing and benchmarking algorithms. But, tools like SPIN and PRISM are both very extensive and hard to use. They have esoteric input languages, cumbersome user interfaces, and require the user to have background knowledge about model checking and temporal logics. A specialised tool set to aid the design of parallel algorithms is much desired.
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \appendix
