@@ -255,12 +255,6 @@
 
      □ suggest improved algorithms that mitigate this problem. (Is it really a problem? I would say so.)
 
- * Torsten Hoefler makes heavy use of the logP model. And claims the normal algorithms to be optimal wrt logP.
-   It seems though, that logP is far from a proper model for distributed barrier algorithms (and worse for shared mem (pub=162 below).
-   Maybe investigate further and write up that we deliberately ignore this model and the "optimality claims",
-   and try to improve existing barrier algorithms.
-   (claims are e.g. in TH's diploma thesis or http://spcl.inf.ethz.ch/Publications/index.php?pub=162). REPORT
-
 --- 13-07-06 ---
 
  * added shared memory barriere using add-fetch and each thread has its own counter (is slower than normal add-fetch)
@@ -423,9 +417,6 @@
   ✓ insert dissemination barrier instead of dummy
 
 --- 13-06-25 ---
-
- * installed rapl measurement system (4 core sandbridge)
-
 --- 13-06-24 ---
 
  * iterated on rapl benchmark
@@ -499,7 +490,6 @@
  misc notes:
   ✓ it is possible to reduce the 2loop ronny model for non-ss queries:
    remove loc 10, 11 and set the while condition to 'true'
-  □ one might also combine some of the transitions that are not in loops because they are triggered rarely
 
 --- 13-05-17 ---
 
@@ -512,11 +502,11 @@
  todo:
   ✓ use aquire release mem model
   ✓ redo benchmarks (large deviations in runtime right now), and perhaps benchmark up to 64 threads
-  □ model add-fetch barrier
-    □ add energy rewards to add-fetch
-    □ add energy rewards to ronny
-    -> □ compare both
-    -> □ line up measured data with both models
+  ✓ model add-fetch barrier
+    ✓ add energy rewards to add-fetch
+    ✓ add energy rewards to ronny
+    -> ✓ compare both
+    -> ✓ line up measured data with both models
 
   □ interpret benchmarks. Complexity for both barriers?
 
@@ -570,7 +560,7 @@
  ✓ go beyond 32 threads (i.e. use an array rather than one barrier variable)
  ✓ not only add yourself to the barrier, but everyone you have seen so far, too
 
- □ implement/model simple atomic increment barrier and compare against our protocol
+ ✓ implement/model simple atomic increment barrier and compare against our protocol
 
  □ it might work to just remove copy and work directly on the shared vars.
    One more shared read, but a variable less (the model would be happy, perhaps)
