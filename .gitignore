@@ -26,7 +26,6 @@ barrier
 /misc/mpi-barrier-test/mpi-barrier-test
 
 /report/charts/*.pdf
-/report/report.pdf
 
 
 model*.pdf
