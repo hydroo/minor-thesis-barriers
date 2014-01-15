@@ -10,7 +10,7 @@ This is a semi-organised repository of about one year of university work. During
  * analysed/modelchecked/benchmarked some of them
  * surveyed the waters in which barriers live - how can barriers be built on shared and distributed memory architectures, an (in-depth-)look at the MPI standard and its suitability for implementing barriers
 
-## Overall structure
+## Structure
 
  * /complex-lab/ is the first ~0.5 years resulting in a small, bad report and a presentation
  * / is the last ~0.5 years resulting in my minor thesis and a presentation
