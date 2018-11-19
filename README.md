@@ -12,8 +12,8 @@ This is a semi-organised repository of about one year of university work. During
 
 ## Structure
 
- * /complex-lab/ is the first ~0.5 years resulting in a small, bad report and a presentation
- * / is the last ~0.5 years resulting in my minor thesis and a presentation
+ * `/complex-lab/` is the first ~0.5 years resulting in a small, bad report and a presentation
+ * `/` is the last ~0.5 years resulting in my minor thesis and a presentation
 
 ## Requirements
 
@@ -27,8 +27,7 @@ Some things in the repository need special software
 ## License
 
 Everything is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0) license.
-
-If this licensing scheme is a problem for your intentions, please mail me. I don't have much experience in licensing things like the contents of this repository.
+If this licensing scheme is a problem for your intentions, please contact me.
 
 ## Misc
 
